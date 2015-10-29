@@ -6,10 +6,12 @@ The workflow is simple:
 
 ## Installation
 
-**1. Clone the repo:**
+**1. Clone the repo and start your own:**
 
 ```sh
-git clone git://foo
+git clone git@gist.github.com:3c83db422f03ef66ea36.git
+rm -rf .git
+git init
 ```
 
 **2. Install dependencies:**
