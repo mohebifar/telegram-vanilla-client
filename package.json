@@ -1,25 +1,32 @@
 {
-  "name": "webpack-starter-template",
-  "version": "0.1.0",
-  "description": "Webpack starter template",
+  "name": "telegram-client-web",
+  "version": "1.0.0",
+  "description": "A telegram client for web",
   "scripts": {
-    "dev": "WEBPACK_ENV=dev webpack-dev-server",
-    "start": "http-server --port ${PORT:-8080} build",
-    "prestart": "npm run build",
-    "build": "mkdir -p build && WEBPACK_ENV=production webpack && ncp src/static/ build/"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "webpack-dev-server --env.NODE_ENV=development --mode development --hot --open",
+    "build": "webpack --env.NODE_ENV=production --mode production"
   },
+  "author": "Mohamad Mohebifar",
+  "license": "private",
   "devDependencies": {
-    "autoprefixer-loader": "^3.1.0",
-    "babel-loader": "^5.3.2",
-    "css-loader": "^0.18.0",
-    "exports-loader": "^0.6.2",
-    "extract-text-webpack-plugin": "^0.8.2",
-    "http-server": "^0.8.5",
-    "less-loader": "^2.2.0",
-    "ncp": "^2.0.0",
-    "source-map-loader": "^0.1.5",
-    "style-loader": "^0.12.3",
-    "webpack": "^1.12.1",
-    "webpack-dev-server": "^1.10.1"
+    "clean-webpack-plugin": "^3.0.0",
+    "copy-webpack-plugin": "^5.0.4",
+    "css-loader": "^3.2.0",
+    "css-modules-typescript-loader": "^4.0.0",
+    "html-webpack-plugin": "^3.2.0",
+    "mini-css-extract-plugin": "^0.8.0",
+    "raw-loader": "^3.1.0",
+    "sass": "^1.23.3",
+    "sass-loader": "^8.0.0",
+    "style-loader": "^1.0.0",
+    "ts-loader": "^6.2.1",
+    "typescript": "^3.6.4",
+    "webpack": "^4.41.2",
+    "webpack-cli": "^3.3.10",
+    "webpack-dev-server": "^3.9.0"
+  },
+  "dependencies": {
+    "lottie-web": "^5.5.9"
   }
 }

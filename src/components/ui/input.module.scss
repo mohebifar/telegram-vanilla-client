@@ -1,0 +1,55 @@
+@import "../../variables.scss";
+
+.inputWrapper {
+    margin-bottom: 1.5rem;
+    position: relative;
+  
+    input {
+      border: $input-border-width solid $grey-light;
+      padding: $input-padding-v $input-padding-h;
+      border-radius: $input-radius;
+      outline: none;
+      width: 100%;
+  
+      &::placeholder {
+        visibility: hidden;
+      }
+  
+      &:focus {
+        border-color: $blue;
+      }
+  
+      &:focus:not(:placeholder-shown) ~ .placeholder {
+        color: $blue;
+      }
+  
+      &,
+      &:focus {
+        &,
+        .placeholder {
+          transition: all 0.3s ease;
+        }
+      }
+  
+      &:not(:placeholder-shown) ~ .placeholder {
+        bottom: calc(100% - #{$input-padding-v/2});
+        left: 20px;
+        font-size: 11px;
+        opacity: 1;
+        background-color: #fff;
+        color: $grey;
+      }
+    }
+  
+    .placeholder {
+      $margin-h: $input-padding-h/8;
+      position: absolute;
+      pointer-events: none;
+      left: $input-padding-h - $margin-h;
+      bottom: $input-padding-v + $input-border-width;
+      padding: 0 calc(#{$margin-h} + 1px);
+      transition: all 0.3s cubic-bezier(0.15, 0.5, 0, 1);
+      color: $placeholder-color;
+    }
+  }
+  

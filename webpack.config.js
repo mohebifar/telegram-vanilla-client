@@ -1,81 +1,103 @@
-var webpack = require('webpack');
-	ExtractTextPlugin = require("extract-text-webpack-plugin");
+const Path = require("path");
+const { CleanWebpackPlugin } = require("clean-webpack-plugin");
+const CopyWebpackPlugin = require("copy-webpack-plugin");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
-module.exports = {
-	// your root file
-	entry: './src/index.js',
+const sassRegex = /\.(scss|sass)$/;
+const sassGlobalRegex = /\.global\.(scss|sass)$/;
 
-	// output JS bundle to: build/bundle.js
-	output: {
-		path: './build',
-		filename: 'bundle.js'
-	},
+module.exports = ({ NODE_ENV }) => {
+  const isDevelopment = NODE_ENV === "development";
+  const isProduction = NODE_ENV === "production";
 
-	resolve: {
-		// you can load named modules from any dirs you want.
-		// attempts to find them in the specified order.
-		modulesDirectories: [
-			'./src/lib',
-			'node_modules'
-		]
-	},
-
-	module: {
-		// you can tell webpack to avoid parsing for dependencies in any files matching an Array of regex patterns
-		noParse: [
-			/(node_modules|~)\/(crappy\-bundled\-lib|jquery)\//gi
-		],
-
-		preLoaders: [
-			// before hitting the actual loaders, load any sourcemaps specified by npm modules
-			{ loader: 'source-map' }
-		],
-
-		loaders: [
-			// transpile ES6/7 to ES5 via babel
-			{
-				test: /\.jsx?$/,
-				exclude: /node_modules/,
-				loader: 'babel'
-			},
-			// bundle LESS and CSS into a single CSS file, auto-generating -vendor-prefixes
-			{
-				test: /\.(less|css)$/,
-				exclude: /\b(some\-css\-framework|whatever)\b/i,
-				loader: ExtractTextPlugin.extract("style?sourceMap", "css?sourceMap!autoprefixer?browsers=last 2 version!less")
-			}
-		]
-	},
-
-	plugins: ([
-		// Avoid publishing files when compilation failed:
-		new webpack.NoErrorsPlugin(),
-
-		// Aggressively remove duplicate modules:
-		new webpack.optimize.DedupePlugin(),
-
-		// Write out CSS bundle to its own file:
-		new ExtractTextPlugin('style.css', { allChunks: true })
-	]).concat(process.env.WEBPACK_ENV==='dev' ? [] : [
-		new webpack.optimize.OccurenceOrderPlugin(),
-
-		// minify the JS bundle
-		new webpack.optimize.UglifyJsPlugin({
-			output: { comments: false },
-			exclude: [ /\.min\.js$/gi ]		// skip pre-minified libs
-		})
-	]),
-
-	// Pretty terminal output
-	stats: { colors: true },
-
-	// Generate external sourcemaps for the JS & CSS bundles
-	devtool: 'source-map',
-
-	// `webpack-dev-server` spawns a live-reloading HTTP server for your project.
-	devServer: {
-		port: process.env.PORT || 8080,
-		contentBase: './src',
-		historyApiFallback: true
-	}
+  return {
+    entry: "./src/index.ts",
+    output: {
+      path: Path.join(__dirname, "build"),
+      filename: "js/[name].js"
+    },
+    optimization: {
+      // splitChunks: {
+      //   chunks: "all",
+      //   name: false
+      // }
+    },
+    plugins: [
+      new CleanWebpackPlugin(),
+      new CopyWebpackPlugin([
+        { from: Path.resolve(__dirname, "./src/assets"), to: "assets" }
+      ]),
+      new HtmlWebpackPlugin({
+        template: "./src/index.html"
+      }),
+      new MiniCssExtractPlugin({
+        // Options similar to the same options in webpackOptions.output
+        // both options are optional
+        filename: "[name].css",
+        chunkFilename: "[id].css"
+      })
+    ],
+    resolve: {
+      alias: {
+        "~": "./src"
+      },
+      extensions: [".tsx", ".ts", ".js"]
+    },
+    module: {
+      rules: [
+        {
+          test: /\.ts$/,
+          use: "ts-loader",
+          exclude: /node_modules/
+        },
+        {
+          test: /\.mjs$/,
+          include: /node_modules/,
+          type: "javascript/auto"
+        },
+        {
+          test: /\.(ico|jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2)(\?.*)?$/,
+          use: {
+            loader: "file-loader",
+            options: {
+              name: "[path][name].[ext]"
+            }
+          }
+        },
+        {
+          test: sassGlobalRegex,
+          use: [
+            isDevelopment && "style-loader",
+            isProduction && MiniCssExtractPlugin.loader,
+            // Translates CSS into CommonJS
+            {
+              loader: "css-loader",
+              options: {
+                modules: false
+              }
+            },
+            // Compiles Sass to CSS
+            "sass-loader"
+          ].filter(Boolean)
+        },
+        {
+          test: sassRegex,
+          exclude: sassGlobalRegex,
+          use: [
+            isDevelopment && "style-loader",
+            isProduction && MiniCssExtractPlugin.loader,
+            // Translates CSS into CommonJS
+            {
+              loader: "css-loader",
+              options: {
+                modules: true
+              }
+            },
+            "sass-loader"
+          ].filter(Boolean)
+        }
+      ]
+    }
+  };
 };

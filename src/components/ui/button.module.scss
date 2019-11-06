@@ -1,0 +1,32 @@
+@import "../../variables.scss";
+
+.btn {
+  position: relative;
+  background-color: $blue;
+  padding: $input-padding-v $input-padding-h;
+  border-radius: $input-radius;
+  border: none;
+  outline: none;
+  color: white;
+  width: 100%;
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 400;
+
+  &:not(:disabled) {
+    cursor: pointer;
+
+    &:hover {
+      background-color: lighten($blue, 2%);
+    }
+  }
+
+  :disabled {
+    cursor: not-allowed;
+  }
+
+  :global(.ic) {
+    position: absolute;
+    right: $input-padding-h;
+  }
+}

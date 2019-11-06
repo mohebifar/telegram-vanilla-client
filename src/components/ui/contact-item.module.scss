@@ -1,0 +1,83 @@
+@import "../../variables.scss";
+
+.container {
+  display: flex;
+  flex-direction: row;
+  margin: 0.5rem;
+  justify-content: center;
+  padding: 0.5rem 0;
+  border-radius: 11px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: $grey-lighter;
+  }
+
+  &, &:hover {
+      transition: background-color .3s ease;
+  }
+
+  .avatar {
+    &,
+    img {
+      width: 3rem;
+      height: 3rem;
+    }
+
+    img {
+      border-radius: 50%;
+    }
+    margin: 0 0.5rem;
+  }
+
+  .meta,
+  .text {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+  }
+  .text {
+    flex-grow: 1;
+
+    :first-child {
+      font-weight: 500;
+      font-size: 0.9rem;
+      margin-bottom: 0.3rem;
+    }
+
+    :nth-child(2) {
+      font-weight: 300;
+      font-size: 0.9rem;
+      color: $grey;
+    }
+  }
+
+  .meta {
+    padding-right: 1rem;
+    align-items: flex-end;
+
+    :first-child {
+      font-weight: 500;
+      font-size: 0.9rem;
+      margin-bottom: 0.3rem;
+      color: $grey;
+      font-size: 0.6rem;
+      font-weight: 200;
+      margin-bottom: 0rem;
+      height: 1rem;
+    }
+
+    :nth-child(2) {
+      background-color: $green;
+      color: white;
+      display: block;
+      width: 1.3rem;
+      height: 1.3rem;
+      text-align: center;
+      padding-top: 0.2rem;
+      border-radius: 0.65rem;
+      font-size: 0.7rem;
+      font-weight: 500;
+    }
+  }
+}
