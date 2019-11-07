@@ -1,0 +1,17 @@
+{
+    "files.associations": {
+        "aes256.h": "c",
+        "string.h": "c",
+        "__config": "cpp",
+        "__debug": "cpp",
+        "algorithm": "cpp",
+        "type_traits": "cpp",
+        "utility": "cpp",
+        "functional": "cpp",
+        "memory": "cpp",
+        "queue": "cpp",
+        "string": "cpp",
+        "vector": "cpp",
+        "aes.h": "c"
+    }
+}

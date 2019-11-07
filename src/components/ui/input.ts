@@ -1,7 +1,22 @@
 import { createElement, Component } from "../../utils/dom";
-import styles from "./input.module.scss";
+import * as styles from "./input.module.scss";
 
-interface Options {
+enum EventMap {
+  onClick = "click",
+  onBlur = "blur",
+  onFocus = "focus",
+  onChange = "change",
+  onInput = "input"
+}
+
+type EventAttributes = keyof typeof EventMap;
+
+type PartialRecord<K extends keyof any, T> = {
+  [P in K]?: T;
+};
+
+interface Options
+  extends PartialRecord<EventAttributes, (this: HTMLElement, ev: any) => void> {
   placeholder: string;
   type?: "tel" | "text" | "password";
 }
@@ -27,5 +42,11 @@ export default class Input implements Component<Options> {
       this.inputNode,
       this.placeholder
     );
+
+    Object.entries(EventMap).forEach(([attrName, eventName]) => {
+      if (attrName in rest) {
+        this.inputNode.addEventListener(eventName, rest[attrName]);
+      }
+    });
   }
 }

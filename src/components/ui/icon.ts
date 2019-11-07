@@ -1,5 +1,5 @@
 import { createElement, Component } from "../../utils/dom";
-import styles from "./icon.scss";
+import * as styles from "./icon.scss";
 
 export enum Icons {
   Spinner = "/assets/spinner.svg"

@@ -3,12 +3,103 @@ import { createElement } from "./utils/dom";
 // import Input from "./components/ui/input";
 // import Button from "./components/ui/button";
 // import Sidebar from "./components/side-bar";
-import AuthPhone from "./components/auth/auth-phone";
+// import AuthPhone from "./components/auth/auth-phone";
+import AuthPassword from "./components/auth/auth-password";
+import { decryptIGE, encryptIGE } from "./core/crypto";
 
 function setupSignInForm() {
-  const element = createElement(AuthPhone);
+  const element = createElement(AuthPassword);
   document.body.append(element);
 }
+
+// fetchAndInstantiateWasm('./program.wasm', {
+//   env: {
+//     consoleLog (offset, len) {
+//       const strBuf = new Uint8Array(mem.buffer, offset, len);
+//       console.log(new TextDecoder().decode(strBuf));
+//     }
+//   }
+// })
+// .then(m => {
+//   mem = m.memory;
+//   writeString("Hello Web Assembly", m.getInStrOffset());
+//   m.toLowerCase();
+// });
+
+const key = [
+  0x60,
+  0x3d,
+  0xeb,
+  0x10,
+  0x15,
+  0xca,
+  0x71,
+  0xbe,
+  0x2b,
+  0x73,
+  0xae,
+  0xf0,
+  0x85,
+  0x7d,
+  0x77,
+  0x81,
+  0x1f,
+  0x35,
+  0x2c,
+  0x07,
+  0x3b,
+  0x61,
+  0x08,
+  0xd7,
+  0x2d,
+  0x98,
+  0x10,
+  0xa3,
+  0x09,
+  0x14,
+  0xdf,
+  0xf4
+];
+
+const iv = [...key, ...key];
+
+const text = new Uint8Array([
+  1,
+  2,
+  3,
+  4,
+  1,
+  2,
+  3,
+  4,
+  1,
+  2,
+  3,
+  4
+  // 1,2,3,4,
+]);
+
+async function mamad() {
+  console.time();
+  const e = await encryptIGE(text, key, iv);
+  console.log("e", e);
+  const d = await decryptIGE(e, key, iv);
+  console.log("d", d);
+  console.timeEnd();
+}
+
+const socket = new WebSocket("ws://vesta.web.telegram.org/apiws", "binary");
+
+// Connection opened
+socket.addEventListener("open", function(event) {
+  socket.send("Hello Server!");
+});
+
+// Listen for messages
+socket.addEventListener("message", function(event) {
+  console.log("Message from server ", event.data);
+});
+mamad();
 
 // function setupPasswordForm() {
 //   const logo = createElement("img", {

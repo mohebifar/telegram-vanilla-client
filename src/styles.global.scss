@@ -26,11 +26,14 @@ button {
   flex-direction: column;
   padding: 1rem;
 
-  img {
-    width: 150px;
-  }
-
   form {
+    > .monkey,
+    > img {
+      width: 10rem;
+      height: 10rem;
+      display: block;
+      margin: auto;
+    }
     width: 100%;
     max-width: 350px;
     margin-top: 1rem;

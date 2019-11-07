@@ -1,5 +1,5 @@
 import { createElement, Component } from "../utils/dom";
-import styles from "./side-bar.module.scss";
+import * as styles from "./side-bar.module.scss";
 import ContactItem from "./ui/contact-item";
 
 interface Options {}

@@ -1,6 +1,6 @@
 import { createElement, Component } from "../../utils/dom";
 import Icon, { Icons } from "./icon";
-import styles from "./spinner.scss";
+import * as styles from "./spinner.scss";
 
 interface Options {
   size: string;

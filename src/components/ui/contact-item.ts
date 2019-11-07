@@ -1,5 +1,5 @@
 import { createElement, Component } from "../../utils/dom";
-import styles from "./contact-item.module.scss";
+import * as styles from "./contact-item.module.scss";
 
 interface Options {
   name: string;
@@ -14,7 +14,6 @@ export default class ContactItem implements Component<Options> {
   public readonly element: HTMLElement;
 
   constructor({ name, text, time, img }: Options) {
-
     const avatar = createElement(
       "div",
       { class: styles.avatar },

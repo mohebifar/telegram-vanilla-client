@@ -1,5 +1,5 @@
 import { createElement, Component, preload } from "../../utils/dom";
-import styles from "./button.module.scss";
+import * as styles from "./button.module.scss";
 import { Icons } from "./icon";
 import Spinner from "./spinner";
 
