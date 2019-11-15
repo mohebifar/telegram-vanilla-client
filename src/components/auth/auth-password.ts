@@ -11,10 +11,9 @@ export default class AuthPassword implements Component<Options> {
   private monkey: Element<Monkey>;
 
   constructor() {
-    const h1 = createElement("h1", undefined, "Enter a Password");
+    const h1 = createElement("h1", "Enter a Password");
     const h4 = createElement(
       "h4",
-      undefined,
       "Your account is protected with",
       createElement("br"),
       "an additional password"

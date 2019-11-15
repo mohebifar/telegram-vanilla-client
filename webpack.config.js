@@ -61,7 +61,7 @@ module.exports = ({ NODE_ENV }) => {
       alias: {
         "~": "./src"
       },
-      extensions: [".tsx", ".ts", ".js"]
+      extensions: [".tsx", ".ts", ".js", ".json"]
     },
     module: {
       rules: [
@@ -129,10 +129,6 @@ module.exports = ({ NODE_ENV }) => {
             },
             "sass-loader"
           ].filter(Boolean)
-        },
-        {
-          test: /\.json$/,
-          loader: "json-loader"
         }
       ]
     }

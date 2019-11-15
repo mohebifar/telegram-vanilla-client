@@ -34,7 +34,7 @@ export async function decryptIGE(cipherText: Uint8Array, key: Key, iv: Key) {
   let iv1 = iv.slice(0, Math.floor(iv.length / 2));
   let iv2 = iv.slice(Math.floor(iv.length / 2));
 
-  let plainText = [];
+  let plainText: number[] = [];
   const cipherTextBlock = new Uint8Array(16);
   const blocksCount = Math.floor(cipherText.length / 16);
 
@@ -50,7 +50,41 @@ export async function decryptIGE(cipherText: Uint8Array, key: Key, iv: Key) {
     plainText = plainText.concat(Array.from(plainTextBlock));
   }
 
-  return plainText;
+  return new Uint8Array(plainText);
+}
+
+export const decryptorCTR = encryptorCTR;
+
+export async function encryptorCTR(key: Key, iv: Uint8Array) {
+  const cipher = await initAES(key, "encrypt");
+  let counter = iv;
+  let remainingCounter = null;
+  let remainingCounterIndex = 16;
+
+  const counterIncerement = () => {
+    for (var i = 15; i >= 0; i--) {
+      if (counter[i] === 255) {
+        counter[i] = 0;
+      } else {
+        counter[i]++;
+        break;
+      }
+    }
+  };
+
+  return (rawInput: Uint8Array) => {
+    const encrypted = new Uint8Array(rawInput);
+    for (var i = 0; i < encrypted.length; i++) {
+      if (remainingCounterIndex === 16) {
+        remainingCounter = cipher(counter);
+        remainingCounterIndex = 0;
+        counterIncerement();
+      }
+      encrypted[i] ^= remainingCounter[remainingCounterIndex++];
+    }
+
+    return encrypted;
+  };
 }
 
 async function initAES(
@@ -65,7 +99,7 @@ async function initAES(
     env: {
       memory,
       consoleLog: () => {
-        console.log("done");
+        // console.log("done");
       }
     }
   });
@@ -86,3 +120,44 @@ async function initAES(
     return inputBuffer.slice();
   };
 }
+
+export async function sha256(data: Uint8Array) {
+  return new Uint8Array(await crypto.subtle.digest("SHA-256", data));
+}
+
+export async function sha1(data: Uint8Array) {
+  return new Uint8Array(await crypto.subtle.digest("SHA-1", data));
+}
+
+/*
+export const crc32 = (function() {
+  const table = new Uint32Array(256);
+
+  // Pre-generate crc32 polynomial lookup table
+  // http://wiki.osdev.org/CRC32#Building_the_Lookup_Table
+  // ... Actually use Alex's because it generates the correct bit order
+  //     so no need for the reversal function
+  for (let i = 256; i--; ) {
+    let tmp = i;
+
+    for (let k = 8; k--; ) {
+      tmp = tmp & 1 ? 3988292384 ^ (tmp >>> 1) : tmp >>> 1;
+    }
+
+    table[i] = tmp;
+  }
+
+  // crc32b
+  // Example input        : [97, 98, 99, 100, 101] (Uint8Array)
+  // Example output       : 2240272485 (Uint32)
+  return function(data) {
+    let crc = -1; // Begin with all bits set ( 0xffffffff )
+
+    for (let i = 0, l = data.length; i < l; i++) {
+      crc = (crc >>> 8) ^ table[(crc & 255) ^ data[i]];
+    }
+
+    return (crc ^ -1) >>> 0; // Apply binary NOT
+  };
+})();
+*/

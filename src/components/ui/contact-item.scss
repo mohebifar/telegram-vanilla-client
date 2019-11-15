@@ -1,0 +1,147 @@
+@import "../../variables.scss";
+
+.container {
+  display: flex;
+  flex-direction: row;
+  margin: 0.5rem;
+  justify-content: center;
+  padding: 0.5rem 0;
+  border-radius: 11px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: $grey-lighter;
+  }
+
+  &,
+  &:hover {
+    transition: background-color 0.3s ease;
+  }
+
+  .avatar {
+    position: relative;
+
+    &,
+    .placeholder,
+    img {
+      width: 3rem;
+      height: 3rem;
+      border-radius: 50%;
+      z-index: 1000;
+    }
+
+    img {
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    margin: 0 0.5rem;
+
+    .placeholder {
+      text-align: center;
+      padding-top: 0.9rem;
+      font-weight: 500;
+      color: #fff;
+
+      &_1 {
+        background: #cc90e2;
+      }
+      &_2 {
+        background: #80d066;
+      }
+      &_3 {
+        background: #ecd074;
+      }
+      &_4 {
+        background: #6fb1e4;
+      }
+      &_5 {
+        background: #e57979;
+      }
+      &_6 {
+        background: #f98bae;
+      }
+      &_7 {
+        background: #73cdd0;
+      }
+      &_8 {
+        background: #fba76f;
+      }
+    }
+  }
+
+  .meta,
+  .text {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+  }
+  .text {
+    flex-grow: 1;
+    min-width: 0;
+    text-align: left;
+
+    > * {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      display: inline-block;
+    }
+
+    > :first-child {
+      font-weight: 500;
+      font-size: 0.9rem;
+      margin-bottom: 0.3rem;
+      line-height: 1.5;
+    }
+
+    > :nth-child(2) {
+      font-weight: 300;
+      font-size: 0.9rem;
+      color: $grey;
+      width: 90%;
+
+      span {
+        // More control over the text
+        line-height: 1;
+      }
+    }
+  }
+
+  .meta {
+    white-space: nowrap;
+    padding-right: 1rem;
+    align-items: flex-end;
+
+    :first-child {
+      font-weight: 500;
+      font-size: 0.9rem;
+      margin-bottom: 0.3rem;
+      color: $grey;
+      font-size: 0.6rem;
+      font-weight: 200;
+      margin-bottom: 0rem;
+      height: 1rem;
+      padding-right: 0.1rem;
+    }
+
+    :nth-child(2) {
+      background-color: $green;
+      color: white;
+      display: block;
+      min-width: 1.3rem;
+      padding: 0 0.3rem;
+      height: 1.2rem;
+      text-align: center;
+      padding-top: 0.175rem;
+      border-radius: 0.65rem;
+      font-size: 0.7rem;
+      font-weight: 500;
+
+      &.silent {
+        background-color: $unread-count-bg;
+      }
+    }
+  }
+}

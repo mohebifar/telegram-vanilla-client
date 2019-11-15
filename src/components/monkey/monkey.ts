@@ -22,9 +22,7 @@ type FinalEvent = {
 
 export default class Monkey implements Component<Options> {
   public element: HTMLElement;
-  public idle: Element<Lottie>;
-  public tracking: Element<Lottie>;
-  public monkeys: Monkeys;
+  private monkeys: Monkeys;
   private completeEvent: AnimationEventCallback<any>;
   private finalFrame: CurrentFrame = {
     idle: 0,

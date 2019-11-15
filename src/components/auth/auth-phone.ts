@@ -13,7 +13,7 @@ export default class AuthPhone implements Component<Options> {
       src: "/assets/logo.svg",
       alt: "Telegram"
     });
-    const h1 = createElement("h1", undefined, "Sign in to Telegram");
+    const h1 = createElement("h1", "Sign in to Telegram");
     const h4 = createElement(
       "h4",
       undefined,

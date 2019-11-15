@@ -1,5 +1,5 @@
 import { createElement, Component } from "../../utils/dom";
-import * as styles from "./input.module.scss";
+import * as styles from "./input.scss";
 
 enum EventMap {
   onClick = "click",
@@ -23,8 +23,8 @@ interface Options
 
 export default class Input implements Component<Options> {
   public element: HTMLElement;
-  public readonly inputNode: HTMLElement;
-  public readonly placeholder: HTMLElement;
+  private inputNode: HTMLElement;
+  private placeholder: HTMLElement;
 
   constructor({ placeholder, ...rest }: Options) {
     this.inputNode = createElement("input", { placeholder, ...rest });

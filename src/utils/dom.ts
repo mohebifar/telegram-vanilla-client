@@ -29,27 +29,55 @@ export function preload(
   document.head.append(createElement("link", { rel: "preload", href, as }));
 }
 
+type Children = Node | Component | string;
+
 export function createElement<P extends {}, C extends ComponentClass<P>>(
   component: C,
   attrs?: OptionsType<C> | undefined,
-  ...children: (Node | string)[]
+  ...children: Children[]
 ): Element<C[keyof C]>;
 
 export function createElement<P extends {}>(
   component: string,
   attrs?: P | undefined,
-  ...children: (Node | string)[]
+  ...children: Children[]
+): Element<undefined>;
+
+export function createElement<P extends {}, C extends ComponentClass<P>>(
+  component: C,
+  ...children: Children[]
+): Element<C[keyof C]>;
+
+export function createElement<P extends {}>(
+  component: string,
+  ...children: Children[]
 ): Element<undefined>;
 
 export function createElement<P extends {}>(
   type: ComponentClass<P> | string,
-  attrs: P | undefined = undefined,
-  ...children: (Node | string)[]
+  ...args: [Children | P | undefined, ...Children[]]
 ) {
   const factory =
     typeof type === "string"
       ? createElementFromTag
       : createElementFromComponent;
+
+  let children: (Node | string)[];
+  let attrs: P | undefined;
+
+  if (
+    !(
+      args[0] instanceof Node ||
+      typeof args[0] === "string" ||
+      typeof args[0] === "function"
+    )
+  ) {
+    children = args.slice(1) as any;
+    attrs = args[0] as any;
+  } else {
+    children = args as any;
+    attrs = undefined;
+  }
 
   return factory(type as any, attrs, ...children);
 }

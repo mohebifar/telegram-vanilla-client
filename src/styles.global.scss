@@ -3,7 +3,6 @@
 body {
   margin: 0;
   padding: 0;
-  // background-color: #E6EBEE;
 }
 
 * {
@@ -57,4 +56,12 @@ h1 {
 h4 {
   font-weight: 300;
   color: $grey;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.invisible {
+  visibility: hidden !important;
 }

@@ -1,0 +1,26 @@
+@import "../../variables.scss";
+
+.container {
+  background-color: #fff;
+  border-right: 1px solid $grey-light;
+  width: 350px;
+  height: 100vh;
+  overflow: scroll;
+}
+
+.dialogsList {
+  padding: 0.25rem 0;
+  position: relative;
+
+  &.pinned {
+    &:after {
+      content: "";
+      display: block;
+      position: absolute;
+      bottom: 0;
+      border-bottom: 1px solid $grey-light;
+      left: 0;
+      right: 0;
+    }
+  }
+}
