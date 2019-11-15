@@ -1,5 +1,5 @@
 import { deflate, inflate } from "pako";
-import { pack, concatBuffers } from "../../../utils/utils";
+import { pack, concatBuffers } from "../../../utils/binary";
 import { BinaryReader } from "../../extensions/BinaryReader";
 import { serializeBytes, TLObjectType } from "../types";
 

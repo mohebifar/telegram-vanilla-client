@@ -8,7 +8,7 @@ import {
   readBytesFromString,
   byteBuffersEqual,
   mod
-} from "../../utils/utils";
+} from "../../utils/binary";
 import {
   PasswordKdfAlgoSHA256SHA256PBKDF2HMACSHA512iter100000SHA256ModPow,
   account_Password,

@@ -1,5 +1,5 @@
 import { MTTransport } from "./MTTransport";
-import { concatBuffers } from "../utils/utils";
+import { concatBuffers } from "../utils/binary";
 import { AsyncQueue } from "./extensions/AsyncQueue";
 
 let i = 0;

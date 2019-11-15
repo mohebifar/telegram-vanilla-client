@@ -8,7 +8,7 @@ import {
   readBufferFromHex,
   getByteArray,
   modExp
-} from "../utils/utils";
+} from "../utils/binary";
 import store from "../utils/store";
 import { serializeTLObject, invariant } from "./tl/types";
 import { Factorizator } from "./crypto/Factorizer";

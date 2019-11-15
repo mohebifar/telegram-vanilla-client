@@ -4,7 +4,7 @@ import {
   concatBuffers,
   readBufferFromBigInt,
   readBytesFromString
-} from "../../utils/utils";
+} from "../../utils/binary";
 import { tlObjectsDefinitions } from "./TLObjectDefs";
 import { TLObjectTypes } from "./TLObjects";
 import {

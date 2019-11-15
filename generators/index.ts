@@ -5,7 +5,7 @@ import { crc32 } from "crc";
 import * as fs from "fs";
 import { findLayer, parseTl } from "./parser/parser";
 import { parseMethods } from "./parser/methods";
-import { snakeToCamelCase, variableSnakeToCamelCase } from "./utils";
+import { snakeToCamelCase, variableSnakeToCamelCase } from "./binary";
 import { TLArg } from "./parser/tlarg";
 import { TLObject } from "./parser/tlobject";
 

@@ -1,4 +1,4 @@
-import { concatBuffers } from "../../utils/utils";
+import { concatBuffers } from "../../utils/binary";
 
 export class BinaryWriter {
   constructor(private stream: Uint8Array) {}

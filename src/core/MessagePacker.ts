@@ -1,6 +1,6 @@
 import { RequestState } from "./RequestState";
 import { MTProtoState } from "./MTProtoState";
-import { pack, concatBuffers } from "../utils/utils";
+import { pack, concatBuffers } from "../utils/binary";
 import { BinaryWriter } from "./extensions/BinaryWriter";
 import {
   MAXIMUM_LENGTH,
