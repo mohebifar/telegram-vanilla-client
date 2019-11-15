@@ -7,7 +7,6 @@ import {
   concatBuffers,
   readBufferFromHex,
   getByteArray,
-  generateKeyDataFromNonce,
   modExp
 } from "../utils/utils";
 import store from "../utils/store";
@@ -223,4 +222,22 @@ async function calcNewNonceHash(
   // Calculates the message key from the given data
   const shaData = (await sha1(data)).slice(4, 20);
   return readBigIntFromBuffer(shaData, true, true);
+}
+
+async function generateKeyDataFromNonce(
+  serverNonceBigInt: bigint,
+  newNonceBigInt: bigint
+) {
+  const serverNonce = readBufferFromBigInt(serverNonceBigInt, 16, true, true);
+  const newNonce = readBufferFromBigInt(newNonceBigInt, 32, true, true);
+  const hash1 = await sha1(concatBuffers([newNonce, serverNonce]));
+  const hash2 = await sha1(concatBuffers([serverNonce, newNonce]));
+  const hash3 = await sha1(concatBuffers([newNonce, newNonce]));
+  const keyBuffer = concatBuffers([hash1, hash2.slice(0, 12)]);
+  const ivBuffer = concatBuffers([
+    hash2.slice(12, 20),
+    hash3,
+    newNonce.slice(0, 4)
+  ]);
+  return { key: keyBuffer, iv: ivBuffer };
 }

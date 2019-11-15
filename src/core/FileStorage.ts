@@ -64,9 +64,7 @@ export class FileStorage {
         send = sender.send.bind(sender);
       }
 
-      console.log("download request", dcId);
       file = (await send(request)) as upload_File;
-      console.log("download response", dcId, file);
 
       r();
     } finally {
@@ -83,9 +81,7 @@ export class FileStorage {
       console.log("saved to localstorage", key);
     }
 
-    const dataUri = URL.createObjectURL(blob);
-
-    return dataUri;
+    return URL.createObjectURL(blob);
   }
 
   public async getProfilePhoto(

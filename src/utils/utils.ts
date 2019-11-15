@@ -1,5 +1,3 @@
-import { sha1 } from "../core/crypto";
-
 export function byteBuffersEqual(
   a: Uint8Array | number[],
   b: Uint8Array | number[]
@@ -191,11 +189,6 @@ export function concatBuffers(buffers: Array<number[] | Uint8Array>) {
   return array;
 }
 
-function makeDataViewOfSize(size: number): [ArrayBuffer, DataView] {
-  const buffer = new ArrayBuffer(size);
-  return [buffer, new DataView(buffer, 0)];
-}
-
 export function mod(n: any, m: any) {
   return ((n % m) + m) % m;
 }
@@ -206,13 +199,6 @@ export function getRandomInt(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-/**
- * Fast mod pow for RSA calculation. a^b % n
- * @param a
- * @param b
- * @param n
- * @returns {bigint}
- */
 export function modExp(a: bigint, b: bigint, n: bigint) {
   a = a % n;
   let result = BigInt(1);
@@ -236,24 +222,6 @@ export function getByteArray(integer: bigint, signed = false) {
   return readBufferFromBigInt(BigInt(integer), byteLength, false, signed);
 }
 
-export async function generateKeyDataFromNonce(
-  serverNonceBigInt: bigint,
-  newNonceBigInt: bigint
-) {
-  const serverNonce = readBufferFromBigInt(serverNonceBigInt, 16, true, true);
-  const newNonce = readBufferFromBigInt(newNonceBigInt, 32, true, true);
-  const hash1 = await sha1(concatBuffers([newNonce, serverNonce]));
-  const hash2 = await sha1(concatBuffers([serverNonce, newNonce]));
-  const hash3 = await sha1(concatBuffers([newNonce, newNonce]));
-  const keyBuffer = concatBuffers([hash1, hash2.slice(0, 12)]);
-  const ivBuffer = concatBuffers([
-    hash2.slice(12, 20),
-    hash3,
-    newNonce.slice(0, 4)
-  ]);
-  return { key: keyBuffer, iv: ivBuffer };
-}
-
 export async function base64ToBufferAsync(base64: string) {
   const dataUrl = "data:application/octet-binary;base64," + base64;
 
@@ -264,3 +232,8 @@ export async function base64ToBufferAsync(base64: string) {
 
 export const sleep = (ms: number) =>
   new Promise(resolve => setTimeout(resolve, ms));
+
+function makeDataViewOfSize(size: number): [ArrayBuffer, DataView] {
+  const buffer = new ArrayBuffer(size);
+  return [buffer, new DataView(buffer, 0)];
+}
