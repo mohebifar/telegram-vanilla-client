@@ -36,6 +36,7 @@ export class MTConnection {
     if (!this.connected) {
       throw new Error("Not connected");
     }
+    await this.waitForObfuscate;
 
     const encodedPacket = this.transport.encodePacket(data);
     return await this.sendArray.push(encodedPacket);
@@ -43,6 +44,8 @@ export class MTConnection {
 
   public async connect(url: string) {
     this.socket = new WebSocket(url, "binary");
+    this.transport = new MTTransport(this);
+    this.waitForObfuscate = this.transport.initHeader();
     this.registerEvents();
     this.resetReadPromise();
     this.resetConnectPromise();
@@ -114,8 +117,6 @@ export class MTConnection {
   }
 
   private onOpen = async () => {
-    this.transport = new MTTransport(this);
-    this.waitForObfuscate = this.transport.initHeader();
     await this.waitForObfuscate;
 
     // Send the obfuscation 64-byte header

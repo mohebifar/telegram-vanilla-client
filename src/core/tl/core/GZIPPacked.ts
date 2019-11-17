@@ -9,18 +9,6 @@ interface GZIPPacked extends TLObjectType<"GZIPPacked", 0x3072cfa1, 0> {
   data: Uint8Array;
 }
 
-// GZIP is currently buggy
-export function gzipIfSmaller(_contentRelated: boolean, data: Uint8Array) {
-  // if (contentRelated && data.length > 512) {
-  //   const gzipped = serializeGZIPPacked(data);
-  //   if (gzipped.length < data.length) {
-  //     return gzipped;
-  //   }
-  // }
-
-  return data;
-}
-
 export function gzipPackedReader(
   _: Function,
   reader: BinaryReader
@@ -33,6 +21,18 @@ export function gzipPackedReader(
     $t: "GZIPPacked",
     data
   };
+}
+
+// GZIP is currently buggy
+export function gzipIfLarge(_contentRelated: boolean, data: Uint8Array) {
+  // if (contentRelated && data.length > 512) {
+  //   const gzipped = serializeGZIPPacked(data);
+  //   if (gzipped.length < data.length) {
+  //     return gzipped;
+  //   }
+  // }
+
+  return data;
 }
 
 // @ts-ignore

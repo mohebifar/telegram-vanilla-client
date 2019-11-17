@@ -3,11 +3,12 @@ import { TelegramClient } from "../core/TelegramClient";
 import {
   messages_Dialogs,
   messages_Messages,
-  messages_PeerDialogs,
   messages_GetDialogsRequest,
   Dialog,
   DialogFolder,
-  Message
+  Message,
+  Authorization,
+  messages_DialogsSlice
 } from "../core/tl/TLObjects";
 import { getPeerId, getInputPeer } from "../core/tl/utils";
 import {
@@ -20,12 +21,10 @@ import { UpdateTypes } from "../core/types";
 let singleton: Store;
 
 type Events =
-  | "peer_added"
-  | "entities_added"
-  | "dialog_added"
-  | "dialog_updated_x"
-  | "chats_initiated"
-  | "chats_fetched_more"
+  | "fetched_chats"
+  | "fetched_more_chats"
+  | "fetched_history"
+  | "selected_dialog"
   | string;
 
 type Callback<T> = (arg: T) => void;
@@ -34,11 +33,13 @@ class Store {
   private mitt: Emitter;
   public entities = new Map<number, DialogPeerTypes>();
   public messages = new Map<number, DialogMessageTypes>();
+  public history = new Map<number, number[]>(); // peer_id => message_id[]
   public peers = new Map<number, DialogPeerTypes>();
   public dialogs = new Map<number, Dialog>();
   public lastDialog?: Dialog;
   public sortedDialogs: number[] = [];
   public client: TelegramClient;
+  public me: Authorization;
 
   // @ts-ignore
   private serverTimeOffset = 0;
@@ -52,13 +53,13 @@ class Store {
     return object;
   }
 
-  sub(event: "chats_initiated", callback: Callback<undefined>): void;
+  sub(event: "selected_dialog", callback: Callback<number>): void;
 
-  sub(event: "chats_fetched_more", callback: Callback<number>): void;
+  sub(event: "fetched_chats", callback: Callback<undefined>): void;
 
-  sub(event: "dialog_added", callback: Callback<messages_PeerDialogs>): void;
+  sub(event: "fetched_more_chats", callback: Callback<number>): void;
 
-  sub(event: "dialog_updated", callback: Callback<messages_PeerDialogs>): void;
+  sub(event: "fetched_history", callback: Callback<{ chatId: number }>): void;
 
   sub(event: Events, callback: Callback<any>) {
     this.mitt.on(event as any, callback);
@@ -70,15 +71,6 @@ class Store {
 
   pub(event: Events, data?: any) {
     switch (event) {
-      case "entities_added":
-        // this.entities.push(data);
-        this.handlePeerDialogs(data);
-        this.mitt.emit(event, data);
-        break;
-      case "peer_added":
-        // this.entities.push(data);
-        this.mitt.emit(event, data);
-        break;
       default:
         this.mitt.emit(event, data);
     }
@@ -88,10 +80,8 @@ class Store {
     return this.client.fileStorage;
   }
 
-  private async handlePeerDialogs(_ids?: number[]) {}
-
   public fetchMoreDialogs() {
-    return this.getDialogs(false);
+    return this.fetchDialogs(false);
   }
 
   public handleUpdate(update: UpdateTypes, _short = false) {
@@ -132,10 +122,10 @@ class Store {
     dialog.unreadCount++;
     model.message = message;
     model.events.emit("update");
+    model.events.emit("message", message);
   }
 
-  public async getMessages(ids: number[]) {
-    console.log("getting more messages", ids);
+  public async fetchMessages(ids: number[]) {
     const messages = (await this.client.invoke({
       $t: "messages_GetMessagesRequest",
       id: ids.map(id => ({
@@ -161,7 +151,7 @@ class Store {
     }
   }
 
-  public async getDialogs(initial = true) {
+  public async fetchDialogs(initial = true) {
     let offsetDate = 0;
     let offsetId = 0;
     let offsetPeer: messages_GetDialogsRequest["offsetPeer"] = {
@@ -245,18 +235,68 @@ class Store {
     }
 
     if (messagesToFetch.length > 0) {
-      await this.getMessages(messagesToFetch);
+      await this.fetchMessages(messagesToFetch);
     }
 
     if (initial) {
-      this.pub("chats_initiated");
+      this.pub("fetched_chats");
     } else {
-      this.pub("chats_fetched_more", newOffset);
+      this.pub("fetched_more_chats", newOffset);
     }
   }
 
   public getDialog(id: number) {
     return this.dialogs.get(id);
+  }
+
+  public getMessage(id: number) {
+    return this.messages.get(id);
+  }
+
+  public async fetchHistory(
+    chatId: number,
+    peer: DialogPeerTypes,
+    offsetId = 0
+  ) {
+    const history = (await this.client.invoke({
+      $t: "messages_GetHistoryRequest",
+      offsetId,
+      offsetDate: 0,
+      addOffset: 0,
+      limit: 20,
+      peer: getInputPeer(peer),
+      hash: 0,
+      maxId: 0,
+      minId: 0
+    })) as messages_DialogsSlice;
+
+    for (const user of history.users) {
+      if (user.$t === "User") {
+        const userId = getPeerId(user);
+        this.peers.set(userId, user);
+      }
+    }
+
+    const messageIds = [];
+    for (const message of history.messages) {
+      if (message.$t === "MessageService") {
+        // No support for service msgs atm
+        continue;
+      }
+
+      this.messages.set(message.id, message);
+      messageIds.unshift(message.id);
+    }
+
+    const currentHistory = this.getHistory(chatId);
+
+    this.history.set(chatId, [...messageIds, currentHistory]);
+
+    this.pub("fetched_history", { chatId });
+  }
+
+  public getHistory(chatId: number) {
+    return this.history.get(chatId) || [];
   }
 
   public getDialogPeerIdKey(dialog: Dialog | DialogFolder) {
@@ -270,8 +310,9 @@ class Store {
     }
   }
 
-  addEntity(id: number, entities: any) {
-    this.entities.set(id, entities);
+  public addMessage(message: DialogMessageTypes) {
+    if (message.$t !== "MessageEmpty") {
+    }
   }
 
   public setServerTime(serverTime: number) {

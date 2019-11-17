@@ -1,0 +1,11 @@
+@import "../../styles.global.scss";
+
+.btn {
+  @extend .ripple;
+  border-radius: 50%;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  width: 2.75rem;
+  height: 2.75rem;
+}

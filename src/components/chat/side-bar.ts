@@ -1,56 +1,72 @@
 // import VirtualizedList from "virtualized-list";
-import { createElement, Component } from "../../utils/dom";
+import { createElement, Component, Element } from "../../utils/dom";
 import * as styles from "./side-bar.scss";
-import ContactItem from "../ui/contact-item";
+import ContactItem from "../ui/dialog-item";
 import store from "../../utils/store";
 import { PresentationalDialog } from "../../models/dialog";
+import SearchInput from "../ui/search-input";
+import IconButton from "../ui/icon-button";
+import { Icons } from "../ui/icon";
 
-interface Options {}
+interface Options {
+  onChatSelect(chatId: number): any;
+}
 
 export default class SideBar implements Component<Options> {
   public readonly element: HTMLElement;
   public readonly dialogs: HTMLElement;
   public readonly pinnedDialogs: HTMLElement;
+  private readonly dialogsWrapper: HTMLElement;
+  private search: Element<SearchInput>;
+  private iconButton: Element<IconButton>;
   private paginating = false;
-  private dialogsToElement = new Map<number, Element>();
-  // private list: any;
+  private dialogsToElement = new Map<number, Element<ContactItem>>();
+  private onChatSelect: Options["onChatSelect"];
 
-  constructor({}: Options) {
+  constructor({ onChatSelect }: Options) {
+    this.onChatSelect = onChatSelect;
     this.dialogs = createElement("div", { class: styles.dialogsList });
     this.pinnedDialogs = createElement("div", {
       class: `${styles.dialogsList} ${styles.pinned}`
     });
-    this.element = createElement(
+    this.search = createElement(SearchInput, {});
+    this.iconButton = createElement(IconButton, {
+      icon: Icons.Menu
+    });
+    const topMenu = createElement(
       "div",
-      { class: styles.container },
+      { class: styles.topMenu },
+      this.iconButton,
+      this.search
+    );
+    this.dialogsWrapper = createElement(
+      "div",
+      {
+        class: styles.dialogsWrapper
+      },
       this.pinnedDialogs,
       this.dialogs
     );
+    this.element = createElement(
+      "div",
+      { class: styles.container },
+      topMenu,
+      this.dialogsWrapper
+    );
 
-    // this.list = new VirtualizedList(this.element, {
-    //   height: 500, // The height of the container
-    //   rowCount: rows.length,
-    //   renderRow: index => {
-    //     const element = document.createElement("div");
-    //     element.innerHTML = rows[index];
-
-    //     return element;
-    //   },
-    //   rowHeight: 150
-    // });
     this.register();
   }
 
   private register() {
-    store.sub("chats_initiated", () => {
+    store.sub("fetched_chats", () => {
       this.addDialogs(store.sortedDialogs);
 
-      this.element.addEventListener("scroll", () => {
-        if (
-          !this.paginating &&
-          this.element.scrollTop + this.element.clientHeight >=
-            this.element.scrollHeight
-        ) {
+      this.dialogsWrapper.addEventListener("scroll", () => {
+        const isAtBottom =
+          this.dialogsWrapper.scrollTop + this.dialogsWrapper.clientHeight >=
+          this.dialogsWrapper.scrollHeight - 100;
+
+        if (!this.paginating && isAtBottom) {
           this.paginating = true;
           store.fetchMoreDialogs().then(() => {
             this.paginating = false;
@@ -59,7 +75,7 @@ export default class SideBar implements Component<Options> {
       });
     });
 
-    store.sub("chats_fetched_more", offset => {
+    store.sub("fetched_more_chats", offset => {
       this.addDialogs(store.sortedDialogs.slice(offset));
     });
   }
@@ -72,7 +88,8 @@ export default class SideBar implements Component<Options> {
 
   private addDialog(id: number) {
     const element = createElement(ContactItem, {
-      chatId: id
+      chatId: id,
+      onClick: this.onChatSelect
     });
     const model = PresentationalDialog.findById(id);
     this.dialogsToElement.set(id, element);

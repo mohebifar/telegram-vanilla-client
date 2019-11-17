@@ -5,7 +5,7 @@ import { crc32 } from "crc";
 import * as fs from "fs";
 import { findLayer, parseTl } from "./parser/parser";
 import { parseMethods } from "./parser/methods";
-import { snakeToCamelCase, variableSnakeToCamelCase } from "./binary";
+import { variableSnakeToCamelCase } from "./utils";
 import { TLArg } from "./parser/tlarg";
 import { TLObject } from "./parser/tlobject";
 
@@ -114,7 +114,7 @@ function tlObjectToRuntimeDefinition({
     normalizedType = `Vector<${normalizedType}>`;
   }
 
-  normalizedType = normalizedType.replace('.', '_');
+  normalizedType = normalizedType.replace(".", "_");
 
   if (isFlag) {
     normalizedType = `Flag${flagIndex}<${normalizedType}>`;
@@ -202,9 +202,6 @@ const typesCode = prettier.format(
   ).code
 );
 
-fs.writeFileSync(
-  `${GENERATOR_DIR}/../src/core/tl/TLObjectDefs.ts`,
-  runtimeCode
-);
+fs.writeFileSync(`${GENERATOR_DIR}/../src/core/tl/schema.ts`, runtimeCode);
 
 fs.writeFileSync(`${GENERATOR_DIR}/../src/core/tl/TLObjects.d.ts`, typesCode);

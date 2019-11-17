@@ -4,16 +4,36 @@
   background-color: #fff;
   border-right: 1px solid $grey-light;
   width: 350px;
-  height: 100vh;
-  overflow: scroll;
+
+  .dialogsWrapper {
+    flex-grow: 1;
+    height: calc(100vh - #{$top-bar-height});
+    overflow-y: scroll;
+  }
+}
+
+.topMenu {
+  padding: 0.75rem 1rem;
+  height: $top-bar-height;
+  display: flex;
+  flex-direction: row;
+
+  > :last-child {
+    margin-left: 1rem;
+    flex-grow: 1;
+  }
 }
 
 .dialogsList {
   padding: 0.25rem 0;
   position: relative;
 
+  &:empty {
+    padding: 0;
+  }
+
   &.pinned {
-    &:after {
+    &:not(:empty):after {
       content: "";
       display: block;
       position: absolute;

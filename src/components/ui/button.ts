@@ -17,7 +17,7 @@ export default class Button implements Component<Options> {
   private spinner?: HTMLElement;
 
   constructor({ caption, ...rest }: Options) {
-    preload(Icons.Spinner);
+    preload(`/assets/icons/${Icons.Spinner}.svg`);
 
     this.element = createElement("button", { class: styles.btn }, caption);
 
@@ -50,7 +50,11 @@ export default class Button implements Component<Options> {
     this.setDisabled(false);
   }
 
-  public setDisabled(disabled) {
-    this.element.setAttribute("disabled", disabled ? "disabled" : null);
+  public setDisabled(disabled = false) {
+    if (disabled) {
+      this.element.setAttribute("disabled", "disabled");
+    } else {
+      this.element.removeAttribute("disabled");
+    }
   }
 }

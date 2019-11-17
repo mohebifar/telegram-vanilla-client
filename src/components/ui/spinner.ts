@@ -1,6 +1,5 @@
 import { createElement, Component } from "../../utils/dom";
 import Icon, { Icons } from "./icon";
-import * as styles from "./spinner.scss";
 
 interface Options {
   size: string;
@@ -12,9 +11,9 @@ export default class Spinner implements Component<Options> {
 
   constructor({ size, color = "black" }: Options) {
     const element = createElement(Icon, {
-      color,
+      color: color as any,
       icon: Icons.Spinner,
-      class: styles.spinner
+      class: 'spinner'
     });
 
     element.style.width = size;

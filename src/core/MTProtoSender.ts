@@ -32,20 +32,20 @@ export class MTProtoSender {
   private updateCallback: Options["updateCallback"];
   private autoReconnectCallback: Options["autoReconnectCallback"];
   private handlers = {
-    RPCResult: this._handleRPCResult.bind(this),
-    MessageContainer: this._handleContainer.bind(this),
-    GZIPPacked: this._handleGzipPacked.bind(this),
-    Pong: this._handlePong.bind(this),
-    BadServerSalt: this._handleBadServerSalt.bind(this),
-    BadMsgNotification: this._handleBadNotification.bind(this),
-    MsgDetailedInfo: this._handleDetailedInfo.bind(this),
-    MsgNewDetailedInfo: this._handleNewDetailedInfo.bind(this),
-    NewSessionCreated: this._handleNewSessionCreated.bind(this),
-    MsgsAck: this._handleAck.bind(this),
-    FutureSalts: this._handleFutureSalts.bind(this),
-    MsgsStateReq: this._handleStateForgotten.bind(this),
-    MsgResendReq: this._handleStateForgotten.bind(this),
-    MsgsAllInfo: this._handleMsgAll.bind(this),
+    RPCResult: this.handleRPCResult.bind(this),
+    MessageContainer: this.handleContainer.bind(this),
+    GZIPPacked: this.handleGzipPacked.bind(this),
+    Pong: this.handlePong.bind(this),
+    BadServerSalt: this.handleBadServerSalt.bind(this),
+    BadMsgNotification: this.handleBadNotification.bind(this),
+    MsgDetailedInfo: this.handleDetailedInfo.bind(this),
+    MsgNewDetailedInfo: this.handleNewDetailedInfo.bind(this),
+    NewSessionCreated: this.handleNewSessionCreated.bind(this),
+    MsgsAck: this.handleAck.bind(this),
+    FutureSalts: this.handleFutureSalts.bind(this),
+    MsgsStateReq: this.handleStateForgotten.bind(this),
+    MsgResendReq: this.handleStateForgotten.bind(this),
+    MsgsAllInfo: this.handleMsgAll.bind(this),
     OnDisconnect: this._handleDisconnect.bind(this)
   };
 
@@ -63,13 +63,23 @@ export class MTProtoSender {
     await this.connection.connect(this.session.url);
 
     if (should && !this.session.authKey.key) {
-      const plainSender = new MTProtoPlainSender(this.connection);
-      const { authKey, timeOffset } = await performAuthentication(plainSender);
-      this.session.authKey = authKey;
-      this.state.timeOffset = timeOffset;
+      for (let i = 0; i < 5; i++) {
+        try {
+          const plainSender = new MTProtoPlainSender(this.connection);
+          const { authKey, timeOffset } = await performAuthentication(
+            plainSender
+          );
+          this.session.authKey = authKey;
+          this.state.timeOffset = timeOffset;
 
-      if (this.authKeyCallback) {
-        this.authKeyCallback(this.session.authKey);
+          if (this.authKeyCallback) {
+            this.authKeyCallback(this.session.authKey);
+          }
+          break;
+        } catch {
+          console.error("Failed to initiate MTProto connection attempt: ", i);
+          await sleep(1000);
+        }
       }
     }
 
@@ -87,6 +97,29 @@ export class MTProtoSender {
     console.info(`Disconnecting from ${this.session.dcId}...`);
     console.debug("Closing current connection...");
     return this.connection.disconnect();
+  }
+
+  public async reconnect(_e?: Error) {
+    console.debug("Closing current connection...");
+    await this.connection.disconnect();
+    this.reconnecting = false;
+    this.state.reset();
+
+    // Retry 5 times
+    for (let attempt = 0; attempt < 5; attempt++) {
+      try {
+        await this.connect();
+        this.sendQueue.extend(Object.values(this.pendingState));
+        this.pendingState = new Map();
+        if (this.autoReconnectCallback) {
+          this.autoReconnectCallback();
+        }
+        break;
+      } catch (e) {
+        console.error(e);
+        await sleep(1000);
+      }
+    }
   }
 
   public async send(request: TLObjectTypes) {
@@ -195,20 +228,13 @@ export class MTProtoSender {
     this.pendingAck.add(message.msgId);
     let handler = this.handlers[message.obj.$t];
     if (!handler) {
-      handler = this._handleUpdate.bind(this);
+      handler = this.handleUpdate.bind(this);
     }
 
     await handler(message);
   }
 
-  /**
-   * Pops the states known to match the given ID from pending messages.
-   * This method should be used when the response isn't specific.
-   * @param msgId
-   * @returns {*[]}
-   * @private
-   */
-  _popStates(msgId: bigint): RequestState[] {
+  private popStates(msgId: bigint): RequestState[] {
     let state = this.pendingState.get(msgId);
     if (state) {
       this.pendingState.delete(msgId);
@@ -241,7 +267,7 @@ export class MTProtoSender {
     return [];
   }
 
-  async _handleRPCResult(message: TLMessage<any>) {
+  private async handleRPCResult(message: TLMessage<any>) {
     const rpcResult = message.obj;
     const state = this.pendingState.get(rpcResult.reqMsgId);
     if (state) {
@@ -284,49 +310,34 @@ export class MTProtoSender {
     }
   }
 
-  async _handleContainer(message: TLMessage<any>) {
+  private async handleContainer(message: TLMessage<any>) {
     console.debug("Handling container");
     for (const innerMessage of message.obj.messages) {
       await this.processMessage(innerMessage);
     }
   }
 
-  /**
-   * Unpacks the data from a gzipped object and processes it:
-   * gzip_packed#3072cfa1 packed_data:bytes = Object;
-   * @param message
-   * @returns {Promise<void>}
-   * @private
-   */
-  async _handleGzipPacked(message: TLMessage<any>) {
+  private async handleGzipPacked(message: TLMessage<any>) {
     console.debug("Handling gzipped data");
     const reader = new BinaryReader(message.obj.data);
     message.obj = reader.tgReadObject();
     await this.processMessage(message);
   }
 
-  async _handleUpdate(message: TLMessage<any>) {
+  private async handleUpdate(message: TLMessage<any>) {
     if (message.obj.subclassOfId !== 0x8af52aac) {
       console.warn(
         `Note: ${message.obj.$t} is not an update, not dispatching it`
       );
       return;
     }
-    console.debug("Handling update %s", message.obj.$t);
+    console.debug("Handling update", message.obj.$t);
     if (this.updateCallback) {
       this.updateCallback(message.obj);
     }
   }
 
-  /**
-   * Handles pong results, which don't come inside a ``RPCResult``
-   * but are still sent through a request:
-   * pong#347773c5 msg_id:long ping_id:long = Pong;
-   * @param message
-   * @returns {Promise<void>}
-   * @private
-   */
-  async _handlePong(message: TLMessage<any>) {
+  private async handlePong(message: TLMessage<any>) {
     const pong = message.obj;
     console.debug(`Handling pong for message ${pong.msgId}`);
     const state = this.pendingState.get(pong.msgId);
@@ -338,36 +349,18 @@ export class MTProtoSender {
     }
   }
 
-  /**
-   * Corrects the currently used server salt to use the right value
-   * before enqueuing the rejected message to be re-sent:
-   * bad_server_salt#edab447b bad_msg_id:long bad_msg_seqno:int
-   * error_code:int new_server_salt:long = BadMsgNotification;
-   * @param message
-   * @returns {Promise<void>}
-   * @private
-   */
-  async _handleBadServerSalt(message: TLMessage<any>) {
+  private async handleBadServerSalt(message: TLMessage<any>) {
     const badSalt = message.obj;
     console.debug(`Handling bad salt for message ${badSalt.badMsgId}`);
     this.state.salt = badSalt.newServerSalt;
-    const states = this._popStates(badSalt.badMsgId);
+    const states = this.popStates(badSalt.badMsgId);
     this.sendQueue.extend(states);
     console.debug(`${states.length} message(s) will be resent`);
   }
 
-  /**
-   * Adjusts the current state to be correct based on the
-   * received bad message notification whenever possible:
-   * bad_msg_notification#a7eff811 bad_msg_id:long bad_msg_seqno:int
-   * error_code:int = BadMsgNotification;
-   * @param message
-   * @returns {Promise<void>}
-   * @private
-   */
-  async _handleBadNotification(message: TLMessage<any>) {
+  private async handleBadNotification(message: TLMessage<any>) {
     const badMsg = message.obj;
-    const states = this._popStates(badMsg.badMsgId);
+    const states = this.popStates(badMsg.badMsgId);
     console.debug(`Handling bad msg ${badMsg}`);
     if ([16, 17].includes(badMsg.errorCode)) {
       // Sent msg_id too low or too high (respectively).
@@ -395,69 +388,27 @@ export class MTProtoSender {
     console.debug(`${states.length} messages will be resent due to bad msg`);
   }
 
-  /**
-   * Updates the current status with the received detailed information:
-   * msg_detailed_info#276d3ec6 msg_id:long answer_msg_id:long
-   * bytes:int status:int = MsgDetailedInfo;
-   * @param message
-   * @returns {Promise<void>}
-   * @private
-   */
-  async _handleDetailedInfo(message: TLMessage<any>) {
+  private async handleDetailedInfo(message: TLMessage<any>) {
     // TODO https://goo.gl/VvpCC6
     const msgId = message.obj.answerMsgId;
     console.debug(`Handling detailed info for message ${msgId}`);
     this.pendingAck.add(msgId);
   }
 
-  /**
-   * Updates the current status with the received detailed information:
-   * msg_new_detailed_info#809db6df answer_msg_id:long
-   * bytes:int status:int = MsgDetailedInfo;
-   * @param message
-   * @returns {Promise<void>}
-   * @private
-   */
-  async _handleNewDetailedInfo(message: TLMessage<any>) {
+  private async handleNewDetailedInfo(message: TLMessage<any>) {
     // TODO https://goo.gl/VvpCC6
     const msgId = message.obj.answerMsgId;
     console.debug(`Handling new detailed info for message ${msgId}`);
     this.pendingAck.add(msgId);
   }
 
-  /**
-   * Updates the current status with the received session information:
-   * new_session_created#9ec20908 first_msg_id:long unique_id:long
-   * server_salt:long = NewSession;
-   * @param message
-   * @returns {Promise<void>}
-   * @private
-   */
-  async _handleNewSessionCreated(message: TLMessage<any>) {
+  private async handleNewSessionCreated(message: TLMessage<any>) {
     // TODO https://goo.gl/LMyN7A
     console.debug("Handling new session created");
     this.state.salt = message.obj.serverSalt;
   }
 
-  /**
- * Handles a server acknowledge about our messages. Normally
- * these can be ignored except in the case of ``auth.logOut``:
- *
- *     auth.logOut#5717da40 = Bool;
- *
- * Telegram doesn't seem to send its result so we need to confirm
- * it manually. No other request is known to have this behaviour.
-
- * Since the ID of sent messages consisting of a container is
- * never returned (unless on a bad notification), this method
- * also removes containers messages when any of their inner
- * messages are acknowledged.
-
- * @param message
- * @returns {Promise<void>}
- * @private
- */
-  async _handleAck(message: TLMessage<any>) {
+  private async handleAck(message: TLMessage<any>) {
     const ack = message.obj;
     console.debug(`Handling acknowledge for ${ack.msgIds}`);
     for (const msgId of ack.msgIds) {
@@ -469,16 +420,7 @@ export class MTProtoSender {
     }
   }
 
-  /**
-   * Handles future salt results, which don't come inside a
-   * ``rpc_result`` but are still sent through a request:
-   *     future_salts#ae500895 req_msg_id:long now:int
-   *     salts:vector<future_salt> = FutureSalts;
-   * @param message
-   * @returns {Promise<void>}
-   * @private
-   */
-  async _handleFutureSalts(message: TLMessage<any>) {
+  private async handleFutureSalts(message: TLMessage<any>) {
     // TODO save these salts and automatically adjust to the
     // correct one whenever the salt in use expires.
     console.debug(`Handling future salts for message ${message.msgId}`);
@@ -490,14 +432,7 @@ export class MTProtoSender {
     }
   }
 
-  /**
-   * Handles both :tl:`MsgsStateReq` and :tl:`MsgResendReq` by
-   * enqueuing a :tl:`MsgsStateInfo` to be sent at a later point.
-   * @param message
-   * @returns {Promise<void>}
-   * @private
-   */
-  async _handleStateForgotten(message: TLMessage<any>) {
+  private async handleStateForgotten(message: TLMessage<any>) {
     this.sendQueue.append(
       new RequestState({
         $t: "MsgsStateInfo",
@@ -507,13 +442,7 @@ export class MTProtoSender {
     );
   }
 
-  /**
-   * Handles :tl:`MsgsAllInfo` by doing nothing (yet).
-   * @param message
-   * @returns {Promise<void>}
-   * @private
-   */
-  async _handleMsgAll(_message: TLMessage<any>) {}
+  private async handleMsgAll(_message: TLMessage<any>) {}
 
   private async _handleDisconnect() {
     this.startReconnect();
@@ -523,29 +452,6 @@ export class MTProtoSender {
     if (this.userConnected && !this.reconnecting) {
       this.reconnecting = true;
       this.reconnect(e);
-    }
-  }
-
-  public async reconnect(_e?: Error) {
-    console.debug("Closing current connection...");
-    await this.connection.disconnect();
-    this.reconnecting = false;
-    this.state.reset();
-
-    // Retry 5 times
-    for (let attempt = 0; attempt < 5; attempt++) {
-      try {
-        await this.connect();
-        this.sendQueue.extend(Object.values(this.pendingState));
-        this.pendingState = new Map();
-        if (this.autoReconnectCallback) {
-          this.autoReconnectCallback();
-        }
-        break;
-      } catch (e) {
-        console.error(e);
-        await sleep(1000);
-      }
     }
   }
 }

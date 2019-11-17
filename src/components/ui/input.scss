@@ -1,8 +1,57 @@
 @import "../../variables.scss";
 
+$prefix-width: 2.5rem;
+
 .inputWrapper {
   margin-bottom: 1.5rem;
   position: relative;
+  $margin-h: $input-padding-h/8;
+
+  .prefix {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    padding-left: $input-padding-h;
+  }
+
+  .suffix {
+    position: absolute;
+    right: $input-padding-h;
+    top: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+
+    :global(.ic) {
+      width: 1.2rem;
+    }
+
+    button {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      outline: none;
+      padding: 0;
+      margin: 0;
+
+      &:hover {
+        opacity: 0.8;
+      }
+    }
+  }
+
+  &.hasPrefix {
+    input {
+      padding-left: $input-padding-h + $prefix-width;
+    }
+
+    .placeholder {
+      left: $input-padding-h - $margin-h + $prefix-width;
+    }
+  }
 
   input {
     border: $input-border-width solid $grey-light;
@@ -42,7 +91,6 @@
   }
 
   .placeholder {
-    $margin-h: $input-padding-h/8;
     position: absolute;
     pointer-events: none;
     left: $input-padding-h - $margin-h;
@@ -50,5 +98,19 @@
     padding: 0 calc(#{$margin-h} + 1px);
     transition: all 0.3s cubic-bezier(0.15, 0.5, 0, 1);
     color: $placeholder-color;
+  }
+
+  &.error {
+    input {
+      border-color: $red;
+      &:not(:placeholder-shown) ~ .placeholder::before {
+        content: "Invalid ‌";
+        display: inline-block;
+      }
+    }
+
+    .placeholder {
+      color: $red !important;
+    }
   }
 }

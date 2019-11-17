@@ -129,7 +129,8 @@ export class TelegramClient {
         })) as auth_SentCode;
       } catch (e) {
         if (e instanceof RPCError && e.message === "AUTH_RESTART") {
-          return await this.sendCodeRequest(phoneNumber, forceSMS);
+          result = await this.sendCodeRequest(phoneNumber, forceSMS);
+          return result;
         }
 
         throw e;
@@ -184,6 +185,18 @@ export class TelegramClient {
     });
   }
 
+  public signUp(firstName: string, lastName: string) {
+    const phoneCodeHash = this.phoneCodeHash[this.phoneNumber];
+
+    return this.invoke({
+      $t: "auth_SignUpRequest",
+      phoneNumber: this.phoneNumber,
+      phoneCodeHash,
+      firstName,
+      lastName
+    });
+  }
+
   public async invoke(request: TLObjectTypes) {
     let attempt = 0;
     let error: Error;
@@ -225,8 +238,11 @@ export class TelegramClient {
             await this.borrowSender(dcId);
           } else if (FLOOD_WAIT_PATTERN.test(e.message)) {
             const matches = e.message.match(FLOOD_WAIT_PATTERN);
-            console.log(matches);
             const seconds = Number(matches[2]);
+            if (seconds > 5) {
+              error = e;
+              break;
+            }
             this.floodWaitedRequests[request.constructorId] =
               new Date().getTime() / 1000 + seconds;
             if (seconds <= this.floodSleepLimit) {

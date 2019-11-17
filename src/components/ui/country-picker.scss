@@ -1,0 +1,73 @@
+@import "../../variables.scss";
+
+.countryPickerWrapper {
+  position: relative;
+
+  .dropdown {
+    display: block;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    padding: $input-padding-v 0;
+    max-height: 25vh;
+    overflow-y: scroll;
+    background-color: #fff;
+    border-radius: $input-radius;
+    margin-top: 0.5rem;
+    box-shadow: 0 0 6px 0 rgba(0, 0, 0, 0.08), 0 6px 12px 0 rgba(0, 0, 0, 0.21);
+    z-index: 99999;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(3rem);
+
+    &,
+    &.visible {
+      transition: all 0.3s ease;
+    }
+
+    &.visible {
+      opacity: 1;
+      transform: translateY(0);
+      visibility: visible;
+    }
+
+    .item {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      padding: 0.7rem 0.9rem;
+      cursor: pointer;
+      text-align: left;
+
+      &:hover {
+        background-color: $grey-lighter;
+      }
+
+      &,
+      &:hover {
+        transition: background-color 0.15s ease;
+      }
+
+      :last-child {
+        text-align: right;
+        color: $grey;
+      }
+
+      :first-child {
+        text-align: right;
+        color: $grey;
+        font-size: 1.5rem;
+      }
+
+      :nth-child(2) {
+        padding-left: 1rem;
+        flex-grow: 1;
+        min-width: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+  }
+}

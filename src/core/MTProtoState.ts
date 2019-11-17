@@ -14,7 +14,7 @@ import { BinaryReader } from "./extensions/BinaryReader";
 import { BinaryWriter } from "./extensions/BinaryWriter";
 import { serializeTLObject } from "./tl/types";
 import { InvalidBufferError } from "./errors";
-import { gzipIfSmaller } from "./tl/core/GZIPPacked";
+import { gzipIfLarge } from "./tl/core/GZIPPacked";
 import { TLSession } from "./TLSession";
 
 export class MTProtoState {
@@ -45,9 +45,9 @@ export class MTProtoState {
     let body: Uint8Array;
 
     if (!afterId) {
-      body = gzipIfSmaller(contentRelated, data);
+      body = gzipIfLarge(contentRelated, data);
     } else {
-      body = gzipIfSmaller(
+      body = gzipIfLarge(
         contentRelated,
         serializeTLObject({
           $t: "InvokeAfterMsgRequest",

@@ -69,18 +69,40 @@ module.exports = ({ NODE_ENV }) => {
           test: /\.ts$/,
           exclude: /node_modules/,
           use: {
-            loader: "ts-loader",
+            loader: "awesome-typescript-loader",
             options: {
               getCustomTransformers: program => ({
                 before: [minifyPrivatesTransformer(program)]
-              })
+              }),
+              useBabel: true,
+              babelOptions: {
+                babelrc: false /* Important line */,
+                presets: [
+                  [
+                    "@babel/preset-env",
+                    {
+                      targets: {
+                        chrome: "58",
+                        safari: "13",
+                        firefox: "68",
+                        edge: "18"
+                      },
+                      modules: false
+                    }
+                  ]
+                ],
+                plugins: [
+                  ["transform-remove-console", { exclude: ["error", "warn"] }]
+                ]
+              },
+              babelCore: "@babel/core" // needed for Babel v7
             }
           }
         },
         {
           test: /\.wasm$/,
-          type: 'javascript/auto',
-          loader: "arraybuffer-loader"
+          type: "javascript/auto",
+          loader: "arraybuffer-lite-loader"
         },
         {
           test: /\.mjs$/,

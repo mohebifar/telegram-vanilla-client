@@ -1,3 +1,5 @@
+import aesWasm from "./aes.wasm";
+
 type Key = Uint8Array | number[];
 
 export async function encryptIGE(rawInput: Uint8Array, key: Key, iv: Key) {
@@ -91,8 +93,7 @@ async function initAES(
   key: Uint8Array | number[],
   type: "encrypt" | "decrypt"
 ) {
-  const binary = await import("./aes.wasm");
-  const module = await WebAssembly.compile(binary.default);
+  const module = await WebAssembly.compile(aesWasm);
   const memory = new WebAssembly.Memory({ initial: 2 });
 
   const instance = await WebAssembly.instantiate(module, {

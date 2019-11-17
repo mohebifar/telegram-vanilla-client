@@ -1,12 +1,13 @@
 import { createElement, Component } from "../../utils/dom";
-import { getChatLetters, shortenCount } from "../../utils/chat";
-import * as styles from "./contact-item.scss";
+import { shortenCount } from "../../utils/chat";
+import * as styles from "./dialog-item.scss";
 import store from "../../utils/store";
-import { EMPTY_IMG } from "../../utils/images";
 import { PresentationalDialog } from "../../models/dialog";
+import Avatar from "./avatar";
 
 interface Options {
   chatId: number;
+  onClick: (chatId: number) => any;
 }
 
 export default class Dialog implements Component<Options> {
@@ -16,36 +17,16 @@ export default class Dialog implements Component<Options> {
   private readonly title: Element;
   private readonly date: Element;
   private readonly unreadCount: Element;
-  private chatId: number;
+  private chatId: Options["chatId"];
 
-  constructor({ chatId }: Options) {
+  constructor({ chatId, onClick }: Options) {
     this.chatId = chatId;
 
     const info = this.getInfo();
 
-    this.avatar = createElement("img", {
-      src: info.img || EMPTY_IMG,
-      alt: info.title,
-      class: "hidden"
+    this.avatar = createElement(Avatar, {
+      chatId: chatId
     });
-
-    const placeholder = createElement(
-      "div",
-      {
-        class:
-          styles.placeholder +
-          " " +
-          styles[`placeholder_${(Math.abs(chatId) % 8) + 1}`]
-      },
-      getChatLetters(info.title)
-    );
-
-    const avatar = createElement(
-      "div",
-      { class: styles.avatar },
-      placeholder,
-      this.avatar
-    );
 
     const classList = [];
     if (!info.unread) {
@@ -81,11 +62,13 @@ export default class Dialog implements Component<Options> {
 
     const wrapper = createElement(
       "div",
-      { class: styles.container },
-      avatar,
+      { class: styles.container + " ripple" },
+      this.avatar,
       textWrapper,
       meta
     );
+
+    wrapper.addEventListener("click", () => onClick(chatId));
 
     this.element = wrapper;
     this.register();
@@ -95,37 +78,13 @@ export default class Dialog implements Component<Options> {
     const model = PresentationalDialog.findById(this.chatId);
     const { peer, displayName, displayDate, dialog, text, silent } = model;
 
-    let img: string;
-
-    switch (peer.$t) {
-      case "User":
-      case "Channel":
-      case "Chat":
-        store.fileStorage.getProfilePhoto(peer).then(url => {
-          if (!url) {
-            return;
-          }
-
-          img = url;
-          if (this.avatar) {
-            this.avatar.classList.remove("hidden");
-            this.avatar.setAttribute("src", url);
-          }
-        });
-      // case "ChannelForbidden":
-      // case "ChatForbidden":
-      // case "ChatEmpty":
-      //   // no image
-      //   break;
-    }
-
     return {
       unread: shortenCount(dialog.$t === "Dialog" ? dialog.unreadCount : 0),
       title: displayName,
       date: displayDate,
       text: text.slice(0, 50),
       silent,
-      img
+      peer
     };
   }
 
@@ -140,5 +99,9 @@ export default class Dialog implements Component<Options> {
   register() {
     const dialog = PresentationalDialog.findById(this.chatId);
     dialog.events.on("update", this.update);
+    store.sub("selected_dialog", id => {
+      const fn = id === this.chatId ? "add" : "remove";
+      this.element.classList[fn](styles.active);
+    });
   }
 }

@@ -3,10 +3,13 @@ import {
   upload_File,
   User,
   Channel,
-  Chat
+  Chat,
+  Photo,
+  PhotoSize
 } from "./tl/TLObjects";
 import { TelegramClient } from "./TelegramClient";
 import { getInputPeer } from "./tl/utils";
+import { concatBuffers } from "../utils/binary";
 
 const CACHE_KEY = "TLFILE";
 
@@ -22,15 +25,23 @@ export class FileStorage {
     this.cache = await caches.open(CACHE_KEY);
   }
 
-  private generateKey(volumeId: bigint, localId: number) {
-    return `${localId},${volumeId}`;
+  private generateKey(location: upload_GetFileRequest["location"]) {
+    switch (location.$t) {
+      case "InputPeerPhotoFileLocation":
+        return `${location.localId},${location.volumeId}`;
+      case "InputPhotoFileLocation":
+        return String(location.id);
+      default:
+        return location.$t;
+    }
   }
 
-  public async download(request: upload_GetFileRequest, dcId: number) {
-    const key = this.generateKey(
-      (request.location as any).volumeId,
-      (request.location as any).localId
-    );
+  public async download(
+    request: upload_GetFileRequest,
+    dcId: number,
+    limit = 2
+  ) {
+    const key = this.generateKey(request.location);
 
     if (!this.waits[dcId]) {
       this.waits[dcId] = [];
@@ -51,40 +62,42 @@ export class FileStorage {
       r = resolve;
     });
 
-    let file;
+    let file: upload_File;
+    const bytesArray = [];
+    wait.push(promise);
 
-    try {
-      wait.push(promise);
+    await Promise.all(wait.filter(pro => pro !== promise));
 
-      await Promise.all(wait.filter(pro => pro !== promise));
+    do {
+      try {
+        let send = this.client.invoke.bind(this.client);
+        if (dcId !== this.client.session.dcId) {
+          const sender = await this.client.borrowSender(dcId);
+          send = sender.send.bind(sender);
+        }
 
-      let send = this.client.invoke.bind(this.client);
-      if (dcId !== this.client.session.dcId) {
-        const sender = await this.client.borrowSender(dcId);
-        send = sender.send.bind(sender);
+        file = await send(request);
+        bytesArray.push(file.bytes);
+        request.offset += file.bytes.length;
+      } finally {
+        wait.splice(wait.indexOf(promise), 1);
       }
+    } while (request.offset < limit);
 
-      file = (await send(request)) as upload_File;
+    r();
 
-      r();
-    } finally {
-      wait.splice(wait.indexOf(promise), 1);
-      console.log("there are", wait.length, "waits after cleanup", dcId);
-    }
-
-    const blob = new Blob([file.bytes], {
+    const blob = new Blob([concatBuffers(bytesArray)], {
       type: getContentType(file.type)
     });
 
     if (this.cache) {
       this.cache.put(key, new Response(blob));
-      console.log("saved to localstorage", key);
     }
 
     return URL.createObjectURL(blob);
   }
 
-  public async getProfilePhoto(
+  public async downloadProfilePhoto(
     entity: User | Channel | Chat
   ): Promise<string | undefined> {
     if (
@@ -110,6 +123,39 @@ export class FileStorage {
         }
       },
       entity.photo.dcId
+    );
+  }
+
+  public async downloadMediaPhoto(photo: Photo) {
+    // TODO: Not efficient
+    const photoSizes = photo.sizes.filter(
+      photoSize => photoSize.$t === "PhotoSize"
+    ) as PhotoSize[];
+    const size = ["x", "m", "s"].find(type =>
+      photoSizes.find(size => size.type === type)
+    );
+    const photoSize =
+      photoSizes.find(photoSize => photoSize.type === size) || photoSizes[0];
+
+    if (!photoSize) {
+      return undefined;
+    }
+
+    return this.download(
+      {
+        $t: "upload_GetFileRequest",
+        limit: 32768,
+        offset: 0,
+        location: {
+          $t: "InputPhotoFileLocation",
+          fileReference: photo.fileReference,
+          accessHash: photo.accessHash,
+          thumbSize: photoSize.type,
+          id: photo.id
+        }
+      },
+      photo.dcId,
+      photoSize.size
     );
   }
 }

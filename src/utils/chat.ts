@@ -1,11 +1,15 @@
 import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
 import { TLObjectTypes } from "../core/tl/types";
 import {
   Message,
   MessageEmpty,
   DocumentAttributeSticker,
-  UpdateShortMessage
+  UpdateShortMessage,
+  User
 } from "../core/tl/TLObjects";
+
+dayjs.extend(relativeTime);
 
 export function getChatLetters(title: string) {
   if (!title) return null;
@@ -152,4 +156,21 @@ export function shortenCount(count: number) {
   }
 
   return String(count);
+}
+
+export function getLastSeenTime(status: User["status"]) {
+  switch (status.$t) {
+    case "UserStatusOffline":
+      return `Last seen ${dayjs(status.wasOnline * 1000).fromNow()}`;
+    case "UserStatusOnline":
+      return "Online";
+    case "UserStatusLastMonth":
+      return "Last seen a month ago";
+    case "UserStatusLastWeek":
+      return "Last seen a week ago";
+    case "UserStatusRecently":
+      return "Last seen recently";
+    case "UserStatusEmpty":
+      return "Last seen a long time ago";
+  }
 }

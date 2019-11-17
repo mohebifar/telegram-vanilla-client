@@ -21,7 +21,7 @@ export const MAXIMUM_SIZE = 1044456 - 8;
 // However, sending up to 100 requests at once in a single container
 // is a reasonable conservative value, since it could also depend on
 // other factors like size per request, but we cannot know this.
-export const MAXIMUM_LENGTH = 1;
+export const MAXIMUM_LENGTH = 100;
 
 export function messageContaienerReader(
   _,

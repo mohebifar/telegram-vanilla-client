@@ -1,0 +1,41 @@
+@import "../../variables.scss";
+@import "./icon.global.scss";
+
+.wrapper {
+  position: relative;
+
+  input {
+    width: 100%;
+    background-color: $grey-lighter;
+    padding: $input-padding-v/1.3 $input-padding-h;
+    font-size: 0.9rem;
+    padding-left: 3em;
+    border: 2px solid transparent;
+    outline: none;
+    border-radius: 2em;
+
+    &::placeholder {
+      color: $grey;
+    }
+
+    &:focus {
+      border-color: $blue;
+      background-color: #fff;
+    }
+
+    &,
+    &:focus {
+      transition: all 0.3s ease;
+    }
+  }
+
+  input:focus + :global(.ic) {
+    @extend .ic-blue;
+  }
+
+  :global(.ic) {
+    position: absolute;
+    top: 0.7em;
+    left: 1em;
+  }
+}

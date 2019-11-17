@@ -1,0 +1,68 @@
+.avatar {
+  position: relative;
+  margin: 0 0.5rem;
+
+  &.md,
+  & {
+    &,
+    .placeholder,
+    img {
+      width: 3rem;
+      height: 3rem;
+    }
+  }
+
+  &.sm {
+    &,
+    .placeholder,
+    img {
+      width: 2.5rem;
+      height: 2.5rem;
+    }
+  }
+
+  &,
+  .placeholder,
+  img {
+    border-radius: 50%;
+    z-index: 1000;
+  }
+
+  img {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  .placeholder {
+    text-align: center;
+    padding-top: 0.9rem;
+    font-weight: 500;
+    color: #fff;
+
+    &_1 {
+      background: #cc90e2;
+    }
+    &_2 {
+      background: #80d066;
+    }
+    &_3 {
+      background: #ecd074;
+    }
+    &_4 {
+      background: #6fb1e4;
+    }
+    &_5 {
+      background: #e57979;
+    }
+    &_6 {
+      background: #f98bae;
+    }
+    &_7 {
+      background: #73cdd0;
+    }
+    &_8 {
+      background: #fba76f;
+    }
+  }
+}

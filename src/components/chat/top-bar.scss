@@ -1,0 +1,34 @@
+@import "../../variables.scss";
+
+.container {
+  display: flex;
+  background-color: #fff;
+  height: $top-bar-height;
+  border-bottom: 1px solid $grey-light;
+  padding: 0 1rem;
+
+  > :first-child {
+    flex-grow: 1;
+    flex-direction: row;
+    align-items: center;
+    display: flex;
+
+    .meta {
+      line-height: 1.6;
+
+      .title {
+        font-weight: 500;
+      }
+      .subdue {
+        font-weight: 400;
+        color: $grey;
+        font-size: 0.8rem;
+      }
+    }
+  }
+
+  .buttons {
+    display: flex;
+    align-items: center;
+  }
+}

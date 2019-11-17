@@ -1,33 +1,32 @@
 const ASN1OctetString = 4;
 
 export class BerReader {
-  private _buf: Uint8Array;
-  private _size: number;
-  private _len: number;
-  private _offset: number;
+  private buffer: Uint8Array;
+  private size: number;
+  private offset: number;
+  private _length: number;
 
   constructor(data: Uint8Array) {
-    this._buf = data;
-    this._size = data.length;
+    this.buffer = data;
+    this.size = data.length;
 
-    // These hold the "current" state
-    this._len = 0;
-    this._offset = 0;
+    this._length = 0;
+    this.offset = 0;
   }
 
   get length() {
-    return this._len;
+    return this._length;
   }
 
   readByte(peek: boolean) {
-    if (this._size - this._offset < 1) {
+    if (this.size - this.offset < 1) {
       return null;
     }
 
-    const b = this._buf[this._offset] & 0xff;
+    const b = this.buffer[this.offset] & 0xff;
 
     if (!peek) {
-      this._offset += 1;
+      this.offset += 1;
     }
 
     return b;
@@ -37,16 +36,12 @@ export class BerReader {
     return this.readByte(true);
   }
 
-  readLength(offset: number) {
-    if (offset === undefined) {
-      offset = this._offset;
-    }
-
-    if (offset >= this._size) {
+  readLength(offset?: number) {
+    if (offset >= this.size) {
       return null;
     }
 
-    let lenB = this._buf[offset++] & 0xff;
+    let lenB = this.buffer[offset++] & 0xff;
     if (lenB === null) {
       return null;
     }
@@ -58,15 +53,15 @@ export class BerReader {
 
       if (lenB > 4) throw Error("encoding too long");
 
-      if (this._size - offset < lenB) return null;
+      if (this.size - offset < lenB) return null;
 
-      this._len = 0;
+      this._length = 0;
       for (let i = 0; i < lenB; i++) {
-        this._len = (this._len << 8) + (this._buf[offset++] & 0xff);
+        this._length = (this._length << 8) + (this.buffer[offset++] & 0xff);
       }
     } else {
       // Wasn't a variable length
-      this._len = lenB;
+      this._length = lenB;
     }
 
     return offset;
@@ -81,10 +76,10 @@ export class BerReader {
       throw Error(`Expected 0x${tag.toString(16)}: got 0x${seq.toString(16)}`);
     }
 
-    const o = this.readLength(this._offset + 1);
+    const o = this.readLength(this.offset + 1);
     if (o === null) return null;
 
-    this._offset = o;
+    this.offset = o;
     return seq;
   }
 
@@ -102,24 +97,24 @@ export class BerReader {
       throw Error(`Expected 0x${tag.toString(16)}: got 0x${b.toString(16)}`);
     }
 
-    const o = this.readLength(this._offset + 1);
+    const o = this.readLength(this.offset + 1);
 
     if (o === null) {
       return null;
     }
 
-    if (this.length > this._size - o) {
+    if (this.length > this.size - o) {
       return null;
     }
 
-    this._offset = o;
+    this.offset = o;
 
     if (this.length === 0) {
       new Uint8Array(0);
     }
 
-    const str = this._buf.slice(this._offset, this._offset + this.length);
-    this._offset += this.length;
+    const str = this.buffer.slice(this.offset, this.offset + this.length);
+    this.offset += this.length;
 
     return str;
   }

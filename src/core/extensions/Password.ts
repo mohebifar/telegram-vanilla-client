@@ -27,7 +27,7 @@ function checkPrimeAndGoodCheck(prime: bigint, g: bigint) {
       },expected ${goodPrimeBitsCount}`
     );
   }
-  // TODO this is kinda slow
+
   if (Factorizator.factorize(prime)[0] !== 1) {
     throw new Error('give "prime" is not prime');
   }
@@ -39,7 +39,6 @@ function checkPrimeAndGoodCheck(prime: bigint, g: bigint) {
     if (prime % BigInt(3) !== BigInt(2)) {
       throw new Error(`bad g, mod3`);
     }
-    // eslint-disable-next-line no-empty
   } else if (g === BigInt(4)) {
   } else if (g === BigInt(5)) {
     if (![BigInt(1), BigInt(4)].includes(prime % BigInt(5))) {
@@ -341,12 +340,6 @@ function bigNumForHash(g: bigint) {
   return readBufferFromBigInt(g, SIZE_FOR_HASH, false);
 }
 
-/**
- *
- * @param modexp
- * @param prime
- * @returns {Boolean}
- */
 function isGoodModExpFirst(modexp: bigint, prime: bigint) {
   const diff = prime - modexp;
 

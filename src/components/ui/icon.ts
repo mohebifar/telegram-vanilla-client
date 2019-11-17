@@ -1,13 +1,20 @@
 import { createElement, Component } from "../../utils/dom";
-import * as styles from "./icon.scss";
+import "./icon.global.scss";
 
 export enum Icons {
-  Spinner = "/assets/spinner.svg"
+  Spinner = "spinner",
+  Up = "up",
+  Down = "down",
+  CameraAdd = "camera_add",
+  Search = "search",
+  Menu = "menu",
+  Eye1 = "eye1",
+  Eye2 = "eye2"
 }
 
 interface Options {
   icon: Icons;
-  color?: string;
+  color?: "white" | "blue" | "black" | "grey" | "grey-light";
   [s: string]: any;
 }
 
@@ -16,8 +23,8 @@ export default class Icon implements Component<Options> {
 
   constructor({ icon, color = "black", ...rest }: Options) {
     this.element = createElement("img", {
-      src: icon,
-      class: `ic ${styles[`ic-${color}`]} ${rest["class"] || ""}`
+      src: `/assets/icons/${icon}.svg`,
+      class: `ic ic-${color} ${rest["class"] || ""}`
     });
   }
 }

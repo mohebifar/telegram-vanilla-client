@@ -1,16 +1,25 @@
 import { createElement, Component, Element } from "../../utils/dom";
 import Input from "../ui/input";
 import Button from "../ui/button";
-import Monkey from "../monkey/monkey";
+import MonkeyPassword from "../monkey/monkey-password";
+import Icon, { Icons } from "../ui/icon";
+import { debounce } from "../../utils/utils";
 
-interface Options {}
+interface Options {
+  callback: (password: string) => any;
+}
 
 export default class AuthPassword implements Component<Options> {
   public element: HTMLElement;
   private btn: Element<Button>;
-  private monkey: Element<Monkey>;
+  private monkey: Element<MonkeyPassword>;
+  private passwordInput: Element<Input>;
+  private peekButton: Element<unknown>;
+  private callback: Options["callback"];
+  private isPeeking = false;
 
-  constructor() {
+  constructor({ callback }: Options) {
+    this.callback = callback;
     const h1 = createElement("h1", "Enter a Password");
     const h4 = createElement(
       "h4",
@@ -18,20 +27,39 @@ export default class AuthPassword implements Component<Options> {
       createElement("br"),
       "an additional password"
     );
-    const passwordInput = createElement(Input, {
+    this.passwordInput = createElement(Input, {
       placeholder: "Password",
       type: "password",
-      onFocus: event => {
-        this.monkey.instance.focus(Math.min(event.target.value.length / 50, 1));
+      autocomplete: "off",
+      onFocus: () => {
+        this.monkey.instance.setIsPeeking(this.isPeeking);
       },
-      onInput: event => {
-        this.monkey.instance.focus(Math.min(event.target.value.length / 50, 1));
-      },
-      onBlur: () => {
+      onBlur: debounce(() => {
+        if (this.passwordInput.instance.isActive()) {
+          return;
+        }
+
         this.monkey.instance.blur();
+      })
+    });
+
+    this.peekButton = createElement("button", { type: "button" });
+    this.peekButton.addEventListener("click", () => {
+      const instance = this.passwordInput.instance;
+      this.isPeeking = !this.isPeeking;
+      this.renderPeekButton();
+      instance.setType(this.isPeeking ? "text" : "password");
+      instance.focus();
+
+      if (!this.passwordInput.instance.isActive()) {
+        this.monkey.instance.setIsPeeking(this.isPeeking);
       }
     });
-    this.monkey = createElement(Monkey);
+
+    this.passwordInput.instance.setSuffix(this.peekButton);
+    this.renderPeekButton();
+
+    this.monkey = createElement(MonkeyPassword);
 
     this.btn = createElement(Button, {
       caption: "NEXT"
@@ -42,7 +70,7 @@ export default class AuthPassword implements Component<Options> {
       this.monkey,
       h1,
       h4,
-      passwordInput,
+      this.passwordInput,
       this.btn
     );
 
@@ -54,11 +82,32 @@ export default class AuthPassword implements Component<Options> {
     this.element = createElement("div", { class: "sign-in" }, signInForm);
   }
 
-  private handleSubmit = () => {
-    console.log(this.btn);
-    const { instance: btn } = this.btn;
+  renderPeekButton() {
+    this.peekButton.innerHTML = "";
+    const icon = this.isPeeking ? Icons.Eye2 : Icons.Eye1;
+
+    this.peekButton.append(createElement(Icon, { icon, color: "grey" }));
+  }
+
+  private handleSubmit = async () => {
+    const value = this.passwordInput.instance.value;
+    if (!value) {
+      return this.passwordInput.instance.setError();
+    }
+
+    const btn = this.btn.instance;
     btn.showSpinner();
     btn.disable();
-    this.monkey.instance.focus(25);
+
+    this.monkey.instance.blur();
+
+    try {
+      await this.callback(value);
+    } catch (error) {
+      this.passwordInput.instance.setError(true);
+    } finally {
+      btn.hideSpinner();
+      btn.enable();
+    }
   };
 }

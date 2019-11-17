@@ -1,0 +1,21 @@
+.ic {
+  &-white {
+    filter: invert(100%) sepia(0%) saturate(7463%) hue-rotate(110deg)
+      brightness(98%) contrast(97%);
+  }
+
+  &-blue {
+    filter: invert(52%) sepia(84%) saturate(966%) hue-rotate(185deg)
+      brightness(100%) contrast(94%);
+  }
+
+  &-grey {
+    filter: invert(38%) sepia(0%) saturate(2896%) hue-rotate(317deg)
+      brightness(97%) contrast(74%);
+  }
+
+  &-grey-light {
+    filter: invert(98%) sepia(2%) saturate(373%) hue-rotate(185deg)
+      brightness(94%) contrast(86%);
+  }
+}

@@ -5,7 +5,7 @@ import {
   readBufferFromBigInt,
   readBytesFromString
 } from "../../utils/binary";
-import { tlObjectsDefinitions } from "./TLObjectDefs";
+import { tlObjectsDefinitions } from "./schema";
 import { TLObjectTypes } from "./TLObjects";
 import {
   gzipPackedReader,
