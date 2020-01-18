@@ -10,7 +10,8 @@ import {
   auth_ExportedAuthorization,
   Updates,
   UpdatesCombined,
-  UpdateShort
+  UpdateShort,
+  Authorization
   // auth_Authorization
 } from "./tl/TLObjects";
 import { AuthKey } from "./crypto/AuthKey";
@@ -166,12 +167,12 @@ export class TelegramClient {
   public async signInWithCode(phoneCode: string) {
     const phoneCodeHash = this.phoneCodeHash[this.phoneNumber];
 
-    return await this.invoke({
+    return (await this.invoke({
       $t: "auth_SignInRequest",
       phoneNumber: this.phoneNumber,
       phoneCodeHash: phoneCodeHash,
       phoneCode
-    });
+    })) as Authorization;
   }
 
   public async signInWithPassword(password: string) {
@@ -179,13 +180,13 @@ export class TelegramClient {
       $t: "account_GetPasswordRequest"
     })) as account_Password;
 
-    return await this.invoke({
+    return (await this.invoke({
       $t: "auth_CheckPasswordRequest",
       password: await computeCheck(pwd, password)
-    });
+    })) as Authorization;
   }
 
-  public signUp(firstName: string, lastName: string) {
+  public signUp(firstName: string, lastName: string): Promise<Authorization> {
     const phoneCodeHash = this.phoneCodeHash[this.phoneNumber];
 
     return this.invoke({
@@ -194,7 +195,7 @@ export class TelegramClient {
       phoneCodeHash,
       firstName,
       lastName
-    });
+    }) as any;
   }
 
   public async invoke(request: TLObjectTypes) {
@@ -314,6 +315,8 @@ export class TelegramClient {
         bytes: auth.bytes
       })
     );
+
+    session.save();
 
     return sender;
   }

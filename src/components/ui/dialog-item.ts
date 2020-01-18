@@ -4,6 +4,7 @@ import * as styles from "./dialog-item.scss";
 import store from "../../utils/store";
 import { PresentationalDialog } from "../../models/dialog";
 import Avatar from "./avatar";
+import Icon, { Icons } from "./icon";
 
 interface Options {
   chatId: number;
@@ -28,19 +29,7 @@ export default class Dialog implements Component<Options> {
       chatId: chatId
     });
 
-    const classList = [];
-    if (!info.unread) {
-      classList.push("invisible");
-    }
-    if (info.silent) {
-      classList.push(styles.silent);
-    }
-
-    this.unreadCount = createElement(
-      "div",
-      { class: classList.join(" ") },
-      info.unread
-    );
+    this.unreadCount = createElement("div", info.unread);
 
     this.title = createElement("div", { dir: "auto" }, info.title);
     this.text = createElement("span", { dir: "auto" }, info.text);
@@ -70,6 +59,8 @@ export default class Dialog implements Component<Options> {
 
     wrapper.addEventListener("click", () => onClick(chatId));
 
+    this.update();
+
     this.element = wrapper;
     this.register();
   }
@@ -77,9 +68,12 @@ export default class Dialog implements Component<Options> {
   private getInfo() {
     const model = PresentationalDialog.findById(this.chatId);
     const { peer, displayName, displayDate, dialog, text, silent } = model;
+    const shouldShowPin = dialog.unreadCount === 0 && dialog.pinned;
 
     return {
-      unread: shortenCount(dialog.$t === "Dialog" ? dialog.unreadCount : 0),
+      unread: shouldShowPin
+        ? createElement(Icon, { icon: Icons.PinnedChat, color: "white" })
+        : shortenCount(dialog.$t === "Dialog" ? dialog.unreadCount : 0),
       title: displayName,
       date: displayDate,
       text: text.slice(0, 50),
@@ -89,11 +83,24 @@ export default class Dialog implements Component<Options> {
   }
 
   private update = () => {
-    const { text, title, date, unread } = this.getInfo();
+    const { text, title, date, unread, silent } = this.getInfo();
     this.text.innerHTML = text;
     this.title.innerHTML = title;
     this.date.innerHTML = date;
-    this.unreadCount.innerHTML = unread;
+    this.unreadCount.innerHTML = "";
+    this.unreadCount.append(unread);
+
+    const classList = [];
+    if (!unread) {
+      classList.push("invisible");
+    }
+    if (silent) {
+      classList.push(styles.silent);
+    }
+    if (typeof unread !== "string") {
+      classList.push(styles.unreadIcon);
+    }
+    this.unreadCount.className = classList.join(" ");
   };
 
   register() {

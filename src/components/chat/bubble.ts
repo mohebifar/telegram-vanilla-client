@@ -1,4 +1,3 @@
-// import VirtualizedList from "virtualized-list";
 import dayjs from "dayjs";
 import { createElement, Component } from "../../utils/dom";
 import store from "../../utils/store";
@@ -10,19 +9,17 @@ import { EMPTY_IMG } from "../../utils/images";
 
 interface Options {
   message: DialogMessageTypes;
+  isTransient?: boolean;
 }
 
 export default class Bubble implements Component<Options> {
   public readonly element: HTMLElement;
-  public readonly dialogs: HTMLElement;
-  public readonly pinnedDialogs: HTMLElement;
   private img: HTMLElement;
   private message: DialogMessageTypes;
   private messageText: HTMLElement;
 
-  constructor({ message }: Options) {
+  constructor({ message, isTransient = false }: Options) {
     this.message = message;
-    console.log("message", message);
 
     const { text, time } = this.getInfo();
 
@@ -43,20 +40,29 @@ export default class Bubble implements Component<Options> {
       )
     );
 
-    this.element = createElement("div", {
-      class: `${styles.bubble} ${styles.in}`
-    });
+    const [attachment, attachmentType] = this.getAttachments();
 
-    const attachment = this.getAttachments();
+    const bubbleClassName =
+      attachmentType === "sticker" ? styles.sticker : styles.bubble;
+
+    this.element = createElement("div", {
+      class: bubbleClassName
+    });
 
     if (attachment) {
       this.element.append(attachment);
     }
 
+    if (isTransient) {
+      store.sub(`message_sent_${message.id}` as any, _newId => {
+        // TODO: Mark message as sent with single tick
+      });
+    }
+
     this.element.append(messageWrapper);
   }
 
-  private getAttachments() {
+  private getAttachments(): [HTMLElement | undefined, string | undefined] {
     if (this.message.$t === "Message" && this.message.media) {
       const { media } = this.message;
       if (media.$t === "MessageMediaPhoto" && media.photo.$t === "Photo") {
@@ -79,17 +85,35 @@ export default class Bubble implements Component<Options> {
         store.fileStorage.downloadMediaPhoto(media.photo).then(url => {
           this.img.setAttribute("src", url);
         });
-        return this.img;
+        return [this.img, "photo"];
+      } else if (media.$t === "MessageMediaDocument") {
+        if (media.document.$t === "Document") {
+          // Check for sticker
+          if (
+            media.document.attributes.some(
+              attr => attr.$t === "DocumentAttributeSticker"
+            )
+          ) {
+            this.img = createElement("img", {
+              class: styles.attachment,
+              src: EMPTY_IMG
+            });
+
+            store.fileStorage.downloadDocument(media.document).then(url => {
+              this.img.setAttribute("src", url);
+            });
+            return [this.img, "sticker"];
+          }
+        }
       }
 
-      return createElement(
-        "div",
-        { class: styles.message },
-        "[Unsupported media]"
-      );
+      return [
+        createElement("div", { class: styles.message }, "[Unsupported media]"),
+        "unknown"
+      ];
     }
 
-    return undefined;
+    return [undefined, undefined];
   }
 
   private getInfo() {

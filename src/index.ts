@@ -4,10 +4,11 @@ import { TelegramClient } from "./core/TelegramClient";
 import store from "./utils/store";
 import Root from "./components/chat/root";
 import AuthRoot from "./components/auth/auth-root";
+import { Authorization } from "./core/tl/TLObjects";
 
 async function start() {
-  const apiId = 20059;
-  const apiHash = "da25899cf2aa93c0b2b7d592920313f8";
+  const apiId = process.env.API_ID;
+  const apiHash = process.env.API_HASH;
   console.time("Telegram Connect");
   const tg = new TelegramClient(apiId, apiHash);
   await tg.connect();
@@ -36,7 +37,11 @@ function setupRoot(client: TelegramClient) {
 function setupSignInForm(client: TelegramClient) {
   const element = createElement(AuthRoot, {
     client,
-    finishCallback: () => setupRoot(client)
+    finishCallback: (_authorization: Authorization) => {
+      // TODO: idk why this crashes. It's not needed atm
+      // store.me = authorization;
+      setupRoot(client);
+    }
   });
   document.body.append(element);
 }

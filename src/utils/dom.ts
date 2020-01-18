@@ -41,7 +41,7 @@ export function createElement<P extends {}>(
   component: string,
   attrs?: P | undefined,
   ...children: Children[]
-): Element<undefined>;
+): HTMLElement;
 
 export function createElement<P extends {}, C extends ComponentClass<P>>(
   component: C,

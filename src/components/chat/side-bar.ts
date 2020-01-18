@@ -1,4 +1,3 @@
-// import VirtualizedList from "virtualized-list";
 import { createElement, Component, Element } from "../../utils/dom";
 import * as styles from "./side-bar.scss";
 import ContactItem from "../ui/dialog-item";

@@ -137,8 +137,6 @@ export class PresentationalDialog {
       PresentationalDialog.cache.set(id, dialogModel);
     }
 
-    console.debug(dialogModel.displayName, dialogModel);
-
     return dialogModel;
   }
 

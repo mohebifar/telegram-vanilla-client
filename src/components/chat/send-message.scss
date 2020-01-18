@@ -1,0 +1,50 @@
+@import "../../variables.scss";
+
+.container {
+  display: flex;
+  max-width: 45rem;
+  width: 100%;
+  margin: auto;
+  align-items: flex-end;
+  margin-bottom: 2rem;
+
+  .inputWrapper {
+    flex-grow: 1;
+    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.08);
+    margin-right: 1rem;
+    position: relative;
+
+    &:after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      right: -23px;
+      width: 1.5rem;
+      height: 2rem;
+      background-color: transparent;
+      border-radius: 0 15px;
+      box-shadow: -14px 0 0 #fff;
+    }
+
+    &,
+    textarea {
+      border-radius: 1rem 1rem 0 1rem;
+    }
+
+    textarea {
+      max-height: 10rem;
+      width: 100%;
+      outline: none;
+      font-size: 1rem;
+      padding: $input-padding-v $input-padding-h;
+      border: none;
+      resize: none;
+      min-width: 2rem;
+      display: block;
+    }
+  }
+
+  > button {
+    background-color: $blue;
+  }
+}

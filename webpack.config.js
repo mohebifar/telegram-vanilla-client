@@ -3,6 +3,7 @@ const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const webpack = require("webpack");
 const minifyPrivatesTransformer = require("ts-transformer-minify-privates")
   .default;
 const TerserPlugin = require("terser-webpack-plugin");
@@ -55,7 +56,8 @@ module.exports = ({ NODE_ENV }) => {
         // both options are optional
         filename: "[name].css",
         chunkFilename: "[id].css"
-      })
+      }),
+      new webpack.EnvironmentPlugin(['API_ID', 'API_HASH'])
     ],
     resolve: {
       alias: {
@@ -91,9 +93,9 @@ module.exports = ({ NODE_ENV }) => {
                     }
                   ]
                 ],
-                plugins: [
-                  ["transform-remove-console", { exclude: ["error", "warn"] }]
-                ]
+                ...(isProduction && {
+                   plugins: ["transform-remove-console"]
+                })
               },
               babelCore: "@babel/core" // needed for Babel v7
             }

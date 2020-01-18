@@ -88,8 +88,13 @@
       font-size: 0.7rem;
       font-weight: 500;
 
+      &.unreadIcon,
       &.silent {
         background-color: $unread-count-bg;
+      }
+
+      &.unreadIcon {
+        padding: 0.1rem 0;
       }
     }
   }

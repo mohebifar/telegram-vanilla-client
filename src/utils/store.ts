@@ -8,7 +8,9 @@ import {
   DialogFolder,
   Message,
   Authorization,
-  messages_DialogsSlice
+  messages_DialogsSlice,
+  messages_SendMessageRequest,
+  UpdateShortMessage
 } from "../core/tl/TLObjects";
 import { getPeerId, getInputPeer } from "../core/tl/utils";
 import {
@@ -20,14 +22,28 @@ import { UpdateTypes } from "../core/types";
 
 let singleton: Store;
 
+export type SimplifiedMessageRequest = Omit<
+  messages_SendMessageRequest,
+  "peer" | "randomId" | "$t"
+> &
+  Pick<Partial<messages_SendMessageRequest>, "peer" | "randomId">;
+
+export type SimplifiedMessageRequestWithPeer = Omit<
+  messages_SendMessageRequest,
+  "randomId" | "$t"
+>;
+
 type Events =
   | "fetched_chats"
   | "fetched_more_chats"
   | "fetched_history"
   | "selected_dialog"
+  | "message_sent_"
   | string;
 
 type Callback<T> = (arg: T) => void;
+
+const AUTH_CACHE_KEY = "TL_AUTH";
 
 class Store {
   private mitt: Emitter;
@@ -36,21 +52,31 @@ class Store {
   public history = new Map<number, number[]>(); // peer_id => message_id[]
   public peers = new Map<number, DialogPeerTypes>();
   public dialogs = new Map<number, Dialog>();
+  private transientIds = new Set<number>();
   public lastDialog?: Dialog;
   public sortedDialogs: number[] = [];
   public client: TelegramClient;
-  public me: Authorization;
 
   // @ts-ignore
   private serverTimeOffset = 0;
 
-  constructor() {
+  constructor(private _me?: Authorization) {
     this.mitt = mitt();
   }
 
   static get singleton() {
-    const object = singleton || new Store();
+    const me = localStorage.getItem(AUTH_CACHE_KEY);
+    const object = singleton || new Store(me ? JSON.parse(me) : undefined);
     return object;
+  }
+
+  set me(me: Authorization) {
+    this._me = me;
+    localStorage.setItem(AUTH_CACHE_KEY, JSON.stringify(me));
+  }
+
+  get me() {
+    return this._me;
   }
 
   sub(event: "selected_dialog", callback: Callback<number>): void;
@@ -59,9 +85,12 @@ class Store {
 
   sub(event: "fetched_more_chats", callback: Callback<number>): void;
 
-  sub(event: "fetched_history", callback: Callback<{ chatId: number }>): void;
+  sub(
+    event: "fetched_history",
+    callback: Callback<{ chatId: number; messageIds: number[] }>
+  ): void;
 
-  sub(event: Events, callback: Callback<any>) {
+  sub(event: string, callback: Callback<any>) {
     this.mitt.on(event as any, callback);
   }
 
@@ -117,7 +146,7 @@ class Store {
     const dialog = this.dialogs.get(peerId);
 
     dialog.topMessage = message.id;
-    this.messages.set(message.id, message);
+    this.setMessage(message.id, message);
     const model = PresentationalDialog.findById(peerId);
     dialog.unreadCount++;
     model.message = message;
@@ -135,18 +164,18 @@ class Store {
     })) as messages_Messages;
 
     for (const chat of messages.chats) {
-      this.peers.set(chat.id, chat);
+      this.setPeer(chat.id, chat);
     }
 
     for (const user of messages.users) {
       if (user.$t === "User" || user.$t === "UserEmpty") {
-        this.peers.set(user.id, user);
+        this.setPeer(user.id, user);
       }
     }
 
     for (const message of messages.messages) {
       if (message.$t === "Message") {
-        this.messages.set(message.id, message);
+        this.setMessage(message.id, message);
       }
     }
   }
@@ -199,18 +228,18 @@ class Store {
     })) as messages_Dialogs;
 
     for (const chat of dialogs.chats) {
-      this.peers.set(chat.id, chat);
+      this.setPeer(chat.id, chat);
     }
 
     for (const user of dialogs.users) {
       if (user.$t === "User" || user.$t === "UserEmpty") {
-        this.peers.set(user.id, user);
+        this.setPeer(user.id, user);
       }
     }
 
     for (const message of dialogs.messages) {
       if (message.$t === "Message" || message.$t === "MessageEmpty") {
-        this.messages.set(message.id, message);
+        this.setMessage(message.id, message);
       }
       // TODO: handle MessageService
     }
@@ -253,17 +282,85 @@ class Store {
     return this.messages.get(id);
   }
 
+  public sendMessage(
+    chatId: number,
+    message: SimplifiedMessageRequestWithPeer
+  ) {
+    const randomId = Math.ceil(Math.random() * 64000);
+    this.transientIds.add(randomId);
+    const transientMessage = ({
+      $t: "Message",
+      date: Date.now(),
+      id: randomId,
+      ...message
+    } as never) as Message;
+    this.setMessage(transientMessage.id, transientMessage);
+    const history = this.getHistory(chatId);
+    history.push(randomId);
+
+    this.client
+      .invoke({
+        $t: "messages_SendMessageRequest",
+        ...message,
+        randomId: BigInt(randomId)
+      })
+      .then(update => {
+        if (update.$t === "UpdateShortSentMessage") {
+          update.out = false;
+          this.transientIds.delete(randomId);
+          const history = this.getHistory(chatId);
+          const castedMessage = {
+            ...message,
+            ...update,
+            out: true,
+            $t: "UpdateShortMessage"
+          } as never;
+
+          this.setMessage(update.id, castedMessage as UpdateShortMessage);
+          this.history.set(
+            chatId,
+            history.map(id => (id === randomId ? update.id : id))
+          );
+          this.pub(`message_sent_${randomId}`, update.id);
+        }
+      });
+
+    return randomId;
+  }
+
+  public fetchMoreHistory(chatId: number, peer: DialogPeerTypes) {
+    const history = this.getHistory(chatId);
+    const msgId = history.find(id => {
+      const msg = this.getMessage(id);
+      return msg && msg.$t !== "MessageEmpty";
+    });
+
+    const offsetDate = msgId ? (this.getMessage(msgId) as Message).date : 0;
+
+    return this.fetchHistory(chatId, peer, msgId, offsetDate);
+  }
+
   public async fetchHistory(
     chatId: number,
     peer: DialogPeerTypes,
-    offsetId = 0
+    offsetId = 0,
+    offsetDate = 0
   ) {
+    const limit = 20;
+    const prefetchHistory = this.getHistory(chatId);
+    if (offsetId === 0 && prefetchHistory.length > 0) {
+      return this.pub("fetched_history", {
+        chatId,
+        messageIds: prefetchHistory.slice(-limit)
+      });
+    }
+
     const history = (await this.client.invoke({
       $t: "messages_GetHistoryRequest",
       offsetId,
-      offsetDate: 0,
+      offsetDate,
       addOffset: 0,
-      limit: 20,
+      limit,
       peer: getInputPeer(peer),
       hash: 0,
       maxId: 0,
@@ -273,10 +370,11 @@ class Store {
     for (const user of history.users) {
       if (user.$t === "User") {
         const userId = getPeerId(user);
-        this.peers.set(userId, user);
+        this.setPeer(userId, user);
       }
     }
 
+    const currentHistory = this.getHistory(chatId);
     const messageIds = [];
     for (const message of history.messages) {
       if (message.$t === "MessageService") {
@@ -284,15 +382,16 @@ class Store {
         continue;
       }
 
-      this.messages.set(message.id, message);
-      messageIds.unshift(message.id);
+      this.setMessage(message.id, message);
+
+      if (!currentHistory.includes(message.id)) {
+        messageIds.unshift(message.id);
+      }
     }
 
-    const currentHistory = this.getHistory(chatId);
+    this.history.set(chatId, [...messageIds, ...currentHistory]);
 
-    this.history.set(chatId, [...messageIds, currentHistory]);
-
-    this.pub("fetched_history", { chatId });
+    this.pub("fetched_history", { chatId, messageIds });
   }
 
   public getHistory(chatId: number) {
@@ -317,6 +416,14 @@ class Store {
 
   public setServerTime(serverTime: number) {
     this.serverTimeOffset = serverTime - Date.now();
+  }
+
+  private setPeer(peerId: number, peer: DialogPeerTypes) {
+    this.peers.set(peerId, peer);
+  }
+
+  private setMessage(messageId: number, message: DialogMessageTypes) {
+    this.messages.set(messageId, message);
   }
 }
 

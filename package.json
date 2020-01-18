@@ -17,6 +17,7 @@
     "@babel/preset-env": "^7.7.1",
     "@babel/preset-typescript": "^7.7.2",
     "@babel/template": "^7.7.0",
+    "@types/autosize": "^3.0.7",
     "@types/node-rsa": "^1.0.0",
     "@types/pako": "^1.0.1",
     "arraybuffer-lite-loader": "^1.0.8",
@@ -46,6 +47,7 @@
     "webpack-dev-server": "^3.9.0"
   },
   "dependencies": {
+    "autosize": "^4.0.2",
     "dayjs": "^1.8.17",
     "lottie-web": "^5.5.9",
     "mitt": "^1.2.0",

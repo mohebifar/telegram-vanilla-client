@@ -1,9 +1,10 @@
 import { createElement, Component } from "../../utils/dom";
 import * as styles from "./icon-button.scss";
-import Icon, { Icons } from "./icon";
+import Icon, { Icons, Options as IconOptions } from "./icon";
 
 interface Options {
   icon: Icons;
+  color?: IconOptions["color"];
   onClick?(): void;
 }
 
@@ -14,13 +15,13 @@ enum EventMap {
 export default class IconButton implements Component<Options> {
   public readonly element: HTMLElement;
 
-  constructor({ icon, ...rest }: Options) {
+  constructor({ icon, color, ...rest }: Options) {
     this.element = createElement(
       "button",
       { class: styles.btn },
       createElement(Icon, {
         icon,
-        color: "grey"
+        color: color || "grey"
       })
     );
 

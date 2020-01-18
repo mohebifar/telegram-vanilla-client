@@ -5,7 +5,9 @@ import {
   Channel,
   Chat,
   Photo,
-  PhotoSize
+  PhotoSize,
+  Document,
+  PhotoCachedSize
 } from "./tl/TLObjects";
 import { TelegramClient } from "./TelegramClient";
 import { getInputPeer } from "./tl/utils";
@@ -31,6 +33,8 @@ export class FileStorage {
         return `${location.localId},${location.volumeId}`;
       case "InputPhotoFileLocation":
         return String(location.id);
+      case "InputDocumentFileLocation":
+        return String(location.id);
       default:
         return location.$t;
     }
@@ -39,7 +43,8 @@ export class FileStorage {
   public async download(
     request: upload_GetFileRequest,
     dcId: number,
-    limit = 2
+    limit = 2,
+    doCache = true
   ) {
     const key = this.generateKey(request.location);
 
@@ -47,7 +52,7 @@ export class FileStorage {
       this.waits[dcId] = [];
     }
 
-    if (this.cache) {
+    if (this.cache && doCache) {
       const match = await this.cache.match(key);
       if (match) {
         return URL.createObjectURL(await match.blob());
@@ -82,7 +87,10 @@ export class FileStorage {
       } finally {
         wait.splice(wait.indexOf(promise), 1);
       }
-    } while (request.offset < limit);
+    } while (
+      request.offset % request.limit === 0 &&
+      limit % request.limit !== 0
+    );
 
     r();
 
@@ -90,7 +98,7 @@ export class FileStorage {
       type: getContentType(file.type)
     });
 
-    if (this.cache) {
+    if (this.cache && doCache) {
       this.cache.put(key, new Response(blob));
     }
 
@@ -156,6 +164,53 @@ export class FileStorage {
       },
       photo.dcId,
       photoSize.size
+    );
+  }
+
+  public async downloadDocument(document: Document) {
+    // TODO: Not efficient
+
+    const cache = document.thumbs.find(thumb => {
+      return (
+        thumb.$t === "PhotoCachedSize" && ["m", "x", "y"].includes(thumb.type)
+      );
+    }) as PhotoCachedSize;
+
+    if (
+      document.mimeType !== "application/x-tgsticker" &&
+      cache &&
+      cache.bytes
+    ) {
+      const blob = new Blob([cache.bytes], {
+        type: document.mimeType
+      });
+
+      // TODO: Make cache key generator smarter
+      const key = String(document.id);
+
+      if (this.cache) {
+        this.cache.put(key, new Response(blob));
+      }
+
+      return URL.createObjectURL(blob);
+    }
+
+    return this.download(
+      {
+        $t: "upload_GetFileRequest",
+        limit: 32768,
+        offset: 0,
+        location: {
+          $t: "InputDocumentFileLocation",
+          fileReference: document.fileReference,
+          accessHash: document.accessHash,
+          id: document.id,
+          // TODO: It's so dumb
+          thumbSize: "m"
+        }
+      },
+      document.dcId,
+      document.size
     );
   }
 }

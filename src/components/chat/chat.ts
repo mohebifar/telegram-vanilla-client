@@ -1,10 +1,11 @@
-// import VirtualizedList from "virtualized-list";
-import { createElement, Component } from "../../utils/dom";
-import * as styles from "./chat.scss";
-import store from "../../utils/store";
+import { DialogMessageTypes, PresentationalDialog } from "../../models/dialog";
+import { createElement, Component, Element } from "../../utils/dom";
+import store, { SimplifiedMessageRequest } from "../../utils/store";
 import Bubble from "./bubble";
 import TopBar from "./top-bar";
-import { DialogMessageTypes, PresentationalDialog } from "../../models/dialog";
+import * as styles from "./chat.scss";
+import SendMessageForm from "./send-message";
+import { getInputPeer } from "../../core/tl/utils";
 
 interface Options {}
 
@@ -16,37 +17,55 @@ export default class Chat implements Component<Options> {
   public readonly pinnedDialogs: HTMLElement;
   private chatContainer: HTMLElement;
   private topBarContainer: HTMLElement;
-  private lastBubbleType?: BubbleType;
-  private lastBubbleHolder?: HTMLElement;
+  private sendMessageForm: Element<SendMessageForm>;
   private chatId?: number;
+  private paginating = false;
 
   constructor({}: Options) {
     this.chatContainer = createElement("div", { class: styles.wrapper });
     this.topBarContainer = createElement("div");
+    this.sendMessageForm = createElement(SendMessageForm, {
+      callback: this.handleSendMessage
+    });
 
     this.element = createElement(
       "div",
       { class: styles.container },
       this.topBarContainer,
-      this.chatContainer
+      this.chatContainer,
+      this.sendMessageForm
     );
 
     this.register();
   }
 
   private register() {
-    store.sub("fetched_history", ({ chatId }) => {
+    this.chatContainer.addEventListener("scroll", () => {
+      if (!this.paginating && this.chatContainer.scrollTop < 10) {
+        const dialog = PresentationalDialog.findById(this.chatId);
+        this.paginating = true;
+        store.fetchMoreHistory(this.chatId, dialog.peer).then(() => {
+          this.paginating = false;
+        });
+      }
+    });
+
+    store.sub("fetched_history", ({ chatId, messageIds }) => {
       if (this.chatId === chatId) {
         const shouldScroll = this.isAtBottom();
-        store.getHistory(chatId).forEach(id => {
+        const currentScroll = this.chatContainer.scrollHeight;
+        messageIds.reverse().forEach(id => {
           const message = store.getMessage(id);
           if (message) {
-            this.addMessage(message);
+            this.addMessage(message, true);
           }
         });
 
         if (shouldScroll) {
           this.scrollToEnd();
+        } else {
+          const endScroll = this.chatContainer.scrollHeight;
+          this.chatContainer.scrollTop = endScroll - currentScroll;
         }
       }
     });
@@ -61,33 +80,64 @@ export default class Chat implements Component<Options> {
     this.chatContainer.scrollTop = this.chatContainer.scrollHeight;
   }
 
-  private addMessage(message: DialogMessageTypes) {
+  private handleSendMessage = (message: SimplifiedMessageRequest) => {
+    const dialog = PresentationalDialog.findById(this.chatId);
+    const id = store.sendMessage(this.chatId, {
+      ...message,
+      peer: getInputPeer(dialog.peer)
+    });
+
+    this.handleNewMessage({
+      $t: "Message",
+      ...message,
+      id,
+      out: true,
+      date: Date.now() / 1000
+    } as any);
+  };
+
+  private addMessage(message: DialogMessageTypes, prepend = false) {
     let type: BubbleType;
     switch (message.$t) {
       case "Message":
-        type = message.out ? "out" : "in";
-        break;
       case "UpdateShortMessage":
-        type = "in";
+        type = message.out ? "out" : "in";
         break;
       default:
         type = "service";
     }
 
-    if (!this.lastBubbleHolder || this.lastBubbleType !== type) {
-      this.lastBubbleType = type;
-      this.lastBubbleHolder = createElement("div", { class: styles[type] });
-      this.chatContainer.append(this.lastBubbleHolder);
+    let lastBubbleHolder = this.chatContainer.querySelector(
+      prepend ? ":first-child" : ":last-child"
+    );
+
+    const insertFn = prepend ? "prepend" : "append";
+
+    let lastBubbleType = null;
+    if (lastBubbleHolder) {
+      const { classList } = lastBubbleHolder;
+      if (classList.contains(styles.in)) {
+        lastBubbleType = "in";
+      } else if (classList.contains(styles.out)) {
+        lastBubbleType = "out";
+      } else {
+        lastBubbleType = "service";
+      }
+    }
+
+    if (!lastBubbleHolder || lastBubbleType !== type) {
+      lastBubbleHolder = createElement("div", { class: styles[type] });
+      this.chatContainer[insertFn](lastBubbleHolder);
     }
 
     const messageElement = createElement(Bubble, { message });
-    this.lastBubbleHolder.append(messageElement);
+    lastBubbleHolder[insertFn](messageElement);
   }
 
   private handleNewMessage = (message: DialogMessageTypes) => {
     if (message) {
       const shouldScroll = this.isAtBottom();
-      this.addMessage(message);
+      this.addMessage(message, false);
 
       if (shouldScroll) {
         this.scrollToEnd();
@@ -107,6 +157,7 @@ export default class Chat implements Component<Options> {
     this.topBarContainer.innerHTML = "";
 
     if (chatId !== undefined) {
+      this.sendMessageForm.classList.remove("hidden");
       this.topBarContainer.append(createElement(TopBar, { chatId }));
     }
   }

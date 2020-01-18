@@ -134,13 +134,17 @@ export default class CountryPicker implements Component<Options> {
     const value = this.textInput.instance.value;
     const searchRegex = new RegExp(`^${value.trim()}`, "i");
 
+    let totalVisible = 0;
     this.countryElements.forEach(element => {
       if (searchRegex.test(element.dataset.countryName)) {
         element.classList.remove("hidden");
+        totalVisible++;
       } else {
         element.classList.add("hidden");
       }
     });
+
+    this.dropdown.classList[totalVisible === 0 ? "add" : "remove"]("hidden");
   };
 
   set value(country: Country) {

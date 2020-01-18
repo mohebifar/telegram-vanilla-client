@@ -9,10 +9,12 @@ export enum Icons {
   Search = "search",
   Menu = "menu",
   Eye1 = "eye1",
-  Eye2 = "eye2"
+  Eye2 = "eye2",
+  Send = "send",
+  PinnedChat = "pinned_chat"
 }
 
-interface Options {
+export interface Options {
   icon: Icons;
   color?: "white" | "blue" | "black" | "grey" | "grey-light";
   [s: string]: any;

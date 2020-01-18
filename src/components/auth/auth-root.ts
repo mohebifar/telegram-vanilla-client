@@ -4,10 +4,11 @@ import AuthPassword from "./auth-password";
 import AuthCode from "./auth-code";
 import { TelegramClient } from "../../core/TelegramClient";
 import AuthSignUp from "./auth-signup";
+import { Authorization } from "../../core/tl/TLObjects";
 
 interface Options {
   client: TelegramClient;
-  finishCallback: Function;
+  finishCallback(auth: Authorization): any;
 }
 
 export default class AuthRoot implements Component<Options> {
@@ -45,8 +46,9 @@ export default class AuthRoot implements Component<Options> {
   };
 
   private handleSignInWithCode = async (code: string) => {
+    let authorization: Authorization;
     try {
-      await this.client.signInWithCode(code);
+      authorization = await this.client.signInWithCode(code);
     } catch (error) {
       if (
         error.message === "PHONE_PASSWORD_PROTECTED" ||
@@ -72,21 +74,21 @@ export default class AuthRoot implements Component<Options> {
       throw error;
     }
 
-    this.handleAuthFinish();
+    this.handleAuthFinish(authorization);
   };
 
   private handleSignInWithPassword = async (password: string) => {
-    await this.client.signInWithPassword(password);
-    this.handleAuthFinish();
+    const authorization = await this.client.signInWithPassword(password);
+    this.handleAuthFinish(authorization);
   };
 
   private handleSignUp = async (firstName: string, lastName: string) => {
-    await this.client.signUp(firstName, lastName);
-    this.handleAuthFinish();
+    const authorization = await this.client.signUp(firstName, lastName);
+    this.handleAuthFinish(authorization);
   };
 
-  private handleAuthFinish() {
+  private handleAuthFinish(authorization: Authorization) {
     this.element.remove();
-    this.finishCallback();
+    this.finishCallback(authorization);
   }
 }
