@@ -1,5 +1,4 @@
 import mitt, { Emitter } from "mitt";
-import { TelegramClient } from "../core/TelegramClient";
 import {
   messages_Dialogs,
   messages_Messages,
@@ -19,6 +18,7 @@ import {
   DialogMessageTypes
 } from "../models/dialog";
 import { UpdateTypes } from "../core/types";
+import { TelegramClientProxy } from "../telegram-worker-proxy";
 
 let singleton: Store;
 
@@ -55,7 +55,7 @@ class Store {
   private transientIds = new Set<number>();
   public lastDialog?: Dialog;
   public sortedDialogs: number[] = [];
-  public client: TelegramClient;
+  public proxy: TelegramClientProxy;
 
   // @ts-ignore
   private serverTimeOffset = 0;
@@ -106,7 +106,7 @@ class Store {
   }
 
   get fileStorage() {
-    return this.client.fileStorage;
+    return this.proxy.fileStorage;
   }
 
   public fetchMoreDialogs() {
@@ -155,7 +155,7 @@ class Store {
   }
 
   public async fetchMessages(ids: number[]) {
-    const messages = (await this.client.invoke({
+    const messages = (await this.proxy.invoke({
       $t: "messages_GetMessagesRequest",
       id: ids.map(id => ({
         $t: "InputMessageID",
@@ -218,7 +218,7 @@ class Store {
       }
     }
 
-    const dialogs = (await this.client.invoke({
+    const dialogs = (await this.proxy.invoke({
       $t: "messages_GetDialogsRequest",
       offsetDate,
       offsetId,
@@ -298,7 +298,7 @@ class Store {
     const history = this.getHistory(chatId);
     history.push(randomId);
 
-    this.client
+    this.proxy
       .invoke({
         $t: "messages_SendMessageRequest",
         ...message,
@@ -355,7 +355,7 @@ class Store {
       });
     }
 
-    const history = (await this.client.invoke({
+    const history = (await this.proxy.invoke({
       $t: "messages_GetHistoryRequest",
       offsetId,
       offsetDate,

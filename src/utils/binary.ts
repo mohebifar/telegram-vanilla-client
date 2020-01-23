@@ -11,7 +11,7 @@ export function byteBuffersEqual(
 
 export function generateRandomBytes(size: number) {
   const array = new Uint8Array(size);
-  window.crypto.getRandomValues(array);
+  crypto.getRandomValues(array);
   return array;
 }
 

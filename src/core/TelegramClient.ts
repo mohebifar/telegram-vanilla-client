@@ -1,4 +1,4 @@
-import { MTProtoSender } from "./MTProtoSender";
+import { MTProtoSender } from "./mtproto/MTProtoSender";
 import {
   InvokeWithLayerRequest,
   Config,
@@ -15,13 +15,13 @@ import {
   // auth_Authorization
 } from "./tl/TLObjects";
 import { AuthKey } from "./crypto/AuthKey";
-import { TLSession } from "./TLSession";
-import { RPCError, FloodWaitError } from "./errors";
+import { MTSessionManager, MTSession } from "./mtproto/MTSessionManager";
+import { RPCError, FloodWaitError } from "./mtproto/errors";
 import { sleep } from "../utils/utils";
 import { addKey } from "./crypto/RSA";
 import { computeCheck } from "./extensions/Password";
 import { FileStorage } from "./FileStorage";
-import store from "../utils/store";
+import { EntityCache } from "./EntityCache";
 
 const LAYER = 105;
 
@@ -36,7 +36,6 @@ export class TelegramClient {
   private langCode = "en";
   private systemLangCode = "en";
   private phoneCodeHash: { [k: string]: string } = {};
-  public session = TLSession.loadSession();
   private config: Config;
   private cdnConfig: CdnConfig;
   private requestRetries = 5;
@@ -50,6 +49,7 @@ export class TelegramClient {
     MTProtoSender | Promise<MTProtoSender>
   >();
   public fileStorage = new FileStorage(this);
+  public entityCache = new EntityCache(this);
 
   // private config: any; // GetConfigRequest
 
@@ -74,8 +74,18 @@ export class TelegramClient {
 
   private sender: MTProtoSender;
 
-  constructor(private apiId: number, private apiHash: string) {
-    this.sender = new MTProtoSender(this.session, {
+  constructor(
+    private apiId: number,
+    private apiHash: string,
+    public sessionManager: MTSessionManager,
+    public session: MTSession,
+    private updateCallback?: (
+      update: Updates["updates"][0],
+      short?: boolean
+    ) => void
+  ) {
+    console.log("session", session);
+    this.sender = new MTProtoSender(session, {
       // delay: this._retryDelay,
       autoReconnectCallback: () => {},
       authKeyCallback: this.authKeyCallback.bind(this),
@@ -275,9 +285,8 @@ export class TelegramClient {
       return;
     }
 
-    this.session.setDC(dc.id, dc.ipAddress, dc.port);
-    this.session.authKey = null;
-    this.session.save();
+    this.session = await this.sessionManager.getSessionByDc(newDc);
+    await this.sessionManager.setDefaultDc(newDc);
 
     this.disconnect();
     await sleep(500);
@@ -296,6 +305,7 @@ export class TelegramClient {
   }
 
   private async createBorrowedSender(dcId: number) {
+    console.log('borrowing', dcId)
     const dc = await this.findDC(dcId);
 
     const auth = (await this.invoke({
@@ -303,7 +313,7 @@ export class TelegramClient {
       dcId
     })) as auth_ExportedAuthorization;
 
-    const session = TLSession.fromDc(dc);
+    const session = await this.sessionManager.getSessionByDc(dc.id);
 
     const sender = new MTProtoSender(session);
     await sender.connect();
@@ -351,14 +361,17 @@ export class TelegramClient {
   }
 
   private handleUpdate(update: Updates | UpdatesCombined | UpdateShort) {
+    if (!this.updateCallback) {
+      return;
+    }
     if (update.$t === "Updates" || update.$t === "UpdatesCombined") {
       for (const individualUpdate of update.updates) {
-        store.handleUpdate(individualUpdate);
+        this.updateCallback(individualUpdate);
       }
     } else if (update.$t === "UpdateShort") {
-      store.handleUpdate(update.update, true);
+      this.updateCallback(update.update, true);
     } else {
-      store.handleUpdate(update);
+      this.updateCallback(update);
     }
   }
 

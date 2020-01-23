@@ -24,19 +24,18 @@ export function gzipPackedReader(
 }
 
 // GZIP is currently buggy
-export function gzipIfLarge(_contentRelated: boolean, data: Uint8Array) {
-  // if (contentRelated && data.length > 512) {
-  //   const gzipped = serializeGZIPPacked(data);
-  //   if (gzipped.length < data.length) {
-  //     return gzipped;
-  //   }
-  // }
+export function gzipIfLarge(contentRelated: boolean, data: Uint8Array) {
+  if (contentRelated && data.length > 512) {
+    const gzipped = serializeGZIPPacked(data);
+    if (gzipped.length < data.length) {
+      return gzipped;
+    }
+  }
 
   return data;
 }
 
-// @ts-ignore
-function _serializeGZIPPacked(data: Uint8Array) {
+function serializeGZIPPacked(data: Uint8Array) {
   return concatBuffers([
     pack(CONSTRUCTOR_ID, "I"),
     serializeBytes(deflate(data))

@@ -1,8 +1,6 @@
 import { MTTransport } from "./MTTransport";
-import { concatBuffers } from "../utils/binary";
-import { AsyncQueue } from "./extensions/AsyncQueue";
-
-let i = 0;
+import { concatBuffers } from "../../utils/binary";
+import { AsyncQueue } from "../extensions/AsyncQueue";
 
 export class MTConnection {
   private socket: WebSocket;
@@ -17,7 +15,6 @@ export class MTConnection {
   private sendArray: AsyncQueue;
   private recvArray: AsyncQueue;
   public connected = false;
-  public i = i++;
 
   constructor(private handleDisconnect?: Function) {}
 
@@ -128,7 +125,7 @@ export class MTConnection {
     this.resolveConnected();
   };
 
-  private onData = async event => {
+  private onData = async (event: MessageEvent) => {
     const buffer = await event.data.arrayBuffer();
     const rawData = new Uint8Array(buffer);
     const decryptedData = this.transport.deobfuscate(rawData);
@@ -136,7 +133,7 @@ export class MTConnection {
     this.resolveRead(true);
   };
 
-  private onClose = async _event => {
+  private onClose = () => {
     if (this.handleDisconnect) {
       this.handleDisconnect();
     }

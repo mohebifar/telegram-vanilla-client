@@ -1,4 +1,4 @@
-import { encryptorCTR, decryptorCTR } from "../core/crypto";
+import { encryptorCTR, decryptorCTR } from "../crypto";
 import {
   byteBuffersEqual,
   unpack,
@@ -6,7 +6,7 @@ import {
   concatBuffers,
   readBufferFromBigInt,
   pack
-} from "../utils/binary";
+} from "../../utils/binary";
 import { MTConnection } from "./MTConnection";
 
 export class MTTransport {

@@ -8,15 +8,14 @@ import {
   readBufferFromHex,
   getByteArray,
   modExp
-} from "../utils/binary";
-import store from "../utils/store";
-import { serializeTLObject, invariant } from "./tl/types";
-import { Factorizator } from "./crypto/Factorizer";
-import * as RSA from "./crypto/RSA";
-import { AuthKey } from "./crypto/AuthKey";
-import { decryptIGE, sha1, encryptIGE } from "./crypto";
-import { BinaryReader } from "./extensions/BinaryReader";
-import { TLObjectTypes, ResPQ, ServerDHInnerData } from "./tl/TLObjects";
+} from "../../utils/binary";
+import { serializeTLObject, invariant } from "../tl/types";
+import { Factorizator } from "../crypto/Factorizer";
+import * as RSA from "../crypto/RSA";
+import { AuthKey } from "../crypto/AuthKey";
+import { decryptIGE, sha1, encryptIGE } from "../crypto";
+import { BinaryReader } from "../extensions/BinaryReader";
+import { TLObjectTypes, ResPQ, ServerDHInnerData } from "../tl/TLObjects";
 
 export async function performAuthentication(sender: MTProtoPlainSender) {
   // Step 1 sending: PQ Request, endianness doesn't matter since it's random
@@ -201,7 +200,7 @@ export async function performAuthentication(sender: MTProtoPlainSender) {
     throw new Error(`Step 3.2 answer was ${dhGen}`);
   }
   console.debug("Finished authKey generation step 3", { authKey, timeOffset });
-  store.setServerTime(serverDhInner.serverTime);
+  // store.setServerTime(serverDhInner.serverTime);
 
   return { authKey, timeOffset };
 }

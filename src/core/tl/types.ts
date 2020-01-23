@@ -29,7 +29,7 @@ type TLObjectWithCoreTypes = TLObjectTypes | CoreTypes;
 const vectorRegex = /Vector<(\w+)>/;
 const flagRegex = /Flag(\d+)<(\w+|\w+<\w+>)>/;
 
-const primitiveTypes = (<const>[
+const primitiveTypes = <const>[
   "string",
   "bytes",
   "int",
@@ -39,7 +39,7 @@ const primitiveTypes = (<const>[
   "double",
   "Bool",
   "true"
-]) as readonly string[];
+];
 
 type Reader<T> = (reader: BinaryReader) => T;
 type UnionToIntersection<U> = (U extends any
@@ -98,17 +98,26 @@ export function tlObjectReader(
     } else if (contructorId === 0xbc799737) {
       return _ => false;
     } else if (contructorId === 0x1cb5c415) {
-      const vector = [];
-      const length = this.readInt();
-      for (let i = 0; i < length; i++) {
-        vector.push(this.tgReadObject());
-      }
-
-      return _ => vector;
+      return (reader: BinaryReader) => {
+        const vector = [];
+        const length = reader.readInt();
+        for (let i = 0; i < length; i++) {
+          vector.push(reader.tgReadObject());
+        }
+        return vector;
+      };
     }
 
     return undefined;
   }
+
+  const readScalarArg = (type: string, reader: BinaryReader): any => {
+    if (primitiveTypes.includes(type as any)) {
+      return deserializePrimitive(type as PrimitiveTypes, reader);
+    }
+
+    return reader.tgReadObject();
+  };
 
   const def = tlObjectsDefintionMap.get(contructorId);
 
@@ -117,14 +126,6 @@ export function tlObjectReader(
   }
 
   const [[objectName, subclassOfId], args] = def;
-
-  const readScalarArg = (type: string, reader: BinaryReader): any => {
-    if (primitiveTypes.includes(type)) {
-      return deserializePrimitive(type, reader);
-    }
-
-    return reader.tgReadObject();
-  };
 
   return (reader: BinaryReader) => {
     const object = { $t: objectName, subclassOfId };
@@ -246,8 +247,6 @@ export function serializeTLObject(object: TLObjectTypes) {
       } else {
         return serializeScalar(type, value);
       }
-
-      return [];
     })
   ];
 
@@ -261,7 +260,7 @@ export function serializeTLObject(object: TLObjectTypes) {
   return concatBuffers(buffers);
 }
 
-function serializeScalar(type: PrimitiveTypes, value: any) {
+function serializeScalar(type: PrimitiveTypes | string, value: any) {
   if (type === "bytes") {
     return serializeBytes(value);
   } else if (type === "int128") {

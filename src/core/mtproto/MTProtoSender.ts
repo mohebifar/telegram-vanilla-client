@@ -1,17 +1,17 @@
 import { MTConnection } from "./MTConnection";
 import { MTProtoState } from "./MTProtoState";
-import { TLMessage } from "./types";
+import { TLMessage } from "../types";
 import { performAuthentication } from "./MTAuth";
 import { MTProtoPlainSender } from "./MTProtoPlainSender";
 import { RequestState } from "./RequestState";
 import { MessagePacker } from "./MessagePacker";
-import { BinaryReader } from "./extensions/BinaryReader";
-import { TLObjectTypes } from "./tl/types";
-import { AuthKey } from "./crypto/AuthKey";
+import { BinaryReader } from "../extensions/BinaryReader";
+import { TLObjectTypes } from "../tl/types";
+import { AuthKey } from "../crypto/AuthKey";
 import { RPCError, InvalidBufferError } from "./errors";
 // import { RPCResult } from "./tl/core/RPCResult";
-import { TLSession } from "./TLSession";
-import { sleep } from "../utils/utils";
+import { sleep } from "../../utils/utils";
+import { MTSession } from "./MTSessionManager";
 
 interface Options {
   updateCallback?: (obj: TLObjectTypes) => any;
@@ -50,7 +50,7 @@ export class MTProtoSender {
   };
 
   constructor(
-    public session: TLSession,
+    public session: MTSession,
     { updateCallback, authKeyCallback, autoReconnectCallback }: Options = {}
   ) {
     this.updateCallback = updateCallback;

@@ -3,6 +3,7 @@ const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const WorkerPlugin = require('worker-plugin');
 const webpack = require("webpack");
 const minifyPrivatesTransformer = require("ts-transformer-minify-privates")
   .default;
@@ -44,6 +45,7 @@ module.exports = ({ NODE_ENV }) => {
       ]
     },
     plugins: [
+      new WorkerPlugin(),
       new CleanWebpackPlugin(),
       new CopyWebpackPlugin([
         { from: Path.resolve(__dirname, "./src/assets"), to: "assets" }

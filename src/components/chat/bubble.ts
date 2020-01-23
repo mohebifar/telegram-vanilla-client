@@ -1,11 +1,13 @@
 import dayjs from "dayjs";
 import { createElement, Component } from "../../utils/dom";
 import store from "../../utils/store";
-import * as styles from "./chat.scss";
 import { DialogMessageTypes } from "../../models/dialog";
-import { messageToHTML } from "./chat";
 import { PhotoSize } from "../../core/tl/TLObjects";
 import { EMPTY_IMG } from "../../utils/images";
+
+import { messageToHTML } from "./chat";
+import * as styles from "./chat.scss";
+import Lottie from "../ui/lottie";
 
 interface Options {
   message: DialogMessageTypes;
@@ -42,8 +44,17 @@ export default class Bubble implements Component<Options> {
 
     const [attachment, attachmentType] = this.getAttachments();
 
-    const bubbleClassName =
-      attachmentType === "sticker" ? styles.sticker : styles.bubble;
+    let bubbleClassName: string;
+    switch (attachmentType) {
+      case "sticker":
+        bubbleClassName = styles.sticker;
+        break;
+      case "animated-sticker":
+        bubbleClassName = styles.sticker + " " + styles.animated;
+        break;
+      default:
+        bubbleClassName = styles.bubble;
+    }
 
     this.element = createElement("div", {
       class: bubbleClassName
@@ -82,7 +93,7 @@ export default class Bubble implements Component<Options> {
           this.img.style.width = `${photoWidth}px`;
         }
 
-        store.fileStorage.downloadMediaPhoto(media.photo).then(url => {
+        store.fileStorage.downloadMedia(media).then(url => {
           this.img.setAttribute("src", url);
         });
         return [this.img, "photo"];
@@ -94,15 +105,35 @@ export default class Bubble implements Component<Options> {
               attr => attr.$t === "DocumentAttributeSticker"
             )
           ) {
-            this.img = createElement("img", {
-              class: styles.attachment,
-              src: EMPTY_IMG
-            });
+            if (media.document.mimeType === "application/x-tgsticker") {
+              // Animated sticker
+              const sticker = createElement(Lottie, {
+                class: styles.attachment,
+                config: {
+                  path: ""
+                }
+              });
 
-            store.fileStorage.downloadDocument(media.document).then(url => {
-              this.img.setAttribute("src", url);
-            });
-            return [this.img, "sticker"];
+              store.fileStorage.downloadMedia(media).then(url => {
+                sticker.instance.updateConfig({
+                  path: url,
+                  loop: true,
+                  autoplay: true
+                });
+              });
+              return [sticker, "animated-sticker"];
+            } else {
+              // Normal sticker
+              this.img = createElement("img", {
+                class: styles.attachment,
+                src: EMPTY_IMG
+              });
+
+              store.fileStorage.downloadMedia(media).then(url => {
+                this.img.setAttribute("src", url);
+              });
+              return [this.img, "sticker"];
+            }
           }
         }
       }

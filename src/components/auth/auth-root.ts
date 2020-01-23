@@ -2,12 +2,12 @@ import { createElement, Component, Element } from "../../utils/dom";
 import AuthPhone from "./auth-phone";
 import AuthPassword from "./auth-password";
 import AuthCode from "./auth-code";
-import { TelegramClient } from "../../core/TelegramClient";
 import AuthSignUp from "./auth-signup";
 import { Authorization } from "../../core/tl/TLObjects";
+import { TelegramClientProxy } from "../../telegram-worker-proxy";
 
 interface Options {
-  client: TelegramClient;
+  tgProxy: TelegramClientProxy;
   finishCallback(auth: Authorization): any;
 }
 
@@ -17,12 +17,12 @@ export default class AuthRoot implements Component<Options> {
   private authPassword: Element<AuthPassword>;
   private authCode: Element<AuthCode>;
   private authSignUp: Element<AuthSignUp>;
-  private client: TelegramClient;
+  private tgProxy: TelegramClientProxy;
   private finishCallback: Options["finishCallback"];
 
-  constructor({ client, finishCallback }) {
+  constructor({ tgProxy, finishCallback }) {
     this.finishCallback = finishCallback;
-    this.client = client;
+    this.tgProxy = tgProxy;
     this.element = createElement("div");
 
     this.authPhone = createElement(AuthPhone, {
@@ -33,7 +33,7 @@ export default class AuthRoot implements Component<Options> {
   }
 
   private handleSendCode = async (countryCode: string, phoneNumber: string) => {
-    await this.client.sendCodeRequest(countryCode + phoneNumber);
+    await this.tgProxy.sendCodeRequest(countryCode + phoneNumber);
 
     this.authCode = createElement(AuthCode, {
       callback: this.handleSignInWithCode,
@@ -48,7 +48,7 @@ export default class AuthRoot implements Component<Options> {
   private handleSignInWithCode = async (code: string) => {
     let authorization: Authorization;
     try {
-      authorization = await this.client.signInWithCode(code);
+      authorization = await this.tgProxy.signInWithCode(code);
     } catch (error) {
       if (
         error.message === "PHONE_PASSWORD_PROTECTED" ||
@@ -78,12 +78,12 @@ export default class AuthRoot implements Component<Options> {
   };
 
   private handleSignInWithPassword = async (password: string) => {
-    const authorization = await this.client.signInWithPassword(password);
+    const authorization = await this.tgProxy.signInWithPassword(password);
     this.handleAuthFinish(authorization);
   };
 
   private handleSignUp = async (firstName: string, lastName: string) => {
-    const authorization = await this.client.signUp(firstName, lastName);
+    const authorization = await this.tgProxy.signUp(firstName, lastName);
     this.handleAuthFinish(authorization);
   };
 

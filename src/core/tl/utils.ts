@@ -6,7 +6,10 @@ import {
   InputPeerChat,
   InputPeerSelf,
   InputPeerUserFromMessage,
-  InputPeerChannelFromMessage
+  InputPeerChannelFromMessage,
+  PeerChannel,
+  PeerChat,
+  PeerUser
 } from "./TLObjects";
 
 type InputPeerTypes =
@@ -130,7 +133,19 @@ function resolveId(
   return [-markedId, "PeerChat"];
 }
 
-function getPeer(peer: TLObjectTypes) {
+export function getPeer(
+  peer: TLObjectTypes
+):
+  | PeerUser
+  | PeerChat
+  | PeerChannel
+  | InputPeerSelf
+  | InputPeerChat
+  | InputPeerChannel
+  | InputPeerEmpty
+  | InputPeerUser
+  | InputPeerUserFromMessage
+  | InputPeerChannelFromMessage {
   if (typeof peer === "number") {
     const [id, $t] = resolveId(peer);
 

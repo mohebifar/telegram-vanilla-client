@@ -7,15 +7,15 @@ import {
   byteBuffersEqual,
   pack,
   mod
-} from "../utils/binary";
-import { sha256, encryptIGE, decryptIGE } from "./crypto";
-import { TLMessage } from "./types";
-import { BinaryReader } from "./extensions/BinaryReader";
-import { BinaryWriter } from "./extensions/BinaryWriter";
-import { serializeTLObject } from "./tl/types";
+} from "../../utils/binary";
+import { sha256, encryptIGE, decryptIGE } from "../crypto";
+import { TLMessage } from "../types";
+import { BinaryReader } from "../extensions/BinaryReader";
+import { BinaryWriter } from "../extensions/BinaryWriter";
+import { serializeTLObject } from "../tl/types";
 import { InvalidBufferError } from "./errors";
-import { gzipIfLarge } from "./tl/core/GZIPPacked";
-import { TLSession } from "./TLSession";
+import { gzipIfLarge } from "../tl/core/GZIPPacked";
+import { MTSession } from "./MTSessionManager";
 
 export class MTProtoState {
   public timeOffset = 0;
@@ -24,7 +24,7 @@ export class MTProtoState {
   private id: bigint;
   public salt: bigint = BigInt(0);
 
-  constructor(public session?: TLSession) {
+  constructor(public session?: MTSession) {
     this.reset();
   }
 

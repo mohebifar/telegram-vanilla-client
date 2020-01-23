@@ -1,46 +1,37 @@
 import "./styles.global.scss";
 import { createElement } from "./utils/dom";
-import { TelegramClient } from "./core/TelegramClient";
-import store from "./utils/store";
 import Root from "./components/chat/root";
 import AuthRoot from "./components/auth/auth-root";
 import { Authorization } from "./core/tl/TLObjects";
+import { makeProxy } from "./telegram-worker-proxy";
 
 async function start() {
   const apiId = process.env.API_ID;
   const apiHash = process.env.API_HASH;
-  console.time("Telegram Connect");
-  const tg = new TelegramClient(apiId, apiHash);
-  await tg.connect();
-  console.timeEnd("Telegram Connect");
+  const tgProxy = await makeProxy(apiId, apiHash, update => {
+    console.log(update, "update");
+  });
+  const isUserAuthorized = await tgProxy.isUserAuthorized();
 
-  // @ts-ignore
-  window.tgc = tg;
-  // @ts-ignore
-  window.store = store;
-
-  const isAuthorized = await tg.isUserAuthorized();
-  document.getElementById("initial-loading").remove();
-
-  if (isAuthorized) {
-    setupRoot(tg);
+  if (isUserAuthorized) {
+    setupRoot(tgProxy);
   } else {
-    setupSignInForm(tg);
+    setupSignInForm(tgProxy);
   }
 }
 
-function setupRoot(client: TelegramClient) {
-  const element = createElement(Root, { client });
+function setupRoot(tgProxy: any) {
+  const element = createElement(Root, { tgProxy });
   document.body.append(element);
 }
 
-function setupSignInForm(client: TelegramClient) {
+function setupSignInForm(tgProxy: any) {
   const element = createElement(AuthRoot, {
-    client,
+    tgProxy,
     finishCallback: (_authorization: Authorization) => {
       // TODO: idk why this crashes. It's not needed atm
       // store.me = authorization;
-      setupRoot(client);
+      setupRoot(tgProxy);
     }
   });
   document.body.append(element);

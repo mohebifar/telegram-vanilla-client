@@ -1,7 +1,7 @@
 import { MTProtoState } from "./MTProtoState";
 import { MTConnection } from "./MTConnection";
-import { concatBuffers, pack } from "../utils/binary";
-import { BinaryReader } from "./extensions/BinaryReader";
+import { concatBuffers, pack } from "../../utils/binary";
+import { BinaryReader } from "../extensions/BinaryReader";
 import { InvalidBufferError } from "./errors";
 
 export class MTProtoPlainSender {

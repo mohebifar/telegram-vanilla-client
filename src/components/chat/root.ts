@@ -1,22 +1,22 @@
 import { createElement, Component, Element } from "../../utils/dom";
 import * as styles from "./root.scss";
 import SideBar from "./side-bar";
-import { TelegramClient } from "../../core/TelegramClient";
 import store from "../../utils/store";
 import Chat from "./chat";
 import { PresentationalDialog } from "../../models/dialog";
+import { TelegramClientProxy } from "../../telegram-worker-proxy";
 
 interface Options {
-  client: TelegramClient;
+  tgProxy: TelegramClientProxy;
 }
 
 export default class Root implements Component<Options> {
   public readonly element: HTMLElement;
-  public client: TelegramClient;
+  public tgProxy: TelegramClientProxy;
   private chat: Element<Chat>;
 
-  constructor({ client }: Options) {
-    this.client = client;
+  constructor({ tgProxy }: Options) {
+    this.tgProxy = tgProxy;
 
     this.chat = createElement(Chat, {});
     this.element = createElement(
@@ -32,7 +32,7 @@ export default class Root implements Component<Options> {
   }
 
   private async register() {
-    store.client = this.client;
+    store.proxy = this.tgProxy;
 
     store.fetchDialogs();
   }

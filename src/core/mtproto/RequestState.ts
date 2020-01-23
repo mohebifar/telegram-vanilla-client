@@ -1,4 +1,4 @@
-import { TLObjectTypes, serializeTLObject } from "./tl/types";
+import { TLObjectTypes, serializeTLObject } from "../tl/types";
 
 export class RequestState {
   public msgId: bigint = null;

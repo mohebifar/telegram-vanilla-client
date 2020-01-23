@@ -1,12 +1,12 @@
 import { RequestState } from "./RequestState";
 import { MTProtoState } from "./MTProtoState";
-import { pack, concatBuffers } from "../utils/binary";
-import { BinaryWriter } from "./extensions/BinaryWriter";
+import { pack, concatBuffers } from "../../utils/binary";
+import { BinaryWriter } from "../extensions/BinaryWriter";
 import {
   MAXIMUM_LENGTH,
   MAXIMUM_SIZE,
   CONSTRUCTOR_ID as MESSAGE_CONTAINER_CONSTRUCTOR_ID
-} from "./tl/core/MessageContainer";
+} from "../tl/core/MessageContainer";
 
 const SIZE_OVERHEAD = 12;
 

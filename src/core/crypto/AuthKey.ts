@@ -19,6 +19,10 @@ export class AuthKey {
   }
 
   toJSON() {
+    return this.toArray();
+  }
+
+  toArray() {
     return this._key ? Array.from(this._key) : undefined;
   }
 
