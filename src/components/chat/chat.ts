@@ -15,6 +15,7 @@ export default class Chat implements Component<Options> {
   public readonly element: HTMLElement;
   public readonly dialogs: HTMLElement;
   public readonly pinnedDialogs: HTMLElement;
+  private scrollView: HTMLElement;
   private chatContainer: HTMLElement;
   private topBarContainer: HTMLElement;
   private sendMessageForm: Element<SendMessageForm>;
@@ -22,7 +23,8 @@ export default class Chat implements Component<Options> {
   private paginating = false;
 
   constructor({}: Options) {
-    this.chatContainer = createElement("div", { class: styles.wrapper });
+    this.chatContainer = createElement("div", { class: styles.chatContainer });
+    this.scrollView = createElement("div", { class: styles.wrapper }, this.chatContainer);
     this.topBarContainer = createElement("div");
     this.sendMessageForm = createElement(SendMessageForm, {
       callback: this.handleSendMessage
@@ -32,7 +34,7 @@ export default class Chat implements Component<Options> {
       "div",
       { class: styles.container },
       this.topBarContainer,
-      this.chatContainer,
+      this.scrollView,
       this.sendMessageForm
     );
 
@@ -40,8 +42,8 @@ export default class Chat implements Component<Options> {
   }
 
   private register() {
-    this.chatContainer.addEventListener("scroll", () => {
-      if (!this.paginating && this.chatContainer.scrollTop < 10) {
+    this.scrollView.addEventListener("scroll", () => {
+      if (!this.paginating && this.scrollView.scrollTop < 10) {
         const dialog = PresentationalDialog.findById(this.chatId);
         this.paginating = true;
         store.fetchMoreHistory(this.chatId, dialog.peer).then(() => {
@@ -53,7 +55,7 @@ export default class Chat implements Component<Options> {
     store.sub("fetched_history", ({ chatId, messageIds }) => {
       if (this.chatId === chatId) {
         const shouldScroll = this.isAtBottom();
-        const currentScroll = this.chatContainer.scrollHeight;
+        const currentScroll = this.scrollView.scrollHeight;
         messageIds.reverse().forEach(id => {
           const message = store.getMessage(id);
           if (message) {
@@ -64,20 +66,20 @@ export default class Chat implements Component<Options> {
         if (shouldScroll) {
           this.scrollToEnd();
         } else {
-          const endScroll = this.chatContainer.scrollHeight;
-          this.chatContainer.scrollTop = endScroll - currentScroll;
+          const endScroll = this.scrollView.scrollHeight;
+          this.scrollView.scrollTop = endScroll - currentScroll;
         }
       }
     });
   }
 
   private isAtBottom() {
-    const obj = this.chatContainer;
+    const obj = this.scrollView;
     return obj.scrollTop === obj.scrollHeight - obj.offsetHeight;
   }
 
   private scrollToEnd() {
-    this.chatContainer.scrollTop = this.chatContainer.scrollHeight;
+    this.scrollView.scrollTop = this.scrollView.scrollHeight;
   }
 
   private handleSendMessage = (message: SimplifiedMessageRequest) => {
