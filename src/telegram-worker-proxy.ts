@@ -36,7 +36,19 @@ export async function makeProxy(
   const tgWorker = new Worker("./telegram.worker.ts", {
     type: "module"
   });
-  let requestIds = new Set<string>();
+  let handlers = new Map<string, { resolve: Function; reject: Function }>();
+
+  tgWorker.addEventListener("message", ({ data }: MessageEvent) => {
+    if (data.type === "method" && handlers.has(data.requestId)) {
+      const { resolve, reject } = handlers.get(data.requestId);
+
+      if (data.error) {
+        reject(data.result);
+      } else {
+        resolve(data.result);
+      }
+    }
+  });
 
   function proxyMethod(
     method: ClientProxiedMethods,
@@ -48,22 +60,10 @@ export async function makeProxy(
       requestId = Math.random()
         .toString(36)
         .slice(-5);
-    } while (requestIds.has(requestId));
-    requestIds.add(requestId);
+    } while (handlers.has(requestId));
 
     return new Promise((resolve, reject) => {
-      const listener = ({ data }: MessageEvent) => {
-        if (data.type === "method" && data.requestId === requestId) {
-          tgWorker.removeEventListener("message", listener);
-          requestIds.delete(requestId);
-
-          if (data.error) {
-            reject(data.result);
-          } else {
-            resolve(data.result);
-          }
-        }
-      };
+      handlers.set(requestId, { resolve, reject });
 
       tgWorker.postMessage({
         type: "method_request",
@@ -72,8 +72,6 @@ export async function makeProxy(
         object,
         args
       });
-
-      tgWorker.addEventListener("message", listener);
     });
   }
 

@@ -1,6 +1,8 @@
 import {
+  photos_UpdateProfilePhotoRequest,
   upload_GetFileRequest,
   upload_File,
+  messages_ChatFull,
   User,
   Channel,
   Chat,
@@ -16,16 +18,12 @@ import {
   WebDocument,
   WebDocumentNoProxy,
   ChatFull,
-  InputUser,
-  InputChannel,
-  InputPeerSelf,
-  InputPeerChat,
-  InputPeerChannel,
   UserProfilePhoto,
   ChatPhoto,
   FileLocationToBeDeprecated,
   InputPeerPhotoFileLocation,
-  messages_ChatFull
+  UserProfilePhotoEmpty,
+  ChatPhotoEmpty
 } from "./tl/TLObjects";
 import { TelegramClient } from "./TelegramClient";
 import { concatBuffers } from "../utils/binary";
@@ -81,7 +79,7 @@ export class FileStorage {
       const match = await cache.match(key);
       if (match) {
         const url = URL.createObjectURL(await match.blob());
-        console.log("hit cache in", cacheKey, url);
+        console.debug("Cache hit", cacheKey, url);
         return url;
       }
     }
@@ -117,7 +115,7 @@ export class FileStorage {
         offset += partSize;
       } catch {
         if (++retries > MAX_RETRIES_PER_FILE) {
-          console.log("retries download", retries);
+          console.debug(`Retried downloading ${retries} times.`);
           finish();
           throw new Error(
             `Failed to download file after ${MAX_RETRIES_PER_FILE} tries.`
@@ -145,63 +143,58 @@ export class FileStorage {
   }
 
   public async downloadProfilePhoto(
-    entity:
-      | User
-      | Channel
-      | Chat
-      | ChatFull
-      | InputPeerSelf
-      | InputPeerChat
-      | InputPeerChannel
-      | InputUser
-      | InputChannel,
+    entity: User | Channel | Chat | ChatFull | UserProfilePhoto | ChatPhoto,
     downloadBig = false
   ): Promise<string | undefined> {
-    // ('User', 'Chat', 'UserFull', 'ChatFull')
-    const ENTITIES = [0x2da17977, 0xc5af5d94, 0x1f4661b9, 0xd49a2697];
-    // ('InputPeer', 'InputUser', 'InputChannel')
-    // const INPUTS = [0xc91c90b6, 0xe669bf46, 0x40f202fd]
-    // Todo account for input methods
     const thumb = downloadBig ? -1 : 0;
-    let photo: UserProfilePhoto | ChatPhoto;
-    if (!ENTITIES.includes(entity.subclassOfId)) {
-      photo = entity as any;
+    let photo:
+      | photos_UpdateProfilePhotoRequest
+      | UserProfilePhoto
+      | ChatPhoto
+      | UserProfilePhotoEmpty
+      | ChatPhotoEmpty;
+
+    if (entity.$t === "UserProfilePhoto" || entity.$t === "ChatPhoto") {
+      photo = entity;
     } else {
-      if (!(entity as any).photo) {
-        // Special case: may be a ChatFull with photo:Photo
-        if (!(entity as ChatFull).chatPhoto) {
+      if (entity.$t === "ChatFull") {
+        if (entity.chatPhoto.$t !== "Photo") {
           return undefined;
         }
 
-        return this.downloadPhoto((entity as any).chatPhoto, thumb);
+        return await this.downloadPhoto(entity.chatPhoto, thumb);
       }
-      photo = (entity as any).photo;
+
+      photo = entity.photo;
     }
+
+    if (
+      !photo ||
+      (photo.$t !== "UserProfilePhoto" && photo.$t !== "ChatPhoto")
+    ) {
+      return undefined;
+    }
+
     let dcId: number;
     let which: FileLocationToBeDeprecated;
     let loc: InputPeerPhotoFileLocation;
-    if (photo.$t === "UserProfilePhoto" || photo.$t === "ChatPhoto") {
-      dcId = photo.dcId;
-      which = downloadBig ? photo.photoBig : photo.photoSmall;
-      loc = {
-        $t: "InputPeerPhotoFileLocation",
-        peer: await this.client.entityCache.getInputEntity(entity),
-        localId: which.localId,
-        volumeId: which.volumeId,
-        big: downloadBig
-      };
-    } else {
-      // It doesn't make any sense to check if `photo` can be used
-      // as input location, because then this method would be able
-      // to "download the profile photo of a message", i.e. its
-      // media which should be done with `download_media` instead.
-      return null;
-    }
+
+    dcId = photo.dcId;
+    which = downloadBig ? photo.photoBig : photo.photoSmall;
+    loc = {
+      $t: "InputPeerPhotoFileLocation",
+      peer: await this.client.entityCache.getInputEntity(entity),
+      localId: which.localId,
+      volumeId: which.volumeId,
+      big: downloadBig
+    };
+
     try {
       return this.download(loc, { dcId: dcId, cacheKey: CACHE_KEY_PROFILE });
     } catch (e) {
       if (e.message === "LOCATION_INVALID") {
         const ie = await this.client.entityCache.getInputEntity(entity);
+
         if (ie.$t === "InputPeerChannel") {
           const full = (await this.client.invoke({
             $t: "channels_GetFullChannelRequest",
@@ -224,7 +217,7 @@ export class FileStorage {
 
   public async downloadMedia(
     message: Message | Message["media"] | WebDocument | WebDocumentNoProxy,
-    thumb: PhotoSizesTypes = null
+    thumb: PhotoSizesTypes | number = null
   ) {
     let media: TLObjectTypes;
 
@@ -260,7 +253,7 @@ export class FileStorage {
 
   private async downloadDocument(
     document: Document,
-    thumb: PhotoSizesTypes,
+    thumb: PhotoSizesTypes | number,
     dcId?: number
   ) {
     let size: PhotoSizesTypes;
@@ -374,11 +367,10 @@ export class FileStorage {
   private generateKey(location: upload_GetFileRequest["location"]) {
     switch (location.$t) {
       case "InputPeerPhotoFileLocation":
-        return `PeerPhoto_${location.localId},${location.volumeId}`;
+        return `${location.localId},${location.volumeId}`;
       case "InputPhotoFileLocation":
-        return `PhotoFile_${String(location.id)}`;
       case "InputDocumentFileLocation":
-        return `DocumentFile_${String(location.id)}`;
+        return `${location.constructorId}_${String(location.id)}`;
       default:
         return location.$t;
     }

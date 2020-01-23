@@ -305,28 +305,31 @@ export class TelegramClient {
   }
 
   private async createBorrowedSender(dcId: number) {
-    console.log('borrowing', dcId)
     const dc = await this.findDC(dcId);
 
-    const auth = (await this.invoke({
-      $t: "auth_ExportAuthorizationRequest",
-      dcId
-    })) as auth_ExportedAuthorization;
-
     const session = await this.sessionManager.getSessionByDc(dc.id);
-
     const sender = new MTProtoSender(session);
-    await sender.connect();
 
-    await sender.send(
-      this.initWith({
-        $t: "auth_ImportAuthorizationRequest",
-        id: auth.id,
-        bytes: auth.bytes
-      })
-    );
+    if (!session.authKey.key) {
+      const auth = (await this.invoke({
+        $t: "auth_ExportAuthorizationRequest",
+        dcId
+      })) as auth_ExportedAuthorization;
 
-    session.save();
+      await sender.connect();
+
+      await sender.send(
+        this.initWith({
+          $t: "auth_ImportAuthorizationRequest",
+          id: auth.id,
+          bytes: auth.bytes
+        })
+      );
+
+      session.save();
+    } else {
+      await sender.connect();
+    }
 
     return sender;
   }

@@ -1,15 +1,27 @@
-import { TLObjectTypes, messages_Chats, InputPeerChat } from "./tl/TLObjects";
+import {
+  TLObjectTypes,
+  messages_Chats,
+  InputPeerChat,
+  User,
+  UserEmpty
+} from "./tl/TLObjects";
 import { TelegramClient } from "./TelegramClient";
 import { getPeer, getInputPeer } from "./tl/utils";
 
+// TODO: Remove DB access from here and keep core database agnostic
 export class EntityCache {
   constructor(private client: TelegramClient) {}
 
   public async getInputEntity(entity: TLObjectTypes) {
+    // Short-circuit if the input parameter directly maps to an InputPeer
+    try {
+      return getInputPeer(entity);
+    } catch (e) {}
+
     const peer = getPeer(entity);
 
     if (peer.$t === "PeerUser") {
-      const users = await this.client.invoke({
+      const users = ((await this.client.invoke({
         $t: "users_GetUsersRequest",
         id: [
           {
@@ -18,8 +30,8 @@ export class EntityCache {
             accessHash: BigInt(0)
           }
         ]
-      });
-      if (users && !(users[0].$t === "UserEmpty")) {
+      })) as any) as (User | UserEmpty)[];
+      if (users && users.length > 0 && users[0].$t !== "UserEmpty") {
         return getInputPeer(users[0]);
       }
     } else if (peer.$t === "PeerChat") {
@@ -45,6 +57,7 @@ export class EntityCache {
         console.error(e);
       }
     }
+
     throw new Error("Could not find the input entity");
   }
 }

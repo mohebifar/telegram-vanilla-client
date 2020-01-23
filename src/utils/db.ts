@@ -26,8 +26,11 @@ class TelegramDatabase extends Dexie {
   constructor() {
     super("Telegram");
     this.version(1).stores({
-      sessions: "&dcId, port, authKey",
-      configs: "&key, value"
+      sessions: "&dcId",
+      configs: "&key, value",
+      messages: "id, date, $t",
+      peer: "id, type",
+      dialogs: "[type+id],lastMessageDate"
     });
 
     this.sessions = this.table("sessions");

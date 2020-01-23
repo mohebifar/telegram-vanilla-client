@@ -1,14 +1,13 @@
 import mitt, { Emitter } from "mitt";
 import {
-  messages_Dialogs,
   messages_Messages,
+  messages_DialogsSlice,
   messages_GetDialogsRequest,
+  messages_SendMessageRequest,
   Dialog,
   DialogFolder,
   Message,
   Authorization,
-  messages_DialogsSlice,
-  messages_SendMessageRequest,
   UpdateShortMessage
 } from "../core/tl/TLObjects";
 import { getPeerId, getInputPeer } from "../core/tl/utils";
@@ -225,7 +224,7 @@ class Store {
       offsetPeer,
       hash: 0,
       limit: 30
-    })) as messages_Dialogs;
+    })) as messages_DialogsSlice;
 
     for (const chat of dialogs.chats) {
       this.setPeer(chat.id, chat);

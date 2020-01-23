@@ -59,6 +59,10 @@ class DBSession implements MTSession {
   }
 
   save() {
+    if (!this.authKey) {
+      return;
+    }
+
     db.sessions.put({
       authKey: this.authKey.toArray(),
       dcId: this.dcId,
