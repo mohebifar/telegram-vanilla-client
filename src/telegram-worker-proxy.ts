@@ -20,7 +20,7 @@ const fileStorageProxiedMethods = <const>[
 export type ClientProxiedMethods = typeof clientProxiedMethods[number];
 export type FileStorageProxiedMethods = typeof fileStorageProxiedMethods[number];
 
-interface FileStorageProxy
+export interface FileStorageProxy
   extends Pick<FileStorage, FileStorageProxiedMethods> {}
 
 export interface TelegramClientProxy

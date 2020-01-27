@@ -1,9 +1,9 @@
 import autosize from "autosize";
-import { createElement, Component } from "../../utils/dom";
-import * as styles from "./send-message.scss";
-import IconButton from "../ui/icon-button";
+import { SimplifiedMessageRequest } from "../../models/peer";
+import { Component, createElement } from "../../utils/dom";
 import { Icons } from "../ui/icon";
-import { SimplifiedMessageRequest } from "../../utils/store";
+import IconButton from "../ui/icon-button";
+import * as styles from "./send-message.scss";
 
 interface Options {
   callback(message: SimplifiedMessageRequest): any;

@@ -21,7 +21,6 @@ import { sleep } from "../utils/utils";
 import { addKey } from "./crypto/RSA";
 import { computeCheck } from "./extensions/Password";
 import { FileStorage } from "./FileStorage";
-import { EntityCache } from "./EntityCache";
 
 const LAYER = 105;
 
@@ -49,7 +48,6 @@ export class TelegramClient {
     MTProtoSender | Promise<MTProtoSender>
   >();
   public fileStorage = new FileStorage(this);
-  public entityCache = new EntityCache(this);
 
   // private config: any; // GetConfigRequest
 
@@ -84,7 +82,6 @@ export class TelegramClient {
       short?: boolean
     ) => void
   ) {
-    console.log("session", session);
     this.sender = new MTProtoSender(session, {
       // delay: this._retryDelay,
       autoReconnectCallback: () => {},

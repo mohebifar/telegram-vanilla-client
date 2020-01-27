@@ -18,4 +18,9 @@
     filter: invert(98%) sepia(2%) saturate(373%) hue-rotate(185deg)
       brightness(94%) contrast(86%);
   }
+
+  &-green {
+    filter: invert(54%) sepia(57%) saturate(444%) hue-rotate(71deg)
+      brightness(96%) contrast(90%);
+  }
 }

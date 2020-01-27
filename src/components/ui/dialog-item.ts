@@ -1,32 +1,47 @@
 import { createElement, Component } from "../../utils/dom";
 import { shortenCount } from "../../utils/chat";
 import * as styles from "./dialog-item.scss";
-import store from "../../utils/store";
-import { PresentationalDialog } from "../../models/dialog";
 import Avatar from "./avatar";
 import Icon, { Icons } from "./icon";
+import { IDialog } from "../../models/dialog";
+import { IPeer } from "../../models/peer";
 
 interface Options {
-  chatId: number;
-  onClick: (chatId: number) => any;
+  dialog: IDialog;
+  peer: IPeer;
+  onClick: (dialog: IDialog) => any;
 }
 
-export default class Dialog implements Component<Options> {
-  public readonly element: HTMLElement;
-  private readonly avatar: Element;
-  private readonly text: Element;
-  private readonly title: Element;
-  private readonly date: Element;
-  private readonly unreadCount: Element;
-  private chatId: Options["chatId"];
+export default class DialogItem implements Component<Options> {
+  public element: HTMLElement;
+  private avatar: Element;
+  private text: Element;
+  private title: Element;
+  private date: Element;
+  private unreadCount: Element;
+  private dialog: Options["dialog"];
+  private peer: Options["peer"];
+  private onClick: Options["onClick"];
 
-  constructor({ chatId, onClick }: Options) {
-    this.chatId = chatId;
+  constructor(options: Options) {
+    const wrapper = createElement("div", {
+      class: styles.container + " ripple"
+    });
 
-    const info = this.getInfo();
+    this.element = wrapper;
+    this.peer = options.peer;
+    this.dialog = options.dialog;
+    this.onClick = options.onClick;
+
+    // this.register(options);
+  }
+
+  public async register() {
+    const info = await this.getInfo();
 
     this.avatar = createElement(Avatar, {
-      chatId: chatId
+      // chatId: chatId
+      peer: this.peer
     });
 
     this.unreadCount = createElement("div", info.unread);
@@ -49,41 +64,16 @@ export default class Dialog implements Component<Options> {
       this.unreadCount
     );
 
-    const wrapper = createElement(
-      "div",
-      { class: styles.container + " ripple" },
-      this.avatar,
-      textWrapper,
-      meta
-    );
-
-    wrapper.addEventListener("click", () => onClick(chatId));
+    this.element.addEventListener("click", () => this.onClick(this.dialog));
+    this.element.appendChild(this.avatar);
+    this.element.appendChild(textWrapper);
+    this.element.appendChild(meta);
 
     this.update();
-
-    this.element = wrapper;
-    this.register();
   }
 
-  private getInfo() {
-    const model = PresentationalDialog.findById(this.chatId);
-    const { peer, displayName, displayDate, dialog, text, silent } = model;
-    const shouldShowPin = dialog.unreadCount === 0 && dialog.pinned;
-
-    return {
-      unread: shouldShowPin
-        ? createElement(Icon, { icon: Icons.PinnedChat, color: "white" })
-        : shortenCount(dialog.$t === "Dialog" ? dialog.unreadCount : 0),
-      title: displayName,
-      date: displayDate,
-      text: text.slice(0, 50),
-      silent,
-      peer
-    };
-  }
-
-  private update = () => {
-    const { text, title, date, unread, silent } = this.getInfo();
+  public async update() {
+    const { text, title, date, unread, silent } = await this.getInfo();
     this.text.innerHTML = text;
     this.title.innerHTML = title;
     this.date.innerHTML = date;
@@ -101,14 +91,22 @@ export default class Dialog implements Component<Options> {
       classList.push(styles.unreadIcon);
     }
     this.unreadCount.className = classList.join(" ");
-  };
+  }
 
-  register() {
-    const dialog = PresentationalDialog.findById(this.chatId);
-    dialog.events.on("update", this.update);
-    store.sub("selected_dialog", id => {
-      const fn = id === this.chatId ? "add" : "remove";
-      this.element.classList[fn](styles.active);
-    });
+  private async getInfo() {
+    const shouldShowPin = this.dialog.unreadCount === 0 && this.dialog.pinned;
+    const text = await this.dialog.getText();
+    const date = await this.dialog.getDisplayDate();
+
+    return {
+      unread: shouldShowPin
+        ? createElement(Icon, { icon: Icons.PinnedChat, color: "white" })
+        : shortenCount(this.dialog.unreadCount || 0),
+      title: this.peer.displayName,
+      date,
+      text: text.slice(0, 50),
+      silent: this.dialog.slient,
+      peer: this.peer
+    };
   }
 }

@@ -1,22 +1,56 @@
 import { createElement, Component } from "../../utils/dom";
 import { getChatLetters } from "../../utils/chat";
-import store from "../../utils/store";
 import { EMPTY_IMG } from "../../utils/images";
-import { PresentationalDialog } from "../../models/dialog";
 import * as styles from "./avatar.scss";
+import { IPeer } from "../../models/peer";
 
 interface Options {
-  chatId: number;
+  peer: IPeer;
 }
 
 export default class Avatar implements Component<Options> {
-  public readonly element: HTMLElement;
-  private readonly avatar: Element;
-  private chatId: number;
+  public element: HTMLElement;
+  private avatar: Element;
+  private peer: Options["peer"];
 
-  constructor({ chatId }: Options) {
-    this.chatId = chatId;
-    const { img, name } = this.getInfo();
+  constructor({ peer }: Options) {
+    this.peer = peer;
+
+    this.register();
+  }
+
+  private async getInfo() {
+    let img: string;
+
+    switch (this.peer.$t) {
+      case "User":
+      case "Channel":
+      case "Chat":
+        this.peer.tg.fileStorage
+          .downloadProfilePhoto(this.peer.fields as any)
+          .then(url => {
+            if (!url) {
+              return;
+            }
+
+            img = url;
+            if (this.avatar) {
+              this.avatar.classList.remove("hidden");
+              this.avatar.setAttribute("src", url);
+            }
+          });
+        break;
+      case "UserEmpty":
+      // TODO: Ghost/Deleted account image?
+    }
+
+    return { img, name: this.peer.displayName };
+  }
+
+  private async register() {
+    this.element = createElement("div", { class: styles.avatar });
+
+    const { img, name } = await this.getInfo();
 
     this.avatar = createElement("img", {
       src: img || EMPTY_IMG,
@@ -30,49 +64,14 @@ export default class Avatar implements Component<Options> {
         class:
           styles.placeholder +
           " " +
-          styles[`placeholder_${(Math.abs(chatId) % 8) + 1}`]
+          styles[`placeholder_${(Math.abs(this.peer.id) % 8) + 1}`]
       },
       getChatLetters(name)
     );
 
-    this.element = createElement(
-      "div",
-      { class: styles.avatar },
-      placeholder,
-      this.avatar
-    );
+    this.element.appendChild(placeholder);
+    this.element.appendChild(this.avatar);
 
-    this.register();
-  }
-
-  private getInfo() {
-    const model = PresentationalDialog.findById(this.chatId);
-    let img: string;
-
-    switch (model.peer.$t) {
-      case "User":
-      case "Channel":
-      case "Chat":
-        store.fileStorage.downloadProfilePhoto(model.peer).then(url => {
-          if (!url) {
-            return;
-          }
-
-          img = url;
-          if (this.avatar) {
-            this.avatar.classList.remove("hidden");
-            this.avatar.setAttribute("src", url);
-          }
-        });
-        break;
-      case "UserEmpty":
-      // TODO: Ghost/Deleted account image?
-    }
-
-    return { img, name: model.displayName };
-  }
-
-  register() {
     // TODO: Subscribe to user updates
   }
 }

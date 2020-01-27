@@ -1,48 +1,59 @@
-import dayjs from "dayjs";
-import { createElement, Component } from "../../utils/dom";
-import store from "../../utils/store";
-import { DialogMessageTypes } from "../../models/dialog";
 import { PhotoSize } from "../../core/tl/TLObjects";
+import { IMessage } from "../../models/message";
+import { Component, createElement } from "../../utils/dom";
 import { EMPTY_IMG } from "../../utils/images";
-
+import Icon, { Icons } from "../ui/icon";
+import Lottie from "../ui/lottie";
 import { messageToHTML } from "./chat";
 import * as styles from "./chat.scss";
-import Lottie from "../ui/lottie";
 
 interface Options {
-  message: DialogMessageTypes;
+  message: IMessage;
   isTransient?: boolean;
 }
 
 export default class Bubble implements Component<Options> {
   public readonly element: HTMLElement;
   private img: HTMLElement;
-  private message: DialogMessageTypes;
   private messageText: HTMLElement;
+  private sentIndicator?: HTMLElement;
+  public message: IMessage;
 
-  constructor({ message, isTransient = false }: Options) {
+  constructor({ message }: Options) {
     this.message = message;
 
     const { text, time } = this.getInfo();
+    const [attachment, attachmentType] = this.getAttachments();
 
     this.messageText = createElement("span");
     this.messageText.innerHTML = text;
 
+    if (message.$t === "Message" && message.out) {
+      this.sentIndicator = createElement(Icon, {
+        icon: message.mediaUnread ? Icons.Check : Icons.Checks,
+        color:
+          attachmentType === "sticker" || attachmentType == "animated-sticker"
+            ? "white"
+            : "green",
+        class: styles.sentIndicator
+      });
+    }
+
     const messageWrapper = createElement(
       "div",
-      {
-        class: styles.message,
-        dir: "auto"
-      },
+      { class: styles.message },
       this.messageText,
       createElement(
         "span",
-        { class: styles.time },
-        createElement("div", { class: styles.inner }, time)
+        { class: styles.time, dir: "auto" },
+        createElement(
+          "div",
+          { class: styles.inner },
+          time,
+          this.sentIndicator || ""
+        )
       )
     );
-
-    const [attachment, attachmentType] = this.getAttachments();
 
     let bubbleClassName: string;
     switch (attachmentType) {
@@ -62,12 +73,6 @@ export default class Bubble implements Component<Options> {
 
     if (attachment) {
       this.element.append(attachment);
-    }
-
-    if (isTransient) {
-      store.sub(`message_sent_${message.id}` as any, _newId => {
-        // TODO: Mark message as sent with single tick
-      });
     }
 
     this.element.append(messageWrapper);
@@ -93,7 +98,7 @@ export default class Bubble implements Component<Options> {
           this.img.style.width = `${photoWidth}px`;
         }
 
-        store.fileStorage.downloadMedia(media).then(url => {
+        this.message.tg.fileStorage.downloadMedia(media).then(url => {
           this.img.setAttribute("src", url);
         });
         return [this.img, "photo"];
@@ -114,7 +119,7 @@ export default class Bubble implements Component<Options> {
                 }
               });
 
-              store.fileStorage.downloadMedia(media).then(url => {
+              this.message.tg.fileStorage.downloadMedia(media).then(url => {
                 sticker.instance.updateConfig({
                   path: url,
                   loop: true,
@@ -129,7 +134,7 @@ export default class Bubble implements Component<Options> {
                 src: EMPTY_IMG
               });
 
-              store.fileStorage.downloadMedia(media).then(url => {
+              this.message.tg.fileStorage.downloadMedia(media).then(url => {
                 this.img.setAttribute("src", url);
               });
               return [this.img, "sticker"];
@@ -150,10 +155,9 @@ export default class Bubble implements Component<Options> {
   private getInfo() {
     switch (this.message.$t) {
       case "Message":
-      case "UpdateShortMessage":
         return {
           text: messageToHTML(this.message.message),
-          time: dayjs(this.message.date * 1000).format("HH:mm")
+          time: this.message.date.format("HH:mm")
         };
       case "MessageEmpty":
         return {

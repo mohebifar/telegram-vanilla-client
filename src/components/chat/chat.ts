@@ -1,11 +1,11 @@
-import { DialogMessageTypes, PresentationalDialog } from "../../models/dialog";
-import { createElement, Component, Element } from "../../utils/dom";
-import store, { SimplifiedMessageRequest } from "../../utils/store";
+import { IDialog } from "../../models/dialog";
+import { IMessage } from "../../models/message";
+import { IPeer, SimplifiedMessageRequest } from "../../models/peer";
+import { Component, createElement, Element } from "../../utils/dom";
 import Bubble from "./bubble";
-import TopBar from "./top-bar";
 import * as styles from "./chat.scss";
 import SendMessageForm from "./send-message";
-import { getInputPeer } from "../../core/tl/utils";
+import TopBar from "./top-bar";
 
 interface Options {}
 
@@ -14,17 +14,21 @@ type BubbleType = "in" | "out" | "service";
 export default class Chat implements Component<Options> {
   public readonly element: HTMLElement;
   public readonly dialogs: HTMLElement;
-  public readonly pinnedDialogs: HTMLElement;
   private scrollView: HTMLElement;
   private chatContainer: HTMLElement;
   private topBarContainer: HTMLElement;
   private sendMessageForm: Element<SendMessageForm>;
-  private chatId?: number;
+  private dialog?: IDialog;
+  private peer?: IPeer;
   private paginating = false;
 
   constructor({}: Options) {
     this.chatContainer = createElement("div", { class: styles.chatContainer });
-    this.scrollView = createElement("div", { class: styles.wrapper }, this.chatContainer);
+    this.scrollView = createElement(
+      "div",
+      { class: styles.wrapper },
+      this.chatContainer
+    );
     this.topBarContainer = createElement("div");
     this.sendMessageForm = createElement(SendMessageForm, {
       callback: this.handleSendMessage
@@ -43,34 +47,47 @@ export default class Chat implements Component<Options> {
 
   private register() {
     this.scrollView.addEventListener("scroll", () => {
-      if (!this.paginating && this.scrollView.scrollTop < 10) {
-        const dialog = PresentationalDialog.findById(this.chatId);
+      if (
+        !this.paginating &&
+        this.scrollView.scrollTop < 100 &&
+        this.chatContainer.childNodes.length > 0
+      ) {
         this.paginating = true;
-        store.fetchMoreHistory(this.chatId, dialog.peer).then(() => {
-          this.paginating = false;
-        });
-      }
-    });
-
-    store.sub("fetched_history", ({ chatId, messageIds }) => {
-      if (this.chatId === chatId) {
-        const shouldScroll = this.isAtBottom();
-        const currentScroll = this.scrollView.scrollHeight;
-        messageIds.reverse().forEach(id => {
-          const message = store.getMessage(id);
-          if (message) {
-            this.addMessage(message, true);
-          }
-        });
-
-        if (shouldScroll) {
-          this.scrollToEnd();
-        } else {
-          const endScroll = this.scrollView.scrollHeight;
-          this.scrollView.scrollTop = endScroll - currentScroll;
+        const firstBubble = this.chatContainer.childNodes
+          .item(0)
+          .childNodes.item(0) as Element<Bubble>;
+        const message = firstBubble.instance && firstBubble.instance.message;
+        if (message) {
+          this.peer
+            .fetchHistory(message.id, message.date.unix())
+            .then(messages => this.addMessages(messages))
+            .then(() => {
+              this.paginating = false;
+            });
         }
       }
     });
+  }
+
+  private async loadChat() {
+    const messages = await this.peer.fetchHistory();
+    this.addMessages(messages);
+  }
+
+  private addMessages(messages: IMessage[]) {
+    const shouldScroll = this.isAtBottom();
+    const currentScroll = this.scrollView.scrollHeight;
+
+    messages.forEach(message => {
+      this.addMessage(message, true);
+    });
+
+    if (shouldScroll) {
+      this.scrollToEnd();
+    } else {
+      const endScroll = this.scrollView.scrollHeight;
+      this.scrollView.scrollTop = endScroll - currentScroll;
+    }
   }
 
   private isAtBottom() {
@@ -83,26 +100,15 @@ export default class Chat implements Component<Options> {
   }
 
   private handleSendMessage = (message: SimplifiedMessageRequest) => {
-    const dialog = PresentationalDialog.findById(this.chatId);
-    const id = store.sendMessage(this.chatId, {
-      ...message,
-      peer: getInputPeer(dialog.peer)
-    });
+    const [model] = this.peer.sendMessage(message);
 
-    this.handleNewMessage({
-      $t: "Message",
-      ...message,
-      id,
-      out: true,
-      date: Date.now() / 1000
-    } as any);
+    this.handleNewMessage(model);
   };
 
-  private addMessage(message: DialogMessageTypes, prepend = false) {
+  private addMessage(message: IMessage, prepend = false) {
     let type: BubbleType;
     switch (message.$t) {
       case "Message":
-      case "UpdateShortMessage":
         type = message.out ? "out" : "in";
         break;
       default:
@@ -136,7 +142,7 @@ export default class Chat implements Component<Options> {
     lastBubbleHolder[insertFn](messageElement);
   }
 
-  private handleNewMessage = (message: DialogMessageTypes) => {
+  private handleNewMessage = (message: IMessage) => {
     if (message) {
       const shouldScroll = this.isAtBottom();
       this.addMessage(message, false);
@@ -147,28 +153,41 @@ export default class Chat implements Component<Options> {
     }
   };
 
-  public setChat(chatId: number) {
-    if (this.chatId) {
-      const oldModel = PresentationalDialog.findById(this.chatId);
-      oldModel.events.off("message", this.handleNewMessage);
+  public async setChat(dialog: IDialog) {
+    if (dialog === this.dialog) {
+      return;
     }
-    this.chatId = chatId;
-    const model = PresentationalDialog.findById(chatId);
-    model.events.on("message", this.handleNewMessage);
+
+    this.dialog = dialog;
+    // model.events.on("message", this.handleNewMessage);
+    this.peer = await dialog.getPeer();
+
     this.chatContainer.innerHTML = "";
     this.topBarContainer.innerHTML = "";
 
-    if (chatId !== undefined) {
+    if (dialog !== undefined) {
       this.sendMessageForm.classList.remove("hidden");
-      this.topBarContainer.append(createElement(TopBar, { chatId }));
+      this.topBarContainer.append(
+        createElement(TopBar, { dialog, peer: this.peer })
+      );
+      this.loadChat();
     }
   }
 }
 
+function messageToParagraphs(message: string) {
+  const newLine = /[\n\r]/g;
+  const chunks = message.split(newLine);
+  if (chunks.length > 1) {
+    return chunks.map(line => `<p dir="auto">${line}</p>`).join("");
+  }
+
+  return message;
+}
+
 export function messageToHTML(message: string) {
-  return message
-    .split(/[\n\r]/g)
-    .map(line => `<p dir="auto">${line}</p>`)
-    .join("")
-    .replace(/@(\w[0-9a-zA-Z_\.]+)/g, "<a href='#'>@$1</a>");
+  return messageToParagraphs(message).replace(
+    /@(\w[0-9a-zA-Z_\.]+)/g,
+    "<a href='#'>@$1</a>"
+  );
 }

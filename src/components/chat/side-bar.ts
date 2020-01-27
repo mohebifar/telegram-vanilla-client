@@ -1,31 +1,34 @@
 import { createElement, Component, Element } from "../../utils/dom";
 import * as styles from "./side-bar.scss";
-import ContactItem from "../ui/dialog-item";
-import store from "../../utils/store";
-import { PresentationalDialog } from "../../models/dialog";
+import DialogItem from "../ui/dialog-item";
 import SearchInput from "../ui/search-input";
 import IconButton from "../ui/icon-button";
 import { Icons } from "../ui/icon";
+import { Dialog, IDialog } from "../../models/dialog";
+import { Peer, IPeer } from "../../models/peer";
 
 interface Options {
-  onChatSelect(chatId: number): any;
+  onChatSelect(dialog: IDialog): any;
 }
 
 export default class SideBar implements Component<Options> {
   public readonly element: HTMLElement;
-  public readonly dialogs: HTMLElement;
-  public readonly pinnedDialogs: HTMLElement;
-  private readonly dialogsWrapper: HTMLElement;
+
+  private readonly dialogsContainer: HTMLElement;
+  private readonly pinnedDialogsContainer: HTMLElement;
+  private readonly scrollView: HTMLElement;
+  private sortedDialogs: IDialog[] = [];
+
   private search: Element<SearchInput>;
   private iconButton: Element<IconButton>;
   private paginating = false;
-  private dialogsToElement = new Map<number, Element<ContactItem>>();
+  private dialogsToElement = new Map<IDialog, Element<DialogItem>>();
   private onChatSelect: Options["onChatSelect"];
 
   constructor({ onChatSelect }: Options) {
     this.onChatSelect = onChatSelect;
-    this.dialogs = createElement("div", { class: styles.dialogsList });
-    this.pinnedDialogs = createElement("div", {
+    this.dialogsContainer = createElement("div", { class: styles.dialogsList });
+    this.pinnedDialogsContainer = createElement("div", {
       class: `${styles.dialogsList} ${styles.pinned}`
     });
     this.search = createElement(SearchInput, {});
@@ -38,65 +41,111 @@ export default class SideBar implements Component<Options> {
       this.iconButton,
       this.search
     );
-    this.dialogsWrapper = createElement(
+    this.scrollView = createElement(
       "div",
       {
         class: styles.dialogsWrapper
       },
-      this.pinnedDialogs,
-      this.dialogs
+      this.pinnedDialogsContainer,
+      this.dialogsContainer
     );
     this.element = createElement(
       "div",
       { class: styles.container },
       topMenu,
-      this.dialogsWrapper
+      this.scrollView
     );
 
     this.register();
   }
 
-  private register() {
-    store.sub("fetched_chats", () => {
-      this.addDialogs(store.sortedDialogs);
+  private rearrangeItems(updatedDialog: IDialog) {
+    if (updatedDialog.pinned) {
+      return;
+    }
 
-      this.dialogsWrapper.addEventListener("scroll", () => {
-        const isAtBottom =
-          this.dialogsWrapper.scrollTop + this.dialogsWrapper.clientHeight >=
-          this.dialogsWrapper.scrollHeight - 100;
+    const referenceIndex = this.sortedDialogs.findIndex(
+      dialog =>
+        dialog.lastMessageDate < updatedDialog.lastMessageDate && !dialog.pinned
+    );
+    const index = this.sortedDialogs.indexOf(updatedDialog);
+    const referenceDialog = this.sortedDialogs[referenceIndex];
 
-        if (!this.paginating && isAtBottom) {
-          this.paginating = true;
-          store.fetchMoreDialogs().then(() => {
+    this.sortedDialogs.splice(index, 1);
+    this.sortedDialogs.splice(referenceIndex, 0, updatedDialog);
+    const referenceNode = this.dialogsToElement.get(referenceDialog);
+    const node = this.dialogsToElement.get(updatedDialog);
+    this.dialogsContainer.insertBefore(node, referenceNode);
+  }
+
+  private async register() {
+    const dialogs = await Dialog.fetch();
+    await this.addDialogs(dialogs);
+    Dialog.events.on(
+      "saved",
+      ({ object }: { object: IDialog; gid: string }) => {
+        if (this.dialogsToElement.has(object)) {
+          const element = this.dialogsToElement.get(object);
+          element.instance.update();
+          this.rearrangeItems(object);
+        }
+      }
+    );
+
+    this.scrollView.addEventListener("scroll", () => {
+      const isAtBottom =
+        this.scrollView.scrollTop + this.scrollView.clientHeight >=
+        this.scrollView.scrollHeight - 100;
+
+      if (!this.paginating && isAtBottom) {
+        this.paginating = true;
+
+        Dialog.fetch(this.getLastDialog())
+          .then(dialogs => this.addDialogs(dialogs))
+          .then(() => {
+            this.paginating = false;
+          })
+          .catch(() => {
             this.paginating = false;
           });
-        }
-      });
-    });
-
-    store.sub("fetched_more_chats", offset => {
-      this.addDialogs(store.sortedDialogs.slice(offset));
+      }
     });
   }
 
-  private addDialogs(ids: number[]) {
-    ids.forEach(id => {
-      this.addDialog(id);
-    });
+  private async addDialogs(dialogs: IDialog[]) {
+    const peers = await Peer.bulkGet(
+      dialogs.map(dialog => ({
+        id: dialog.peerId,
+        type: dialog.peerType
+      }))
+    );
+
+    const zipped: [IDialog, IPeer][] = dialogs.map((v, i) => [v, peers[i]]);
+
+    for (const [dialog, peer] of zipped) {
+      await this.addDialog(dialog, peer);
+    }
   }
 
-  private addDialog(id: number) {
-    const element = createElement(ContactItem, {
-      chatId: id,
+  private getLastDialog() {
+    return this.sortedDialogs[this.sortedDialogs.length - 1];
+  }
+
+  private async addDialog(dialog: IDialog, peer: IPeer) {
+    const element = createElement(DialogItem, {
+      dialog,
+      peer,
       onClick: this.onChatSelect
     });
-    const model = PresentationalDialog.findById(id);
-    this.dialogsToElement.set(id, element);
+    await element.instance.register();
 
-    if (model.dialog.pinned) {
-      this.pinnedDialogs.append(element);
+    this.dialogsToElement.set(dialog, element);
+    this.sortedDialogs.push(dialog);
+
+    if (dialog.pinned) {
+      this.pinnedDialogsContainer.append(element);
     } else {
-      this.dialogs.append(element);
+      this.dialogsContainer.append(element);
     }
   }
 }

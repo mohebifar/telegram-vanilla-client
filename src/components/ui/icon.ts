@@ -11,12 +11,14 @@ export enum Icons {
   Eye1 = "eye1",
   Eye2 = "eye2",
   Send = "send",
-  PinnedChat = "pinned_chat"
+  PinnedChat = "pinned_chat",
+  Check = "check",
+  Checks = "2checks"
 }
 
 export interface Options {
   icon: Icons;
-  color?: "white" | "blue" | "black" | "grey" | "grey-light";
+  color?: "white" | "blue" | "black" | "grey" | "grey-light" | "green";
   [s: string]: any;
 }
 

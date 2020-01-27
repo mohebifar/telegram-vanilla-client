@@ -32,34 +32,28 @@ export default class Lottie implements Component<Options> {
     import(/* webpackChunkName: "lottie" */ "lottie-web").then(
       ({ default: lottie }) => {
         this.animation = lottie.loadAnimation(config);
-        const checkViewport = () => {
-          if (this.inViewport()) {
-            this.animation.play();
-          } else {
-            this.animation.stop();
-
-            setTimeout(() => {
-              console.log("extra check with timeout");
-              checkViewport();
-            }, 1000);
-          }
+        let options = {
+          root: document.body,
+          rootMargin: "0px",
+          threshold: 0
         };
-        this.animation.addEventListener("DOMLoaded", checkViewport);
-        this.animation.addEventListener("loopComplete", checkViewport);
+
+        let observer = new IntersectionObserver(entries => {
+          const entry = entries[0];
+          if (entry) {
+            if (entry.isIntersecting) {
+              this.animation.play();
+            } else {
+              this.animation.stop();
+            }
+          }
+        }, options);
+        observer.observe(this.element);
+
         if (this.onReady) {
           this.onReady(this.animation);
         }
       }
-    );
-  }
-
-  public inViewport() {
-    const bounding = this.element.getBoundingClientRect();
-
-    return (
-      bounding.top >= 0 &&
-      bounding.bottom <=
-        (window.innerHeight || document.documentElement.clientHeight)
     );
   }
 

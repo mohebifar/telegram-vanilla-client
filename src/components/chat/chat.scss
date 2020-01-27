@@ -60,9 +60,6 @@ $time-size: 0.75rem;
       width: 100%;
     }
 
-    svg {
-    }
-
     .message {
       position: absolute;
       right: 0;
@@ -77,6 +74,11 @@ $time-size: 0.75rem;
 
     p {
       margin: 0;
+    }
+
+    .inner {
+      display: flex;
+      flex-direction: row;
     }
   }
 
@@ -218,22 +220,21 @@ $time-size: 0.75rem;
       }
     }
     .bubble {
+      background-color: #eeffde;
+      border-radius: 12px 6px 6px 12px;
+
       .time {
         color: $green-dark;
-        width: 48px;
+        min-width: 48px;
         display: inline-block;
+        margin-left: 1em;
+
         .inner {
+          display: flex;
+          flex-direction: row;
           padding: 6px 5px;
         }
       }
-    }
-    .bubble.read {
-    }
-    .bubble.sent {
-    }
-    .bubble {
-      background-color: #eeffde;
-      border-radius: 12px 6px 6px 12px;
     }
     .bubble:first-child {
       border-radius: 12px 12px 6px 12px;
@@ -244,5 +245,10 @@ $time-size: 0.75rem;
     .bubble:first-child:last-child {
       border-radius: 12px 12px 0px 12px;
     }
+  }
+
+  .sentIndicator {
+    display: block;
+    margin-left: 0.2em;
   }
 }

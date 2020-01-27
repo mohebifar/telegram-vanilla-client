@@ -1,34 +1,34 @@
 import { createElement, Component } from "../../utils/dom";
 import * as styles from "./top-bar.scss";
 import Avatar from "../ui/avatar";
-import { PresentationalDialog } from "../../models/dialog";
 import { getLastSeenTime } from "../../utils/chat";
+import { IDialog } from "../../models/dialog";
+import { IPeer } from "../../models/peer";
 
 interface Options {
-  chatId: number;
+  dialog: IDialog;
+  peer: IPeer;
 }
 
 export default class TopBar implements Component<Options> {
   public readonly element: HTMLElement;
-  private chatId: number;
+  // private dialog: IDialog;
+  private peer: IPeer;
 
-  constructor({ chatId }: Options) {
-    this.chatId = chatId;
+  constructor({ peer }: Options) {
+    // this.dialog = dialog;
+    this.peer = peer;
 
-    const model = PresentationalDialog.findById(chatId);
     this.element = createElement(
       "div",
       { class: styles.container },
       createElement(
         "div",
-        createElement(Avatar, {
-          chatId: chatId
-        }),
-
+        createElement(Avatar, { peer }),
         createElement(
           "div",
           { class: styles.meta },
-          createElement("div", { class: styles.title }, model.displayName),
+          createElement("div", { class: styles.title }, peer.displayName),
           createElement("div", { class: styles.subdue }, this.getSubdueText())
         )
       )
@@ -36,19 +36,16 @@ export default class TopBar implements Component<Options> {
   }
 
   private getSubdueText() {
-    const model = PresentationalDialog.findById(this.chatId);
-    console.log(model);
-
-    switch (model.peer.$t) {
+    switch (this.peer.$t) {
       case "User":
-        return getLastSeenTime(model.peer.status);
+        return getLastSeenTime(this.peer.status);
       case "UserEmpty":
         return "Last seen a long time ago";
       case "Channel":
       case "ChannelForbidden":
         return "Channel";
       case "Chat":
-        return `${model.peer.participantsCount} members`;
+        return `${this.peer.participantsCount} members`;
       case "ChatForbidden":
         return "Deleted group";
       case "ChatEmpty":

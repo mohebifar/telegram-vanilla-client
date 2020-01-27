@@ -1,13 +1,13 @@
-import dayjs from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import { TLObjectTypes } from "../core/tl/types";
 import {
+  DocumentAttributeSticker,
   Message,
   MessageEmpty,
-  DocumentAttributeSticker,
   UpdateShortMessage,
   User
 } from "../core/tl/TLObjects";
+import { DBPeer } from "./db";
 
 dayjs.extend(relativeTime);
 
@@ -53,7 +53,7 @@ export function getFirstLetter(str: string) {
   return "";
 }
 
-export function getDialogDisplayName(entity: TLObjectTypes) {
+export function getDialogDisplayName(entity: DBPeer) {
   switch (entity.$t) {
     case "User":
       return `${entity.firstName || ""} ${entity.lastName || ""}`.trim();
@@ -76,10 +76,10 @@ export function getShortLastText(
 ) {
   switch (message.$t) {
     case "Message":
-      let text = "";
+      let text = message.out ? "You: " : "";
       let mediaType;
 
-      if (message.media) {
+      if (message.media && message.media.$t !== "MessageMediaEmpty") {
         [text, mediaType] = getMessageMediaType(message.media);
       }
 
@@ -122,15 +122,15 @@ function getMessageMediaType(media: Message["media"]): [string, string] {
   return ["Unsupported media", null];
 }
 
-export function getDialogDisplayDate(date: Date) {
+export function getDialogDisplayDate(date: Dayjs | Date | number) {
   const currentDate = dayjs();
-  const messageDate = dayjs(date);
+  const messageDate = typeof date === "number" ? dayjs.unix(date) : dayjs(date);
 
   if (messageDate.isSame(currentDate, "d")) {
     return messageDate.format("HH:mm");
   }
 
-  if (messageDate.isSame(currentDate, "w")) {
+  if (messageDate.isAfter(currentDate.subtract(7, "d"))) {
     return messageDate.format("ddd");
   }
 

@@ -11,6 +11,7 @@ import {
   PeerChat,
   PeerUser
 } from "./TLObjects";
+import { AllDialogPeerTypes } from "../../utils/useful-types";
 
 type InputPeerTypes =
   | InputPeerSelf
@@ -135,17 +136,7 @@ function resolveId(
 
 export function getPeer(
   peer: TLObjectTypes
-):
-  | PeerUser
-  | PeerChat
-  | PeerChannel
-  | InputPeerSelf
-  | InputPeerChat
-  | InputPeerChannel
-  | InputPeerEmpty
-  | InputPeerUser
-  | InputPeerUserFromMessage
-  | InputPeerChannelFromMessage {
+): PeerUser | PeerChat | PeerChannel {
   if (typeof peer === "number") {
     const [id, $t] = resolveId(peer);
 
@@ -165,7 +156,7 @@ export function getPeer(
     return peer;
   } else if (
     peer.$t === "contacts_ResolvedPeer" ||
-    peer.$t === "InputNotifyPeer" ||
+    // peer.$t === "InputNotifyPeer" ||
     peer.$t === "TopPeer" ||
     peer.$t === "Dialog" ||
     peer.$t === "DialogPeer"
@@ -247,4 +238,16 @@ export function getPeerId(entity: TLObjectTypes, addMark = true): number {
       );
     }
   }
+}
+
+export function simplifyPeerType(
+  type: AllDialogPeerTypes["$t"] | "PeerChat" | "PeerUser" | "PeerChannel"
+): "Chat" | "Channel" | "User" {
+  if (/^Chat/.test(type) || type === "PeerChat") {
+    return "Chat";
+  }
+  if (/^Channel/.test(type) || type === "PeerChannel") {
+    return "Channel";
+  }
+  return "User";
 }

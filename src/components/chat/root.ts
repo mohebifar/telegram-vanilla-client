@@ -1,10 +1,9 @@
 import { createElement, Component, Element } from "../../utils/dom";
 import * as styles from "./root.scss";
 import SideBar from "./side-bar";
-import store from "../../utils/store";
 import Chat from "./chat";
-import { PresentationalDialog } from "../../models/dialog";
 import { TelegramClientProxy } from "../../telegram-worker-proxy";
+import { IDialog } from "../../models/dialog";
 
 interface Options {
   tgProxy: TelegramClientProxy;
@@ -31,16 +30,9 @@ export default class Root implements Component<Options> {
     this.register();
   }
 
-  private async register() {
-    store.proxy = this.tgProxy;
+  private async register() {}
 
-    store.fetchDialogs();
-  }
-
-  private onChatSelect = async (chatId: number) => {
-    store.pub("selected_dialog", chatId);
-    const model = PresentationalDialog.findById(chatId);
-    this.chat.instance.setChat(chatId);
-    store.fetchHistory(chatId, model.peer);
+  private onChatSelect = async (dialog: IDialog) => {
+    this.chat.instance.setChat(dialog);
   };
 }

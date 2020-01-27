@@ -1,6 +1,6 @@
 import { MTSession, MTSessionManager } from "../core/mtproto/MTSessionManager";
 import { AuthKey } from "../core/crypto/AuthKey";
-import db, { Session } from "./db";
+import db, { DBSession } from "./db";
 
 const dcToURL = [
   "",
@@ -18,11 +18,12 @@ export class DBSessionManager implements MTSessionManager {
     const primaryDc = await db.configs.get("primaryDc");
     if (primaryDc && primaryDc.value) {
       const sessionData = await db.sessions.get(primaryDc.value);
+      // console.log(sessionData.authKey.join(','));
       if (sessionData) {
         return this.makeSessionFromData(sessionData);
       }
     }
-    return new DBSession(defaultDc);
+    return new MTDBSession(defaultDc);
   }
 
   public async getSessionByDc(dcId: number, port: number = undefined) {
@@ -31,21 +32,21 @@ export class DBSessionManager implements MTSessionManager {
       return this.makeSessionFromData(sessionData);
     }
 
-    return new DBSession(dcId, port);
+    return new MTDBSession(dcId, port);
   }
 
   public setDefaultDc(value: number) {
     return db.configs.put({ value, key: "primaryDc" });
   }
 
-  private makeSessionFromData(sessionData: Session) {
-    const session = new DBSession(sessionData.dcId, sessionData.port);
+  private makeSessionFromData(sessionData: DBSession) {
+    const session = new MTDBSession(sessionData.dcId, sessionData.port);
     session.authKey.setKey(new Uint8Array(sessionData.authKey));
     return session;
   }
 }
 
-class DBSession implements MTSession {
+class MTDBSession implements MTSession {
   constructor(
     public dcId: number,
     private port: number = 443,
