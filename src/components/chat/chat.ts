@@ -1,5 +1,6 @@
+import { extractIdFromPeer } from "../../core/tl/utils";
 import { IDialog } from "../../models/dialog";
-import { IMessage } from "../../models/message";
+import { IMessage, Message } from "../../models/message";
 import { IPeer, SimplifiedMessageRequest } from "../../models/peer";
 import { Component, createElement, Element } from "../../utils/dom";
 import Bubble from "./bubble";
@@ -67,6 +68,36 @@ export default class Chat implements Component<Options> {
         }
       }
     });
+
+    Message.events.on(
+      "saved",
+      async ({ object: message }: { object: IMessage }) => {
+        if (
+          message.$t === "MessageEmpty" ||
+          this.chatContainer.childNodes.length === 0
+        ) {
+          return;
+        }
+
+        const peerId = extractIdFromPeer(message.toId);
+        if (peerId.id !== this.peer.id || peerId.type !== this.peer.type) {
+          return;
+        }
+
+        const lastBubbleHolder = this.chatContainer.childNodes.item(
+          this.chatContainer.childNodes.length - 1
+        ).childNodes;
+
+        const lastBubble = lastBubbleHolder.item(
+          lastBubbleHolder.length - 1
+        ) as Element<Bubble>;
+        const lastRenderedMessage = lastBubble.instance.message;
+
+        if (message.date.isAfter(lastRenderedMessage.date)) {
+          this.addMessage(message);
+        }
+      }
+    );
   }
 
   private async loadChat() {

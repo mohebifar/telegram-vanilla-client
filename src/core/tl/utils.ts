@@ -251,3 +251,17 @@ export function simplifyPeerType(
   }
   return "User";
 }
+
+export function extractIdFromPeer(peer: PeerChannel | PeerChat | PeerUser) {
+  const typeToIdKey = {
+    PeerChannel: "channelId",
+    PeerChat: "chatId",
+    PeerUser: "userId"
+  };
+
+  const idKey = typeToIdKey[peer.$t];
+  return {
+    id: peer[idKey],
+    type: simplifyPeerType(peer.$t)
+  };
+}

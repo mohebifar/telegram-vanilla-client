@@ -59,25 +59,6 @@ export default class SideBar implements Component<Options> {
     this.register();
   }
 
-  private rearrangeItems(updatedDialog: IDialog) {
-    if (updatedDialog.pinned) {
-      return;
-    }
-
-    const referenceIndex = this.sortedDialogs.findIndex(
-      dialog =>
-        dialog.lastMessageDate < updatedDialog.lastMessageDate && !dialog.pinned
-    );
-    const index = this.sortedDialogs.indexOf(updatedDialog);
-    const referenceDialog = this.sortedDialogs[referenceIndex];
-
-    this.sortedDialogs.splice(index, 1);
-    this.sortedDialogs.splice(referenceIndex, 0, updatedDialog);
-    const referenceNode = this.dialogsToElement.get(referenceDialog);
-    const node = this.dialogsToElement.get(updatedDialog);
-    this.dialogsContainer.insertBefore(node, referenceNode);
-  }
-
   private async register() {
     const dialogs = await Dialog.fetch();
     await this.addDialogs(dialogs);
@@ -127,10 +108,6 @@ export default class SideBar implements Component<Options> {
     }
   }
 
-  private getLastDialog() {
-    return this.sortedDialogs[this.sortedDialogs.length - 1];
-  }
-
   private async addDialog(dialog: IDialog, peer: IPeer) {
     const element = createElement(DialogItem, {
       dialog,
@@ -147,5 +124,28 @@ export default class SideBar implements Component<Options> {
     } else {
       this.dialogsContainer.append(element);
     }
+  }
+
+  private getLastDialog() {
+    return this.sortedDialogs[this.sortedDialogs.length - 1];
+  }
+
+  private rearrangeItems(updatedDialog: IDialog) {
+    if (updatedDialog.pinned) {
+      return;
+    }
+
+    const referenceIndex = this.sortedDialogs.findIndex(
+      dialog =>
+        dialog.lastMessageDate < updatedDialog.lastMessageDate && !dialog.pinned
+    );
+    const index = this.sortedDialogs.indexOf(updatedDialog);
+    const referenceDialog = this.sortedDialogs[referenceIndex];
+
+    this.sortedDialogs.splice(index, 1);
+    this.sortedDialogs.splice(referenceIndex, 0, updatedDialog);
+    const referenceNode = this.dialogsToElement.get(referenceDialog);
+    const node = this.dialogsToElement.get(updatedDialog);
+    this.dialogsContainer.insertBefore(node, referenceNode);
   }
 }

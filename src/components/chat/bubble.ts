@@ -25,7 +25,7 @@ export default class Bubble implements Component<Options> {
     const { text, time } = this.getInfo();
     const [attachment, attachmentType] = this.getAttachments();
 
-    this.messageText = createElement("span");
+    this.messageText = createElement("span", { dir: "auto" });
     this.messageText.innerHTML = text;
 
     if (message.$t === "Message" && message.out) {
@@ -114,9 +114,7 @@ export default class Bubble implements Component<Options> {
               // Animated sticker
               const sticker = createElement(Lottie, {
                 class: styles.attachment,
-                config: {
-                  path: ""
-                }
+                config: { path: "" }
               });
 
               this.message.tg.fileStorage.downloadMedia(media).then(url => {
@@ -160,6 +158,8 @@ export default class Bubble implements Component<Options> {
           time: this.message.date.format("HH:mm")
         };
       case "MessageEmpty":
+      case "MessageService":
+        // TODO: Support message service
         return {
           text: "",
           time: ""

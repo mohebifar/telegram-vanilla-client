@@ -104,7 +104,7 @@ export default class DialogItem implements Component<Options> {
         : shortenCount(this.dialog.unreadCount || 0),
       title: this.peer.displayName,
       date,
-      text: text.slice(0, 50),
+      text: (text && text.slice(0, 50)) || "",
       silent: this.dialog.slient,
       peer: this.peer
     };

@@ -1,15 +1,18 @@
-import { TelegramDatabase } from "../utils/db";
-import { Model, ModelDecorator, ModelWithProxy, ModelKey } from "./model";
 import dayjs from "dayjs";
 import {
   UpdateShortChatMessage,
   UpdateShortMessage
 } from "../core/tl/TLObjects";
+import { TelegramDatabase } from "../utils/db";
 import { DialogMessageTypes } from "../utils/useful-types";
+import { Model, ModelDecorator, ModelKey, ModelWithProxy } from "./model";
+import { Peer, IPeer } from "./peer";
+import { extractIdFromPeer } from "../core/tl/utils";
 
 interface ExtraMethods {
   date: dayjs.Dayjs;
   justSent: boolean;
+  getPeer(): Promise<IPeer | undefined>;
 }
 
 export type IMessage = ModelWithProxy<"messages"> & ExtraMethods;
@@ -38,7 +41,7 @@ export class Message extends Model<"messages"> {
         $t: "Message",
         toId: {
           $t: "PeerUser",
-          userId: 0
+          userId: message.userId
         },
         fromId: message.userId,
         out: message.out,
@@ -76,6 +79,14 @@ export class Message extends Model<"messages"> {
     }
 
     return normalizedMessage;
+  }
+
+  public getPeer() {
+    if (this.fields.$t === "MessageEmpty") {
+      return undefined;
+    }
+
+    return Peer.get(extractIdFromPeer(this._proxy.toId));
   }
 
   get date() {

@@ -1,13 +1,8 @@
 import dayjs, { Dayjs } from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import {
-  DocumentAttributeSticker,
-  Message,
-  MessageEmpty,
-  UpdateShortMessage,
-  User
-} from "../core/tl/TLObjects";
+import { DocumentAttributeSticker, Message, User } from "../core/tl/TLObjects";
 import { DBPeer } from "./db";
+import { DialogMessageTypes } from "./useful-types";
 
 dayjs.extend(relativeTime);
 
@@ -71,9 +66,7 @@ export function getDialogDisplayName(entity: DBPeer) {
   }
 }
 
-export function getShortLastText(
-  message: Message | MessageEmpty | UpdateShortMessage
-) {
+export function getShortLastText(message: DialogMessageTypes) {
   switch (message.$t) {
     case "Message":
       let text = message.out ? "You: " : "";
@@ -88,9 +81,9 @@ export function getShortLastText(
       }
 
       return text + (mediaType || "");
-
-    case "UpdateShortMessage":
-      return message.message;
+    case "MessageService":
+      // TODO: Support service message
+      return "Service message";
     case "MessageEmpty":
       return "Empty chat";
   }

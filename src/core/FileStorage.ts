@@ -29,6 +29,7 @@ import { TelegramClient } from "./TelegramClient";
 import { concatBuffers } from "../utils/binary";
 import { strippedPhotoToJpg } from "../utils/utils";
 import { inflate } from "pako";
+import { getInputPeer } from "./tl/utils";
 
 type PhotoSizesTypes =
   | PhotoSizeEmpty
@@ -183,7 +184,7 @@ export class FileStorage {
     which = downloadBig ? photo.photoBig : photo.photoSmall;
     loc = {
       $t: "InputPeerPhotoFileLocation",
-      peer: await this.client.entityCache.getInputEntity(entity),
+      peer: await getInputPeer(entity),
       localId: which.localId,
       volumeId: which.volumeId,
       big: downloadBig
@@ -193,7 +194,7 @@ export class FileStorage {
       return this.download(loc, { dcId: dcId, cacheKey: CACHE_KEY_PROFILE });
     } catch (e) {
       if (e.message === "LOCATION_INVALID") {
-        const ie = await this.client.entityCache.getInputEntity(entity);
+        const ie = await getInputPeer(entity);
 
         if (ie.$t === "InputPeerChannel") {
           const full = (await this.client.invoke({

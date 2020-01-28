@@ -1,15 +1,15 @@
-import { TelegramDatabase, DBDialog } from "../utils/db";
-import { Model, ModelDecorator, ModelWithProxy, ModelKey } from "./model";
+import dayjs from "dayjs";
 import {
   Dialog as TLDialog,
-  messages_GetDialogsRequest,
-  messages_DialogsSlice
+  messages_DialogsSlice,
+  messages_GetDialogsRequest
 } from "../core/tl/TLObjects";
-import { simplifyPeerType, getInputPeer } from "../core/tl/utils";
-import { Peer, IPeer } from "./peer";
-import { Message, IMessage } from "./message";
-import { getShortLastText, getDialogDisplayDate } from "../utils/chat";
-import dayjs from "dayjs";
+import { extractIdFromPeer, getInputPeer } from "../core/tl/utils";
+import { getDialogDisplayDate, getShortLastText } from "../utils/chat";
+import { DBDialog, TelegramDatabase } from "../utils/db";
+import { IMessage, Message } from "./message";
+import { Model, ModelDecorator, ModelKey, ModelWithProxy } from "./model";
+import { IPeer, Peer } from "./peer";
 
 interface ExtraMethods {
   getText(): Promise<string>;
@@ -38,26 +38,17 @@ export class Dialog extends Model<"dialogs"> {
     if ("dialog" in object) {
       const { peer, ...dialog } = object.dialog;
 
+      const { type, id } = extractIdFromPeer(peer);
+
       return {
         ...dialog,
         lastMessageDate: object.lastMessageDate,
-        peerType: simplifyPeerType(peer.$t),
-        peerId: peer[Dialog.getDialogPeerIdKey(peer)]
+        peerType: type,
+        peerId: id
       };
     }
 
     return object;
-  }
-
-  static getDialogPeerIdKey(peer: TLDialog["peer"]) {
-    switch (peer.$t) {
-      case "PeerChannel":
-        return "channelId";
-      case "PeerChat":
-        return "chatId";
-      case "PeerUser":
-        return "userId";
-    }
   }
 
   static async fetch(offsetDialog?: IDialog): Promise<IDialog[]> {
@@ -155,7 +146,7 @@ export class Dialog extends Model<"dialogs"> {
   }
 
   public async getDisplayDate() {
-    return getDialogDisplayDate(this.fields.lastMessageDate);
+    return getDialogDisplayDate(this._proxy.lastMessageDate);
   }
 
   public getPeer() {
