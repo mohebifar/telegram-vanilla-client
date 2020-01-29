@@ -1,6 +1,11 @@
 import Dexie from "dexie";
 import { AllDialogPeerTypes, DialogMessageTypes } from "./useful-types";
-import { Dialog as TLDialog } from "../core/tl/TLObjects";
+import {
+  Dialog as TLDialog,
+  ChatFull,
+  ChannelFull,
+  UserFull
+} from "../core/tl/TLObjects";
 
 export interface DBConfig {
   key: string;
@@ -21,9 +26,22 @@ export interface DBDialog extends Omit<TLDialog, "$t" | "peer"> {
   peerId: number;
 }
 
-export type DBPeer = AllDialogPeerTypes & {
-  type: "Chat" | "Channel" | "User";
-};
+export interface DBPeerChat {
+  type: "Chat";
+  full?: ChatFull;
+}
+
+export interface DBPeerChannel {
+  type: "Channel";
+  full?: ChannelFull;
+}
+
+export interface DBPeerUser {
+  type: "User";
+  full?: UserFull;
+}
+
+export type DBPeer = AllDialogPeerTypes & (DBPeerChat | DBPeerChannel | DBPeerUser);
 
 export interface TelegramDatabaseTables {
   configs: Dexie.Table<DBConfig, string>;

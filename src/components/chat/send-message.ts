@@ -13,6 +13,7 @@ export default class SendMessageForm implements Component<Options> {
   public readonly element: HTMLElement;
   private callback: Options["callback"];
   private inputNode: HTMLTextAreaElement;
+  private attachmentButton: HTMLButtonElement;
 
   constructor({ callback }: Options) {
     this.callback = callback;
@@ -22,10 +23,17 @@ export default class SendMessageForm implements Component<Options> {
     }) as HTMLTextAreaElement;
     autosize(this.inputNode);
 
+    this.attachmentButton = createElement("button", {
+      
+    }) as HTMLButtonElement;
+    this.attachmentButton.addEventListener('click', () => {
+      console.log('asdasd');
+    })
+
     this.element = createElement(
       "form",
       { class: `hidden ${styles.container}`, action: "#" },
-      createElement("div", { class: styles.inputWrapper }, this.inputNode),
+      createElement("div", { class: styles.inputWrapper }, this.inputNode, this.attachmentButton),
       createElement(IconButton, { icon: Icons.Send, color: "white" })
     );
 

@@ -2,11 +2,12 @@
 
 .container {
   display: flex;
-  max-width: 45rem;
+  max-width: 46rem;
   width: 100%;
   margin: auto;
   align-items: flex-end;
   margin-bottom: 2rem;
+  padding: 0 0.5em;
 
   .inputWrapper {
     flex-grow: 1;

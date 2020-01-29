@@ -147,5 +147,6 @@ export default class SideBar implements Component<Options> {
     const referenceNode = this.dialogsToElement.get(referenceDialog);
     const node = this.dialogsToElement.get(updatedDialog);
     this.dialogsContainer.insertBefore(node, referenceNode);
+    console.log('move ', node, referenceNode)
   }
 }

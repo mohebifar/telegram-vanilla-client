@@ -1,14 +1,18 @@
-import { TelegramDatabase, DBPeer } from "../utils/db";
-import { getDialogDisplayName } from "../utils/chat";
-import { Model, ModelDecorator, ModelWithProxy, ModelKey } from "./model";
-import { simplifyPeerType, getInputPeer, getPeer } from "../core/tl/utils";
 import {
+  channels_GetFullChannelRequest,
   messages_DialogsSlice,
+  messages_GetFullChatRequest,
   messages_SendMessageRequest,
-  UpdateShortSentMessage
+  UpdateShortSentMessage,
+  users_GetFullUserRequest,
+  messages_ChatFull
 } from "../core/tl/TLObjects";
-import { Message, IMessage } from "./message";
+import { getInputPeer, getPeer, simplifyPeerType } from "../core/tl/utils";
+import { getDialogDisplayName } from "../utils/chat";
+import { DBPeer, TelegramDatabase } from "../utils/db";
 import { Dialog, IDialog } from "./dialog";
+import { IMessage, Message } from "./message";
+import { Model, ModelDecorator, ModelKey, ModelWithProxy } from "./model";
 
 interface ExtraMethods {
   displayName: string;
@@ -17,6 +21,7 @@ interface ExtraMethods {
     message: SimplifiedMessageRequest
   ): [IMessage, Promise<IMessage | undefined>];
   getDialog(): Promise<IDialog | undefined>;
+  loadFull(): Promise<void>;
 }
 
 export type IPeer = ModelWithProxy<"peers"> & ExtraMethods;
@@ -139,12 +144,54 @@ export class Peer extends Model<"peers"> implements ExtraMethods {
       )
       .then(async dialog => {
         dialog.topMessage = messageModel.id;
-        dialog.lastMessageDate = Date.now();
+        dialog.lastMessageDate = Date.now() / 1000;
         await messageModel.save();
         dialog.save();
         return messageModel;
       });
 
     return [messageModel, promise];
+  }
+
+  public async loadFull() {
+    if (this._proxy.full) {
+      return;
+    }
+
+    const inputPeer = getInputPeer(this._proxy);
+    let input:
+      | messages_GetFullChatRequest
+      | channels_GetFullChannelRequest
+      | users_GetFullUserRequest;
+
+    switch (this._proxy.$t) {
+      case "Channel":
+        input = {
+          $t: "channels_GetFullChannelRequest",
+          channel: inputPeer as any
+        };
+        break;
+      case "User":
+        input = {
+          $t: "users_GetFullUserRequest",
+          id: inputPeer as any
+        };
+        break;
+      case "Chat":
+        input = {
+          $t: "messages_GetFullChatRequest",
+          chatId: this._proxy.id
+        };
+        break;
+    }
+
+    const chatFull = (await this.tg.invoke(input)) as messages_ChatFull;
+    this._proxy.full = chatFull.fullChat;
+
+    // TODO: Load all entities
+    // for (const user of chatFull.users) {
+    // }
+
+    this.save();
   }
 }

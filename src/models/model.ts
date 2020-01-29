@@ -135,6 +135,9 @@ export class Model<
 
         return obj.fields[prop];
       },
+      has: function(obj, prop) {
+        return prop in obj.fields || prop in obj;
+      },
       set: function(obj, prop, value) {
         obj[prop] = value;
 

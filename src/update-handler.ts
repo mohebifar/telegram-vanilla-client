@@ -58,7 +58,12 @@ async function handleNewMessageUpdate(
 
   message.save();
 
-  dialog.unreadCount += 1;
+
+  if (!("out" in message) || !message.out) {
+    console.log('message', message)
+    dialog.unreadCount += 1;
+  }
+
   dialog.lastMessageDate = message.date.unix();
   dialog.topMessage = message.id;
   dialog.save();

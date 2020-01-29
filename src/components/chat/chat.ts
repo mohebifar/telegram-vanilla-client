@@ -94,7 +94,10 @@ export default class Chat implements Component<Options> {
         const lastRenderedMessage = lastBubble.instance.message;
 
         if (message.date.isAfter(lastRenderedMessage.date)) {
-          this.addMessage(message);
+          if (this.isAtBottom()) {
+            this.addMessage(message);
+            this.scrollToEnd();
+          }
         }
       }
     );
@@ -189,6 +192,7 @@ export default class Chat implements Component<Options> {
       return;
     }
 
+    console.log("dialog", dialog);
     this.dialog = dialog;
     // model.events.on("message", this.handleNewMessage);
     this.peer = await dialog.getPeer();
