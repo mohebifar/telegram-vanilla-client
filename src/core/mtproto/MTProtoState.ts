@@ -7,7 +7,7 @@ import {
   byteBuffersEqual,
   pack,
   mod
-} from "../../utils/binary";
+} from "../binary";
 import { sha256, encryptIGE, decryptIGE } from "../crypto";
 import { TLMessage } from "../types";
 import { BinaryReader } from "../extensions/BinaryReader";

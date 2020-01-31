@@ -8,9 +8,7 @@ import { handleUpdate } from "./update-handler";
 import { createElement } from "./utils/dom";
 
 async function start() {
-  const apiId = process.env.API_ID;
-  const apiHash = process.env.API_HASH;
-  const tgProxy = await makeProxy(apiId, apiHash, handleUpdate);
+  const tgProxy = await makeProxy(TG_API_ID, TG_API_HASH, handleUpdate);
   const isUserAuthorized = await tgProxy.isUserAuthorized();
   Model.tg = tgProxy;
 

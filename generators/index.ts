@@ -106,7 +106,8 @@ function tlObjectToRuntimeDefinition({
 
   const argName = variableSnakeToCamelCase(name);
 
-  let normalizedType = type;
+
+  let normalizedType = TLTypeToTSTypeMap.has(type) ? type : '_';
 
   if (flagIndicator) {
     normalizedType = "#FLAG";

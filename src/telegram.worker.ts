@@ -1,7 +1,7 @@
 import { TelegramClient } from "./core/TelegramClient";
-import { Updates } from "./core/tl/TLObjects";
 import { ClientProxiedMethods } from "./telegram-worker-proxy";
-import { DBSessionManager } from "./utils/session-manager";
+import { DBSessionManager } from "./core/extensions/SessionManager";
+import { AllUpdateTypes } from "./utils/useful-types";
 
 type ConnectRequestEvent = {
   type: "connect_request";
@@ -31,19 +31,19 @@ type MethodResponseEvent = {
 type UpdateEvent = {
   type: "update";
   short: boolean;
-  update: Updates["updates"][0];
+  update: AllUpdateTypes;
 };
 
-export type RequestEventData = ConnectRequestEvent | MethodRequestEvent;
-export type ResponseEventData =
+export type OutgoingEventData = ConnectRequestEvent | MethodRequestEvent;
+export type IncomingEventData =
   | ConnectedEvent
   | MethodResponseEvent
   | UpdateEvent;
 
-export type EventData = RequestEventData | ResponseEventData;
+export type EventData = OutgoingEventData | IncomingEventData;
 
 interface MessageEventWithData extends MessageEvent {
-  data: RequestEventData;
+  data: OutgoingEventData;
 }
 
 addEventListener("message", ({ data }: MessageEventWithData) => {
@@ -57,19 +57,12 @@ async function connect(apiId: number, apiHash: string) {
   const manager = new DBSessionManager();
 
   const session = await manager.getDefaultSession();
-  const tg = new TelegramClient(
-    apiId,
-    apiHash,
-    manager,
-    session,
-    (update, short) => {
-      postMessage({
-        type: "update",
-        short,
-        update
-      } as UpdateEvent);
-    }
-  );
+  const tg = new TelegramClient(apiId, apiHash, manager, session, update => {
+    postMessage({
+      type: "update",
+      update
+    } as UpdateEvent);
+  });
   await tg.connect();
 
   console.timeEnd("Telegram Connect");

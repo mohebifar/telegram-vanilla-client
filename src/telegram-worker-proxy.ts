@@ -1,6 +1,7 @@
-import { TelegramClient } from "./core/TelegramClient";
-import { Updates } from "./core/tl/TLObjects";
 import { FileStorage } from "./core/FileStorage";
+import { TelegramClient } from "./core/TelegramClient";
+import { AllUpdateTypes } from "./utils/useful-types";
+import db from "./utils/db";
 
 const clientProxiedMethods = <const>[
   "isUserAuthorized",
@@ -14,7 +15,8 @@ const clientProxiedMethods = <const>[
 const fileStorageProxiedMethods = <const>[
   "download",
   "downloadProfilePhoto",
-  "downloadMedia"
+  "downloadMedia",
+  "upload"
 ];
 
 export type ClientProxiedMethods = typeof clientProxiedMethods[number];
@@ -28,10 +30,12 @@ export interface TelegramClientProxy
   fileStorage: FileStorageProxy;
 }
 
+export interface DBMethodProxy {}
+
 export async function makeProxy(
   apiId: number,
   apiHash: string,
-  updateCallback: (update: Updates["updates"][0], short: boolean) => void
+  updateCallback: (update: AllUpdateTypes) => void
 ): Promise<TelegramClientProxy> {
   const tgWorker = new Worker("./telegram.worker.ts", {
     type: "module"
@@ -47,6 +51,25 @@ export async function makeProxy(
       } else {
         resolve(data.result);
       }
+    } else if (data.type === "db") {
+      db[data.table]
+        [data.method](...data.args)
+        .then((result: any) => {
+          tgWorker.postMessage({
+            type: "db",
+            requestId: data.requestId,
+            error: false,
+            result
+          });
+        })
+        .catch((result: any) => {
+          tgWorker.postMessage({
+            type: "db",
+            requestId: data.requestId,
+            error: true,
+            result
+          });
+        });
     }
   });
 
@@ -93,7 +116,7 @@ export async function makeProxy(
           )
         });
       } else if (data.type === "update") {
-        updateCallback(data.update, data.short);
+        updateCallback(data.update);
       }
     });
 

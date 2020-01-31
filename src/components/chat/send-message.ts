@@ -1,5 +1,5 @@
 import autosize from "autosize";
-import { SimplifiedMessageRequest } from "../../models/peer";
+import { SimplifiedMessageRequest, Peer } from "../../models/peer";
 import { Component, createElement } from "../../utils/dom";
 import { Icons } from "../ui/icon";
 import IconButton from "../ui/icon-button";
@@ -14,6 +14,7 @@ export default class SendMessageForm implements Component<Options> {
   private callback: Options["callback"];
   private inputNode: HTMLTextAreaElement;
   private attachmentButton: HTMLButtonElement;
+  private filePicker: HTMLInputElement;
 
   constructor({ callback }: Options) {
     this.callback = callback;
@@ -23,17 +24,45 @@ export default class SendMessageForm implements Component<Options> {
     }) as HTMLTextAreaElement;
     autosize(this.inputNode);
 
-    this.attachmentButton = createElement("button", {
-      
-    }) as HTMLButtonElement;
-    this.attachmentButton.addEventListener('click', () => {
-      console.log('asdasd');
-    })
+    this.filePicker = createElement("input", {
+      type: "file",
+      class: "hidden"
+    }) as HTMLInputElement;
+
+    this.attachmentButton = createElement(
+      "label",
+      { class: "hidden" },
+      "Upload",
+      this.filePicker
+    ) as HTMLButtonElement;
+
+    this.filePicker.addEventListener("change", event => {
+      let reader = new FileReader();
+      reader.onload = async function(e) {
+        const buffer = e.target.result as ArrayBuffer;
+        const file = await Peer.tg.fileStorage.upload(buffer);
+        console.log("file saved", file);
+        callback({
+          $t: "messages_SendMediaRequest",
+          message: "salam",
+          media: {
+            $t: "InputMediaUploadedPhoto",
+            file
+          }
+        });
+      };
+      reader.readAsArrayBuffer((event.target as HTMLInputElement).files[0]);
+    });
 
     this.element = createElement(
       "form",
       { class: `hidden ${styles.container}`, action: "#" },
-      createElement("div", { class: styles.inputWrapper }, this.inputNode, this.attachmentButton),
+      createElement(
+        "div",
+        { class: styles.inputWrapper },
+        this.inputNode,
+        this.attachmentButton
+      ),
       createElement(IconButton, { icon: Icons.Send, color: "white" })
     );
 
@@ -55,6 +84,7 @@ export default class SendMessageForm implements Component<Options> {
     this.inputNode.value = "";
     autosize.update(this.inputNode);
     this.callback({
+      $t: "messages_SendMessageRequest",
       message: value
     });
   };

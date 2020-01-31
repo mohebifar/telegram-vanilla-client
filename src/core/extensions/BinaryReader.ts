@@ -1,4 +1,4 @@
-import { unpack, readBigIntFromBuffer } from "../../utils/binary";
+import { unpack, readBigIntFromBuffer } from "../binary";
 import { tlObjectReader } from "../tl/types";
 
 export class BinaryReader {

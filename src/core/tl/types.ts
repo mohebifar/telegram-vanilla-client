@@ -4,7 +4,7 @@ import {
   concatBuffers,
   readBufferFromBigInt,
   readBytesFromString
-} from "../../utils/binary";
+} from "../binary";
 import { tlObjectsDefinitions } from "./schema";
 import { TLObjectTypes } from "./TLObjects";
 import {
@@ -226,7 +226,7 @@ export function serializeTLObject(object: TLObjectTypes) {
         }
 
         const matches = type.match(flagRegex);
-        const flagIndex = Number(matches[2]);
+        const flagIndex = Number(matches[1]);
         const flag = 2 ** flagIndex;
 
         flagIndicatorValue |= flag;

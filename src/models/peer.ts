@@ -1,43 +1,51 @@
 import {
   channels_GetFullChannelRequest,
+  messages_ChatFull,
   messages_DialogsSlice,
   messages_GetFullChatRequest,
+  messages_SendMediaRequest,
   messages_SendMessageRequest,
-  UpdateShortSentMessage,
-  users_GetFullUserRequest,
-  messages_ChatFull
+  users_GetFullUserRequest
 } from "../core/tl/TLObjects";
 import { getInputPeer, getPeer, simplifyPeerType } from "../core/tl/utils";
+import { handleUpdate } from "../update-handler";
 import { getDialogDisplayName } from "../utils/chat";
 import { DBPeer, TelegramDatabase } from "../utils/db";
 import { Dialog, IDialog } from "./dialog";
 import { IMessage, Message } from "./message";
 import { Model, ModelDecorator, ModelKey, ModelWithProxy } from "./model";
+import { AllUpdateTypes } from "../utils/useful-types";
 
 interface ExtraMethods {
   displayName: string;
   fetchHistory(offsetId?: number, offsetDate?: number): Promise<IMessage[]>;
-  sendMessage(
-    message: SimplifiedMessageRequest
-  ): [IMessage, Promise<IMessage | undefined>];
+  sendMessage(message: SimplifiedMessageRequest): [IMessage, Promise<any>];
   getDialog(): Promise<IDialog | undefined>;
   loadFull(): Promise<void>;
 }
 
 export type IPeer = ModelWithProxy<"peers"> & ExtraMethods;
 
-export type SimplifiedMessageRequest = Omit<
-  messages_SendMessageRequest,
-  "peer" | "randomId" | "$t" | "constructorId" | "subclassOfId"
-> &
-  Pick<Partial<messages_SendMessageRequest>, "peer" | "randomId">;
+export type SimplifiedMessageRequest = (
+  | Omit<
+      messages_SendMessageRequest,
+      "peer" | "randomId" | "constructorId" | "subclassOfId"
+    >
+  | Omit<
+      messages_SendMediaRequest,
+      "peer" | "randomId" | "constructorId" | "subclassOfId"
+    >
+) & {
+  peer?: messages_SendMessageRequest["peer"];
+  randomId?: messages_SendMessageRequest["randomId"];
+};
 
-let transientIds = new Set<number>();
+let transientIds = new Set<bigint>();
 
 function generateTransientId() {
-  let randomId: number;
+  let randomId: bigint;
   do {
-    randomId = Math.ceil(Math.random() * 64000);
+    randomId = BigInt(Math.floor(Math.random() * 999999));
   } while (transientIds.has(randomId));
   transientIds.add(randomId);
   return randomId;
@@ -109,45 +117,34 @@ export class Peer extends Model<"peers"> implements ExtraMethods {
 
   public sendMessage(
     message: SimplifiedMessageRequest
-  ): [IMessage, Promise<IMessage | undefined>] {
+  ): [IMessage, Promise<any>] {
     const randomId = generateTransientId();
     const messageModel = Message.fromObject({
+      ...message,
       $t: "Message",
       date: Date.now() / 1000,
       id: randomId,
       toId: getPeer(this.fields),
-      out: true,
-      ...message
+      out: true
     });
     messageModel.justSent = true;
+    messageModel.saveInMemory();
 
     const promise = this.tg
       .invoke({
-        $t: "messages_SendMessageRequest",
         ...message,
-        randomId: BigInt(randomId),
+        randomId,
         peer: getInputPeer(this.fields)
       })
-      .then(
-        ({
-          $t,
-          constructorId,
-          subclassOfId,
-          out,
-          ...update
-        }: UpdateShortSentMessage) => {
-          transientIds.delete(randomId);
-          messageModel.assignValues(update);
-          messageModel.justSent = false;
-          return this.getDialog();
-        }
-      )
-      .then(async dialog => {
-        dialog.topMessage = messageModel.id;
-        dialog.lastMessageDate = Date.now() / 1000;
-        await messageModel.save();
-        dialog.save();
-        return messageModel;
+      .then((updates: AllUpdateTypes) => {
+        transientIds.delete(randomId);
+
+        return handleUpdate(updates, {
+          transientMessage: {
+            randomId,
+            message: messageModel
+          }
+        });
       });
 
     return [messageModel, promise];

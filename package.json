@@ -2,6 +2,10 @@
   "name": "telegram-client-web",
   "version": "1.0.0",
   "description": "A telegram client for web",
+  "sideEffects": [
+    "*.scss",
+    "*.css"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "webpack-dev-server --env.NODE_ENV=development --mode development",
@@ -55,6 +59,7 @@
     "lottie-web": "^5.5.9",
     "mitt": "^1.2.0",
     "pako": "^1.0.10",
+    "spu-md5": "0.0.4",
     "virtualized-list": "^2.2.0"
   }
 }

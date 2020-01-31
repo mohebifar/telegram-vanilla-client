@@ -69,6 +69,23 @@ export default class Chat implements Component<Options> {
       }
     });
 
+    Message.events.on("synced", async ({ message }: { message: IMessage }) => {
+      if (message.$t === "MessageEmpty") {
+        return;
+      }
+
+      const peerId = extractIdFromPeer(message.toId);
+      if (
+        peerId.id === this.peer.id &&
+        peerId.type === this.peer.type &&
+        this.isAtBottom()
+      ) {
+        requestAnimationFrame(() => {
+          this.scrollToEnd();
+        });
+      }
+    });
+
     Message.events.on(
       "saved",
       async ({ object: message }: { object: IMessage }) => {
@@ -94,8 +111,9 @@ export default class Chat implements Component<Options> {
         const lastRenderedMessage = lastBubble.instance.message;
 
         if (message.date.isAfter(lastRenderedMessage.date)) {
+          this.addMessage(message);
+
           if (this.isAtBottom()) {
-            this.addMessage(message);
             this.scrollToEnd();
           }
         }
@@ -149,9 +167,10 @@ export default class Chat implements Component<Options> {
         type = "service";
     }
 
-    let lastBubbleHolder = this.chatContainer.querySelector(
-      prepend ? ":first-child" : ":last-child"
-    );
+    const children = this.chatContainer.childNodes;
+    let lastBubbleHolder = children.item(
+      prepend ? 0 : children.length - 1
+    ) as HTMLElement;
 
     const insertFn = prepend ? "prepend" : "append";
 
@@ -166,6 +185,7 @@ export default class Chat implements Component<Options> {
         lastBubbleType = "service";
       }
     }
+    console.log("lastBubbleType", lastBubbleType, lastBubbleHolder);
 
     if (!lastBubbleHolder || lastBubbleType !== type) {
       lastBubbleHolder = createElement("div", { class: styles[type] });
@@ -201,7 +221,14 @@ export default class Chat implements Component<Options> {
     this.topBarContainer.innerHTML = "";
 
     if (dialog !== undefined) {
-      this.sendMessageForm.classList.remove("hidden");
+      const whatToDoWithInvisibilityOfSendForm =
+        this.peer.$t === "Channel" && this.peer.broadcast && !this.peer.creator
+          ? "add"
+          : "remove";
+
+      this.sendMessageForm.classList[whatToDoWithInvisibilityOfSendForm](
+        "hidden"
+      );
       this.topBarContainer.append(
         createElement(TopBar, { dialog, peer: this.peer })
       );

@@ -6,13 +6,14 @@ import {
   ChannelForbidden,
   UserEmpty,
   User,
-  Message,
-  MessageEmpty,
-  Updates,
-  UpdateShort as TLUpdateShort,
-  UpdateShortMessage,
   MessageService,
-  UpdateShortChatMessage
+  MessageEmpty,
+  Message,
+  UpdateShort as TLUpdateShort,
+  UpdateShortChatMessage,
+  UpdateShortSentMessage,
+  UpdateShortMessage,
+  Updates
 } from "../core/tl/TLObjects";
 
 export type AllChatTypes =
@@ -32,6 +33,17 @@ export type Update = Updates["updates"][0];
 export type UpdateShort =
   | TLUpdateShort["update"]
   | UpdateShortMessage
-  | UpdateShortChatMessage;
+  | UpdateShortChatMessage
+  | UpdateShortSentMessage;
 
-export type AllUpdateTypes = UpdateShort | Update;
+export type AllUpdateTypes = Updates | UpdateShort | Update;
+
+export type InputPeerTypes =
+  | InputPeerSelf
+  | InputPeerUser
+  | InputPeerChannel
+  | InputPeerChannel
+  | InputPeerEmpty
+  | InputPeerUserFromMessage
+  | InputPeerChat
+  | InputPeerChannelFromMessage;

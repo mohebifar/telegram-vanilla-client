@@ -7,7 +7,7 @@ import {
   concatBuffers,
   getByteArray,
   base64ToBufferAsync
-} from "../../utils/binary";
+} from "../binary";
 import { serializeBytes } from "../../core/tl/types";
 import { BerReader } from "./ASN1";
 

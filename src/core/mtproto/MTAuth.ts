@@ -8,7 +8,7 @@ import {
   readBufferFromHex,
   getByteArray,
   modExp
-} from "../../utils/binary";
+} from "../binary";
 import { serializeTLObject, invariant } from "../tl/types";
 import { Factorizator } from "../crypto/Factorizer";
 import * as RSA from "../crypto/RSA";

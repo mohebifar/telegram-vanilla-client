@@ -8,9 +8,5 @@ declare module "*.wasm" {
   export = content;
 }
 
-declare var process: {
-  env: {
-    API_ID: number;
-    API_HASH: string;
-  };
-};
+declare var TG_API_ID: number;
+declare var TG_API_HASH: string;

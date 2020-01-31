@@ -31,23 +31,23 @@ export class MTProtoSender {
   private authKeyCallback: Options["authKeyCallback"];
   private updateCallback: Options["updateCallback"];
   private autoReconnectCallback: Options["autoReconnectCallback"];
-  private handlers = {
-    RPCResult: this.handleRPCResult.bind(this),
-    MessageContainer: this.handleContainer.bind(this),
-    GZIPPacked: this.handleGzipPacked.bind(this),
-    Pong: this.handlePong.bind(this),
-    BadServerSalt: this.handleBadServerSalt.bind(this),
-    BadMsgNotification: this.handleBadNotification.bind(this),
-    MsgDetailedInfo: this.handleDetailedInfo.bind(this),
-    MsgNewDetailedInfo: this.handleNewDetailedInfo.bind(this),
-    NewSessionCreated: this.handleNewSessionCreated.bind(this),
-    MsgsAck: this.handleAck.bind(this),
-    FutureSalts: this.handleFutureSalts.bind(this),
-    MsgsStateReq: this.handleStateForgotten.bind(this),
-    MsgResendReq: this.handleStateForgotten.bind(this),
-    MsgsAllInfo: this.handleMsgAll.bind(this),
-    OnDisconnect: this._handleDisconnect.bind(this)
-  };
+  private handlers = new Map([
+    ["RPCResult", this.handleRPCResult.bind(this)],
+    ["MessageContainer", this.handleContainer.bind(this)],
+    ["GZIPPacked", this.handleGzipPacked.bind(this)],
+    ["Pong", this.handlePong.bind(this)],
+    ["BadServerSalt", this.handleBadServerSalt.bind(this)],
+    ["BadMsgNotification", this.handleBadNotification.bind(this)],
+    ["MsgDetailedInfo", this.handleDetailedInfo.bind(this)],
+    ["MsgNewDetailedInfo", this.handleNewDetailedInfo.bind(this)],
+    ["NewSessionCreated", this.handleNewSessionCreated.bind(this)],
+    ["MsgsAck", this.handleAck.bind(this)],
+    ["FutureSalts", this.handleFutureSalts.bind(this)],
+    ["MsgsStateReq", this.handleStateForgotten.bind(this)],
+    ["MsgResendReq", this.handleStateForgotten.bind(this)],
+    ["MsgsAllInfo", this.handleMsgAll.bind(this)],
+    ["OnDisconnect", this._handleDisconnect.bind(this)]
+  ]);
 
   constructor(
     public session: MTSession,
@@ -56,7 +56,7 @@ export class MTProtoSender {
     this.updateCallback = updateCallback;
     this.autoReconnectCallback = autoReconnectCallback;
     this.authKeyCallback = authKeyCallback;
-    this.connection = new MTConnection(this.handlers.OnDisconnect);
+    this.connection = new MTConnection(this.handlers.get("OnDisconnect"));
   }
 
   public async connect(should = true) {
@@ -226,10 +226,8 @@ export class MTProtoSender {
 
   private async processMessage(message: TLMessage<any>) {
     this.pendingAck.add(message.msgId);
-    let handler = this.handlers[message.obj.$t];
-    if (!handler) {
-      handler = this.handleUpdate.bind(this);
-    }
+    const handler =
+      this.handlers.get(message.obj.$t) || this.handleUpdate.bind(this);
 
     await handler(message);
   }
@@ -361,7 +359,7 @@ export class MTProtoSender {
   private async handleBadNotification(message: TLMessage<any>) {
     const badMsg = message.obj;
     const states = this.popStates(badMsg.badMsgId);
-    console.debug(`Handling bad msg ${badMsg}`);
+    console.debug(`Handling bad msg`, badMsg);
     if ([16, 17].includes(badMsg.errorCode)) {
       // Sent msg_id too low or too high (respectively).
       // Use the current msg_id to determine the right time offset.

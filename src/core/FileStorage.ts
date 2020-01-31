@@ -1,34 +1,39 @@
+import { inflate } from "pako";
+import { MD5 } from "spu-md5";
 import {
-  photos_UpdateProfilePhotoRequest,
-  upload_GetFileRequest,
-  upload_File,
-  messages_ChatFull,
-  User,
+  concatBuffers,
+  generateRandomLong,
+  readBufferFromHex
+} from "./binary";
+import { TelegramClient } from "./TelegramClient";
+import {
   Channel,
   Chat,
-  MessageMediaPhoto,
-  Document,
-  PhotoCachedSize,
-  PhotoSizeEmpty,
-  PhotoSize,
-  PhotoStrippedSize,
-  TLObjectTypes,
-  Message,
-  Photo,
-  WebDocument,
-  WebDocumentNoProxy,
   ChatFull,
-  UserProfilePhoto,
   ChatPhoto,
+  ChatPhotoEmpty,
+  Document,
   FileLocationToBeDeprecated,
+  InputFile,
   InputPeerPhotoFileLocation,
+  Message,
+  MessageMediaPhoto,
+  messages_ChatFull,
+  Photo,
+  PhotoCachedSize,
+  PhotoSize,
+  PhotoSizeEmpty,
+  PhotoStrippedSize,
+  photos_UpdateProfilePhotoRequest,
+  TLObjectTypes,
+  upload_File,
+  upload_GetFileRequest,
+  User,
+  UserProfilePhoto,
   UserProfilePhotoEmpty,
-  ChatPhotoEmpty
+  WebDocument,
+  WebDocumentNoProxy
 } from "./tl/TLObjects";
-import { TelegramClient } from "./TelegramClient";
-import { concatBuffers } from "../utils/binary";
-import { strippedPhotoToJpg } from "../utils/utils";
-import { inflate } from "pako";
 import { getInputPeer } from "./tl/utils";
 
 type PhotoSizesTypes =
@@ -54,9 +59,52 @@ export class FileStorage {
   private downloadQueue: {
     [dcId: number]: Array<Promise<any> | undefined>;
   } = {};
+  private uploadedFiles = new Map<bigint, Blob | null>();
 
   constructor(private client: TelegramClient) {
     this.setupCache();
+  }
+
+  public async upload(buffer: ArrayBuffer): Promise<InputFile> {
+    const bytes = new Uint8Array(buffer);
+    let fileId: bigint;
+    do {
+      fileId = generateRandomLong();
+    } while (this.uploadedFiles.has(fileId));
+    this.uploadedFiles.set(fileId, null);
+
+    const partSize = 16384;
+    const numberOfParts = Math.ceil(bytes.length / partSize);
+    let filePart = 0;
+    let retries = 0;
+    while (filePart < numberOfParts && retries < 5) {
+      const index = filePart * partSize;
+      try {
+        await this.client.invoke({
+          $t: "upload_SaveFilePartRequest",
+          bytes: bytes.slice(index, index + partSize),
+          fileId,
+          filePart
+        });
+        filePart++;
+      } catch {
+        retries++;
+      }
+    }
+
+    this.uploadedFiles.set(fileId, new Blob([buffer]));
+
+    return {
+      $t: "InputFile",
+      id: fileId,
+      parts: numberOfParts,
+      name: "test.jpg",
+      md5Checksum: MD5.process(bytes).toString()
+    };
+  }
+
+  public getUploadedFile(uploadId: bigint) {
+    return this.uploadedFiles.get(uploadId);
   }
 
   public async download(
@@ -427,4 +475,17 @@ function getPartSize(fileSize: number) {
   }
 
   throw new Error("File size too large");
+}
+
+export function strippedPhotoToJpg(stripped: Uint8Array) {
+  if (stripped.length < 3 || stripped[0] !== 1) {
+    return stripped;
+  }
+  const header = readBufferFromHex(
+    "ffd8ffe000104a46494600010100000100010000ffdb004300281c1e231e19282321232d2b28303c64413c37373c7b585d4964918099968f808c8aa0b4e6c3a0aadaad8a8cc8ffcbdaeef5ffffff9bc1fffffffaffe6fdfff8ffdb0043012b2d2d3c353c76414176f8a58ca5f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8ffc00011080000000003012200021101031101ffc4001f0000010501010101010100000000000000000102030405060708090a0bffc400b5100002010303020403050504040000017d01020300041105122131410613516107227114328191a1082342b1c11552d1f02433627282090a161718191a25262728292a3435363738393a434445464748494a535455565758595a636465666768696a737475767778797a838485868788898a92939495969798999aa2a3a4a5a6a7a8a9aab2b3b4b5b6b7b8b9bac2c3c4c5c6c7c8c9cad2d3d4d5d6d7d8d9dae1e2e3e4e5e6e7e8e9eaf1f2f3f4f5f6f7f8f9faffc4001f0100030101010101010101010000000000000102030405060708090a0bffc400b51100020102040403040705040400010277000102031104052131061241510761711322328108144291a1b1c109233352f0156272d10a162434e125f11718191a262728292a35363738393a434445464748494a535455565758595a636465666768696a737475767778797a82838485868788898a92939495969798999aa2a3a4a5a6a7a8a9aab2b3b4b5b6b7b8b9bac2c3c4c5c6c7c8c9cad2d3d4d5d6d7d8d9dae2e3e4e5e6e7e8e9eaf2f3f4f5f6f7f8f9faffda000c03010002110311003f00"
+  );
+  const footer = readBufferFromHex("ffd9");
+  header[164] = stripped[1];
+  header[166] = stripped[2];
+  return concatBuffers([header, stripped.slice(3), footer]);
 }

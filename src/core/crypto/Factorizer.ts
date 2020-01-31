@@ -1,4 +1,4 @@
-import { getRandomInt } from "../../utils/binary";
+import { getRandomInt } from "../binary";
 
 export class Factorizator {
   /**

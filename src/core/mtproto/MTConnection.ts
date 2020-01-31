@@ -1,5 +1,5 @@
 import { MTTransport } from "./MTTransport";
-import { concatBuffers } from "../../utils/binary";
+import { concatBuffers } from "../binary";
 import { AsyncQueue } from "../extensions/AsyncQueue";
 
 export class MTConnection {

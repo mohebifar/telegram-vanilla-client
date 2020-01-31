@@ -293,7 +293,7 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["reqMsgId", "long"],
         ["now", "int"],
-        ["salts", "Vector<future_salt>"]
+        ["salts", "Vector<_>"]
       ]
     ]
   ],
@@ -359,7 +359,7 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["phonePrefixRules", "string"],
         ["dcId", "int"],
-        ["ips", "Vector<IpPort>"]
+        ["ips", "Vector<_>"]
       ]
     ]
   ],
@@ -370,23 +370,17 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["date", "int"],
         ["expires", "int"],
-        ["rules", "Vector<AccessPointRule>"]
+        ["rules", "Vector<_>"]
       ]
     ]
   ],
-  [
-    0x6c52c484,
-    [["TlsClientHello", 0xbef20920], [["blocks", "Vector<TlsBlock>"]]]
-  ],
+  [0x6c52c484, [["TlsClientHello", 0xbef20920], [["blocks", "Vector<_>"]]]],
   [0x4218a164, [["TlsBlockString", 0xf1163490], [["data", "string"]]]],
   [0x4d4dc41e, [["TlsBlockRandom", 0xf1163490], [["length", "int"]]]],
   [0x09333afb, [["TlsBlockZero", 0xf1163490], [["length", "int"]]]],
   [0x10e8636f, [["TlsBlockDomain", 0xf1163490], []]],
   [0xe675a1c1, [["TlsBlockGrease", 0xf1163490], [["seed", "int"]]]],
-  [
-    0xe725d44f,
-    [["TlsBlockScope", 0xf1163490], [["entries", "Vector<TlsBlock>"]]]
-  ],
+  [0xe725d44f, [["TlsBlockScope", 0xf1163490], [["entries", "Vector<_>"]]]],
   [0x58e4a740, [["RpcDropAnswerRequest", 0x4bca7570], [["reqMsgId", "long"]]]],
   [0xb921bd04, [["GetFutureSaltsRequest", 0x1090f517], [["num", "int"]]]],
   [0x7abe77ec, [["PingRequest", 0x816aee71], [["pingId", "long"]]]],
@@ -432,7 +426,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["InputPeerUserFromMessage", 0xc91c90b6],
       [
-        ["peer", "InputPeer"],
+        ["peer", "_"],
         ["msgId", "int"],
         ["userId", "int"]
       ]
@@ -443,7 +437,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["InputPeerChannelFromMessage", 0xc91c90b6],
       [
-        ["peer", "InputPeer"],
+        ["peer", "_"],
         ["msgId", "int"],
         ["channelId", "int"]
       ]
@@ -466,7 +460,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["InputUserFromMessage", 0xe669bf46],
       [
-        ["peer", "InputPeer"],
+        ["peer", "_"],
         ["msgId", "int"],
         ["userId", "int"]
       ]
@@ -514,8 +508,8 @@ export const tlObjectsDefinitions: any[] = [
       ["InputMediaUploadedPhoto", 0xfaf846f4],
       [
         ["flags", "#FLAG"],
-        ["file", "InputFile"],
-        ["stickers", "Flag0<Vector<InputDocument>>"],
+        ["file", "_"],
+        ["stickers", "Flag0<Vector<_>>"],
         ["ttlSeconds", "Flag1<int>"]
       ]
     ]
@@ -526,15 +520,12 @@ export const tlObjectsDefinitions: any[] = [
       ["InputMediaPhoto", 0xfaf846f4],
       [
         ["flags", "#FLAG"],
-        ["id", "InputPhoto"],
+        ["id", "_"],
         ["ttlSeconds", "Flag0<int>"]
       ]
     ]
   ],
-  [
-    0xf9c44144,
-    [["InputMediaGeoPoint", 0xfaf846f4], [["geoPoint", "InputGeoPoint"]]]
-  ],
+  [0xf9c44144, [["InputMediaGeoPoint", 0xfaf846f4], [["geoPoint", "_"]]]],
   [
     0xf8ab7dfb,
     [
@@ -554,11 +545,11 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["flags", "#FLAG"],
         ["nosoundVideo", "Flag3<true>"],
-        ["file", "InputFile"],
-        ["thumb", "Flag2<InputFile>"],
+        ["file", "_"],
+        ["thumb", "Flag2<_>"],
         ["mimeType", "string"],
-        ["attributes", "Vector<DocumentAttribute>"],
-        ["stickers", "Flag0<Vector<InputDocument>>"],
+        ["attributes", "Vector<_>"],
+        ["stickers", "Flag0<Vector<_>>"],
         ["ttlSeconds", "Flag1<int>"]
       ]
     ]
@@ -569,7 +560,7 @@ export const tlObjectsDefinitions: any[] = [
       ["InputMediaDocument", 0xfaf846f4],
       [
         ["flags", "#FLAG"],
-        ["id", "InputDocument"],
+        ["id", "_"],
         ["ttlSeconds", "Flag0<int>"]
       ]
     ]
@@ -579,7 +570,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["InputMediaVenue", 0xfaf846f4],
       [
-        ["geoPoint", "InputGeoPoint"],
+        ["geoPoint", "_"],
         ["title", "string"],
         ["address", "string"],
         ["provider", "string"],
@@ -620,7 +611,7 @@ export const tlObjectsDefinitions: any[] = [
       ]
     ]
   ],
-  [0xd33f43f3, [["InputMediaGame", 0xfaf846f4], [["id", "InputGame"]]]],
+  [0xd33f43f3, [["InputMediaGame", 0xfaf846f4], [["id", "_"]]]],
   [
     0xf4e096c3,
     [
@@ -629,11 +620,11 @@ export const tlObjectsDefinitions: any[] = [
         ["flags", "#FLAG"],
         ["title", "string"],
         ["description", "string"],
-        ["photo", "Flag0<InputWebDocument>"],
-        ["invoice", "Invoice"],
+        ["photo", "Flag0<_>"],
+        ["invoice", "_"],
         ["payload", "bytes"],
         ["provider", "string"],
-        ["providerData", "DataJSON"],
+        ["providerData", "_"],
         ["startParam", "string"]
       ]
     ]
@@ -645,18 +636,15 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["flags", "#FLAG"],
         ["stopped", "Flag0<true>"],
-        ["geoPoint", "InputGeoPoint"],
+        ["geoPoint", "_"],
         ["period", "Flag1<int>"]
       ]
     ]
   ],
-  [0x06b3765b, [["InputMediaPoll", 0xfaf846f4], [["poll", "Poll"]]]],
+  [0x06b3765b, [["InputMediaPoll", 0xfaf846f4], [["poll", "_"]]]],
   [0x1ca48f57, [["InputChatPhotoEmpty", 0xd4eb2d74], []]],
-  [
-    0x927c55b4,
-    [["InputChatUploadedPhoto", 0xd4eb2d74], [["file", "InputFile"]]]
-  ],
-  [0x8953ad37, [["InputChatPhoto", 0xd4eb2d74], [["id", "InputPhoto"]]]],
+  [0x927c55b4, [["InputChatUploadedPhoto", 0xd4eb2d74], [["file", "_"]]]],
+  [0x8953ad37, [["InputChatPhoto", 0xd4eb2d74], [["id", "_"]]]],
   [0xe4c123d6, [["InputGeoPointEmpty", 0x430d225], []]],
   [
     0xf3b7acc9,
@@ -744,7 +732,7 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["flags", "#FLAG"],
         ["big", "Flag0<true>"],
-        ["peer", "InputPeer"],
+        ["peer", "_"],
         ["volumeId", "long"],
         ["localId", "int"]
       ]
@@ -755,7 +743,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["InputStickerSetThumb", 0x1523d462],
       [
-        ["stickerset", "InputStickerSet"],
+        ["stickerset", "_"],
         ["volumeId", "long"],
         ["localId", "int"]
       ]
@@ -800,10 +788,10 @@ export const tlObjectsDefinitions: any[] = [
         ["lastName", "Flag2<string>"],
         ["username", "Flag3<string>"],
         ["phone", "Flag4<string>"],
-        ["photo", "Flag5<UserProfilePhoto>"],
-        ["status", "Flag6<UserStatus>"],
+        ["photo", "Flag5<_>"],
+        ["status", "Flag6<_>"],
         ["botInfoVersion", "Flag14<int>"],
-        ["restrictionReason", "Flag18<Vector<RestrictionReason>>"],
+        ["restrictionReason", "Flag18<Vector<_>>"],
         ["botInlinePlaceholder", "Flag19<string>"],
         ["langCode", "Flag22<string>"]
       ]
@@ -816,8 +804,8 @@ export const tlObjectsDefinitions: any[] = [
       ["UserProfilePhoto", 0xc6338f7d],
       [
         ["photoId", "long"],
-        ["photoSmall", "FileLocation"],
-        ["photoBig", "FileLocation"],
+        ["photoSmall", "_"],
+        ["photoBig", "_"],
         ["dcId", "int"]
       ]
     ]
@@ -841,13 +829,13 @@ export const tlObjectsDefinitions: any[] = [
         ["deactivated", "Flag5<true>"],
         ["id", "int"],
         ["title", "string"],
-        ["photo", "ChatPhoto"],
+        ["photo", "_"],
         ["participantsCount", "int"],
         ["date", "int"],
         ["version", "int"],
-        ["migratedTo", "Flag6<InputChannel>"],
-        ["adminRights", "Flag14<ChatAdminRights>"],
-        ["defaultBannedRights", "Flag18<ChatBannedRights>"]
+        ["migratedTo", "Flag6<_>"],
+        ["adminRights", "Flag14<_>"],
+        ["defaultBannedRights", "Flag18<_>"]
       ]
     ]
   ],
@@ -883,13 +871,13 @@ export const tlObjectsDefinitions: any[] = [
         ["accessHash", "Flag13<long>"],
         ["title", "string"],
         ["username", "Flag6<string>"],
-        ["photo", "ChatPhoto"],
+        ["photo", "_"],
         ["date", "int"],
         ["version", "int"],
-        ["restrictionReason", "Flag9<Vector<RestrictionReason>>"],
-        ["adminRights", "Flag14<ChatAdminRights>"],
-        ["bannedRights", "Flag15<ChatBannedRights>"],
-        ["defaultBannedRights", "Flag18<ChatBannedRights>"],
+        ["restrictionReason", "Flag9<Vector<_>>"],
+        ["adminRights", "Flag14<_>"],
+        ["bannedRights", "Flag15<_>"],
+        ["defaultBannedRights", "Flag18<_>"],
         ["participantsCount", "Flag17<int>"]
       ]
     ]
@@ -919,11 +907,11 @@ export const tlObjectsDefinitions: any[] = [
         ["hasScheduled", "Flag8<true>"],
         ["id", "int"],
         ["about", "string"],
-        ["participants", "ChatParticipants"],
-        ["chatPhoto", "Flag2<Photo>"],
-        ["notifySettings", "PeerNotifySettings"],
-        ["exportedInvite", "ExportedChatInvite"],
-        ["botInfo", "Flag3<Vector<BotInfo>>"],
+        ["participants", "_"],
+        ["chatPhoto", "Flag2<_>"],
+        ["notifySettings", "_"],
+        ["exportedInvite", "_"],
+        ["botInfo", "Flag3<Vector<_>>"],
         ["pinnedMsgId", "Flag6<int>"],
         ["folderId", "Flag11<int>"]
       ]
@@ -952,18 +940,18 @@ export const tlObjectsDefinitions: any[] = [
         ["readInboxMaxId", "int"],
         ["readOutboxMaxId", "int"],
         ["unreadCount", "int"],
-        ["chatPhoto", "Photo"],
-        ["notifySettings", "PeerNotifySettings"],
-        ["exportedInvite", "ExportedChatInvite"],
-        ["botInfo", "Vector<BotInfo>"],
+        ["chatPhoto", "_"],
+        ["notifySettings", "_"],
+        ["exportedInvite", "_"],
+        ["botInfo", "Vector<_>"],
         ["migratedFromChatId", "Flag4<int>"],
         ["migratedFromMaxId", "Flag4<int>"],
         ["pinnedMsgId", "Flag5<int>"],
-        ["stickerset", "Flag8<StickerSet>"],
+        ["stickerset", "Flag8<_>"],
         ["availableMinId", "Flag9<int>"],
         ["folderId", "Flag11<int>"],
         ["linkedChatId", "Flag14<int>"],
-        ["location", "Flag15<ChannelLocation>"],
+        ["location", "Flag15<_>"],
         ["slowmodeSeconds", "Flag17<int>"],
         ["slowmodeNextSendDate", "Flag18<int>"],
         ["pts", "int"]
@@ -1000,7 +988,7 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["flags", "#FLAG"],
         ["chatId", "int"],
-        ["selfParticipant", "Flag0<ChatParticipant>"]
+        ["selfParticipant", "Flag0<_>"]
       ]
     ]
   ],
@@ -1010,7 +998,7 @@ export const tlObjectsDefinitions: any[] = [
       ["ChatParticipants", 0x1fa89571],
       [
         ["chatId", "int"],
-        ["participants", "Vector<ChatParticipant>"],
+        ["participants", "Vector<_>"],
         ["version", "int"]
       ]
     ]
@@ -1021,8 +1009,8 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["ChatPhoto", 0xac3ec4e5],
       [
-        ["photoSmall", "FileLocation"],
-        ["photoBig", "FileLocation"],
+        ["photoSmall", "_"],
+        ["photoBig", "_"],
         ["dcId", "int"]
       ]
     ]
@@ -1044,20 +1032,20 @@ export const tlObjectsDefinitions: any[] = [
         ["editHide", "Flag21<true>"],
         ["id", "int"],
         ["fromId", "Flag8<int>"],
-        ["toId", "Peer"],
-        ["fwdFrom", "Flag2<MessageFwdHeader>"],
+        ["toId", "_"],
+        ["fwdFrom", "Flag2<_>"],
         ["viaBotId", "Flag11<int>"],
         ["replyToMsgId", "Flag3<int>"],
         ["date", "int"],
         ["message", "string"],
-        ["media", "Flag9<MessageMedia>"],
-        ["replyMarkup", "Flag6<ReplyMarkup>"],
-        ["entities", "Flag7<Vector<MessageEntity>>"],
+        ["media", "Flag9<_>"],
+        ["replyMarkup", "Flag6<_>"],
+        ["entities", "Flag7<Vector<_>>"],
         ["views", "Flag10<int>"],
         ["editDate", "Flag15<int>"],
         ["postAuthor", "Flag16<string>"],
         ["groupedId", "Flag17<long>"],
-        ["restrictionReason", "Flag22<Vector<RestrictionReason>>"]
+        ["restrictionReason", "Flag22<Vector<_>>"]
       ]
     ]
   ],
@@ -1075,10 +1063,10 @@ export const tlObjectsDefinitions: any[] = [
         ["legacy", "Flag19<true>"],
         ["id", "int"],
         ["fromId", "Flag8<int>"],
-        ["toId", "Peer"],
+        ["toId", "_"],
         ["replyToMsgId", "Flag3<int>"],
         ["date", "int"],
-        ["action", "MessageAction"]
+        ["action", "_"]
       ]
     ]
   ],
@@ -1089,12 +1077,12 @@ export const tlObjectsDefinitions: any[] = [
       ["MessageMediaPhoto", 0x476cbe32],
       [
         ["flags", "#FLAG"],
-        ["photo", "Flag0<Photo>"],
+        ["photo", "Flag0<_>"],
         ["ttlSeconds", "Flag2<int>"]
       ]
     ]
   ],
-  [0x56e0d474, [["MessageMediaGeo", 0x476cbe32], [["geo", "GeoPoint"]]]],
+  [0x56e0d474, [["MessageMediaGeo", 0x476cbe32], [["geo", "_"]]]],
   [
     0xcbf24940,
     [
@@ -1115,18 +1103,18 @@ export const tlObjectsDefinitions: any[] = [
       ["MessageMediaDocument", 0x476cbe32],
       [
         ["flags", "#FLAG"],
-        ["document", "Flag0<Document>"],
+        ["document", "Flag0<_>"],
         ["ttlSeconds", "Flag2<int>"]
       ]
     ]
   ],
-  [0xa32dd600, [["MessageMediaWebPage", 0x476cbe32], [["webpage", "WebPage"]]]],
+  [0xa32dd600, [["MessageMediaWebPage", 0x476cbe32], [["webpage", "_"]]]],
   [
     0x2ec0533f,
     [
       ["MessageMediaVenue", 0x476cbe32],
       [
-        ["geo", "GeoPoint"],
+        ["geo", "_"],
         ["title", "string"],
         ["address", "string"],
         ["provider", "string"],
@@ -1135,7 +1123,7 @@ export const tlObjectsDefinitions: any[] = [
       ]
     ]
   ],
-  [0xfdb19008, [["MessageMediaGame", 0x476cbe32], [["game", "Game"]]]],
+  [0xfdb19008, [["MessageMediaGame", 0x476cbe32], [["game", "_"]]]],
   [
     0x84551347,
     [
@@ -1146,7 +1134,7 @@ export const tlObjectsDefinitions: any[] = [
         ["test", "Flag3<true>"],
         ["title", "string"],
         ["description", "string"],
-        ["photo", "Flag0<WebDocument>"],
+        ["photo", "Flag0<_>"],
         ["receiptMsgId", "Flag2<int>"],
         ["currency", "string"],
         ["totalAmount", "long"],
@@ -1159,7 +1147,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["MessageMediaGeoLive", 0x476cbe32],
       [
-        ["geo", "GeoPoint"],
+        ["geo", "_"],
         ["period", "int"]
       ]
     ]
@@ -1169,8 +1157,8 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["MessageMediaPoll", 0x476cbe32],
       [
-        ["poll", "Poll"],
-        ["results", "PollResults"]
+        ["poll", "_"],
+        ["results", "_"]
       ]
     ]
   ],
@@ -1189,10 +1177,7 @@ export const tlObjectsDefinitions: any[] = [
     0xb5a1ce5a,
     [["MessageActionChatEditTitle", 0x8680d126], [["title", "string"]]]
   ],
-  [
-    0x7fcb13a8,
-    [["MessageActionChatEditPhoto", 0x8680d126], [["photo", "Photo"]]]
-  ],
+  [0x7fcb13a8, [["MessageActionChatEditPhoto", 0x8680d126], [["photo", "_"]]]],
   [0x95e3fbef, [["MessageActionChatDeletePhoto", 0x8680d126], []]],
   [
     0x488a7337,
@@ -1245,9 +1230,9 @@ export const tlObjectsDefinitions: any[] = [
         ["currency", "string"],
         ["totalAmount", "long"],
         ["payload", "bytes"],
-        ["info", "Flag0<PaymentRequestedInfo>"],
+        ["info", "Flag0<_>"],
         ["shippingOptionId", "Flag1<string>"],
-        ["charge", "PaymentCharge"]
+        ["charge", "_"]
       ]
     ]
   ],
@@ -1269,7 +1254,7 @@ export const tlObjectsDefinitions: any[] = [
         ["flags", "#FLAG"],
         ["video", "Flag2<true>"],
         ["callId", "long"],
-        ["reason", "Flag0<PhoneCallDiscardReason>"],
+        ["reason", "Flag0<_>"],
         ["duration", "Flag1<int>"]
       ]
     ]
@@ -1288,17 +1273,14 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["MessageActionSecureValuesSentMe", 0x8680d126],
       [
-        ["values", "Vector<SecureValue>"],
-        ["credentials", "SecureCredentialsEncrypted"]
+        ["values", "Vector<_>"],
+        ["credentials", "_"]
       ]
     ]
   ],
   [
     0xd95c6154,
-    [
-      ["MessageActionSecureValuesSent", 0x8680d126],
-      [["types", "Vector<SecureValueType>"]]
-    ]
+    [["MessageActionSecureValuesSent", 0x8680d126], [["types", "Vector<_>"]]]
   ],
   [0xf3f25f76, [["MessageActionContactSignUp", 0x8680d126], []]],
   [
@@ -1309,15 +1291,15 @@ export const tlObjectsDefinitions: any[] = [
         ["flags", "#FLAG"],
         ["pinned", "Flag2<true>"],
         ["unreadMark", "Flag3<true>"],
-        ["peer", "Peer"],
+        ["peer", "_"],
         ["topMessage", "int"],
         ["readInboxMaxId", "int"],
         ["readOutboxMaxId", "int"],
         ["unreadCount", "int"],
         ["unreadMentionsCount", "int"],
-        ["notifySettings", "PeerNotifySettings"],
+        ["notifySettings", "_"],
         ["pts", "Flag0<int>"],
-        ["draft", "Flag1<DraftMessage>"],
+        ["draft", "Flag1<_>"],
         ["folderId", "Flag4<int>"]
       ]
     ]
@@ -1329,8 +1311,8 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["flags", "#FLAG"],
         ["pinned", "Flag2<true>"],
-        ["folder", "Folder"],
-        ["peer", "Peer"],
+        ["folder", "_"],
+        ["peer", "_"],
         ["topMessage", "int"],
         ["unreadMutedPeersCount", "int"],
         ["unreadUnmutedPeersCount", "int"],
@@ -1351,7 +1333,7 @@ export const tlObjectsDefinitions: any[] = [
         ["accessHash", "long"],
         ["fileReference", "bytes"],
         ["date", "int"],
-        ["sizes", "Vector<PhotoSize>"],
+        ["sizes", "Vector<_>"],
         ["dcId", "int"]
       ]
     ]
@@ -1363,7 +1345,7 @@ export const tlObjectsDefinitions: any[] = [
       ["PhotoSize", 0x17cc29d9],
       [
         ["type", "string"],
-        ["location", "FileLocation"],
+        ["location", "_"],
         ["w", "int"],
         ["h", "int"],
         ["size", "int"]
@@ -1376,7 +1358,7 @@ export const tlObjectsDefinitions: any[] = [
       ["PhotoCachedSize", 0x17cc29d9],
       [
         ["type", "string"],
-        ["location", "FileLocation"],
+        ["location", "_"],
         ["w", "int"],
         ["h", "int"],
         ["bytes", "bytes"]
@@ -1411,9 +1393,9 @@ export const tlObjectsDefinitions: any[] = [
       ["auth_SentCode", 0x6ce87081],
       [
         ["flags", "#FLAG"],
-        ["type", "auth_SentCodeType"],
+        ["type", "_"],
         ["phoneCodeHash", "string"],
-        ["nextType", "Flag1<auth_CodeType>"],
+        ["nextType", "Flag1<_>"],
         ["timeout", "Flag2<int>"]
       ]
     ]
@@ -1425,7 +1407,7 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["flags", "#FLAG"],
         ["tmpSessions", "Flag0<int>"],
-        ["user", "User"]
+        ["user", "_"]
       ]
     ]
   ],
@@ -1435,7 +1417,7 @@ export const tlObjectsDefinitions: any[] = [
       ["auth_AuthorizationSignUpRequired", 0xb9e04e39],
       [
         ["flags", "#FLAG"],
-        ["termsOfService", "Flag0<help_TermsOfService>"]
+        ["termsOfService", "Flag0<_>"]
       ]
     ]
   ],
@@ -1449,7 +1431,7 @@ export const tlObjectsDefinitions: any[] = [
       ]
     ]
   ],
-  [0xb8bc5b0c, [["InputNotifyPeer", 0x58981615], [["peer", "InputPeer"]]]],
+  [0xb8bc5b0c, [["InputNotifyPeer", 0x58981615], [["peer", "_"]]]],
   [0x193b4417, [["InputNotifyUsers", 0x58981615], []]],
   [0x4a95e84e, [["InputNotifyChats", 0x58981615], []]],
   [0xb1db7c7e, [["InputNotifyBroadcasts", 0x58981615], []]],
@@ -1507,8 +1489,8 @@ export const tlObjectsDefinitions: any[] = [
         ["dark", "Flag4<true>"],
         ["accessHash", "long"],
         ["slug", "string"],
-        ["document", "Document"],
-        ["settings", "Flag2<WallPaperSettings>"]
+        ["document", "_"],
+        ["settings", "Flag2<_>"]
       ]
     ]
   ],
@@ -1530,12 +1512,12 @@ export const tlObjectsDefinitions: any[] = [
         ["phoneCallsPrivate", "Flag5<true>"],
         ["canPinMessage", "Flag7<true>"],
         ["hasScheduled", "Flag12<true>"],
-        ["user", "User"],
+        ["user", "_"],
         ["about", "Flag1<string>"],
-        ["settings", "PeerSettings"],
-        ["profilePhoto", "Flag2<Photo>"],
-        ["notifySettings", "PeerNotifySettings"],
-        ["botInfo", "Flag3<BotInfo>"],
+        ["settings", "_"],
+        ["profilePhoto", "Flag2<_>"],
+        ["notifySettings", "_"],
+        ["botInfo", "Flag3<_>"],
         ["pinnedMsgId", "Flag6<int>"],
         ["commonChatsCount", "int"],
         ["folderId", "Flag11<int>"]
@@ -1578,7 +1560,7 @@ export const tlObjectsDefinitions: any[] = [
       ["ContactStatus", 0x68c0d74c],
       [
         ["userId", "int"],
-        ["status", "UserStatus"]
+        ["status", "_"]
       ]
     ]
   ],
@@ -1588,9 +1570,9 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["contacts_Contacts", 0x38be25f6],
       [
-        ["contacts", "Vector<Contact>"],
+        ["contacts", "Vector<_>"],
         ["savedCount", "int"],
-        ["users", "Vector<User>"]
+        ["users", "Vector<_>"]
       ]
     ]
   ],
@@ -1599,10 +1581,10 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["contacts_ImportedContacts", 0x8172ad93],
       [
-        ["imported", "Vector<ImportedContact>"],
-        ["popularInvites", "Vector<PopularContact>"],
+        ["imported", "Vector<_>"],
+        ["popularInvites", "Vector<_>"],
         ["retryContacts", "Vector<long>"],
-        ["users", "Vector<User>"]
+        ["users", "Vector<_>"]
       ]
     ]
   ],
@@ -1611,8 +1593,8 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["contacts_Blocked", 0xffba4f4f],
       [
-        ["blocked", "Vector<ContactBlocked>"],
-        ["users", "Vector<User>"]
+        ["blocked", "Vector<_>"],
+        ["users", "Vector<_>"]
       ]
     ]
   ],
@@ -1622,8 +1604,8 @@ export const tlObjectsDefinitions: any[] = [
       ["contacts_BlockedSlice", 0xffba4f4f],
       [
         ["count", "int"],
-        ["blocked", "Vector<ContactBlocked>"],
-        ["users", "Vector<User>"]
+        ["blocked", "Vector<_>"],
+        ["users", "Vector<_>"]
       ]
     ]
   ],
@@ -1632,10 +1614,10 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["messages_Dialogs", 0xe1b52ee],
       [
-        ["dialogs", "Vector<Dialog>"],
-        ["messages", "Vector<Message>"],
-        ["chats", "Vector<Chat>"],
-        ["users", "Vector<User>"]
+        ["dialogs", "Vector<_>"],
+        ["messages", "Vector<_>"],
+        ["chats", "Vector<_>"],
+        ["users", "Vector<_>"]
       ]
     ]
   ],
@@ -1645,10 +1627,10 @@ export const tlObjectsDefinitions: any[] = [
       ["messages_DialogsSlice", 0xe1b52ee],
       [
         ["count", "int"],
-        ["dialogs", "Vector<Dialog>"],
-        ["messages", "Vector<Message>"],
-        ["chats", "Vector<Chat>"],
-        ["users", "Vector<User>"]
+        ["dialogs", "Vector<_>"],
+        ["messages", "Vector<_>"],
+        ["chats", "Vector<_>"],
+        ["users", "Vector<_>"]
       ]
     ]
   ],
@@ -1661,9 +1643,9 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["messages_Messages", 0xd4b40b5e],
       [
-        ["messages", "Vector<Message>"],
-        ["chats", "Vector<Chat>"],
-        ["users", "Vector<User>"]
+        ["messages", "Vector<_>"],
+        ["chats", "Vector<_>"],
+        ["users", "Vector<_>"]
       ]
     ]
   ],
@@ -1676,9 +1658,9 @@ export const tlObjectsDefinitions: any[] = [
         ["inexact", "Flag1<true>"],
         ["count", "int"],
         ["nextRate", "Flag0<int>"],
-        ["messages", "Vector<Message>"],
-        ["chats", "Vector<Chat>"],
-        ["users", "Vector<User>"]
+        ["messages", "Vector<_>"],
+        ["chats", "Vector<_>"],
+        ["users", "Vector<_>"]
       ]
     ]
   ],
@@ -1691,9 +1673,9 @@ export const tlObjectsDefinitions: any[] = [
         ["inexact", "Flag1<true>"],
         ["pts", "int"],
         ["count", "int"],
-        ["messages", "Vector<Message>"],
-        ["chats", "Vector<Chat>"],
-        ["users", "Vector<User>"]
+        ["messages", "Vector<_>"],
+        ["chats", "Vector<_>"],
+        ["users", "Vector<_>"]
       ]
     ]
   ],
@@ -1701,14 +1683,14 @@ export const tlObjectsDefinitions: any[] = [
     0x74535f21,
     [["messages_MessagesNotModified", 0xd4b40b5e], [["count", "int"]]]
   ],
-  [0x64ff9fd5, [["messages_Chats", 0x99d5cb14], [["chats", "Vector<Chat>"]]]],
+  [0x64ff9fd5, [["messages_Chats", 0x99d5cb14], [["chats", "Vector<_>"]]]],
   [
     0x9cd81144,
     [
       ["messages_ChatsSlice", 0x99d5cb14],
       [
         ["count", "int"],
-        ["chats", "Vector<Chat>"]
+        ["chats", "Vector<_>"]
       ]
     ]
   ],
@@ -1717,9 +1699,9 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["messages_ChatFull", 0x225a5109],
       [
-        ["fullChat", "ChatFull"],
-        ["chats", "Vector<Chat>"],
-        ["users", "Vector<User>"]
+        ["fullChat", "_"],
+        ["chats", "Vector<_>"],
+        ["users", "Vector<_>"]
       ]
     ]
   ],
@@ -1764,7 +1746,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["UpdateNewMessage", 0x9f89304e],
       [
-        ["message", "Message"],
+        ["message", "_"],
         ["pts", "int"],
         ["ptsCount", "int"]
       ]
@@ -1797,7 +1779,7 @@ export const tlObjectsDefinitions: any[] = [
       ["UpdateUserTyping", 0x9f89304e],
       [
         ["userId", "int"],
-        ["action", "SendMessageAction"]
+        ["action", "_"]
       ]
     ]
   ],
@@ -1808,16 +1790,13 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["chatId", "int"],
         ["userId", "int"],
-        ["action", "SendMessageAction"]
+        ["action", "_"]
       ]
     ]
   ],
   [
     0x07761198,
-    [
-      ["UpdateChatParticipants", 0x9f89304e],
-      [["participants", "ChatParticipants"]]
-    ]
+    [["UpdateChatParticipants", 0x9f89304e], [["participants", "_"]]]
   ],
   [
     0x1bfbd823,
@@ -1825,7 +1804,7 @@ export const tlObjectsDefinitions: any[] = [
       ["UpdateUserStatus", 0x9f89304e],
       [
         ["userId", "int"],
-        ["status", "UserStatus"]
+        ["status", "_"]
       ]
     ]
   ],
@@ -1848,7 +1827,7 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["userId", "int"],
         ["date", "int"],
-        ["photo", "UserProfilePhoto"],
+        ["photo", "_"],
         ["previous", "Bool"]
       ]
     ]
@@ -1858,7 +1837,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["UpdateNewEncryptedMessage", 0x9f89304e],
       [
-        ["message", "EncryptedMessage"],
+        ["message", "_"],
         ["qts", "int"]
       ]
     ]
@@ -1872,7 +1851,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["UpdateEncryption", 0x9f89304e],
       [
-        ["chat", "EncryptedChat"],
+        ["chat", "_"],
         ["date", "int"]
       ]
     ]
@@ -1912,10 +1891,7 @@ export const tlObjectsDefinitions: any[] = [
       ]
     ]
   ],
-  [
-    0x8e5e9873,
-    [["UpdateDcOptions", 0x9f89304e], [["dcOptions", "Vector<DcOption>"]]]
-  ],
+  [0x8e5e9873, [["UpdateDcOptions", 0x9f89304e], [["dcOptions", "Vector<_>"]]]],
   [
     0x80ece81a,
     [
@@ -1931,8 +1907,8 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["UpdateNotifySettings", 0x9f89304e],
       [
-        ["peer", "NotifyPeer"],
-        ["notifySettings", "PeerNotifySettings"]
+        ["peer", "_"],
+        ["notifySettings", "_"]
       ]
     ]
   ],
@@ -1946,8 +1922,8 @@ export const tlObjectsDefinitions: any[] = [
         ["inboxDate", "Flag1<int>"],
         ["type", "string"],
         ["message", "string"],
-        ["media", "MessageMedia"],
-        ["entities", "Vector<MessageEntity>"]
+        ["media", "_"],
+        ["entities", "Vector<_>"]
       ]
     ]
   ],
@@ -1956,8 +1932,8 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["UpdatePrivacy", 0x9f89304e],
       [
-        ["key", "PrivacyKey"],
-        ["rules", "Vector<PrivacyRule>"]
+        ["key", "_"],
+        ["rules", "Vector<_>"]
       ]
     ]
   ],
@@ -1978,7 +1954,7 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["flags", "#FLAG"],
         ["folderId", "Flag0<int>"],
-        ["peer", "Peer"],
+        ["peer", "_"],
         ["maxId", "int"],
         ["stillUnreadCount", "int"],
         ["pts", "int"],
@@ -1991,7 +1967,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["UpdateReadHistoryOutbox", 0x9f89304e],
       [
-        ["peer", "Peer"],
+        ["peer", "_"],
         ["maxId", "int"],
         ["pts", "int"],
         ["ptsCount", "int"]
@@ -2003,7 +1979,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["UpdateWebPage", 0x9f89304e],
       [
-        ["webpage", "WebPage"],
+        ["webpage", "_"],
         ["pts", "int"],
         ["ptsCount", "int"]
       ]
@@ -2037,7 +2013,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["UpdateNewChannelMessage", 0x9f89304e],
       [
-        ["message", "Message"],
+        ["message", "_"],
         ["pts", "int"],
         ["ptsCount", "int"]
       ]
@@ -2092,13 +2068,7 @@ export const tlObjectsDefinitions: any[] = [
       ]
     ]
   ],
-  [
-    0x688a30aa,
-    [
-      ["UpdateNewStickerSet", 0x9f89304e],
-      [["stickerset", "messages_StickerSet"]]
-    ]
-  ],
+  [0x688a30aa, [["UpdateNewStickerSet", 0x9f89304e], [["stickerset", "_"]]]],
   [
     0x0bb2d201,
     [
@@ -2121,7 +2091,7 @@ export const tlObjectsDefinitions: any[] = [
         ["queryId", "long"],
         ["userId", "int"],
         ["query", "string"],
-        ["geo", "Flag0<GeoPoint>"],
+        ["geo", "Flag0<_>"],
         ["offset", "string"]
       ]
     ]
@@ -2134,9 +2104,9 @@ export const tlObjectsDefinitions: any[] = [
         ["flags", "#FLAG"],
         ["userId", "int"],
         ["query", "string"],
-        ["geo", "Flag0<GeoPoint>"],
+        ["geo", "Flag0<_>"],
         ["id", "string"],
-        ["msgId", "Flag1<InputBotInlineMessageID>"]
+        ["msgId", "Flag1<_>"]
       ]
     ]
   ],
@@ -2145,7 +2115,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["UpdateEditChannelMessage", 0x9f89304e],
       [
-        ["message", "Message"],
+        ["message", "_"],
         ["pts", "int"],
         ["ptsCount", "int"]
       ]
@@ -2169,7 +2139,7 @@ export const tlObjectsDefinitions: any[] = [
         ["flags", "#FLAG"],
         ["queryId", "long"],
         ["userId", "int"],
-        ["peer", "Peer"],
+        ["peer", "_"],
         ["msgId", "int"],
         ["chatInstance", "long"],
         ["data", "Flag0<bytes>"],
@@ -2182,7 +2152,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["UpdateEditMessage", 0x9f89304e],
       [
-        ["message", "Message"],
+        ["message", "_"],
         ["pts", "int"],
         ["ptsCount", "int"]
       ]
@@ -2196,7 +2166,7 @@ export const tlObjectsDefinitions: any[] = [
         ["flags", "#FLAG"],
         ["queryId", "long"],
         ["userId", "int"],
-        ["msgId", "InputBotInlineMessageID"],
+        ["msgId", "_"],
         ["chatInstance", "long"],
         ["data", "Flag0<bytes>"],
         ["gameShortName", "Flag1<string>"]
@@ -2218,8 +2188,8 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["UpdateDraftMessage", 0x9f89304e],
       [
-        ["peer", "Peer"],
-        ["draft", "DraftMessage"]
+        ["peer", "_"],
+        ["draft", "_"]
       ]
     ]
   ],
@@ -2233,7 +2203,7 @@ export const tlObjectsDefinitions: any[] = [
       ["UpdateChannelWebPage", 0x9f89304e],
       [
         ["channelId", "int"],
-        ["webpage", "WebPage"],
+        ["webpage", "_"],
         ["pts", "int"],
         ["ptsCount", "int"]
       ]
@@ -2247,7 +2217,7 @@ export const tlObjectsDefinitions: any[] = [
         ["flags", "#FLAG"],
         ["pinned", "Flag0<true>"],
         ["folderId", "Flag1<int>"],
-        ["peer", "DialogPeer"]
+        ["peer", "_"]
       ]
     ]
   ],
@@ -2258,18 +2228,18 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["flags", "#FLAG"],
         ["folderId", "Flag1<int>"],
-        ["order", "Flag0<Vector<DialogPeer>>"]
+        ["order", "Flag0<Vector<_>>"]
       ]
     ]
   ],
-  [0x8317c0c3, [["UpdateBotWebhookJSON", 0x9f89304e], [["data", "DataJSON"]]]],
+  [0x8317c0c3, [["UpdateBotWebhookJSON", 0x9f89304e], [["data", "_"]]]],
   [
     0x9b9240a6,
     [
       ["UpdateBotWebhookJSONQuery", 0x9f89304e],
       [
         ["queryId", "long"],
-        ["data", "DataJSON"],
+        ["data", "_"],
         ["timeout", "int"]
       ]
     ]
@@ -2282,7 +2252,7 @@ export const tlObjectsDefinitions: any[] = [
         ["queryId", "long"],
         ["userId", "int"],
         ["payload", "bytes"],
-        ["shippingAddress", "PostAddress"]
+        ["shippingAddress", "_"]
       ]
     ]
   ],
@@ -2295,22 +2265,19 @@ export const tlObjectsDefinitions: any[] = [
         ["queryId", "long"],
         ["userId", "int"],
         ["payload", "bytes"],
-        ["info", "Flag0<PaymentRequestedInfo>"],
+        ["info", "Flag0<_>"],
         ["shippingOptionId", "Flag1<string>"],
         ["currency", "string"],
         ["totalAmount", "long"]
       ]
     ]
   ],
-  [0xab0f6b1e, [["UpdatePhoneCall", 0x9f89304e], [["phoneCall", "PhoneCall"]]]],
+  [0xab0f6b1e, [["UpdatePhoneCall", 0x9f89304e], [["phoneCall", "_"]]]],
   [
     0x46560264,
     [["UpdateLangPackTooLong", 0x9f89304e], [["langCode", "string"]]]
   ],
-  [
-    0x56022f4d,
-    [["UpdateLangPack", 0x9f89304e], [["difference", "LangPackDifference"]]]
-  ],
+  [0x56022f4d, [["UpdateLangPack", 0x9f89304e], [["difference", "_"]]]],
   [0xe511996d, [["UpdateFavedStickers", 0x9f89304e], []]],
   [
     0x89893b45,
@@ -2340,7 +2307,7 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["flags", "#FLAG"],
         ["unread", "Flag0<true>"],
-        ["peer", "DialogPeer"]
+        ["peer", "_"]
       ]
     ]
   ],
@@ -2372,8 +2339,8 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["flags", "#FLAG"],
         ["pollId", "long"],
-        ["poll", "Flag0<Poll>"],
-        ["results", "PollResults"]
+        ["poll", "Flag0<_>"],
+        ["results", "_"]
       ]
     ]
   ],
@@ -2382,8 +2349,8 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["UpdateChatDefaultBannedRights", 0x9f89304e],
       [
-        ["peer", "Peer"],
-        ["defaultBannedRights", "ChatBannedRights"],
+        ["peer", "_"],
+        ["defaultBannedRights", "_"],
         ["version", "int"]
       ]
     ]
@@ -2393,7 +2360,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["UpdateFolderPeers", 0x9f89304e],
       [
-        ["folderPeers", "Vector<FolderPeer>"],
+        ["folderPeers", "Vector<_>"],
         ["pts", "int"],
         ["ptsCount", "int"]
       ]
@@ -2404,30 +2371,24 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["UpdatePeerSettings", 0x9f89304e],
       [
-        ["peer", "Peer"],
-        ["settings", "PeerSettings"]
+        ["peer", "_"],
+        ["settings", "_"]
       ]
     ]
   ],
-  [
-    0xb4afcfb0,
-    [["UpdatePeerLocated", 0x9f89304e], [["peers", "Vector<PeerLocated>"]]]
-  ],
-  [
-    0x39a51dfb,
-    [["UpdateNewScheduledMessage", 0x9f89304e], [["message", "Message"]]]
-  ],
+  [0xb4afcfb0, [["UpdatePeerLocated", 0x9f89304e], [["peers", "Vector<_>"]]]],
+  [0x39a51dfb, [["UpdateNewScheduledMessage", 0x9f89304e], [["message", "_"]]]],
   [
     0x90866cee,
     [
       ["UpdateDeleteScheduledMessages", 0x9f89304e],
       [
-        ["peer", "Peer"],
+        ["peer", "_"],
         ["messages", "Vector<int>"]
       ]
     ]
   ],
-  [0x8216fba3, [["UpdateTheme", 0x9f89304e], [["theme", "Theme"]]]],
+  [0x8216fba3, [["UpdateTheme", 0x9f89304e], [["theme", "_"]]]],
   [
     0xa56c2a3e,
     [
@@ -2456,12 +2417,12 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["updates_Difference", 0x20482874],
       [
-        ["newMessages", "Vector<Message>"],
-        ["newEncryptedMessages", "Vector<EncryptedMessage>"],
-        ["otherUpdates", "Vector<Update>"],
-        ["chats", "Vector<Chat>"],
-        ["users", "Vector<User>"],
-        ["state", "updates_State"]
+        ["newMessages", "Vector<_>"],
+        ["newEncryptedMessages", "Vector<_>"],
+        ["otherUpdates", "Vector<_>"],
+        ["chats", "Vector<_>"],
+        ["users", "Vector<_>"],
+        ["state", "_"]
       ]
     ]
   ],
@@ -2470,12 +2431,12 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["updates_DifferenceSlice", 0x20482874],
       [
-        ["newMessages", "Vector<Message>"],
-        ["newEncryptedMessages", "Vector<EncryptedMessage>"],
-        ["otherUpdates", "Vector<Update>"],
-        ["chats", "Vector<Chat>"],
-        ["users", "Vector<User>"],
-        ["intermediateState", "updates_State"]
+        ["newMessages", "Vector<_>"],
+        ["newEncryptedMessages", "Vector<_>"],
+        ["otherUpdates", "Vector<_>"],
+        ["chats", "Vector<_>"],
+        ["users", "Vector<_>"],
+        ["intermediateState", "_"]
       ]
     ]
   ],
@@ -2497,10 +2458,10 @@ export const tlObjectsDefinitions: any[] = [
         ["pts", "int"],
         ["ptsCount", "int"],
         ["date", "int"],
-        ["fwdFrom", "Flag2<MessageFwdHeader>"],
+        ["fwdFrom", "Flag2<_>"],
         ["viaBotId", "Flag11<int>"],
         ["replyToMsgId", "Flag3<int>"],
-        ["entities", "Flag7<Vector<MessageEntity>>"]
+        ["entities", "Flag7<Vector<_>>"]
       ]
     ]
   ],
@@ -2521,10 +2482,10 @@ export const tlObjectsDefinitions: any[] = [
         ["pts", "int"],
         ["ptsCount", "int"],
         ["date", "int"],
-        ["fwdFrom", "Flag2<MessageFwdHeader>"],
+        ["fwdFrom", "Flag2<_>"],
         ["viaBotId", "Flag11<int>"],
         ["replyToMsgId", "Flag3<int>"],
-        ["entities", "Flag7<Vector<MessageEntity>>"]
+        ["entities", "Flag7<Vector<_>>"]
       ]
     ]
   ],
@@ -2533,7 +2494,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["UpdateShort", 0x8af52aac],
       [
-        ["update", "Update"],
+        ["update", "_"],
         ["date", "int"]
       ]
     ]
@@ -2543,9 +2504,9 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["UpdatesCombined", 0x8af52aac],
       [
-        ["updates", "Vector<Update>"],
-        ["users", "Vector<User>"],
-        ["chats", "Vector<Chat>"],
+        ["updates", "Vector<_>"],
+        ["users", "Vector<_>"],
+        ["chats", "Vector<_>"],
         ["date", "int"],
         ["seqStart", "int"],
         ["seq", "int"]
@@ -2557,9 +2518,9 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["Updates", 0x8af52aac],
       [
-        ["updates", "Vector<Update>"],
-        ["users", "Vector<User>"],
-        ["chats", "Vector<Chat>"],
+        ["updates", "Vector<_>"],
+        ["users", "Vector<_>"],
+        ["chats", "Vector<_>"],
         ["date", "int"],
         ["seq", "int"]
       ]
@@ -2576,8 +2537,8 @@ export const tlObjectsDefinitions: any[] = [
         ["pts", "int"],
         ["ptsCount", "int"],
         ["date", "int"],
-        ["media", "Flag9<MessageMedia>"],
-        ["entities", "Flag7<Vector<MessageEntity>>"]
+        ["media", "Flag9<_>"],
+        ["entities", "Flag7<Vector<_>>"]
       ]
     ]
   ],
@@ -2586,8 +2547,8 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["photos_Photos", 0x27cfb967],
       [
-        ["photos", "Vector<Photo>"],
-        ["users", "Vector<User>"]
+        ["photos", "Vector<_>"],
+        ["users", "Vector<_>"]
       ]
     ]
   ],
@@ -2597,8 +2558,8 @@ export const tlObjectsDefinitions: any[] = [
       ["photos_PhotosSlice", 0x27cfb967],
       [
         ["count", "int"],
-        ["photos", "Vector<Photo>"],
-        ["users", "Vector<User>"]
+        ["photos", "Vector<_>"],
+        ["users", "Vector<_>"]
       ]
     ]
   ],
@@ -2607,8 +2568,8 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["photos_Photo", 0xc292bd24],
       [
-        ["photo", "Photo"],
-        ["users", "Vector<User>"]
+        ["photo", "_"],
+        ["users", "Vector<_>"]
       ]
     ]
   ],
@@ -2617,7 +2578,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["upload_File", 0x6c9bd728],
       [
-        ["type", "storage_FileType"],
+        ["type", "_"],
         ["mtime", "int"],
         ["bytes", "bytes"]
       ]
@@ -2632,7 +2593,7 @@ export const tlObjectsDefinitions: any[] = [
         ["fileToken", "bytes"],
         ["encryptionKey", "bytes"],
         ["encryptionIv", "bytes"],
-        ["fileHashes", "Vector<FileHash>"]
+        ["fileHashes", "Vector<_>"]
       ]
     ]
   ],
@@ -2671,7 +2632,7 @@ export const tlObjectsDefinitions: any[] = [
         ["expires", "int"],
         ["testMode", "Bool"],
         ["thisDc", "int"],
-        ["dcOptions", "Vector<DcOption>"],
+        ["dcOptions", "Vector<_>"],
         ["dcTxtDomainName", "string"],
         ["chatSizeMax", "int"],
         ["megagroupSizeMax", "int"],
@@ -2735,8 +2696,8 @@ export const tlObjectsDefinitions: any[] = [
         ["id", "int"],
         ["version", "string"],
         ["text", "string"],
-        ["entities", "Vector<MessageEntity>"],
-        ["document", "Flag1<Document>"],
+        ["entities", "Vector<_>"],
+        ["document", "Flag1<_>"],
         ["url", "Flag2<string>"]
       ]
     ]
@@ -2854,7 +2815,7 @@ export const tlObjectsDefinitions: any[] = [
         ["chatId", "int"],
         ["date", "int"],
         ["bytes", "bytes"],
-        ["file", "EncryptedFile"]
+        ["file", "_"]
       ]
     ]
   ],
@@ -2896,7 +2857,7 @@ export const tlObjectsDefinitions: any[] = [
       ["messages_SentEncryptedFile", 0xc99e3e50],
       [
         ["date", "int"],
-        ["file", "EncryptedFile"]
+        ["file", "_"]
       ]
     ]
   ],
@@ -2925,9 +2886,9 @@ export const tlObjectsDefinitions: any[] = [
         ["date", "int"],
         ["mimeType", "string"],
         ["size", "int"],
-        ["thumbs", "Flag0<Vector<PhotoSize>>"],
+        ["thumbs", "Flag0<Vector<_>>"],
         ["dcId", "int"],
-        ["attributes", "Vector<DocumentAttribute>"]
+        ["attributes", "Vector<_>"]
       ]
     ]
   ],
@@ -2937,11 +2898,11 @@ export const tlObjectsDefinitions: any[] = [
       ["help_Support", 0x7159bceb],
       [
         ["phoneNumber", "string"],
-        ["user", "User"]
+        ["user", "_"]
       ]
     ]
   ],
-  [0x9fd40bd8, [["NotifyPeer", 0xdfe8602e], [["peer", "Peer"]]]],
+  [0x9fd40bd8, [["NotifyPeer", 0xdfe8602e], [["peer", "_"]]]],
   [0xb4c83b4c, [["NotifyUsers", 0xdfe8602e], []]],
   [0xc007cec3, [["NotifyChats", 0xdfe8602e], []]],
   [0xd612e8ef, [["NotifyBroadcasts", 0xdfe8602e], []]],
@@ -2978,10 +2939,10 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["contacts_Found", 0x4386a2e3],
       [
-        ["myResults", "Vector<Peer>"],
-        ["results", "Vector<Peer>"],
-        ["chats", "Vector<Chat>"],
-        ["users", "Vector<User>"]
+        ["myResults", "Vector<_>"],
+        ["results", "Vector<_>"],
+        ["chats", "Vector<_>"],
+        ["users", "Vector<_>"]
       ]
     ]
   ],
@@ -3005,19 +2966,13 @@ export const tlObjectsDefinitions: any[] = [
   [0x184b35ce, [["InputPrivacyValueAllowAll", 0x5a3b6b22], []]],
   [
     0x131cc67f,
-    [
-      ["InputPrivacyValueAllowUsers", 0x5a3b6b22],
-      [["users", "Vector<InputUser>"]]
-    ]
+    [["InputPrivacyValueAllowUsers", 0x5a3b6b22], [["users", "Vector<_>"]]]
   ],
   [0x0ba52007, [["InputPrivacyValueDisallowContacts", 0x5a3b6b22], []]],
   [0xd66b66c9, [["InputPrivacyValueDisallowAll", 0x5a3b6b22], []]],
   [
     0x90110467,
-    [
-      ["InputPrivacyValueDisallowUsers", 0x5a3b6b22],
-      [["users", "Vector<InputUser>"]]
-    ]
+    [["InputPrivacyValueDisallowUsers", 0x5a3b6b22], [["users", "Vector<_>"]]]
   ],
   [
     0x4c81c1ba,
@@ -3064,9 +3019,9 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["account_PrivacyRules", 0xb55aba82],
       [
-        ["rules", "Vector<PrivacyRule>"],
-        ["chats", "Vector<Chat>"],
-        ["users", "Vector<User>"]
+        ["rules", "Vector<_>"],
+        ["chats", "Vector<_>"],
+        ["users", "Vector<_>"]
       ]
     ]
   ],
@@ -3090,8 +3045,8 @@ export const tlObjectsDefinitions: any[] = [
         ["flags", "#FLAG"],
         ["mask", "Flag1<true>"],
         ["alt", "string"],
-        ["stickerset", "InputStickerSet"],
-        ["maskCoords", "Flag0<MaskCoords>"]
+        ["stickerset", "_"],
+        ["maskCoords", "Flag0<_>"]
       ]
     ]
   ],
@@ -3135,7 +3090,7 @@ export const tlObjectsDefinitions: any[] = [
       ["messages_Stickers", 0xd73bb9de],
       [
         ["hash", "int"],
-        ["stickers", "Vector<Document>"]
+        ["stickers", "Vector<_>"]
       ]
     ]
   ],
@@ -3156,7 +3111,7 @@ export const tlObjectsDefinitions: any[] = [
       ["messages_AllStickers", 0x45834829],
       [
         ["hash", "int"],
-        ["sets", "Vector<StickerSet>"]
+        ["sets", "Vector<_>"]
       ]
     ]
   ],
@@ -3195,16 +3150,16 @@ export const tlObjectsDefinitions: any[] = [
         ["siteName", "Flag1<string>"],
         ["title", "Flag2<string>"],
         ["description", "Flag3<string>"],
-        ["photo", "Flag4<Photo>"],
+        ["photo", "Flag4<_>"],
         ["embedUrl", "Flag5<string>"],
         ["embedType", "Flag5<string>"],
         ["embedWidth", "Flag6<int>"],
         ["embedHeight", "Flag6<int>"],
         ["duration", "Flag7<int>"],
         ["author", "Flag8<string>"],
-        ["document", "Flag9<Document>"],
-        ["documents", "Flag11<Vector<Document>>"],
-        ["cachedPage", "Flag10<Page>"]
+        ["document", "Flag9<_>"],
+        ["documents", "Flag11<Vector<_>>"],
+        ["cachedPage", "Flag10<_>"]
       ]
     ]
   ],
@@ -3235,10 +3190,7 @@ export const tlObjectsDefinitions: any[] = [
   ],
   [
     0x1250abde,
-    [
-      ["account_Authorizations", 0xbf5e0ff],
-      [["authorizations", "Vector<Authorization>"]]
-    ]
+    [["account_Authorizations", 0xbf5e0ff], [["authorizations", "Vector<_>"]]]
   ],
   [
     0xad2641f8,
@@ -3249,13 +3201,13 @@ export const tlObjectsDefinitions: any[] = [
         ["hasRecovery", "Flag0<true>"],
         ["hasSecureValues", "Flag1<true>"],
         ["hasPassword", "Flag2<true>"],
-        ["currentAlgo", "Flag2<PasswordKdfAlgo>"],
+        ["currentAlgo", "Flag2<_>"],
         ["srp_B", "Flag2<bytes>"],
         ["srpId", "Flag2<long>"],
         ["hint", "Flag3<string>"],
         ["emailUnconfirmedPattern", "Flag4<string>"],
-        ["newAlgo", "PasswordKdfAlgo"],
-        ["newSecureAlgo", "SecurePasswordKdfAlgo"],
+        ["newAlgo", "_"],
+        ["newSecureAlgo", "_"],
         ["secureRandom", "bytes"]
       ]
     ]
@@ -3267,7 +3219,7 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["flags", "#FLAG"],
         ["email", "Flag0<string>"],
-        ["secureSettings", "Flag1<SecureSecretSettings>"]
+        ["secureSettings", "Flag1<_>"]
       ]
     ]
   ],
@@ -3277,11 +3229,11 @@ export const tlObjectsDefinitions: any[] = [
       ["account_PasswordInputSettings", 0xc426ca6],
       [
         ["flags", "#FLAG"],
-        ["newAlgo", "Flag0<PasswordKdfAlgo>"],
+        ["newAlgo", "Flag0<_>"],
         ["newPasswordHash", "Flag0<bytes>"],
         ["hint", "Flag0<string>"],
         ["email", "Flag1<string>"],
-        ["newSecureSettings", "Flag2<SecureSecretSettings>"]
+        ["newSecureSettings", "Flag2<_>"]
       ]
     ]
   ],
@@ -3301,7 +3253,7 @@ export const tlObjectsDefinitions: any[] = [
   ],
   [0x69df3769, [["ChatInviteEmpty", 0xb4748a58], []]],
   [0xfc2e05bc, [["ChatInviteExported", 0xb4748a58], [["link", "string"]]]],
-  [0x5a686d7c, [["ChatInviteAlready", 0x4561736], [["chat", "Chat"]]]],
+  [0x5a686d7c, [["ChatInviteAlready", 0x4561736], [["chat", "_"]]]],
   [
     0xdfc2f58e,
     [
@@ -3313,9 +3265,9 @@ export const tlObjectsDefinitions: any[] = [
         ["public", "Flag2<true>"],
         ["megagroup", "Flag3<true>"],
         ["title", "string"],
-        ["photo", "Photo"],
+        ["photo", "_"],
         ["participantsCount", "int"],
-        ["participants", "Flag4<Vector<User>>"]
+        ["participants", "Flag4<Vector<_>>"]
       ]
     ]
   ],
@@ -3350,7 +3302,7 @@ export const tlObjectsDefinitions: any[] = [
         ["accessHash", "long"],
         ["title", "string"],
         ["shortName", "string"],
-        ["thumb", "Flag4<PhotoSize>"],
+        ["thumb", "Flag4<_>"],
         ["thumbDcId", "Flag4<int>"],
         ["count", "int"],
         ["hash", "int"]
@@ -3362,9 +3314,9 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["messages_StickerSet", 0x9b704a5a],
       [
-        ["set", "StickerSet"],
-        ["packs", "Vector<StickerPack>"],
-        ["documents", "Vector<Document>"]
+        ["set", "_"],
+        ["packs", "Vector<_>"],
+        ["documents", "Vector<_>"]
       ]
     ]
   ],
@@ -3385,7 +3337,7 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["userId", "int"],
         ["description", "string"],
-        ["commands", "Vector<BotCommand>"]
+        ["commands", "Vector<_>"]
       ]
     ]
   ],
@@ -3455,14 +3407,11 @@ export const tlObjectsDefinitions: any[] = [
         ["text", "string"],
         ["fwdText", "Flag1<string>"],
         ["url", "string"],
-        ["bot", "InputUser"]
+        ["bot", "_"]
       ]
     ]
   ],
-  [
-    0x77608b83,
-    [["KeyboardButtonRow", 0x847730ae], [["buttons", "Vector<KeyboardButton>"]]]
-  ],
+  [0x77608b83, [["KeyboardButtonRow", 0x847730ae], [["buttons", "Vector<_>"]]]],
   [
     0xa03e5b85,
     [
@@ -3493,14 +3442,11 @@ export const tlObjectsDefinitions: any[] = [
         ["resize", "Flag0<true>"],
         ["singleUse", "Flag1<true>"],
         ["selective", "Flag2<true>"],
-        ["rows", "Vector<KeyboardButtonRow>"]
+        ["rows", "Vector<_>"]
       ]
     ]
   ],
-  [
-    0x48a30254,
-    [["ReplyInlineMarkup", 0xe2e10ef2], [["rows", "Vector<KeyboardButtonRow>"]]]
-  ],
+  [0x48a30254, [["ReplyInlineMarkup", 0xe2e10ef2], [["rows", "Vector<_>"]]]],
   [
     0xbb92ba95,
     [
@@ -3631,7 +3577,7 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["offset", "int"],
         ["length", "int"],
-        ["userId", "InputUser"]
+        ["userId", "_"]
       ]
     ]
   ],
@@ -3701,7 +3647,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["InputChannelFromMessage", 0x40f202fd],
       [
-        ["peer", "InputPeer"],
+        ["peer", "_"],
         ["msgId", "int"],
         ["channelId", "int"]
       ]
@@ -3712,9 +3658,9 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["contacts_ResolvedPeer", 0xf065b3a8],
       [
-        ["peer", "Peer"],
-        ["chats", "Vector<Chat>"],
-        ["users", "Vector<User>"]
+        ["peer", "_"],
+        ["chats", "Vector<_>"],
+        ["users", "Vector<_>"]
       ]
     ]
   ],
@@ -3748,10 +3694,10 @@ export const tlObjectsDefinitions: any[] = [
         ["flags", "#FLAG"],
         ["final", "Flag0<true>"],
         ["timeout", "Flag1<int>"],
-        ["dialog", "Dialog"],
-        ["messages", "Vector<Message>"],
-        ["chats", "Vector<Chat>"],
-        ["users", "Vector<User>"]
+        ["dialog", "_"],
+        ["messages", "Vector<_>"],
+        ["chats", "Vector<_>"],
+        ["users", "Vector<_>"]
       ]
     ]
   ],
@@ -3764,10 +3710,10 @@ export const tlObjectsDefinitions: any[] = [
         ["final", "Flag0<true>"],
         ["pts", "int"],
         ["timeout", "Flag1<int>"],
-        ["newMessages", "Vector<Message>"],
-        ["otherUpdates", "Vector<Update>"],
-        ["chats", "Vector<Chat>"],
-        ["users", "Vector<User>"]
+        ["newMessages", "Vector<_>"],
+        ["otherUpdates", "Vector<_>"],
+        ["chats", "Vector<_>"],
+        ["users", "Vector<_>"]
       ]
     ]
   ],
@@ -3779,7 +3725,7 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["flags", "#FLAG"],
         ["excludeNewMessages", "Flag1<true>"],
-        ["ranges", "Vector<MessageRange>"]
+        ["ranges", "Vector<_>"]
       ]
     ]
   ],
@@ -3827,7 +3773,7 @@ export const tlObjectsDefinitions: any[] = [
         ["inviterId", "Flag1<int>"],
         ["promotedBy", "int"],
         ["date", "int"],
-        ["adminRights", "ChatAdminRights"],
+        ["adminRights", "_"],
         ["rank", "Flag2<string>"]
       ]
     ]
@@ -3842,7 +3788,7 @@ export const tlObjectsDefinitions: any[] = [
         ["userId", "int"],
         ["kickedBy", "int"],
         ["date", "int"],
-        ["bannedRights", "ChatBannedRights"]
+        ["bannedRights", "_"]
       ]
     ]
   ],
@@ -3862,8 +3808,8 @@ export const tlObjectsDefinitions: any[] = [
       ["channels_ChannelParticipants", 0xe60a6e64],
       [
         ["count", "int"],
-        ["participants", "Vector<ChannelParticipant>"],
-        ["users", "Vector<User>"]
+        ["participants", "Vector<_>"],
+        ["users", "Vector<_>"]
       ]
     ]
   ],
@@ -3873,8 +3819,8 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["channels_ChannelParticipant", 0x6658151a],
       [
-        ["participant", "ChannelParticipant"],
-        ["users", "Vector<User>"]
+        ["participant", "_"],
+        ["users", "Vector<_>"]
       ]
     ]
   ],
@@ -3885,9 +3831,9 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["flags", "#FLAG"],
         ["popup", "Flag0<true>"],
-        ["id", "DataJSON"],
+        ["id", "_"],
         ["text", "string"],
-        ["entities", "Vector<MessageEntity>"],
+        ["entities", "Vector<_>"],
         ["minAgeConfirm", "Flag1<int>"]
       ]
     ]
@@ -3912,8 +3858,8 @@ export const tlObjectsDefinitions: any[] = [
       ["FoundGifCached", 0x5bbc92c3],
       [
         ["url", "string"],
-        ["photo", "Photo"],
-        ["document", "Document"]
+        ["photo", "_"],
+        ["document", "_"]
       ]
     ]
   ],
@@ -3923,7 +3869,7 @@ export const tlObjectsDefinitions: any[] = [
       ["messages_FoundGifs", 0xe799ea7],
       [
         ["nextOffset", "int"],
-        ["results", "Vector<FoundGif>"]
+        ["results", "Vector<_>"]
       ]
     ]
   ],
@@ -3934,7 +3880,7 @@ export const tlObjectsDefinitions: any[] = [
       ["messages_SavedGifs", 0xa68b61f5],
       [
         ["hash", "int"],
-        ["gifs", "Vector<Document>"]
+        ["gifs", "Vector<_>"]
       ]
     ]
   ],
@@ -3945,8 +3891,8 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["flags", "#FLAG"],
         ["message", "string"],
-        ["entities", "Flag1<Vector<MessageEntity>>"],
-        ["replyMarkup", "Flag2<ReplyMarkup>"]
+        ["entities", "Flag1<Vector<_>>"],
+        ["replyMarkup", "Flag2<_>"]
       ]
     ]
   ],
@@ -3958,8 +3904,8 @@ export const tlObjectsDefinitions: any[] = [
         ["flags", "#FLAG"],
         ["noWebpage", "Flag0<true>"],
         ["message", "string"],
-        ["entities", "Flag1<Vector<MessageEntity>>"],
-        ["replyMarkup", "Flag2<ReplyMarkup>"]
+        ["entities", "Flag1<Vector<_>>"],
+        ["replyMarkup", "Flag2<_>"]
       ]
     ]
   ],
@@ -3969,9 +3915,9 @@ export const tlObjectsDefinitions: any[] = [
       ["InputBotInlineMessageMediaGeo", 0x53fb4010],
       [
         ["flags", "#FLAG"],
-        ["geoPoint", "InputGeoPoint"],
+        ["geoPoint", "_"],
         ["period", "int"],
-        ["replyMarkup", "Flag2<ReplyMarkup>"]
+        ["replyMarkup", "Flag2<_>"]
       ]
     ]
   ],
@@ -3981,13 +3927,13 @@ export const tlObjectsDefinitions: any[] = [
       ["InputBotInlineMessageMediaVenue", 0x53fb4010],
       [
         ["flags", "#FLAG"],
-        ["geoPoint", "InputGeoPoint"],
+        ["geoPoint", "_"],
         ["title", "string"],
         ["address", "string"],
         ["provider", "string"],
         ["venueId", "string"],
         ["venueType", "string"],
-        ["replyMarkup", "Flag2<ReplyMarkup>"]
+        ["replyMarkup", "Flag2<_>"]
       ]
     ]
   ],
@@ -4001,7 +3947,7 @@ export const tlObjectsDefinitions: any[] = [
         ["firstName", "string"],
         ["lastName", "string"],
         ["vcard", "string"],
-        ["replyMarkup", "Flag2<ReplyMarkup>"]
+        ["replyMarkup", "Flag2<_>"]
       ]
     ]
   ],
@@ -4011,7 +3957,7 @@ export const tlObjectsDefinitions: any[] = [
       ["InputBotInlineMessageGame", 0x53fb4010],
       [
         ["flags", "#FLAG"],
-        ["replyMarkup", "Flag2<ReplyMarkup>"]
+        ["replyMarkup", "Flag2<_>"]
       ]
     ]
   ],
@@ -4026,9 +3972,9 @@ export const tlObjectsDefinitions: any[] = [
         ["title", "Flag1<string>"],
         ["description", "Flag2<string>"],
         ["url", "Flag3<string>"],
-        ["thumb", "Flag4<InputWebDocument>"],
-        ["content", "Flag5<InputWebDocument>"],
-        ["sendMessage", "InputBotInlineMessage"]
+        ["thumb", "Flag4<_>"],
+        ["content", "Flag5<_>"],
+        ["sendMessage", "_"]
       ]
     ]
   ],
@@ -4039,8 +3985,8 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["id", "string"],
         ["type", "string"],
-        ["photo", "InputPhoto"],
-        ["sendMessage", "InputBotInlineMessage"]
+        ["photo", "_"],
+        ["sendMessage", "_"]
       ]
     ]
   ],
@@ -4054,8 +4000,8 @@ export const tlObjectsDefinitions: any[] = [
         ["type", "string"],
         ["title", "Flag1<string>"],
         ["description", "Flag2<string>"],
-        ["document", "InputDocument"],
-        ["sendMessage", "InputBotInlineMessage"]
+        ["document", "_"],
+        ["sendMessage", "_"]
       ]
     ]
   ],
@@ -4066,7 +4012,7 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["id", "string"],
         ["shortName", "string"],
-        ["sendMessage", "InputBotInlineMessage"]
+        ["sendMessage", "_"]
       ]
     ]
   ],
@@ -4077,8 +4023,8 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["flags", "#FLAG"],
         ["message", "string"],
-        ["entities", "Flag1<Vector<MessageEntity>>"],
-        ["replyMarkup", "Flag2<ReplyMarkup>"]
+        ["entities", "Flag1<Vector<_>>"],
+        ["replyMarkup", "Flag2<_>"]
       ]
     ]
   ],
@@ -4090,8 +4036,8 @@ export const tlObjectsDefinitions: any[] = [
         ["flags", "#FLAG"],
         ["noWebpage", "Flag0<true>"],
         ["message", "string"],
-        ["entities", "Flag1<Vector<MessageEntity>>"],
-        ["replyMarkup", "Flag2<ReplyMarkup>"]
+        ["entities", "Flag1<Vector<_>>"],
+        ["replyMarkup", "Flag2<_>"]
       ]
     ]
   ],
@@ -4101,9 +4047,9 @@ export const tlObjectsDefinitions: any[] = [
       ["BotInlineMessageMediaGeo", 0xc4910f88],
       [
         ["flags", "#FLAG"],
-        ["geo", "GeoPoint"],
+        ["geo", "_"],
         ["period", "int"],
-        ["replyMarkup", "Flag2<ReplyMarkup>"]
+        ["replyMarkup", "Flag2<_>"]
       ]
     ]
   ],
@@ -4113,13 +4059,13 @@ export const tlObjectsDefinitions: any[] = [
       ["BotInlineMessageMediaVenue", 0xc4910f88],
       [
         ["flags", "#FLAG"],
-        ["geo", "GeoPoint"],
+        ["geo", "_"],
         ["title", "string"],
         ["address", "string"],
         ["provider", "string"],
         ["venueId", "string"],
         ["venueType", "string"],
-        ["replyMarkup", "Flag2<ReplyMarkup>"]
+        ["replyMarkup", "Flag2<_>"]
       ]
     ]
   ],
@@ -4133,7 +4079,7 @@ export const tlObjectsDefinitions: any[] = [
         ["firstName", "string"],
         ["lastName", "string"],
         ["vcard", "string"],
-        ["replyMarkup", "Flag2<ReplyMarkup>"]
+        ["replyMarkup", "Flag2<_>"]
       ]
     ]
   ],
@@ -4148,9 +4094,9 @@ export const tlObjectsDefinitions: any[] = [
         ["title", "Flag1<string>"],
         ["description", "Flag2<string>"],
         ["url", "Flag3<string>"],
-        ["thumb", "Flag4<WebDocument>"],
-        ["content", "Flag5<WebDocument>"],
-        ["sendMessage", "BotInlineMessage"]
+        ["thumb", "Flag4<_>"],
+        ["content", "Flag5<_>"],
+        ["sendMessage", "_"]
       ]
     ]
   ],
@@ -4162,11 +4108,11 @@ export const tlObjectsDefinitions: any[] = [
         ["flags", "#FLAG"],
         ["id", "string"],
         ["type", "string"],
-        ["photo", "Flag0<Photo>"],
-        ["document", "Flag1<Document>"],
+        ["photo", "Flag0<_>"],
+        ["document", "Flag1<_>"],
         ["title", "Flag2<string>"],
         ["description", "Flag3<string>"],
-        ["sendMessage", "BotInlineMessage"]
+        ["sendMessage", "_"]
       ]
     ]
   ],
@@ -4179,10 +4125,10 @@ export const tlObjectsDefinitions: any[] = [
         ["gallery", "Flag0<true>"],
         ["queryId", "long"],
         ["nextOffset", "Flag1<string>"],
-        ["switchPm", "Flag2<InlineBotSwitchPM>"],
-        ["results", "Vector<BotInlineResult>"],
+        ["switchPm", "Flag2<_>"],
+        ["results", "Vector<_>"],
         ["cacheTime", "int"],
-        ["users", "Vector<User>"]
+        ["users", "Vector<_>"]
       ]
     ]
   ],
@@ -4208,7 +4154,7 @@ export const tlObjectsDefinitions: any[] = [
         ["channelId", "Flag1<int>"],
         ["channelPost", "Flag2<int>"],
         ["postAuthor", "Flag3<string>"],
-        ["savedFromPeer", "Flag4<Peer>"],
+        ["savedFromPeer", "Flag4<_>"],
         ["savedFromMsgId", "Flag4<int>"]
       ]
     ]
@@ -4274,11 +4220,11 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["messages_PeerDialogs", 0x3ac70132],
       [
-        ["dialogs", "Vector<Dialog>"],
-        ["messages", "Vector<Message>"],
-        ["chats", "Vector<Chat>"],
-        ["users", "Vector<User>"],
-        ["state", "updates_State"]
+        ["dialogs", "Vector<_>"],
+        ["messages", "Vector<_>"],
+        ["chats", "Vector<_>"],
+        ["users", "Vector<_>"],
+        ["state", "_"]
       ]
     ]
   ],
@@ -4287,7 +4233,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["TopPeer", 0x6916c601],
       [
-        ["peer", "Peer"],
+        ["peer", "_"],
         ["rating", "double"]
       ]
     ]
@@ -4305,9 +4251,9 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["TopPeerCategoryPeers", 0x4aec930],
       [
-        ["category", "TopPeerCategory"],
+        ["category", "_"],
         ["count", "int"],
-        ["peers", "Vector<TopPeer>"]
+        ["peers", "Vector<_>"]
       ]
     ]
   ],
@@ -4317,9 +4263,9 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["contacts_TopPeers", 0x9ee8bb88],
       [
-        ["categories", "Vector<TopPeerCategoryPeers>"],
-        ["chats", "Vector<Chat>"],
-        ["users", "Vector<User>"]
+        ["categories", "Vector<_>"],
+        ["chats", "Vector<_>"],
+        ["users", "Vector<_>"]
       ]
     ]
   ],
@@ -4343,7 +4289,7 @@ export const tlObjectsDefinitions: any[] = [
         ["noWebpage", "Flag1<true>"],
         ["replyToMsgId", "Flag0<int>"],
         ["message", "string"],
-        ["entities", "Flag3<Vector<MessageEntity>>"],
+        ["entities", "Flag3<Vector<_>>"],
         ["date", "int"]
       ]
     ]
@@ -4355,7 +4301,7 @@ export const tlObjectsDefinitions: any[] = [
       ["messages_FeaturedStickers", 0x2614b722],
       [
         ["hash", "int"],
-        ["sets", "Vector<StickerSetCovered>"],
+        ["sets", "Vector<_>"],
         ["unread", "Vector<long>"]
       ]
     ]
@@ -4367,8 +4313,8 @@ export const tlObjectsDefinitions: any[] = [
       ["messages_RecentStickers", 0xf76f8683],
       [
         ["hash", "int"],
-        ["packs", "Vector<StickerPack>"],
-        ["stickers", "Vector<Document>"],
+        ["packs", "Vector<_>"],
+        ["stickers", "Vector<_>"],
         ["dates", "Vector<int>"]
       ]
     ]
@@ -4379,7 +4325,7 @@ export const tlObjectsDefinitions: any[] = [
       ["messages_ArchivedStickers", 0x7296d771],
       [
         ["count", "int"],
-        ["sets", "Vector<StickerSetCovered>"]
+        ["sets", "Vector<_>"]
       ]
     ]
   ],
@@ -4388,7 +4334,7 @@ export const tlObjectsDefinitions: any[] = [
     0x35e410a8,
     [
       ["messages_StickerSetInstallResultArchive", 0x67cb3fe8],
-      [["sets", "Vector<StickerSetCovered>"]]
+      [["sets", "Vector<_>"]]
     ]
   ],
   [
@@ -4396,8 +4342,8 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["StickerSetCovered", 0x7f86e4e5],
       [
-        ["set", "StickerSet"],
-        ["cover", "Document"]
+        ["set", "_"],
+        ["cover", "_"]
       ]
     ]
   ],
@@ -4406,8 +4352,8 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["StickerSetMultiCovered", 0x7f86e4e5],
       [
-        ["set", "StickerSet"],
-        ["covers", "Vector<Document>"]
+        ["set", "_"],
+        ["covers", "Vector<_>"]
       ]
     ]
   ],
@@ -4423,14 +4369,8 @@ export const tlObjectsDefinitions: any[] = [
       ]
     ]
   ],
-  [
-    0x4a992157,
-    [["InputStickeredMediaPhoto", 0x5146d99e], [["id", "InputPhoto"]]]
-  ],
-  [
-    0x0438865b,
-    [["InputStickeredMediaDocument", 0x5146d99e], [["id", "InputDocument"]]]
-  ],
+  [0x4a992157, [["InputStickeredMediaPhoto", 0x5146d99e], [["id", "_"]]]],
+  [0x0438865b, [["InputStickeredMediaDocument", 0x5146d99e], [["id", "_"]]]],
   [
     0xbdf9653b,
     [
@@ -4442,8 +4382,8 @@ export const tlObjectsDefinitions: any[] = [
         ["shortName", "string"],
         ["title", "string"],
         ["description", "string"],
-        ["photo", "Photo"],
-        ["document", "Flag0<Document>"]
+        ["photo", "_"],
+        ["document", "Flag0<_>"]
       ]
     ]
   ],
@@ -4462,7 +4402,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["InputGameShortName", 0x48d15883],
       [
-        ["botId", "InputUser"],
+        ["botId", "_"],
         ["shortName", "string"]
       ]
     ]
@@ -4483,24 +4423,24 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["messages_HighScores", 0x6ccd95fd],
       [
-        ["scores", "Vector<HighScore>"],
-        ["users", "Vector<User>"]
+        ["scores", "Vector<_>"],
+        ["users", "Vector<_>"]
       ]
     ]
   ],
   [0xdc3d824f, [["TextEmpty", 0xf1d0b479], []]],
   [0x744694e0, [["TextPlain", 0xf1d0b479], [["text", "string"]]]],
-  [0x6724abc4, [["TextBold", 0xf1d0b479], [["text", "RichText"]]]],
-  [0xd912a59c, [["TextItalic", 0xf1d0b479], [["text", "RichText"]]]],
-  [0xc12622c4, [["TextUnderline", 0xf1d0b479], [["text", "RichText"]]]],
-  [0x9bf8bb95, [["TextStrike", 0xf1d0b479], [["text", "RichText"]]]],
-  [0x6c3f19b9, [["TextFixed", 0xf1d0b479], [["text", "RichText"]]]],
+  [0x6724abc4, [["TextBold", 0xf1d0b479], [["text", "_"]]]],
+  [0xd912a59c, [["TextItalic", 0xf1d0b479], [["text", "_"]]]],
+  [0xc12622c4, [["TextUnderline", 0xf1d0b479], [["text", "_"]]]],
+  [0x9bf8bb95, [["TextStrike", 0xf1d0b479], [["text", "_"]]]],
+  [0x6c3f19b9, [["TextFixed", 0xf1d0b479], [["text", "_"]]]],
   [
     0x3c2884c1,
     [
       ["TextUrl", 0xf1d0b479],
       [
-        ["text", "RichText"],
+        ["text", "_"],
         ["url", "string"],
         ["webpageId", "long"]
       ]
@@ -4511,21 +4451,21 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["TextEmail", 0xf1d0b479],
       [
-        ["text", "RichText"],
+        ["text", "_"],
         ["email", "string"]
       ]
     ]
   ],
-  [0x7e6260d7, [["TextConcat", 0xf1d0b479], [["texts", "Vector<RichText>"]]]],
-  [0xed6a8504, [["TextSubscript", 0xf1d0b479], [["text", "RichText"]]]],
-  [0xc7fb5e01, [["TextSuperscript", 0xf1d0b479], [["text", "RichText"]]]],
-  [0x034b8621, [["TextMarked", 0xf1d0b479], [["text", "RichText"]]]],
+  [0x7e6260d7, [["TextConcat", 0xf1d0b479], [["texts", "Vector<_>"]]]],
+  [0xed6a8504, [["TextSubscript", 0xf1d0b479], [["text", "_"]]]],
+  [0xc7fb5e01, [["TextSuperscript", 0xf1d0b479], [["text", "_"]]]],
+  [0x034b8621, [["TextMarked", 0xf1d0b479], [["text", "_"]]]],
   [
     0x1ccb966a,
     [
       ["TextPhone", 0xf1d0b479],
       [
-        ["text", "RichText"],
+        ["text", "_"],
         ["phone", "string"]
       ]
     ]
@@ -4546,51 +4486,48 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["TextAnchor", 0xf1d0b479],
       [
-        ["text", "RichText"],
+        ["text", "_"],
         ["name", "string"]
       ]
     ]
   ],
   [0x13567e8a, [["PageBlockUnsupported", 0x1aca5644], []]],
-  [0x70abc3fd, [["PageBlockTitle", 0x1aca5644], [["text", "RichText"]]]],
-  [0x8ffa9a1f, [["PageBlockSubtitle", 0x1aca5644], [["text", "RichText"]]]],
+  [0x70abc3fd, [["PageBlockTitle", 0x1aca5644], [["text", "_"]]]],
+  [0x8ffa9a1f, [["PageBlockSubtitle", 0x1aca5644], [["text", "_"]]]],
   [
     0xbaafe5e0,
     [
       ["PageBlockAuthorDate", 0x1aca5644],
       [
-        ["author", "RichText"],
+        ["author", "_"],
         ["publishedDate", "int"]
       ]
     ]
   ],
-  [0xbfd064ec, [["PageBlockHeader", 0x1aca5644], [["text", "RichText"]]]],
-  [0xf12bb6e1, [["PageBlockSubheader", 0x1aca5644], [["text", "RichText"]]]],
-  [0x467a0766, [["PageBlockParagraph", 0x1aca5644], [["text", "RichText"]]]],
+  [0xbfd064ec, [["PageBlockHeader", 0x1aca5644], [["text", "_"]]]],
+  [0xf12bb6e1, [["PageBlockSubheader", 0x1aca5644], [["text", "_"]]]],
+  [0x467a0766, [["PageBlockParagraph", 0x1aca5644], [["text", "_"]]]],
   [
     0xc070d93e,
     [
       ["PageBlockPreformatted", 0x1aca5644],
       [
-        ["text", "RichText"],
+        ["text", "_"],
         ["language", "string"]
       ]
     ]
   ],
-  [0x48870999, [["PageBlockFooter", 0x1aca5644], [["text", "RichText"]]]],
+  [0x48870999, [["PageBlockFooter", 0x1aca5644], [["text", "_"]]]],
   [0xdb20b188, [["PageBlockDivider", 0x1aca5644], []]],
   [0xce0d37b0, [["PageBlockAnchor", 0x1aca5644], [["name", "string"]]]],
-  [
-    0xe4e88011,
-    [["PageBlockList", 0x1aca5644], [["items", "Vector<PageListItem>"]]]
-  ],
+  [0xe4e88011, [["PageBlockList", 0x1aca5644], [["items", "Vector<_>"]]]],
   [
     0x263d7c26,
     [
       ["PageBlockBlockquote", 0x1aca5644],
       [
-        ["text", "RichText"],
-        ["caption", "RichText"]
+        ["text", "_"],
+        ["caption", "_"]
       ]
     ]
   ],
@@ -4599,8 +4536,8 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["PageBlockPullquote", 0x1aca5644],
       [
-        ["text", "RichText"],
-        ["caption", "RichText"]
+        ["text", "_"],
+        ["caption", "_"]
       ]
     ]
   ],
@@ -4611,7 +4548,7 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["flags", "#FLAG"],
         ["photoId", "long"],
-        ["caption", "PageCaption"],
+        ["caption", "_"],
         ["url", "Flag0<string>"],
         ["webpageId", "Flag0<long>"]
       ]
@@ -4626,11 +4563,11 @@ export const tlObjectsDefinitions: any[] = [
         ["autoplay", "Flag0<true>"],
         ["loop", "Flag1<true>"],
         ["videoId", "long"],
-        ["caption", "PageCaption"]
+        ["caption", "_"]
       ]
     ]
   ],
-  [0x39f23300, [["PageBlockCover", 0x1aca5644], [["cover", "PageBlock"]]]],
+  [0x39f23300, [["PageBlockCover", 0x1aca5644], [["cover", "_"]]]],
   [
     0xa8718dc5,
     [
@@ -4644,7 +4581,7 @@ export const tlObjectsDefinitions: any[] = [
         ["posterPhotoId", "Flag4<long>"],
         ["w", "Flag5<int>"],
         ["h", "Flag5<int>"],
-        ["caption", "PageCaption"]
+        ["caption", "_"]
       ]
     ]
   ],
@@ -4658,8 +4595,8 @@ export const tlObjectsDefinitions: any[] = [
         ["authorPhotoId", "long"],
         ["author", "string"],
         ["date", "int"],
-        ["blocks", "Vector<PageBlock>"],
-        ["caption", "PageCaption"]
+        ["blocks", "Vector<_>"],
+        ["caption", "_"]
       ]
     ]
   ],
@@ -4668,8 +4605,8 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["PageBlockCollage", 0x1aca5644],
       [
-        ["items", "Vector<PageBlock>"],
-        ["caption", "PageCaption"]
+        ["items", "Vector<_>"],
+        ["caption", "_"]
       ]
     ]
   ],
@@ -4678,23 +4615,23 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["PageBlockSlideshow", 0x1aca5644],
       [
-        ["items", "Vector<PageBlock>"],
-        ["caption", "PageCaption"]
+        ["items", "Vector<_>"],
+        ["caption", "_"]
       ]
     ]
   ],
-  [0xef1751b5, [["PageBlockChannel", 0x1aca5644], [["channel", "Chat"]]]],
+  [0xef1751b5, [["PageBlockChannel", 0x1aca5644], [["channel", "_"]]]],
   [
     0x804361ea,
     [
       ["PageBlockAudio", 0x1aca5644],
       [
         ["audioId", "long"],
-        ["caption", "PageCaption"]
+        ["caption", "_"]
       ]
     ]
   ],
-  [0x1e148390, [["PageBlockKicker", 0x1aca5644], [["text", "RichText"]]]],
+  [0x1e148390, [["PageBlockKicker", 0x1aca5644], [["text", "_"]]]],
   [
     0xbf4dea82,
     [
@@ -4703,17 +4640,14 @@ export const tlObjectsDefinitions: any[] = [
         ["flags", "#FLAG"],
         ["bordered", "Flag0<true>"],
         ["striped", "Flag1<true>"],
-        ["title", "RichText"],
-        ["rows", "Vector<PageTableRow>"]
+        ["title", "_"],
+        ["rows", "Vector<_>"]
       ]
     ]
   ],
   [
     0x9a8ae1e1,
-    [
-      ["PageBlockOrderedList", 0x1aca5644],
-      [["items", "Vector<PageListOrderedItem>"]]
-    ]
+    [["PageBlockOrderedList", 0x1aca5644], [["items", "Vector<_>"]]]
   ],
   [
     0x76768bed,
@@ -4722,8 +4656,8 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["flags", "#FLAG"],
         ["open", "Flag0<true>"],
-        ["blocks", "Vector<PageBlock>"],
-        ["title", "RichText"]
+        ["blocks", "Vector<_>"],
+        ["title", "_"]
       ]
     ]
   ],
@@ -4732,8 +4666,8 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["PageBlockRelatedArticles", 0x1aca5644],
       [
-        ["title", "RichText"],
-        ["articles", "Vector<PageRelatedArticle>"]
+        ["title", "_"],
+        ["articles", "Vector<_>"]
       ]
     ]
   ],
@@ -4742,11 +4676,11 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["PageBlockMap", 0x1aca5644],
       [
-        ["geo", "GeoPoint"],
+        ["geo", "_"],
         ["zoom", "int"],
         ["w", "int"],
         ["h", "int"],
-        ["caption", "PageCaption"]
+        ["caption", "_"]
       ]
     ]
   ],
@@ -4780,7 +4714,7 @@ export const tlObjectsDefinitions: any[] = [
         ["phoneToProvider", "Flag6<true>"],
         ["emailToProvider", "Flag7<true>"],
         ["currency", "string"],
-        ["prices", "Vector<LabeledPrice>"]
+        ["prices", "Vector<_>"]
       ]
     ]
   ],
@@ -4817,7 +4751,7 @@ export const tlObjectsDefinitions: any[] = [
         ["name", "Flag0<string>"],
         ["phone", "Flag1<string>"],
         ["email", "Flag2<string>"],
-        ["shippingAddress", "Flag3<PostAddress>"]
+        ["shippingAddress", "Flag3<_>"]
       ]
     ]
   ],
@@ -4840,7 +4774,7 @@ export const tlObjectsDefinitions: any[] = [
         ["accessHash", "long"],
         ["size", "int"],
         ["mimeType", "string"],
-        ["attributes", "Vector<DocumentAttribute>"]
+        ["attributes", "Vector<_>"]
       ]
     ]
   ],
@@ -4852,7 +4786,7 @@ export const tlObjectsDefinitions: any[] = [
         ["url", "string"],
         ["size", "int"],
         ["mimeType", "string"],
-        ["attributes", "Vector<DocumentAttribute>"]
+        ["attributes", "Vector<_>"]
       ]
     ]
   ],
@@ -4864,7 +4798,7 @@ export const tlObjectsDefinitions: any[] = [
         ["url", "string"],
         ["size", "int"],
         ["mimeType", "string"],
-        ["attributes", "Vector<DocumentAttribute>"]
+        ["attributes", "Vector<_>"]
       ]
     ]
   ],
@@ -4883,7 +4817,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["InputWebFileGeoPointLocation", 0xf72ed8d9],
       [
-        ["geoPoint", "InputGeoPoint"],
+        ["geoPoint", "_"],
         ["accessHash", "long"],
         ["w", "int"],
         ["h", "int"],
@@ -4899,7 +4833,7 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["size", "int"],
         ["mimeType", "string"],
-        ["fileType", "storage_FileType"],
+        ["fileType", "_"],
         ["mtime", "int"],
         ["bytes", "bytes"]
       ]
@@ -4914,14 +4848,14 @@ export const tlObjectsDefinitions: any[] = [
         ["canSaveCredentials", "Flag2<true>"],
         ["passwordMissing", "Flag3<true>"],
         ["botId", "int"],
-        ["invoice", "Invoice"],
+        ["invoice", "_"],
         ["providerId", "int"],
         ["url", "string"],
         ["nativeProvider", "Flag4<string>"],
-        ["nativeParams", "Flag4<DataJSON>"],
-        ["savedInfo", "Flag0<PaymentRequestedInfo>"],
-        ["savedCredentials", "Flag1<PaymentSavedCredentials>"],
-        ["users", "Vector<User>"]
+        ["nativeParams", "Flag4<_>"],
+        ["savedInfo", "Flag0<_>"],
+        ["savedCredentials", "Flag1<_>"],
+        ["users", "Vector<_>"]
       ]
     ]
   ],
@@ -4932,14 +4866,11 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["flags", "#FLAG"],
         ["id", "Flag0<string>"],
-        ["shippingOptions", "Flag1<Vector<ShippingOption>>"]
+        ["shippingOptions", "Flag1<Vector<_>>"]
       ]
     ]
   ],
-  [
-    0x4e5f810d,
-    [["payments_PaymentResult", 0x8ae16a9d], [["updates", "Updates"]]]
-  ],
+  [0x4e5f810d, [["payments_PaymentResult", 0x8ae16a9d], [["updates", "_"]]]],
   [
     0xd8411139,
     [["payments_PaymentVerificationNeeded", 0x8ae16a9d], [["url", "string"]]]
@@ -4952,14 +4883,14 @@ export const tlObjectsDefinitions: any[] = [
         ["flags", "#FLAG"],
         ["date", "int"],
         ["botId", "int"],
-        ["invoice", "Invoice"],
+        ["invoice", "_"],
         ["providerId", "int"],
-        ["info", "Flag0<PaymentRequestedInfo>"],
-        ["shipping", "Flag1<ShippingOption>"],
+        ["info", "Flag0<_>"],
+        ["shipping", "Flag1<_>"],
         ["currency", "string"],
         ["totalAmount", "long"],
         ["credentialsTitle", "string"],
-        ["users", "Vector<User>"]
+        ["users", "Vector<_>"]
       ]
     ]
   ],
@@ -4970,7 +4901,7 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["flags", "#FLAG"],
         ["hasSavedCredentials", "Flag1<true>"],
-        ["savedInfo", "Flag0<PaymentRequestedInfo>"]
+        ["savedInfo", "Flag0<_>"]
       ]
     ]
   ],
@@ -4991,23 +4922,20 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["flags", "#FLAG"],
         ["save", "Flag0<true>"],
-        ["data", "DataJSON"]
+        ["data", "_"]
       ]
     ]
   ],
   [
     0x0aa1c39f,
-    [
-      ["InputPaymentCredentialsApplePay", 0x2899a53d],
-      [["paymentData", "DataJSON"]]
-    ]
+    [["InputPaymentCredentialsApplePay", 0x2899a53d], [["paymentData", "_"]]]
   ],
   [
     0xca05d50e,
     [
       ["InputPaymentCredentialsAndroidPay", 0x2899a53d],
       [
-        ["paymentToken", "DataJSON"],
+        ["paymentToken", "_"],
         ["googleTransactionId", "string"]
       ]
     ]
@@ -5029,7 +4957,7 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["id", "string"],
         ["title", "string"],
-        ["prices", "Vector<LabeledPrice>"]
+        ["prices", "Vector<_>"]
       ]
     ]
   ],
@@ -5039,9 +4967,9 @@ export const tlObjectsDefinitions: any[] = [
       ["InputStickerSetItem", 0xae59f075],
       [
         ["flags", "#FLAG"],
-        ["document", "InputDocument"],
+        ["document", "_"],
         ["emoji", "string"],
-        ["maskCoords", "Flag0<MaskCoords>"]
+        ["maskCoords", "Flag0<_>"]
       ]
     ]
   ],
@@ -5068,7 +4996,7 @@ export const tlObjectsDefinitions: any[] = [
         ["date", "int"],
         ["adminId", "int"],
         ["participantId", "int"],
-        ["protocol", "PhoneCallProtocol"],
+        ["protocol", "_"],
         ["receiveDate", "Flag0<int>"]
       ]
     ]
@@ -5086,7 +5014,7 @@ export const tlObjectsDefinitions: any[] = [
         ["adminId", "int"],
         ["participantId", "int"],
         ["gAHash", "bytes"],
-        ["protocol", "PhoneCallProtocol"]
+        ["protocol", "_"]
       ]
     ]
   ],
@@ -5103,7 +5031,7 @@ export const tlObjectsDefinitions: any[] = [
         ["adminId", "int"],
         ["participantId", "int"],
         ["gB", "bytes"],
-        ["protocol", "PhoneCallProtocol"]
+        ["protocol", "_"]
       ]
     ]
   ],
@@ -5121,8 +5049,8 @@ export const tlObjectsDefinitions: any[] = [
         ["participantId", "int"],
         ["gAOrB", "bytes"],
         ["keyFingerprint", "long"],
-        ["protocol", "PhoneCallProtocol"],
-        ["connections", "Vector<PhoneConnection>"],
+        ["protocol", "_"],
+        ["connections", "Vector<_>"],
         ["startDate", "int"]
       ]
     ]
@@ -5137,7 +5065,7 @@ export const tlObjectsDefinitions: any[] = [
         ["needDebug", "Flag3<true>"],
         ["video", "Flag5<true>"],
         ["id", "long"],
-        ["reason", "Flag0<PhoneCallDiscardReason>"],
+        ["reason", "Flag0<_>"],
         ["duration", "Flag1<int>"]
       ]
     ]
@@ -5173,8 +5101,8 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["phone_PhoneCall", 0xd48afe4f],
       [
-        ["phoneCall", "PhoneCall"],
-        ["users", "Vector<User>"]
+        ["phoneCall", "_"],
+        ["users", "Vector<_>"]
       ]
     ]
   ],
@@ -5193,10 +5121,7 @@ export const tlObjectsDefinitions: any[] = [
       ]
     ]
   ],
-  [
-    0x5725e40a,
-    [["CdnConfig", 0xecda397c], [["publicKeys", "Vector<CdnPublicKey>"]]]
-  ],
+  [0x5725e40a, [["CdnConfig", 0xecda397c], [["publicKeys", "Vector<_>"]]]],
   [
     0xcad181f6,
     [
@@ -5232,7 +5157,7 @@ export const tlObjectsDefinitions: any[] = [
         ["langCode", "string"],
         ["fromVersion", "int"],
         ["version", "int"],
-        ["strings", "Vector<LangPackString>"]
+        ["strings", "Vector<_>"]
       ]
     ]
   ],
@@ -5291,8 +5216,8 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["ChannelAdminLogEventActionChangePhoto", 0xb2b987f3],
       [
-        ["prevPhoto", "Photo"],
-        ["newPhoto", "Photo"]
+        ["prevPhoto", "_"],
+        ["newPhoto", "_"]
       ]
     ]
   ],
@@ -5312,18 +5237,15 @@ export const tlObjectsDefinitions: any[] = [
   ],
   [
     0xe9e82c18,
-    [
-      ["ChannelAdminLogEventActionUpdatePinned", 0xb2b987f3],
-      [["message", "Message"]]
-    ]
+    [["ChannelAdminLogEventActionUpdatePinned", 0xb2b987f3], [["message", "_"]]]
   ],
   [
     0x709b2405,
     [
       ["ChannelAdminLogEventActionEditMessage", 0xb2b987f3],
       [
-        ["prevMessage", "Message"],
-        ["newMessage", "Message"]
+        ["prevMessage", "_"],
+        ["newMessage", "_"]
       ]
     ]
   ],
@@ -5331,7 +5253,7 @@ export const tlObjectsDefinitions: any[] = [
     0x42e047bb,
     [
       ["ChannelAdminLogEventActionDeleteMessage", 0xb2b987f3],
-      [["message", "Message"]]
+      [["message", "_"]]
     ]
   ],
   [0x183040d3, [["ChannelAdminLogEventActionParticipantJoin", 0xb2b987f3], []]],
@@ -5343,7 +5265,7 @@ export const tlObjectsDefinitions: any[] = [
     0xe31c34d8,
     [
       ["ChannelAdminLogEventActionParticipantInvite", 0xb2b987f3],
-      [["participant", "ChannelParticipant"]]
+      [["participant", "_"]]
     ]
   ],
   [
@@ -5351,8 +5273,8 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["ChannelAdminLogEventActionParticipantToggleBan", 0xb2b987f3],
       [
-        ["prevParticipant", "ChannelParticipant"],
-        ["newParticipant", "ChannelParticipant"]
+        ["prevParticipant", "_"],
+        ["newParticipant", "_"]
       ]
     ]
   ],
@@ -5361,8 +5283,8 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["ChannelAdminLogEventActionParticipantToggleAdmin", 0xb2b987f3],
       [
-        ["prevParticipant", "ChannelParticipant"],
-        ["newParticipant", "ChannelParticipant"]
+        ["prevParticipant", "_"],
+        ["newParticipant", "_"]
       ]
     ]
   ],
@@ -5371,8 +5293,8 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["ChannelAdminLogEventActionChangeStickerSet", 0xb2b987f3],
       [
-        ["prevStickerset", "InputStickerSet"],
-        ["newStickerset", "InputStickerSet"]
+        ["prevStickerset", "_"],
+        ["newStickerset", "_"]
       ]
     ]
   ],
@@ -5388,17 +5310,14 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["ChannelAdminLogEventActionDefaultBannedRights", 0xb2b987f3],
       [
-        ["prevBannedRights", "ChatBannedRights"],
-        ["newBannedRights", "ChatBannedRights"]
+        ["prevBannedRights", "_"],
+        ["newBannedRights", "_"]
       ]
     ]
   ],
   [
     0x8f079643,
-    [
-      ["ChannelAdminLogEventActionStopPoll", 0xb2b987f3],
-      [["message", "Message"]]
-    ]
+    [["ChannelAdminLogEventActionStopPoll", 0xb2b987f3], [["message", "_"]]]
   ],
   [
     0xa26f881b,
@@ -5415,8 +5334,8 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["ChannelAdminLogEventActionChangeLocation", 0xb2b987f3],
       [
-        ["prevValue", "ChannelLocation"],
-        ["newValue", "ChannelLocation"]
+        ["prevValue", "_"],
+        ["newValue", "_"]
       ]
     ]
   ],
@@ -5438,7 +5357,7 @@ export const tlObjectsDefinitions: any[] = [
         ["id", "long"],
         ["date", "int"],
         ["userId", "int"],
-        ["action", "ChannelAdminLogEventAction"]
+        ["action", "_"]
       ]
     ]
   ],
@@ -5447,9 +5366,9 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["channels_AdminLogResults", 0x51f076bc],
       [
-        ["events", "Vector<ChannelAdminLogEvent>"],
-        ["chats", "Vector<Chat>"],
-        ["users", "Vector<User>"]
+        ["events", "Vector<_>"],
+        ["chats", "Vector<_>"],
+        ["users", "Vector<_>"]
       ]
     ]
   ],
@@ -5493,8 +5412,8 @@ export const tlObjectsDefinitions: any[] = [
       ["messages_FavedStickers", 0x8e736fb9],
       [
         ["hash", "int"],
-        ["packs", "Vector<StickerPack>"],
-        ["stickers", "Vector<Document>"]
+        ["packs", "Vector<_>"],
+        ["stickers", "Vector<_>"]
       ]
     ]
   ],
@@ -5525,7 +5444,7 @@ export const tlObjectsDefinitions: any[] = [
       ["RecentMeUrlChatInvite", 0x55a53079],
       [
         ["url", "string"],
-        ["chatInvite", "ChatInvite"]
+        ["chatInvite", "_"]
       ]
     ]
   ],
@@ -5535,7 +5454,7 @@ export const tlObjectsDefinitions: any[] = [
       ["RecentMeUrlStickerSet", 0x55a53079],
       [
         ["url", "string"],
-        ["set", "StickerSetCovered"]
+        ["set", "_"]
       ]
     ]
   ],
@@ -5544,9 +5463,9 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["help_RecentMeUrls", 0xf269c477],
       [
-        ["urls", "Vector<RecentMeUrl>"],
-        ["chats", "Vector<Chat>"],
-        ["users", "Vector<User>"]
+        ["urls", "Vector<_>"],
+        ["chats", "Vector<_>"],
+        ["users", "Vector<_>"]
       ]
     ]
   ],
@@ -5556,10 +5475,10 @@ export const tlObjectsDefinitions: any[] = [
       ["InputSingleMedia", 0x21ca8ed8],
       [
         ["flags", "#FLAG"],
-        ["media", "InputMedia"],
+        ["media", "_"],
         ["randomId", "long"],
         ["message", "string"],
-        ["entities", "Flag0<Vector<MessageEntity>>"]
+        ["entities", "Flag0<Vector<_>>"]
       ]
     ]
   ],
@@ -5585,17 +5504,17 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["account_WebAuthorizations", 0x9a365b32],
       [
-        ["authorizations", "Vector<WebAuthorization>"],
-        ["users", "Vector<User>"]
+        ["authorizations", "Vector<_>"],
+        ["users", "Vector<_>"]
       ]
     ]
   ],
   [0xa676a322, [["InputMessageID", 0x54b6bcc5], [["id", "int"]]]],
   [0xbad88395, [["InputMessageReplyTo", 0x54b6bcc5], [["id", "int"]]]],
   [0x86872538, [["InputMessagePinned", 0x54b6bcc5], []]],
-  [0xfcaafeb7, [["InputDialogPeer", 0xa21c9795], [["peer", "InputPeer"]]]],
+  [0xfcaafeb7, [["InputDialogPeer", 0xa21c9795], [["peer", "_"]]]],
   [0x64600527, [["InputDialogPeerFolder", 0xa21c9795], [["folderId", "int"]]]],
-  [0xe56dbf05, [["DialogPeer", 0x256ce1ae], [["peer", "Peer"]]]],
+  [0xe56dbf05, [["DialogPeer", 0x256ce1ae], [["peer", "_"]]]],
   [0x514519e2, [["DialogPeerFolder", 0x256ce1ae], [["folderId", "int"]]]],
   [0x0d54b65d, [["messages_FoundStickerSetsNotModified", 0x40df361], []]],
   [
@@ -5604,7 +5523,7 @@ export const tlObjectsDefinitions: any[] = [
       ["messages_FoundStickerSets", 0x40df361],
       [
         ["hash", "int"],
-        ["sets", "Vector<StickerSetCovered>"]
+        ["sets", "Vector<_>"]
       ]
     ]
   ],
@@ -5636,9 +5555,9 @@ export const tlObjectsDefinitions: any[] = [
       ["help_ProxyDataPromo", 0x21e2a448],
       [
         ["expires", "int"],
-        ["peer", "Peer"],
-        ["chats", "Vector<Chat>"],
-        ["users", "Vector<User>"]
+        ["peer", "_"],
+        ["chats", "Vector<_>"],
+        ["users", "Vector<_>"]
       ]
     ]
   ],
@@ -5652,7 +5571,7 @@ export const tlObjectsDefinitions: any[] = [
       ["help_TermsOfServiceUpdate", 0x293c2977],
       [
         ["expires", "int"],
-        ["termsOfService", "help_TermsOfService"]
+        ["termsOfService", "_"]
       ]
     ]
   ],
@@ -5727,14 +5646,14 @@ export const tlObjectsDefinitions: any[] = [
       ["SecureValue", 0x51138ae],
       [
         ["flags", "#FLAG"],
-        ["type", "SecureValueType"],
-        ["data", "Flag0<SecureData>"],
-        ["frontSide", "Flag1<SecureFile>"],
-        ["reverseSide", "Flag2<SecureFile>"],
-        ["selfie", "Flag3<SecureFile>"],
-        ["translation", "Flag6<Vector<SecureFile>>"],
-        ["files", "Flag4<Vector<SecureFile>>"],
-        ["plainData", "Flag5<SecurePlainData>"],
+        ["type", "_"],
+        ["data", "Flag0<_>"],
+        ["frontSide", "Flag1<_>"],
+        ["reverseSide", "Flag2<_>"],
+        ["selfie", "Flag3<_>"],
+        ["translation", "Flag6<Vector<_>>"],
+        ["files", "Flag4<Vector<_>>"],
+        ["plainData", "Flag5<_>"],
         ["hash", "bytes"]
       ]
     ]
@@ -5745,14 +5664,14 @@ export const tlObjectsDefinitions: any[] = [
       ["InputSecureValue", 0xb49da1fc],
       [
         ["flags", "#FLAG"],
-        ["type", "SecureValueType"],
-        ["data", "Flag0<SecureData>"],
-        ["frontSide", "Flag1<InputSecureFile>"],
-        ["reverseSide", "Flag2<InputSecureFile>"],
-        ["selfie", "Flag3<InputSecureFile>"],
-        ["translation", "Flag6<Vector<InputSecureFile>>"],
-        ["files", "Flag4<Vector<InputSecureFile>>"],
-        ["plainData", "Flag5<SecurePlainData>"]
+        ["type", "_"],
+        ["data", "Flag0<_>"],
+        ["frontSide", "Flag1<_>"],
+        ["reverseSide", "Flag2<_>"],
+        ["selfie", "Flag3<_>"],
+        ["translation", "Flag6<Vector<_>>"],
+        ["files", "Flag4<Vector<_>>"],
+        ["plainData", "Flag5<_>"]
       ]
     ]
   ],
@@ -5761,7 +5680,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["SecureValueHash", 0xd5f5c007],
       [
-        ["type", "SecureValueType"],
+        ["type", "_"],
         ["hash", "bytes"]
       ]
     ]
@@ -5771,7 +5690,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["SecureValueErrorData", 0x6075fce],
       [
-        ["type", "SecureValueType"],
+        ["type", "_"],
         ["dataHash", "bytes"],
         ["field", "string"],
         ["text", "string"]
@@ -5783,7 +5702,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["SecureValueErrorFrontSide", 0x6075fce],
       [
-        ["type", "SecureValueType"],
+        ["type", "_"],
         ["fileHash", "bytes"],
         ["text", "string"]
       ]
@@ -5794,7 +5713,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["SecureValueErrorReverseSide", 0x6075fce],
       [
-        ["type", "SecureValueType"],
+        ["type", "_"],
         ["fileHash", "bytes"],
         ["text", "string"]
       ]
@@ -5805,7 +5724,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["SecureValueErrorSelfie", 0x6075fce],
       [
-        ["type", "SecureValueType"],
+        ["type", "_"],
         ["fileHash", "bytes"],
         ["text", "string"]
       ]
@@ -5816,7 +5735,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["SecureValueErrorFile", 0x6075fce],
       [
-        ["type", "SecureValueType"],
+        ["type", "_"],
         ["fileHash", "bytes"],
         ["text", "string"]
       ]
@@ -5827,7 +5746,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["SecureValueErrorFiles", 0x6075fce],
       [
-        ["type", "SecureValueType"],
+        ["type", "_"],
         ["fileHash", "Vector<bytes>"],
         ["text", "string"]
       ]
@@ -5838,7 +5757,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["SecureValueError", 0x6075fce],
       [
-        ["type", "SecureValueType"],
+        ["type", "_"],
         ["hash", "bytes"],
         ["text", "string"]
       ]
@@ -5849,7 +5768,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["SecureValueErrorTranslationFile", 0x6075fce],
       [
-        ["type", "SecureValueType"],
+        ["type", "_"],
         ["fileHash", "bytes"],
         ["text", "string"]
       ]
@@ -5860,7 +5779,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["SecureValueErrorTranslationFiles", 0x6075fce],
       [
-        ["type", "SecureValueType"],
+        ["type", "_"],
         ["fileHash", "Vector<bytes>"],
         ["text", "string"]
       ]
@@ -5883,10 +5802,10 @@ export const tlObjectsDefinitions: any[] = [
       ["account_AuthorizationForm", 0x78049a94],
       [
         ["flags", "#FLAG"],
-        ["requiredTypes", "Vector<SecureRequiredType>"],
-        ["values", "Vector<SecureValue>"],
-        ["errors", "Vector<SecureValueError>"],
-        ["users", "Vector<User>"],
+        ["requiredTypes", "Vector<_>"],
+        ["values", "Vector<_>"],
+        ["errors", "Vector<_>"],
+        ["users", "Vector<_>"],
         ["privacyPolicyUrl", "Flag0<string>"]
       ]
     ]
@@ -5910,7 +5829,7 @@ export const tlObjectsDefinitions: any[] = [
         ["flags", "#FLAG"],
         ["updateApp", "Flag0<true>"],
         ["message", "string"],
-        ["entities", "Flag1<Vector<MessageEntity>>"]
+        ["entities", "Flag1<Vector<_>>"]
       ]
     ]
   ],
@@ -5960,7 +5879,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["SecureSecretSettings", 0xc6c802fb],
       [
-        ["secureAlgo", "SecurePasswordKdfAlgo"],
+        ["secureAlgo", "_"],
         ["secureSecret", "bytes"],
         ["secureSecretId", "long"]
       ]
@@ -5987,16 +5906,13 @@ export const tlObjectsDefinitions: any[] = [
         ["nativeNames", "Flag0<true>"],
         ["selfieRequired", "Flag1<true>"],
         ["translationRequired", "Flag2<true>"],
-        ["type", "SecureValueType"]
+        ["type", "_"]
       ]
     ]
   ],
   [
     0x027477b4,
-    [
-      ["SecureRequiredTypeOneOf", 0x7c7b420a],
-      [["types", "Vector<SecureRequiredType>"]]
-    ]
+    [["SecureRequiredTypeOneOf", 0x7c7b420a], [["types", "Vector<_>"]]]
   ],
   [0xbfb9f457, [["help_PassportConfigNotModified", 0xc666c0ad], []]],
   [
@@ -6005,7 +5921,7 @@ export const tlObjectsDefinitions: any[] = [
       ["help_PassportConfig", 0xc666c0ad],
       [
         ["hash", "int"],
-        ["countriesLangs", "DataJSON"]
+        ["countriesLangs", "_"]
       ]
     ]
   ],
@@ -6017,7 +5933,7 @@ export const tlObjectsDefinitions: any[] = [
         ["time", "double"],
         ["type", "string"],
         ["peer", "long"],
-        ["data", "JSONValue"]
+        ["data", "_"]
       ]
     ]
   ],
@@ -6027,7 +5943,7 @@ export const tlObjectsDefinitions: any[] = [
       ["JsonObjectValue", 0x937fceb9],
       [
         ["key", "string"],
-        ["value", "JSONValue"]
+        ["value", "_"]
       ]
     ]
   ],
@@ -6035,11 +5951,8 @@ export const tlObjectsDefinitions: any[] = [
   [0xc7345e6a, [["JsonBool", 0xeb9987b3], [["value", "Bool"]]]],
   [0x2be0dfa4, [["JsonNumber", 0xeb9987b3], [["value", "double"]]]],
   [0xb71e767a, [["JsonString", 0xeb9987b3], [["value", "string"]]]],
-  [0xf7444763, [["JsonArray", 0xeb9987b3], [["value", "Vector<JSONValue>"]]]],
-  [
-    0x99c1d49d,
-    [["JsonObject", 0xeb9987b3], [["value", "Vector<JSONObjectValue>"]]]
-  ],
+  [0xf7444763, [["JsonArray", 0xeb9987b3], [["value", "Vector<_>"]]]],
+  [0x99c1d49d, [["JsonObject", 0xeb9987b3], [["value", "Vector<_>"]]]],
   [
     0x34566b6a,
     [
@@ -6051,38 +5964,32 @@ export const tlObjectsDefinitions: any[] = [
         ["alignRight", "Flag4<true>"],
         ["valignMiddle", "Flag5<true>"],
         ["valignBottom", "Flag6<true>"],
-        ["text", "Flag7<RichText>"],
+        ["text", "Flag7<_>"],
         ["colspan", "Flag1<int>"],
         ["rowspan", "Flag2<int>"]
       ]
     ]
   ],
-  [
-    0xe0c0c5e5,
-    [["PageTableRow", 0x59acee11], [["cells", "Vector<PageTableCell>"]]]
-  ],
+  [0xe0c0c5e5, [["PageTableRow", 0x59acee11], [["cells", "Vector<_>"]]]],
   [
     0x6f747657,
     [
       ["PageCaption", 0x29b8eeb3],
       [
-        ["text", "RichText"],
-        ["credit", "RichText"]
+        ["text", "_"],
+        ["credit", "_"]
       ]
     ]
   ],
-  [0xb92fb6cd, [["PageListItemText", 0x8caebcb1], [["text", "RichText"]]]],
-  [
-    0x25e073fc,
-    [["PageListItemBlocks", 0x8caebcb1], [["blocks", "Vector<PageBlock>"]]]
-  ],
+  [0xb92fb6cd, [["PageListItemText", 0x8caebcb1], [["text", "_"]]]],
+  [0x25e073fc, [["PageListItemBlocks", 0x8caebcb1], [["blocks", "Vector<_>"]]]],
   [
     0x5e068047,
     [
       ["PageListOrderedItemText", 0xeeda0eb8],
       [
         ["num", "string"],
-        ["text", "RichText"]
+        ["text", "_"]
       ]
     ]
   ],
@@ -6092,7 +5999,7 @@ export const tlObjectsDefinitions: any[] = [
       ["PageListOrderedItemBlocks", 0xeeda0eb8],
       [
         ["num", "string"],
-        ["blocks", "Vector<PageBlock>"]
+        ["blocks", "Vector<_>"]
       ]
     ]
   ],
@@ -6122,9 +6029,9 @@ export const tlObjectsDefinitions: any[] = [
         ["rtl", "Flag1<true>"],
         ["v2", "Flag2<true>"],
         ["url", "string"],
-        ["blocks", "Vector<PageBlock>"],
-        ["photos", "Vector<Photo>"],
-        ["documents", "Vector<Document>"]
+        ["blocks", "Vector<_>"],
+        ["photos", "Vector<_>"],
+        ["documents", "Vector<_>"]
       ]
     ]
   ],
@@ -6136,7 +6043,7 @@ export const tlObjectsDefinitions: any[] = [
       ["help_UserInfo", 0x5c53d7d8],
       [
         ["message", "string"],
-        ["entities", "Vector<MessageEntity>"],
+        ["entities", "Vector<_>"],
         ["author", "string"],
         ["date", "int"]
       ]
@@ -6161,7 +6068,7 @@ export const tlObjectsDefinitions: any[] = [
         ["flags", "#FLAG"],
         ["closed", "Flag0<true>"],
         ["question", "string"],
-        ["answers", "Vector<PollAnswer>"]
+        ["answers", "Vector<_>"]
       ]
     ]
   ],
@@ -6184,7 +6091,7 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["flags", "#FLAG"],
         ["min", "Flag0<true>"],
-        ["results", "Flag1<Vector<PollAnswerVoters>>"],
+        ["results", "Flag1<Vector<_>>"],
         ["totalVoters", "Flag2<int>"]
       ]
     ]
@@ -6248,7 +6155,7 @@ export const tlObjectsDefinitions: any[] = [
       ["account_WallPapers", 0xa2c548fd],
       [
         ["hash", "int"],
-        ["wallpapers", "Vector<WallPaper>"]
+        ["wallpapers", "Vector<_>"]
       ]
     ]
   ],
@@ -6298,9 +6205,9 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["account_AutoDownloadSettings", 0x2fb85921],
       [
-        ["low", "AutoDownloadSettings"],
-        ["medium", "AutoDownloadSettings"],
-        ["high", "AutoDownloadSettings"]
+        ["low", "_"],
+        ["medium", "_"],
+        ["high", "_"]
       ]
     ]
   ],
@@ -6332,7 +6239,7 @@ export const tlObjectsDefinitions: any[] = [
         ["langCode", "string"],
         ["fromVersion", "int"],
         ["version", "int"],
-        ["keywords", "Vector<EmojiKeyword>"]
+        ["keywords", "Vector<_>"]
       ]
     ]
   ],
@@ -6359,7 +6266,7 @@ export const tlObjectsDefinitions: any[] = [
         ["autofillNewCorrespondents", "Flag2<true>"],
         ["id", "int"],
         ["title", "string"],
-        ["photo", "Flag3<ChatPhoto>"]
+        ["photo", "Flag3<_>"]
       ]
     ]
   ],
@@ -6368,7 +6275,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["InputFolderPeer", 0x74825e00],
       [
-        ["peer", "InputPeer"],
+        ["peer", "_"],
         ["folderId", "int"]
       ]
     ]
@@ -6378,7 +6285,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["FolderPeer", 0xf3f2283b],
       [
-        ["peer", "Peer"],
+        ["peer", "_"],
         ["folderId", "int"]
       ]
     ]
@@ -6390,7 +6297,7 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["flags", "#FLAG"],
         ["inexact", "Flag1<true>"],
-        ["filter", "MessagesFilter"],
+        ["filter", "_"],
         ["count", "int"]
       ]
     ]
@@ -6402,7 +6309,7 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["flags", "#FLAG"],
         ["requestWriteAccess", "Flag0<true>"],
-        ["bot", "User"],
+        ["bot", "_"],
         ["domain", "string"]
       ]
     ]
@@ -6415,7 +6322,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["ChannelLocation", 0xec260b7f],
       [
-        ["geoPoint", "GeoPoint"],
+        ["geoPoint", "_"],
         ["address", "string"]
       ]
     ]
@@ -6425,7 +6332,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["PeerLocated", 0xfada34ac],
       [
-        ["peer", "Peer"],
+        ["peer", "_"],
         ["expires", "int"],
         ["distance", "int"]
       ]
@@ -6466,7 +6373,7 @@ export const tlObjectsDefinitions: any[] = [
         ["accessHash", "long"],
         ["slug", "string"],
         ["title", "string"],
-        ["document", "Flag2<Document>"],
+        ["document", "Flag2<_>"],
         ["installsCount", "int"]
       ]
     ]
@@ -6478,7 +6385,7 @@ export const tlObjectsDefinitions: any[] = [
       ["account_Themes", 0x7fc52204],
       [
         ["hash", "int"],
-        ["themes", "Vector<Theme>"]
+        ["themes", "Vector<_>"]
       ]
     ]
   ],
@@ -6488,7 +6395,7 @@ export const tlObjectsDefinitions: any[] = [
       ["InvokeAfterMsgRequest", 0xb7b2364b],
       [
         ["msgId", "long"],
-        ["query", "X"]
+        ["query", "_"]
       ]
     ]
   ],
@@ -6498,7 +6405,7 @@ export const tlObjectsDefinitions: any[] = [
       ["InvokeAfterMsgsRequest", 0xb7b2364b],
       [
         ["msgIds", "Vector<long>"],
-        ["query", "X"]
+        ["query", "_"]
       ]
     ]
   ],
@@ -6515,8 +6422,8 @@ export const tlObjectsDefinitions: any[] = [
         ["systemLangCode", "string"],
         ["langPack", "string"],
         ["langCode", "string"],
-        ["proxy", "Flag0<InputClientProxy>"],
-        ["query", "X"]
+        ["proxy", "Flag0<_>"],
+        ["query", "_"]
       ]
     ]
   ],
@@ -6526,18 +6433,18 @@ export const tlObjectsDefinitions: any[] = [
       ["InvokeWithLayerRequest", 0xb7b2364b],
       [
         ["layer", "int"],
-        ["query", "X"]
+        ["query", "_"]
       ]
     ]
   ],
-  [0xbf9459b7, [["InvokeWithoutUpdatesRequest", 0xb7b2364b], [["query", "X"]]]],
+  [0xbf9459b7, [["InvokeWithoutUpdatesRequest", 0xb7b2364b], [["query", "_"]]]],
   [
     0x365275f2,
     [
       ["InvokeWithMessagesRangeRequest", 0xb7b2364b],
       [
-        ["range", "MessageRange"],
-        ["query", "X"]
+        ["range", "_"],
+        ["query", "_"]
       ]
     ]
   ],
@@ -6547,7 +6454,7 @@ export const tlObjectsDefinitions: any[] = [
       ["InvokeWithTakeoutRequest", 0xb7b2364b],
       [
         ["takeoutId", "long"],
-        ["query", "X"]
+        ["query", "_"]
       ]
     ]
   ],
@@ -6559,7 +6466,7 @@ export const tlObjectsDefinitions: any[] = [
         ["phoneNumber", "string"],
         ["apiId", "int"],
         ["apiHash", "string"],
-        ["settings", "CodeSettings"]
+        ["settings", "_"]
       ]
     ]
   ],
@@ -6628,10 +6535,7 @@ export const tlObjectsDefinitions: any[] = [
   ],
   [
     0xd18b4d16,
-    [
-      ["auth_CheckPasswordRequest", 0xb9e04e39],
-      [["password", "InputCheckPasswordSRP"]]
-    ]
+    [["auth_CheckPasswordRequest", 0xb9e04e39], [["password", "_"]]]
   ],
   [0xd897bc66, [["auth_RequestPasswordRecoveryRequest", 0xfa72d43a], []]],
   [
@@ -6696,17 +6600,14 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["account_UpdateNotifySettingsRequest", 0xf5b399ac],
       [
-        ["peer", "InputNotifyPeer"],
-        ["settings", "InputPeerNotifySettings"]
+        ["peer", "_"],
+        ["settings", "_"]
       ]
     ]
   ],
   [
     0x12b3ad31,
-    [
-      ["account_GetNotifySettingsRequest", 0xcf20c074],
-      [["peer", "InputNotifyPeer"]]
-    ]
+    [["account_GetNotifySettingsRequest", 0xcf20c074], [["peer", "_"]]]
   ],
   [0xdb7e1747, [["account_ResetNotifySettingsRequest", 0xf5b399ac], []]],
   [
@@ -6734,8 +6635,8 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["account_ReportPeerRequest", 0xf5b399ac],
       [
-        ["peer", "InputPeer"],
-        ["reason", "ReportReason"]
+        ["peer", "_"],
+        ["reason", "_"]
       ]
     ]
   ],
@@ -6747,17 +6648,14 @@ export const tlObjectsDefinitions: any[] = [
     0x3e0bdd7c,
     [["account_UpdateUsernameRequest", 0x2da17977], [["username", "string"]]]
   ],
-  [
-    0xdadbc950,
-    [["account_GetPrivacyRequest", 0xb55aba82], [["key", "InputPrivacyKey"]]]
-  ],
+  [0xdadbc950, [["account_GetPrivacyRequest", 0xb55aba82], [["key", "_"]]]],
   [
     0xc9f81ce8,
     [
       ["account_SetPrivacyRequest", 0xb55aba82],
       [
-        ["key", "InputPrivacyKey"],
-        ["rules", "Vector<InputPrivacyRule>"]
+        ["key", "_"],
+        ["rules", "Vector<_>"]
       ]
     ]
   ],
@@ -6766,17 +6664,14 @@ export const tlObjectsDefinitions: any[] = [
     [["account_DeleteAccountRequest", 0xf5b399ac], [["reason", "string"]]]
   ],
   [0x08fc711d, [["account_GetAccountTTLRequest", 0xbaa39d88], []]],
-  [
-    0x2442485e,
-    [["account_SetAccountTTLRequest", 0xf5b399ac], [["ttl", "AccountDaysTTL"]]]
-  ],
+  [0x2442485e, [["account_SetAccountTTLRequest", 0xf5b399ac], [["ttl", "_"]]]],
   [
     0x82574ae5,
     [
       ["account_SendChangePhoneCodeRequest", 0x6ce87081],
       [
         ["phoneNumber", "string"],
-        ["settings", "CodeSettings"]
+        ["settings", "_"]
       ]
     ]
   ],
@@ -6803,18 +6698,15 @@ export const tlObjectsDefinitions: any[] = [
   [0x548a30f5, [["account_GetPasswordRequest", 0x53a211a3], []]],
   [
     0x9cd4eaf9,
-    [
-      ["account_GetPasswordSettingsRequest", 0xd23fb078],
-      [["password", "InputCheckPasswordSRP"]]
-    ]
+    [["account_GetPasswordSettingsRequest", 0xd23fb078], [["password", "_"]]]
   ],
   [
     0xa59b102f,
     [
       ["account_UpdatePasswordSettingsRequest", 0xf5b399ac],
       [
-        ["password", "InputCheckPasswordSRP"],
-        ["newSettings", "account_PasswordInputSettings"]
+        ["password", "_"],
+        ["newSettings", "_"]
       ]
     ]
   ],
@@ -6824,7 +6716,7 @@ export const tlObjectsDefinitions: any[] = [
       ["account_SendConfirmPhoneCodeRequest", 0x6ce87081],
       [
         ["hash", "string"],
-        ["settings", "CodeSettings"]
+        ["settings", "_"]
       ]
     ]
   ],
@@ -6843,7 +6735,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["account_GetTmpPasswordRequest", 0xb064992d],
       [
-        ["password", "InputCheckPasswordSRP"],
+        ["password", "_"],
         ["period", "int"]
       ]
     ]
@@ -6857,27 +6749,21 @@ export const tlObjectsDefinitions: any[] = [
   [0xb288bc7d, [["account_GetAllSecureValuesRequest", 0xe82e4121], []]],
   [
     0x73665bc2,
-    [
-      ["account_GetSecureValueRequest", 0xe82e4121],
-      [["types", "Vector<SecureValueType>"]]
-    ]
+    [["account_GetSecureValueRequest", 0xe82e4121], [["types", "Vector<_>"]]]
   ],
   [
     0x899fe31d,
     [
       ["account_SaveSecureValueRequest", 0x51138ae],
       [
-        ["value", "InputSecureValue"],
+        ["value", "_"],
         ["secureSecretId", "long"]
       ]
     ]
   ],
   [
     0xb880bc4b,
-    [
-      ["account_DeleteSecureValueRequest", 0xf5b399ac],
-      [["types", "Vector<SecureValueType>"]]
-    ]
+    [["account_DeleteSecureValueRequest", 0xf5b399ac], [["types", "Vector<_>"]]]
   ],
   [
     0xb86ba8e1,
@@ -6898,8 +6784,8 @@ export const tlObjectsDefinitions: any[] = [
         ["botId", "int"],
         ["scope", "string"],
         ["publicKey", "string"],
-        ["valueHashes", "Vector<SecureValueHash>"],
-        ["credentials", "SecureCredentialsEncrypted"]
+        ["valueHashes", "Vector<_>"],
+        ["credentials", "_"]
       ]
     ]
   ],
@@ -6909,7 +6795,7 @@ export const tlObjectsDefinitions: any[] = [
       ["account_SendVerifyPhoneCodeRequest", 0x6ce87081],
       [
         ["phoneNumber", "string"],
-        ["settings", "CodeSettings"]
+        ["settings", "_"]
       ]
     ]
   ],
@@ -6988,25 +6874,22 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["flags", "#FLAG"],
         ["compareSound", "Flag1<true>"],
-        ["peer", "Flag0<InputNotifyPeer>"]
+        ["peer", "Flag0<_>"]
       ]
     ]
   ],
   [
     0xfc8ddbea,
-    [
-      ["account_GetWallPaperRequest", 0x96a2c98b],
-      [["wallpaper", "InputWallPaper"]]
-    ]
+    [["account_GetWallPaperRequest", 0x96a2c98b], [["wallpaper", "_"]]]
   ],
   [
     0xdd853661,
     [
       ["account_UploadWallPaperRequest", 0x96a2c98b],
       [
-        ["file", "InputFile"],
+        ["file", "_"],
         ["mimeType", "string"],
-        ["settings", "WallPaperSettings"]
+        ["settings", "_"]
       ]
     ]
   ],
@@ -7015,9 +6898,9 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["account_SaveWallPaperRequest", 0xf5b399ac],
       [
-        ["wallpaper", "InputWallPaper"],
+        ["wallpaper", "_"],
         ["unsave", "Bool"],
-        ["settings", "WallPaperSettings"]
+        ["settings", "_"]
       ]
     ]
   ],
@@ -7026,8 +6909,8 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["account_InstallWallPaperRequest", 0xf5b399ac],
       [
-        ["wallpaper", "InputWallPaper"],
-        ["settings", "WallPaperSettings"]
+        ["wallpaper", "_"],
+        ["settings", "_"]
       ]
     ]
   ],
@@ -7041,7 +6924,7 @@ export const tlObjectsDefinitions: any[] = [
         ["flags", "#FLAG"],
         ["low", "Flag0<true>"],
         ["high", "Flag1<true>"],
-        ["settings", "AutoDownloadSettings"]
+        ["settings", "_"]
       ]
     ]
   ],
@@ -7051,8 +6934,8 @@ export const tlObjectsDefinitions: any[] = [
       ["account_UploadThemeRequest", 0x211fe820],
       [
         ["flags", "#FLAG"],
-        ["file", "InputFile"],
-        ["thumb", "Flag0<InputFile>"],
+        ["file", "_"],
+        ["thumb", "Flag0<_>"],
         ["fileName", "string"],
         ["mimeType", "string"]
       ]
@@ -7065,7 +6948,7 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["slug", "string"],
         ["title", "string"],
-        ["document", "InputDocument"]
+        ["document", "_"]
       ]
     ]
   ],
@@ -7076,10 +6959,10 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["flags", "#FLAG"],
         ["format", "string"],
-        ["theme", "InputTheme"],
+        ["theme", "_"],
         ["slug", "Flag0<string>"],
         ["title", "Flag1<string>"],
-        ["document", "Flag2<InputDocument>"]
+        ["document", "Flag2<_>"]
       ]
     ]
   ],
@@ -7088,7 +6971,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["account_SaveThemeRequest", 0xf5b399ac],
       [
-        ["theme", "InputTheme"],
+        ["theme", "_"],
         ["unsave", "Bool"]
       ]
     ]
@@ -7101,7 +6984,7 @@ export const tlObjectsDefinitions: any[] = [
         ["flags", "#FLAG"],
         ["dark", "Flag0<true>"],
         ["format", "Flag1<string>"],
-        ["theme", "Flag1<InputTheme>"]
+        ["theme", "Flag1<_>"]
       ]
     ]
   ],
@@ -7111,7 +6994,7 @@ export const tlObjectsDefinitions: any[] = [
       ["account_GetThemeRequest", 0x56b4c80c],
       [
         ["format", "string"],
-        ["theme", "InputTheme"],
+        ["theme", "_"],
         ["documentId", "long"]
       ]
     ]
@@ -7126,21 +7009,15 @@ export const tlObjectsDefinitions: any[] = [
       ]
     ]
   ],
-  [
-    0x0d91a548,
-    [["users_GetUsersRequest", 0x406da4d], [["id", "Vector<InputUser>"]]]
-  ],
-  [
-    0xca30a5b1,
-    [["users_GetFullUserRequest", 0x1f4661b9], [["id", "InputUser"]]]
-  ],
+  [0x0d91a548, [["users_GetUsersRequest", 0x406da4d], [["id", "Vector<_>"]]]],
+  [0xca30a5b1, [["users_GetFullUserRequest", 0x1f4661b9], [["id", "_"]]]],
   [
     0x90c894b5,
     [
       ["users_SetSecureValueErrorsRequest", 0xf5b399ac],
       [
-        ["id", "InputUser"],
-        ["errors", "Vector<SecureValueError>"]
+        ["id", "_"],
+        ["errors", "Vector<_>"]
       ]
     ]
   ],
@@ -7157,15 +7034,12 @@ export const tlObjectsDefinitions: any[] = [
     0x2c800be5,
     [
       ["contacts_ImportContactsRequest", 0x8172ad93],
-      [["contacts", "Vector<InputContact>"]]
+      [["contacts", "Vector<_>"]]
     ]
   ],
   [
     0x096a0e00,
-    [
-      ["contacts_DeleteContactsRequest", 0x8af52aac],
-      [["id", "Vector<InputUser>"]]
-    ]
+    [["contacts_DeleteContactsRequest", 0x8af52aac], [["id", "Vector<_>"]]]
   ],
   [
     0x1013fd9e,
@@ -7174,11 +7048,8 @@ export const tlObjectsDefinitions: any[] = [
       [["phones", "Vector<string>"]]
     ]
   ],
-  [0x332b49fc, [["contacts_BlockRequest", 0xf5b399ac], [["id", "InputUser"]]]],
-  [
-    0xe54100bd,
-    [["contacts_UnblockRequest", 0xf5b399ac], [["id", "InputUser"]]]
-  ],
+  [0x332b49fc, [["contacts_BlockRequest", 0xf5b399ac], [["id", "_"]]]],
+  [0xe54100bd, [["contacts_UnblockRequest", 0xf5b399ac], [["id", "_"]]]],
   [
     0xf57c350f,
     [
@@ -7228,8 +7099,8 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["contacts_ResetTopPeerRatingRequest", 0xf5b399ac],
       [
-        ["category", "TopPeerCategory"],
-        ["peer", "InputPeer"]
+        ["category", "_"],
+        ["peer", "_"]
       ]
     ]
   ],
@@ -7246,30 +7117,21 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["flags", "#FLAG"],
         ["addPhonePrivacyException", "Flag0<true>"],
-        ["id", "InputUser"],
+        ["id", "_"],
         ["firstName", "string"],
         ["lastName", "string"],
         ["phone", "string"]
       ]
     ]
   ],
-  [
-    0xf831a20f,
-    [["contacts_AcceptContactRequest", 0x8af52aac], [["id", "InputUser"]]]
-  ],
+  [0xf831a20f, [["contacts_AcceptContactRequest", 0x8af52aac], [["id", "_"]]]],
   [
     0x0a356056,
-    [
-      ["contacts_GetLocatedRequest", 0x8af52aac],
-      [["geoPoint", "InputGeoPoint"]]
-    ]
+    [["contacts_GetLocatedRequest", 0x8af52aac], [["geoPoint", "_"]]]
   ],
   [
     0x63c66506,
-    [
-      ["messages_GetMessagesRequest", 0xd4b40b5e],
-      [["id", "Vector<InputMessage>"]]
-    ]
+    [["messages_GetMessagesRequest", 0xd4b40b5e], [["id", "Vector<_>"]]]
   ],
   [
     0xa0ee3b73,
@@ -7281,7 +7143,7 @@ export const tlObjectsDefinitions: any[] = [
         ["folderId", "Flag1<int>"],
         ["offsetDate", "int"],
         ["offsetId", "int"],
-        ["offsetPeer", "InputPeer"],
+        ["offsetPeer", "_"],
         ["limit", "int"],
         ["hash", "int"]
       ]
@@ -7292,7 +7154,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["messages_GetHistoryRequest", 0xd4b40b5e],
       [
-        ["peer", "InputPeer"],
+        ["peer", "_"],
         ["offsetId", "int"],
         ["offsetDate", "int"],
         ["addOffset", "int"],
@@ -7309,10 +7171,10 @@ export const tlObjectsDefinitions: any[] = [
       ["messages_SearchRequest", 0xd4b40b5e],
       [
         ["flags", "#FLAG"],
-        ["peer", "InputPeer"],
+        ["peer", "_"],
         ["q", "string"],
-        ["fromId", "Flag0<InputUser>"],
-        ["filter", "MessagesFilter"],
+        ["fromId", "Flag0<_>"],
+        ["filter", "_"],
         ["minDate", "int"],
         ["maxDate", "int"],
         ["offsetId", "int"],
@@ -7329,7 +7191,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["messages_ReadHistoryRequest", 0xced3c06e],
       [
-        ["peer", "InputPeer"],
+        ["peer", "_"],
         ["maxId", "int"]
       ]
     ]
@@ -7342,7 +7204,7 @@ export const tlObjectsDefinitions: any[] = [
         ["flags", "#FLAG"],
         ["justClear", "Flag0<true>"],
         ["revoke", "Flag1<true>"],
-        ["peer", "InputPeer"],
+        ["peer", "_"],
         ["maxId", "int"]
       ]
     ]
@@ -7367,8 +7229,8 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["messages_SetTypingRequest", 0xf5b399ac],
       [
-        ["peer", "InputPeer"],
-        ["action", "SendMessageAction"]
+        ["peer", "_"],
+        ["action", "_"]
       ]
     ]
   ],
@@ -7382,12 +7244,12 @@ export const tlObjectsDefinitions: any[] = [
         ["silent", "Flag5<true>"],
         ["background", "Flag6<true>"],
         ["clearDraft", "Flag7<true>"],
-        ["peer", "InputPeer"],
+        ["peer", "_"],
         ["replyToMsgId", "Flag0<int>"],
         ["message", "string"],
         ["randomId", "long"],
-        ["replyMarkup", "Flag2<ReplyMarkup>"],
-        ["entities", "Flag3<Vector<MessageEntity>>"],
+        ["replyMarkup", "Flag2<_>"],
+        ["entities", "Flag3<Vector<_>>"],
         ["scheduleDate", "Flag10<int>"]
       ]
     ]
@@ -7401,13 +7263,13 @@ export const tlObjectsDefinitions: any[] = [
         ["silent", "Flag5<true>"],
         ["background", "Flag6<true>"],
         ["clearDraft", "Flag7<true>"],
-        ["peer", "InputPeer"],
+        ["peer", "_"],
         ["replyToMsgId", "Flag0<int>"],
-        ["media", "InputMedia"],
+        ["media", "_"],
         ["message", "string"],
         ["randomId", "long"],
-        ["replyMarkup", "Flag2<ReplyMarkup>"],
-        ["entities", "Flag3<Vector<MessageEntity>>"],
+        ["replyMarkup", "Flag2<_>"],
+        ["entities", "Flag3<Vector<_>>"],
         ["scheduleDate", "Flag10<int>"]
       ]
     ]
@@ -7422,30 +7284,27 @@ export const tlObjectsDefinitions: any[] = [
         ["background", "Flag6<true>"],
         ["withMyScore", "Flag8<true>"],
         ["grouped", "Flag9<true>"],
-        ["fromPeer", "InputPeer"],
+        ["fromPeer", "_"],
         ["id", "Vector<int>"],
         ["randomId", "Vector<long>"],
-        ["toPeer", "InputPeer"],
+        ["toPeer", "_"],
         ["scheduleDate", "Flag10<int>"]
       ]
     ]
   ],
-  [
-    0xcf1592db,
-    [["messages_ReportSpamRequest", 0xf5b399ac], [["peer", "InputPeer"]]]
-  ],
+  [0xcf1592db, [["messages_ReportSpamRequest", 0xf5b399ac], [["peer", "_"]]]],
   [
     0x3672e09c,
-    [["messages_GetPeerSettingsRequest", 0xf6a79f84], [["peer", "InputPeer"]]]
+    [["messages_GetPeerSettingsRequest", 0xf6a79f84], [["peer", "_"]]]
   ],
   [
     0xbd82b658,
     [
       ["messages_ReportRequest", 0xf5b399ac],
       [
-        ["peer", "InputPeer"],
+        ["peer", "_"],
         ["id", "Vector<int>"],
-        ["reason", "ReportReason"]
+        ["reason", "_"]
       ]
     ]
   ],
@@ -7473,7 +7332,7 @@ export const tlObjectsDefinitions: any[] = [
       ["messages_EditChatPhotoRequest", 0x8af52aac],
       [
         ["chatId", "int"],
-        ["photo", "InputChatPhoto"]
+        ["photo", "_"]
       ]
     ]
   ],
@@ -7483,7 +7342,7 @@ export const tlObjectsDefinitions: any[] = [
       ["messages_AddChatUserRequest", 0x8af52aac],
       [
         ["chatId", "int"],
-        ["userId", "InputUser"],
+        ["userId", "_"],
         ["fwdLimit", "int"]
       ]
     ]
@@ -7494,7 +7353,7 @@ export const tlObjectsDefinitions: any[] = [
       ["messages_DeleteChatUserRequest", 0x8af52aac],
       [
         ["chatId", "int"],
-        ["userId", "InputUser"]
+        ["userId", "_"]
       ]
     ]
   ],
@@ -7503,7 +7362,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["messages_CreateChatRequest", 0x8af52aac],
       [
-        ["users", "Vector<InputUser>"],
+        ["users", "Vector<_>"],
         ["title", "string"]
       ]
     ]
@@ -7523,7 +7382,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["messages_RequestEncryptionRequest", 0x6d28a37a],
       [
-        ["userId", "InputUser"],
+        ["userId", "_"],
         ["randomId", "int"],
         ["gA", "bytes"]
       ]
@@ -7534,7 +7393,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["messages_AcceptEncryptionRequest", 0x6d28a37a],
       [
-        ["peer", "InputEncryptedChat"],
+        ["peer", "_"],
         ["gB", "bytes"],
         ["keyFingerprint", "long"]
       ]
@@ -7549,7 +7408,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["messages_SetEncryptedTypingRequest", 0xf5b399ac],
       [
-        ["peer", "InputEncryptedChat"],
+        ["peer", "_"],
         ["typing", "Bool"]
       ]
     ]
@@ -7559,7 +7418,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["messages_ReadEncryptedHistoryRequest", 0xf5b399ac],
       [
-        ["peer", "InputEncryptedChat"],
+        ["peer", "_"],
         ["maxDate", "int"]
       ]
     ]
@@ -7569,7 +7428,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["messages_SendEncryptedRequest", 0xc99e3e50],
       [
-        ["peer", "InputEncryptedChat"],
+        ["peer", "_"],
         ["randomId", "long"],
         ["data", "bytes"]
       ]
@@ -7580,10 +7439,10 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["messages_SendEncryptedFileRequest", 0xc99e3e50],
       [
-        ["peer", "InputEncryptedChat"],
+        ["peer", "_"],
         ["randomId", "long"],
         ["data", "bytes"],
-        ["file", "InputEncryptedFile"]
+        ["file", "_"]
       ]
     ]
   ],
@@ -7592,7 +7451,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["messages_SendEncryptedServiceRequest", 0xc99e3e50],
       [
-        ["peer", "InputEncryptedChat"],
+        ["peer", "_"],
         ["randomId", "long"],
         ["data", "bytes"]
       ]
@@ -7604,10 +7463,7 @@ export const tlObjectsDefinitions: any[] = [
   ],
   [
     0x4b0c8c0f,
-    [
-      ["messages_ReportEncryptedSpamRequest", 0xf5b399ac],
-      [["peer", "InputEncryptedChat"]]
-    ]
+    [["messages_ReportEncryptedSpamRequest", 0xf5b399ac], [["peer", "_"]]]
   ],
   [
     0x36a73f77,
@@ -7637,13 +7493,13 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["flags", "#FLAG"],
         ["message", "string"],
-        ["entities", "Flag3<Vector<MessageEntity>>"]
+        ["entities", "Flag3<Vector<_>>"]
       ]
     ]
   ],
   [
     0x0df7534c,
-    [["messages_ExportChatInviteRequest", 0xb4748a58], [["peer", "InputPeer"]]]
+    [["messages_ExportChatInviteRequest", 0xb4748a58], [["peer", "_"]]]
   ],
   [
     0x3eadb1bb,
@@ -7655,35 +7511,29 @@ export const tlObjectsDefinitions: any[] = [
   ],
   [
     0x2619a90e,
-    [
-      ["messages_GetStickerSetRequest", 0x9b704a5a],
-      [["stickerset", "InputStickerSet"]]
-    ]
+    [["messages_GetStickerSetRequest", 0x9b704a5a], [["stickerset", "_"]]]
   ],
   [
     0xc78fe460,
     [
       ["messages_InstallStickerSetRequest", 0x67cb3fe8],
       [
-        ["stickerset", "InputStickerSet"],
+        ["stickerset", "_"],
         ["archived", "Bool"]
       ]
     ]
   ],
   [
     0xf96e55de,
-    [
-      ["messages_UninstallStickerSetRequest", 0xf5b399ac],
-      [["stickerset", "InputStickerSet"]]
-    ]
+    [["messages_UninstallStickerSetRequest", 0xf5b399ac], [["stickerset", "_"]]]
   ],
   [
     0xe6df7378,
     [
       ["messages_StartBotRequest", 0x8af52aac],
       [
-        ["bot", "InputUser"],
-        ["peer", "InputPeer"],
+        ["bot", "_"],
+        ["peer", "_"],
         ["randomId", "long"],
         ["startParam", "string"]
       ]
@@ -7694,7 +7544,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["messages_GetMessagesViewsRequest", 0x5026710f],
       [
-        ["peer", "InputPeer"],
+        ["peer", "_"],
         ["id", "Vector<int>"],
         ["increment", "Bool"]
       ]
@@ -7706,7 +7556,7 @@ export const tlObjectsDefinitions: any[] = [
       ["messages_EditChatAdminRequest", 0xf5b399ac],
       [
         ["chatId", "int"],
-        ["userId", "InputUser"],
+        ["userId", "_"],
         ["isAdmin", "Bool"]
       ]
     ]
@@ -7724,7 +7574,7 @@ export const tlObjectsDefinitions: any[] = [
         ["folderId", "Flag0<int>"],
         ["q", "string"],
         ["offsetRate", "int"],
-        ["offsetPeer", "InputPeer"],
+        ["offsetPeer", "_"],
         ["offsetId", "int"],
         ["limit", "int"]
       ]
@@ -7771,7 +7621,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["messages_SaveGifRequest", 0xf5b399ac],
       [
-        ["id", "InputDocument"],
+        ["id", "_"],
         ["unsave", "Bool"]
       ]
     ]
@@ -7782,9 +7632,9 @@ export const tlObjectsDefinitions: any[] = [
       ["messages_GetInlineBotResultsRequest", 0x3ed4d9c9],
       [
         ["flags", "#FLAG"],
-        ["bot", "InputUser"],
-        ["peer", "InputPeer"],
-        ["geoPoint", "Flag0<InputGeoPoint>"],
+        ["bot", "_"],
+        ["peer", "_"],
+        ["geoPoint", "Flag0<_>"],
         ["query", "string"],
         ["offset", "string"]
       ]
@@ -7799,10 +7649,10 @@ export const tlObjectsDefinitions: any[] = [
         ["gallery", "Flag0<true>"],
         ["private", "Flag1<true>"],
         ["queryId", "long"],
-        ["results", "Vector<InputBotInlineResult>"],
+        ["results", "Vector<_>"],
         ["cacheTime", "int"],
         ["nextOffset", "Flag2<string>"],
-        ["switchPm", "Flag3<InlineBotSwitchPM>"]
+        ["switchPm", "Flag3<_>"]
       ]
     ]
   ],
@@ -7816,7 +7666,7 @@ export const tlObjectsDefinitions: any[] = [
         ["background", "Flag6<true>"],
         ["clearDraft", "Flag7<true>"],
         ["hideVia", "Flag11<true>"],
-        ["peer", "InputPeer"],
+        ["peer", "_"],
         ["replyToMsgId", "Flag0<int>"],
         ["randomId", "long"],
         ["queryId", "long"],
@@ -7830,7 +7680,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["messages_GetMessageEditDataRequest", 0xfb47949d],
       [
-        ["peer", "InputPeer"],
+        ["peer", "_"],
         ["id", "int"]
       ]
     ]
@@ -7842,12 +7692,12 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["flags", "#FLAG"],
         ["noWebpage", "Flag1<true>"],
-        ["peer", "InputPeer"],
+        ["peer", "_"],
         ["id", "int"],
         ["message", "Flag11<string>"],
-        ["media", "Flag14<InputMedia>"],
-        ["replyMarkup", "Flag2<ReplyMarkup>"],
-        ["entities", "Flag3<Vector<MessageEntity>>"],
+        ["media", "Flag14<_>"],
+        ["replyMarkup", "Flag2<_>"],
+        ["entities", "Flag3<Vector<_>>"],
         ["scheduleDate", "Flag15<int>"]
       ]
     ]
@@ -7859,11 +7709,11 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["flags", "#FLAG"],
         ["noWebpage", "Flag1<true>"],
-        ["id", "InputBotInlineMessageID"],
+        ["id", "_"],
         ["message", "Flag11<string>"],
-        ["media", "Flag14<InputMedia>"],
-        ["replyMarkup", "Flag2<ReplyMarkup>"],
-        ["entities", "Flag3<Vector<MessageEntity>>"]
+        ["media", "Flag14<_>"],
+        ["replyMarkup", "Flag2<_>"],
+        ["entities", "Flag3<Vector<_>>"]
       ]
     ]
   ],
@@ -7874,7 +7724,7 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["flags", "#FLAG"],
         ["game", "Flag1<true>"],
-        ["peer", "InputPeer"],
+        ["peer", "_"],
         ["msgId", "int"],
         ["data", "Flag0<bytes>"]
       ]
@@ -7896,10 +7746,7 @@ export const tlObjectsDefinitions: any[] = [
   ],
   [
     0xe470bcfd,
-    [
-      ["messages_GetPeerDialogsRequest", 0x3ac70132],
-      [["peers", "Vector<InputDialogPeer>"]]
-    ]
+    [["messages_GetPeerDialogsRequest", 0x3ac70132], [["peers", "Vector<_>"]]]
   ],
   [
     0xbc39e14b,
@@ -7909,9 +7756,9 @@ export const tlObjectsDefinitions: any[] = [
         ["flags", "#FLAG"],
         ["noWebpage", "Flag1<true>"],
         ["replyToMsgId", "Flag0<int>"],
-        ["peer", "InputPeer"],
+        ["peer", "_"],
         ["message", "string"],
-        ["entities", "Flag3<Vector<MessageEntity>>"]
+        ["entities", "Flag3<Vector<_>>"]
       ]
     ]
   ],
@@ -7945,7 +7792,7 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["flags", "#FLAG"],
         ["attached", "Flag0<true>"],
-        ["id", "InputDocument"],
+        ["id", "_"],
         ["unsave", "Bool"]
       ]
     ]
@@ -7978,10 +7825,7 @@ export const tlObjectsDefinitions: any[] = [
   ],
   [
     0xcc5b67cc,
-    [
-      ["messages_GetAttachedStickersRequest", 0xcc125f6b],
-      [["media", "InputStickeredMedia"]]
-    ]
+    [["messages_GetAttachedStickersRequest", 0xcc125f6b], [["media", "_"]]]
   ],
   [
     0x8ef8ecc0,
@@ -7991,9 +7835,9 @@ export const tlObjectsDefinitions: any[] = [
         ["flags", "#FLAG"],
         ["editMessage", "Flag0<true>"],
         ["force", "Flag1<true>"],
-        ["peer", "InputPeer"],
+        ["peer", "_"],
         ["id", "int"],
-        ["userId", "InputUser"],
+        ["userId", "_"],
         ["score", "int"]
       ]
     ]
@@ -8006,8 +7850,8 @@ export const tlObjectsDefinitions: any[] = [
         ["flags", "#FLAG"],
         ["editMessage", "Flag0<true>"],
         ["force", "Flag1<true>"],
-        ["id", "InputBotInlineMessageID"],
-        ["userId", "InputUser"],
+        ["id", "_"],
+        ["userId", "_"],
         ["score", "int"]
       ]
     ]
@@ -8017,9 +7861,9 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["messages_GetGameHighScoresRequest", 0x6ccd95fd],
       [
-        ["peer", "InputPeer"],
+        ["peer", "_"],
         ["id", "int"],
-        ["userId", "InputUser"]
+        ["userId", "_"]
       ]
     ]
   ],
@@ -8028,8 +7872,8 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["messages_GetInlineGameHighScoresRequest", 0x6ccd95fd],
       [
-        ["id", "InputBotInlineMessageID"],
-        ["userId", "InputUser"]
+        ["id", "_"],
+        ["userId", "_"]
       ]
     ]
   ],
@@ -8038,7 +7882,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["messages_GetCommonChatsRequest", 0x99d5cb14],
       [
-        ["userId", "InputUser"],
+        ["userId", "_"],
         ["maxId", "int"],
         ["limit", "int"]
       ]
@@ -8068,7 +7912,7 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["flags", "#FLAG"],
         ["pinned", "Flag0<true>"],
-        ["peer", "InputDialogPeer"]
+        ["peer", "_"]
       ]
     ]
   ],
@@ -8080,7 +7924,7 @@ export const tlObjectsDefinitions: any[] = [
         ["flags", "#FLAG"],
         ["force", "Flag0<true>"],
         ["folderId", "int"],
-        ["order", "Vector<InputDialogPeer>"]
+        ["order", "Vector<_>"]
       ]
     ]
   ],
@@ -8096,7 +7940,7 @@ export const tlObjectsDefinitions: any[] = [
         ["flags", "#FLAG"],
         ["queryId", "long"],
         ["error", "Flag0<string>"],
-        ["shippingOptions", "Flag1<Vector<ShippingOption>>"]
+        ["shippingOptions", "Flag1<Vector<_>>"]
       ]
     ]
   ],
@@ -8117,8 +7961,8 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["messages_UploadMediaRequest", 0x476cbe32],
       [
-        ["peer", "InputPeer"],
-        ["media", "InputMedia"]
+        ["peer", "_"],
+        ["media", "_"]
       ]
     ]
   ],
@@ -8127,7 +7971,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["messages_SendScreenshotNotificationRequest", 0x8af52aac],
       [
-        ["peer", "InputPeer"],
+        ["peer", "_"],
         ["replyToMsgId", "int"],
         ["randomId", "long"]
       ]
@@ -8142,7 +7986,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["messages_FaveStickerRequest", 0xf5b399ac],
       [
-        ["id", "InputDocument"],
+        ["id", "_"],
         ["unfave", "Bool"]
       ]
     ]
@@ -8152,7 +7996,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["messages_GetUnreadMentionsRequest", 0xd4b40b5e],
       [
-        ["peer", "InputPeer"],
+        ["peer", "_"],
         ["offsetId", "int"],
         ["addOffset", "int"],
         ["limit", "int"],
@@ -8161,16 +8005,13 @@ export const tlObjectsDefinitions: any[] = [
       ]
     ]
   ],
-  [
-    0x0f0189d3,
-    [["messages_ReadMentionsRequest", 0x2c49c116], [["peer", "InputPeer"]]]
-  ],
+  [0x0f0189d3, [["messages_ReadMentionsRequest", 0x2c49c116], [["peer", "_"]]]],
   [
     0xbbc45b09,
     [
       ["messages_GetRecentLocationsRequest", 0xd4b40b5e],
       [
-        ["peer", "InputPeer"],
+        ["peer", "_"],
         ["limit", "int"],
         ["hash", "int"]
       ]
@@ -8185,9 +8026,9 @@ export const tlObjectsDefinitions: any[] = [
         ["silent", "Flag5<true>"],
         ["background", "Flag6<true>"],
         ["clearDraft", "Flag7<true>"],
-        ["peer", "InputPeer"],
+        ["peer", "_"],
         ["replyToMsgId", "Flag0<int>"],
-        ["multiMedia", "Vector<InputSingleMedia>"],
+        ["multiMedia", "Vector<_>"],
         ["scheduleDate", "Flag10<int>"]
       ]
     ]
@@ -8197,8 +8038,8 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["messages_UploadEncryptedFileRequest", 0x842a67c0],
       [
-        ["peer", "InputEncryptedChat"],
-        ["file", "InputEncryptedFile"]
+        ["peer", "_"],
+        ["file", "_"]
       ]
     ]
   ],
@@ -8222,7 +8063,7 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["flags", "#FLAG"],
         ["unread", "Flag0<true>"],
-        ["peer", "InputDialogPeer"]
+        ["peer", "_"]
       ]
     ]
   ],
@@ -8235,7 +8076,7 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["flags", "#FLAG"],
         ["silent", "Flag0<true>"],
-        ["peer", "InputPeer"],
+        ["peer", "_"],
         ["id", "int"]
       ]
     ]
@@ -8245,7 +8086,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["messages_SendVoteRequest", 0x8af52aac],
       [
-        ["peer", "InputPeer"],
+        ["peer", "_"],
         ["msgId", "int"],
         ["options", "Vector<bytes>"]
       ]
@@ -8256,15 +8097,12 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["messages_GetPollResultsRequest", 0x8af52aac],
       [
-        ["peer", "InputPeer"],
+        ["peer", "_"],
         ["msgId", "int"]
       ]
     ]
   ],
-  [
-    0x6e2be050,
-    [["messages_GetOnlinesRequest", 0x8c81903a], [["peer", "InputPeer"]]]
-  ],
+  [0x6e2be050, [["messages_GetOnlinesRequest", 0x8c81903a], [["peer", "_"]]]],
   [
     0x812c2ae6,
     [
@@ -8272,7 +8110,7 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["flags", "#FLAG"],
         ["dark", "Flag0<true>"],
-        ["peer", "InputPeer"],
+        ["peer", "_"],
         ["params", "string"]
       ]
     ]
@@ -8282,7 +8120,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["messages_EditChatAboutRequest", 0xf5b399ac],
       [
-        ["peer", "InputPeer"],
+        ["peer", "_"],
         ["about", "string"]
       ]
     ]
@@ -8292,8 +8130,8 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["messages_EditChatDefaultBannedRightsRequest", 0x8af52aac],
       [
-        ["peer", "InputPeer"],
-        ["bannedRights", "ChatBannedRights"]
+        ["peer", "_"],
+        ["bannedRights", "_"]
       ]
     ]
   ],
@@ -8327,8 +8165,8 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["messages_GetSearchCountersRequest", 0x6bde3c6e],
       [
-        ["peer", "InputPeer"],
-        ["filters", "Vector<MessagesFilter>"]
+        ["peer", "_"],
+        ["filters", "Vector<_>"]
       ]
     ]
   ],
@@ -8337,7 +8175,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["messages_RequestUrlAuthRequest", 0x7765cb1e],
       [
-        ["peer", "InputPeer"],
+        ["peer", "_"],
         ["msgId", "int"],
         ["buttonId", "int"]
       ]
@@ -8350,7 +8188,7 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["flags", "#FLAG"],
         ["writeAllowed", "Flag0<true>"],
-        ["peer", "InputPeer"],
+        ["peer", "_"],
         ["msgId", "int"],
         ["buttonId", "int"]
       ]
@@ -8358,17 +8196,14 @@ export const tlObjectsDefinitions: any[] = [
   ],
   [
     0x4facb138,
-    [
-      ["messages_HidePeerSettingsBarRequest", 0xf5b399ac],
-      [["peer", "InputPeer"]]
-    ]
+    [["messages_HidePeerSettingsBarRequest", 0xf5b399ac], [["peer", "_"]]]
   ],
   [
     0xe2c2685b,
     [
       ["messages_GetScheduledHistoryRequest", 0xd4b40b5e],
       [
-        ["peer", "InputPeer"],
+        ["peer", "_"],
         ["hash", "int"]
       ]
     ]
@@ -8378,7 +8213,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["messages_GetScheduledMessagesRequest", 0xd4b40b5e],
       [
-        ["peer", "InputPeer"],
+        ["peer", "_"],
         ["id", "Vector<int>"]
       ]
     ]
@@ -8388,7 +8223,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["messages_SendScheduledMessagesRequest", 0x8af52aac],
       [
-        ["peer", "InputPeer"],
+        ["peer", "_"],
         ["id", "Vector<int>"]
       ]
     ]
@@ -8398,7 +8233,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["messages_DeleteScheduledMessagesRequest", 0x8af52aac],
       [
-        ["peer", "InputPeer"],
+        ["peer", "_"],
         ["id", "Vector<int>"]
       ]
     ]
@@ -8424,8 +8259,8 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["flags", "#FLAG"],
         ["force", "Flag0<true>"],
-        ["channel", "InputChannel"],
-        ["filter", "ChannelMessagesFilter"],
+        ["channel", "_"],
+        ["filter", "_"],
         ["pts", "int"],
         ["limit", "int"]
       ]
@@ -8433,22 +8268,22 @@ export const tlObjectsDefinitions: any[] = [
   ],
   [
     0xf0bb5152,
-    [["photos_UpdateProfilePhotoRequest", 0xc6338f7d], [["id", "InputPhoto"]]]
+    [["photos_UpdateProfilePhotoRequest", 0xc6338f7d], [["id", "_"]]]
   ],
   [
     0x4f32c098,
-    [["photos_UploadProfilePhotoRequest", 0xc292bd24], [["file", "InputFile"]]]
+    [["photos_UploadProfilePhotoRequest", 0xc292bd24], [["file", "_"]]]
   ],
   [
     0x87cf7f2f,
-    [["photos_DeletePhotosRequest", 0x8918e168], [["id", "Vector<InputPhoto>"]]]
+    [["photos_DeletePhotosRequest", 0x8918e168], [["id", "Vector<_>"]]]
   ],
   [
     0x91cd32a8,
     [
       ["photos_GetUserPhotosRequest", 0x27cfb967],
       [
-        ["userId", "InputUser"],
+        ["userId", "_"],
         ["offset", "int"],
         ["maxId", "long"],
         ["limit", "int"]
@@ -8473,7 +8308,7 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["flags", "#FLAG"],
         ["precise", "Flag0<true>"],
-        ["location", "InputFileLocation"],
+        ["location", "_"],
         ["offset", "int"],
         ["limit", "int"]
       ]
@@ -8496,7 +8331,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["upload_GetWebFileRequest", 0x68f17f51],
       [
-        ["location", "InputWebFileLocation"],
+        ["location", "_"],
         ["offset", "int"],
         ["limit", "int"]
       ]
@@ -8538,7 +8373,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["upload_GetFileHashesRequest", 0xa5940726],
       [
-        ["location", "InputFileLocation"],
+        ["location", "_"],
         ["offset", "int"]
       ]
     ]
@@ -8577,7 +8412,7 @@ export const tlObjectsDefinitions: any[] = [
   [0x2ca51fd1, [["help_GetTermsOfServiceUpdateRequest", 0x293c2977], []]],
   [
     0xee72f79a,
-    [["help_AcceptTermsOfServiceRequest", 0xf5b399ac], [["id", "DataJSON"]]]
+    [["help_AcceptTermsOfServiceRequest", 0xf5b399ac], [["id", "_"]]]
   ],
   [
     0x3fedc75f,
@@ -8586,28 +8421,22 @@ export const tlObjectsDefinitions: any[] = [
   [0x98914110, [["help_GetAppConfigRequest", 0xeb9987b3], []]],
   [
     0x6f02f748,
-    [
-      ["help_SaveAppLogRequest", 0xf5b399ac],
-      [["events", "Vector<InputAppEvent>"]]
-    ]
+    [["help_SaveAppLogRequest", 0xf5b399ac], [["events", "Vector<_>"]]]
   ],
   [
     0xc661ad08,
     [["help_GetPassportConfigRequest", 0xc666c0ad], [["hash", "int"]]]
   ],
   [0xd360e72c, [["help_GetSupportNameRequest", 0x7f50b7c2], []]],
-  [
-    0x038a08d3,
-    [["help_GetUserInfoRequest", 0x5c53d7d8], [["userId", "InputUser"]]]
-  ],
+  [0x038a08d3, [["help_GetUserInfoRequest", 0x5c53d7d8], [["userId", "_"]]]],
   [
     0x66b91b70,
     [
       ["help_EditUserInfoRequest", 0x5c53d7d8],
       [
-        ["userId", "InputUser"],
+        ["userId", "_"],
         ["message", "string"],
-        ["entities", "Vector<MessageEntity>"]
+        ["entities", "Vector<_>"]
       ]
     ]
   ],
@@ -8616,7 +8445,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["channels_ReadHistoryRequest", 0xf5b399ac],
       [
-        ["channel", "InputChannel"],
+        ["channel", "_"],
         ["maxId", "int"]
       ]
     ]
@@ -8626,7 +8455,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["channels_DeleteMessagesRequest", 0xced3c06e],
       [
-        ["channel", "InputChannel"],
+        ["channel", "_"],
         ["id", "Vector<int>"]
       ]
     ]
@@ -8636,8 +8465,8 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["channels_DeleteUserHistoryRequest", 0x2c49c116],
       [
-        ["channel", "InputChannel"],
-        ["userId", "InputUser"]
+        ["channel", "_"],
+        ["userId", "_"]
       ]
     ]
   ],
@@ -8646,8 +8475,8 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["channels_ReportSpamRequest", 0xf5b399ac],
       [
-        ["channel", "InputChannel"],
-        ["userId", "InputUser"],
+        ["channel", "_"],
+        ["userId", "_"],
         ["id", "Vector<int>"]
       ]
     ]
@@ -8657,8 +8486,8 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["channels_GetMessagesRequest", 0xd4b40b5e],
       [
-        ["channel", "InputChannel"],
-        ["id", "Vector<InputMessage>"]
+        ["channel", "_"],
+        ["id", "Vector<_>"]
       ]
     ]
   ],
@@ -8667,8 +8496,8 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["channels_GetParticipantsRequest", 0xe60a6e64],
       [
-        ["channel", "InputChannel"],
-        ["filter", "ChannelParticipantsFilter"],
+        ["channel", "_"],
+        ["filter", "_"],
         ["offset", "int"],
         ["limit", "int"],
         ["hash", "int"]
@@ -8680,24 +8509,18 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["channels_GetParticipantRequest", 0x6658151a],
       [
-        ["channel", "InputChannel"],
-        ["userId", "InputUser"]
+        ["channel", "_"],
+        ["userId", "_"]
       ]
     ]
   ],
   [
     0x0a7f6bbb,
-    [
-      ["channels_GetChannelsRequest", 0x99d5cb14],
-      [["id", "Vector<InputChannel>"]]
-    ]
+    [["channels_GetChannelsRequest", 0x99d5cb14], [["id", "Vector<_>"]]]
   ],
   [
     0x08736a09,
-    [
-      ["channels_GetFullChannelRequest", 0x225a5109],
-      [["channel", "InputChannel"]]
-    ]
+    [["channels_GetFullChannelRequest", 0x225a5109], [["channel", "_"]]]
   ],
   [
     0x3d5fb10f,
@@ -8709,7 +8532,7 @@ export const tlObjectsDefinitions: any[] = [
         ["megagroup", "Flag1<true>"],
         ["title", "string"],
         ["about", "string"],
-        ["geoPoint", "Flag2<InputGeoPoint>"],
+        ["geoPoint", "Flag2<_>"],
         ["address", "Flag2<string>"]
       ]
     ]
@@ -8719,9 +8542,9 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["channels_EditAdminRequest", 0x8af52aac],
       [
-        ["channel", "InputChannel"],
-        ["userId", "InputUser"],
-        ["adminRights", "ChatAdminRights"],
+        ["channel", "_"],
+        ["userId", "_"],
+        ["adminRights", "_"],
         ["rank", "string"]
       ]
     ]
@@ -8731,7 +8554,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["channels_EditTitleRequest", 0x8af52aac],
       [
-        ["channel", "InputChannel"],
+        ["channel", "_"],
         ["title", "string"]
       ]
     ]
@@ -8741,8 +8564,8 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["channels_EditPhotoRequest", 0x8af52aac],
       [
-        ["channel", "InputChannel"],
-        ["photo", "InputChatPhoto"]
+        ["channel", "_"],
+        ["photo", "_"]
       ]
     ]
   ],
@@ -8751,7 +8574,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["channels_CheckUsernameRequest", 0xf5b399ac],
       [
-        ["channel", "InputChannel"],
+        ["channel", "_"],
         ["username", "string"]
       ]
     ]
@@ -8761,45 +8584,39 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["channels_UpdateUsernameRequest", 0xf5b399ac],
       [
-        ["channel", "InputChannel"],
+        ["channel", "_"],
         ["username", "string"]
       ]
     ]
   ],
   [
     0x24b524c5,
-    [["channels_JoinChannelRequest", 0x8af52aac], [["channel", "InputChannel"]]]
+    [["channels_JoinChannelRequest", 0x8af52aac], [["channel", "_"]]]
   ],
   [
     0xf836aa95,
-    [
-      ["channels_LeaveChannelRequest", 0x8af52aac],
-      [["channel", "InputChannel"]]
-    ]
+    [["channels_LeaveChannelRequest", 0x8af52aac], [["channel", "_"]]]
   ],
   [
     0x199f3a6c,
     [
       ["channels_InviteToChannelRequest", 0x8af52aac],
       [
-        ["channel", "InputChannel"],
-        ["users", "Vector<InputUser>"]
+        ["channel", "_"],
+        ["users", "Vector<_>"]
       ]
     ]
   ],
   [
     0xc0111fe3,
-    [
-      ["channels_DeleteChannelRequest", 0x8af52aac],
-      [["channel", "InputChannel"]]
-    ]
+    [["channels_DeleteChannelRequest", 0x8af52aac], [["channel", "_"]]]
   ],
   [
     0xceb77163,
     [
       ["channels_ExportMessageLinkRequest", 0xdee644cc],
       [
-        ["channel", "InputChannel"],
+        ["channel", "_"],
         ["id", "int"],
         ["grouped", "Bool"]
       ]
@@ -8810,7 +8627,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["channels_ToggleSignaturesRequest", 0x8af52aac],
       [
-        ["channel", "InputChannel"],
+        ["channel", "_"],
         ["enabled", "Bool"]
       ]
     ]
@@ -8831,9 +8648,9 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["channels_EditBannedRequest", 0x8af52aac],
       [
-        ["channel", "InputChannel"],
-        ["userId", "InputUser"],
-        ["bannedRights", "ChatBannedRights"]
+        ["channel", "_"],
+        ["userId", "_"],
+        ["bannedRights", "_"]
       ]
     ]
   ],
@@ -8843,10 +8660,10 @@ export const tlObjectsDefinitions: any[] = [
       ["channels_GetAdminLogRequest", 0x51f076bc],
       [
         ["flags", "#FLAG"],
-        ["channel", "InputChannel"],
+        ["channel", "_"],
         ["q", "string"],
-        ["eventsFilter", "Flag0<ChannelAdminLogEventsFilter>"],
-        ["admins", "Flag1<Vector<InputUser>>"],
+        ["eventsFilter", "Flag0<_>"],
+        ["admins", "Flag1<Vector<_>>"],
         ["maxId", "long"],
         ["minId", "long"],
         ["limit", "int"]
@@ -8858,8 +8675,8 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["channels_SetStickersRequest", 0xf5b399ac],
       [
-        ["channel", "InputChannel"],
-        ["stickerset", "InputStickerSet"]
+        ["channel", "_"],
+        ["stickerset", "_"]
       ]
     ]
   ],
@@ -8868,7 +8685,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["channels_ReadMessageContentsRequest", 0xf5b399ac],
       [
-        ["channel", "InputChannel"],
+        ["channel", "_"],
         ["id", "Vector<int>"]
       ]
     ]
@@ -8878,7 +8695,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["channels_DeleteHistoryRequest", 0xf5b399ac],
       [
-        ["channel", "InputChannel"],
+        ["channel", "_"],
         ["maxId", "int"]
       ]
     ]
@@ -8888,7 +8705,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["channels_TogglePreHistoryHiddenRequest", 0x8af52aac],
       [
-        ["channel", "InputChannel"],
+        ["channel", "_"],
         ["enabled", "Bool"]
       ]
     ]
@@ -8903,8 +8720,8 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["channels_SetDiscussionGroupRequest", 0xf5b399ac],
       [
-        ["broadcast", "InputChannel"],
-        ["group", "InputChannel"]
+        ["broadcast", "_"],
+        ["group", "_"]
       ]
     ]
   ],
@@ -8913,9 +8730,9 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["channels_EditCreatorRequest", 0x8af52aac],
       [
-        ["channel", "InputChannel"],
-        ["userId", "InputUser"],
-        ["password", "InputCheckPasswordSRP"]
+        ["channel", "_"],
+        ["userId", "_"],
+        ["password", "_"]
       ]
     ]
   ],
@@ -8924,8 +8741,8 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["channels_EditLocationRequest", 0xf5b399ac],
       [
-        ["channel", "InputChannel"],
-        ["geoPoint", "InputGeoPoint"],
+        ["channel", "_"],
+        ["geoPoint", "_"],
         ["address", "string"]
       ]
     ]
@@ -8935,7 +8752,7 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["channels_ToggleSlowModeRequest", 0x8af52aac],
       [
-        ["channel", "InputChannel"],
+        ["channel", "_"],
         ["seconds", "int"]
       ]
     ]
@@ -8946,7 +8763,7 @@ export const tlObjectsDefinitions: any[] = [
       ["bots_SendCustomRequestRequest", 0xad0352e8],
       [
         ["customMethod", "string"],
-        ["params", "DataJSON"]
+        ["params", "_"]
       ]
     ]
   ],
@@ -8956,7 +8773,7 @@ export const tlObjectsDefinitions: any[] = [
       ["bots_AnswerWebhookJSONQueryRequest", 0xf5b399ac],
       [
         ["queryId", "long"],
-        ["data", "DataJSON"]
+        ["data", "_"]
       ]
     ]
   ],
@@ -8976,7 +8793,7 @@ export const tlObjectsDefinitions: any[] = [
         ["flags", "#FLAG"],
         ["save", "Flag0<true>"],
         ["msgId", "int"],
-        ["info", "PaymentRequestedInfo"]
+        ["info", "_"]
       ]
     ]
   ],
@@ -8989,7 +8806,7 @@ export const tlObjectsDefinitions: any[] = [
         ["msgId", "int"],
         ["requestedInfoId", "Flag0<string>"],
         ["shippingOptionId", "Flag1<string>"],
-        ["credentials", "InputPaymentCredentials"]
+        ["credentials", "_"]
       ]
     ]
   ],
@@ -9012,26 +8829,23 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["flags", "#FLAG"],
         ["masks", "Flag0<true>"],
-        ["userId", "InputUser"],
+        ["userId", "_"],
         ["title", "string"],
         ["shortName", "string"],
-        ["stickers", "Vector<InputStickerSetItem>"]
+        ["stickers", "Vector<_>"]
       ]
     ]
   ],
   [
     0xf7760f51,
-    [
-      ["stickers_RemoveStickerFromSetRequest", 0x9b704a5a],
-      [["sticker", "InputDocument"]]
-    ]
+    [["stickers_RemoveStickerFromSetRequest", 0x9b704a5a], [["sticker", "_"]]]
   ],
   [
     0xffb6d4ca,
     [
       ["stickers_ChangeStickerPositionRequest", 0x9b704a5a],
       [
-        ["sticker", "InputDocument"],
+        ["sticker", "_"],
         ["position", "int"]
       ]
     ]
@@ -9041,8 +8855,8 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["stickers_AddStickerToSetRequest", 0x9b704a5a],
       [
-        ["stickerset", "InputStickerSet"],
-        ["sticker", "InputStickerSetItem"]
+        ["stickerset", "_"],
+        ["sticker", "_"]
       ]
     ]
   ],
@@ -9054,10 +8868,10 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["flags", "#FLAG"],
         ["video", "Flag0<true>"],
-        ["userId", "InputUser"],
+        ["userId", "_"],
         ["randomId", "int"],
         ["gAHash", "bytes"],
-        ["protocol", "PhoneCallProtocol"]
+        ["protocol", "_"]
       ]
     ]
   ],
@@ -9066,9 +8880,9 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["phone_AcceptCallRequest", 0xd48afe4f],
       [
-        ["peer", "InputPhoneCall"],
+        ["peer", "_"],
         ["gB", "bytes"],
-        ["protocol", "PhoneCallProtocol"]
+        ["protocol", "_"]
       ]
     ]
   ],
@@ -9077,17 +8891,14 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["phone_ConfirmCallRequest", 0xd48afe4f],
       [
-        ["peer", "InputPhoneCall"],
+        ["peer", "_"],
         ["gA", "bytes"],
         ["keyFingerprint", "long"],
-        ["protocol", "PhoneCallProtocol"]
+        ["protocol", "_"]
       ]
     ]
   ],
-  [
-    0x17d54f61,
-    [["phone_ReceivedCallRequest", 0xf5b399ac], [["peer", "InputPhoneCall"]]]
-  ],
+  [0x17d54f61, [["phone_ReceivedCallRequest", 0xf5b399ac], [["peer", "_"]]]],
   [
     0xb2cbc1c0,
     [
@@ -9095,9 +8906,9 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["flags", "#FLAG"],
         ["video", "Flag0<true>"],
-        ["peer", "InputPhoneCall"],
+        ["peer", "_"],
         ["duration", "int"],
-        ["reason", "PhoneCallDiscardReason"],
+        ["reason", "_"],
         ["connectionId", "long"]
       ]
     ]
@@ -9109,7 +8920,7 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["flags", "#FLAG"],
         ["userInitiative", "Flag0<true>"],
-        ["peer", "InputPhoneCall"],
+        ["peer", "_"],
         ["rating", "int"],
         ["comment", "string"]
       ]
@@ -9120,8 +8931,8 @@ export const tlObjectsDefinitions: any[] = [
     [
       ["phone_SaveCallDebugRequest", 0xf5b399ac],
       [
-        ["peer", "InputPhoneCall"],
-        ["debug", "DataJSON"]
+        ["peer", "_"],
+        ["debug", "_"]
       ]
     ]
   ],
@@ -9175,7 +8986,7 @@ export const tlObjectsDefinitions: any[] = [
     0x6847d0ab,
     [
       ["folders_EditPeerFoldersRequest", 0x8af52aac],
-      [["folderPeers", "Vector<InputFolderPeer>"]]
+      [["folderPeers", "Vector<_>"]]
     ]
   ],
   [

@@ -1,26 +1,24 @@
-import { MTProtoSender } from "./mtproto/MTProtoSender";
-import {
-  InvokeWithLayerRequest,
-  Config,
-  CdnConfig,
-  TLObjectTypes,
-  auth_SentCode,
-  DcOption,
-  account_Password,
-  auth_ExportedAuthorization,
-  Updates,
-  UpdatesCombined,
-  UpdateShort,
-  Authorization
-  // auth_Authorization
-} from "./tl/TLObjects";
-import { AuthKey } from "./crypto/AuthKey";
-import { MTSessionManager, MTSession } from "./mtproto/MTSessionManager";
-import { RPCError, FloodWaitError } from "./mtproto/errors";
+import { AllUpdateTypes } from "../utils/useful-types";
 import { sleep } from "../utils/utils";
+import { AuthKey } from "./crypto/AuthKey";
 import { addKey } from "./crypto/RSA";
 import { computeCheck } from "./extensions/Password";
 import { FileStorage } from "./FileStorage";
+import { FloodWaitError, RPCError } from "./mtproto/errors";
+import { MTProtoSender } from "./mtproto/MTProtoSender";
+import { MTSession, MTSessionManager } from "./mtproto/MTSessionManager";
+import {
+  account_Password,
+  Authorization,
+  // auth_Authorization
+  auth_ExportedAuthorization,
+  auth_SentCode,
+  CdnConfig,
+  Config,
+  DcOption,
+  InvokeWithLayerRequest,
+  TLObjectTypes
+} from "./tl/TLObjects";
 
 const LAYER = 105;
 
@@ -77,10 +75,7 @@ export class TelegramClient {
     private apiHash: string,
     public sessionManager: MTSessionManager,
     public session: MTSession,
-    private updateCallback?: (
-      update: Updates["updates"][0],
-      short?: boolean
-    ) => void
+    private updateCallback?: (update: AllUpdateTypes) => void
   ) {
     this.sender = new MTProtoSender(session, {
       // delay: this._retryDelay,
@@ -360,19 +355,12 @@ export class TelegramClient {
     return null;
   }
 
-  private handleUpdate(update: Updates | UpdatesCombined | UpdateShort) {
+  private handleUpdate(update: AllUpdateTypes) {
     if (!this.updateCallback) {
       return;
     }
-    if (update.$t === "Updates" || update.$t === "UpdatesCombined") {
-      for (const individualUpdate of update.updates) {
-        this.updateCallback(individualUpdate);
-      }
-    } else if (update.$t === "UpdateShort") {
-      this.updateCallback(update.update, true);
-    } else {
-      this.updateCallback(update);
-    }
+
+    this.updateCallback(update);
   }
 
   private async authKeyCallback(authKey: AuthKey) {

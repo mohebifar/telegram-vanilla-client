@@ -6,7 +6,7 @@ import {
   concatBuffers,
   readBufferFromBigInt,
   pack
-} from "../../utils/binary";
+} from "../binary";
 import { MTConnection } from "./MTConnection";
 
 export class MTTransport {

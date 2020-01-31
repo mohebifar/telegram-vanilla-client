@@ -1,6 +1,6 @@
 import { PhotoSize } from "../../core/tl/TLObjects";
-import { IMessage } from "../../models/message";
-import { Component, createElement } from "../../utils/dom";
+import { IMessage, Message } from "../../models/message";
+import { Component, createElement, Element } from "../../utils/dom";
 import { EMPTY_IMG } from "../../utils/images";
 import Icon, { Icons } from "../ui/icon";
 import Lottie from "../ui/lottie";
@@ -15,71 +15,94 @@ interface Options {
 export default class Bubble implements Component<Options> {
   public readonly element: HTMLElement;
   private img: HTMLElement;
+  private inner: HTMLElement;
+  private attachment: HTMLElement;
   private messageText: HTMLElement;
-  private sentIndicator?: HTMLElement;
+  private time: HTMLElement;
+  private sentIndicator?: Element<Icon>;
   public message: IMessage;
 
   constructor({ message }: Options) {
     this.message = message;
 
-    const { text, time } = this.getInfo();
-    const [attachment, attachmentType] = this.getAttachments();
-
     this.messageText = createElement("span", { dir: "auto" });
-    this.messageText.innerHTML = text;
-
-    if (message.$t === "Message" && message.out) {
-      this.sentIndicator = createElement(Icon, {
-        icon: message.mediaUnread ? Icons.Check : Icons.Checks,
-        color:
-          attachmentType === "sticker" || attachmentType == "animated-sticker"
-            ? "white"
-            : "green",
-        class: styles.sentIndicator
-      });
-    }
+    this.inner = createElement("div", { class: styles.inner }, this.time);
+    this.attachment = createElement("div");
 
     const messageWrapper = createElement(
       "div",
       { class: styles.message },
       this.messageText,
-      createElement(
-        "span",
-        { class: styles.time, dir: "auto" },
-        createElement(
-          "div",
-          { class: styles.inner },
-          time,
-          this.sentIndicator || ""
-        )
-      )
+      createElement("span", { class: styles.time, dir: "auto" }, this.inner)
     );
 
-    let bubbleClassName: string;
-    switch (attachmentType) {
-      case "sticker":
-        bubbleClassName = styles.sticker;
-        break;
-      case "animated-sticker":
-        bubbleClassName = styles.sticker + " " + styles.animated;
-        break;
-      default:
-        bubbleClassName = styles.bubble;
+    this.element = createElement("div", {}, this.attachment, messageWrapper);
+
+    if (message.justSent) {
+      const listener = ({ message }) => {
+        if (message === this.message) {
+          this.update();
+          Message.events.off("synced", listener);
+        }
+      };
+
+      Message.events.on("synced", listener);
     }
 
-    this.element = createElement("div", {
-      class: bubbleClassName
-    });
+    this.update();
+  }
+
+  private update() {
+    const [attachment, attachmentType] = this.getAttachments();
+    const { text, time } = this.getInfo();
+    this.messageText.innerHTML = text;
+
+    const isAnimatedSticker = attachmentType == "animated-sticker";
+    const isSticker = attachmentType === "sticker" || isAnimatedSticker;
+    let bubbleClassName = isSticker ? styles.sticker : styles.bubble;
+
+    if (isAnimatedSticker) {
+      bubbleClassName += " " + styles.animated;
+    }
+
+    this.inner.innerHTML = "";
+
+    if (this.time) {
+      this.time.remove();
+    }
+
+    this.time = createElement("span", {}, time);
+
+    if (this.sentIndicator) {
+      this.sentIndicator.remove();
+    }
+
+    this.inner.append(this.time);
+
+    if (this.message.$t === "Message" && this.message.out) {
+      this.sentIndicator = createElement(Icon, {
+        icon: this.message.mediaUnread ? Icons.Check : Icons.Checks,
+        color: isSticker ? "white" : "green",
+        class: styles.sentIndicator
+      });
+
+      this.inner.append(this.sentIndicator);
+    }
 
     if (attachment) {
-      this.element.append(attachment);
+      this.attachment.innerHTML = "";
+      this.attachment.append(attachment);
     }
 
-    this.element.append(messageWrapper);
+    this.element.className = bubbleClassName;
   }
 
   private getAttachments(): [HTMLElement | undefined, string | undefined] {
-    if (this.message.$t === "Message" && this.message.media) {
+    if (
+      this.message.$t === "Message" &&
+      this.message.media &&
+      this.message.media.$t !== "MessageMediaEmpty"
+    ) {
       const { media } = this.message;
       if (media.$t === "MessageMediaPhoto" && media.photo.$t === "Photo") {
         this.img = createElement("img", {
@@ -141,6 +164,7 @@ export default class Bubble implements Component<Options> {
         }
       }
 
+      console.log(this.message.media, "Unsupported media");
       return [
         createElement("div", { class: styles.message }, "[Unsupported media]"),
         "unknown"
@@ -159,6 +183,7 @@ export default class Bubble implements Component<Options> {
         };
       case "MessageEmpty":
       case "MessageService":
+      default:
         // TODO: Support message service
         return {
           text: "",

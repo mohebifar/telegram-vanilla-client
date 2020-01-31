@@ -1,29 +1,8 @@
+import { AllDialogPeerTypes, InputPeerTypes } from "../../utils/useful-types";
+import { PeerChannel, PeerChat, PeerUser } from "./TLObjects";
 import { TLObjectTypes } from "./types";
-import {
-  InputPeerUser,
-  InputPeerChannel,
-  InputPeerEmpty,
-  InputPeerChat,
-  InputPeerSelf,
-  InputPeerUserFromMessage,
-  InputPeerChannelFromMessage,
-  PeerChannel,
-  PeerChat,
-  PeerUser
-} from "./TLObjects";
-import { AllDialogPeerTypes } from "../../utils/useful-types";
 
-type InputPeerTypes =
-  | InputPeerSelf
-  | InputPeerUser
-  | InputPeerChannel
-  | InputPeerChannel
-  | InputPeerEmpty
-  | InputPeerUserFromMessage
-  | InputPeerChat
-  | InputPeerChannelFromMessage;
-
-function _raiseCastFail(entity, target) {
+function _raiseCastFail(entity: TLObjectTypes, target: string) {
   throw new Error(`Cannot cast ${entity.$t} to any kind of ${target}`);
 }
 
@@ -183,83 +162,41 @@ export function getPeer(
   throw new Error("Cannot identify peer");
 }
 
-function numberInRange(x: number, a: number, b: number) {
-  return a < x && x <= b;
-}
-
-export function getPeerId(entity: TLObjectTypes, addMark = true): number {
-  // First we assert it's a Peer TLObject, or early return for integers
-  if (typeof entity == "number") {
-    return addMark ? entity : resolveId(entity)[0];
-  }
-
-  // Tell the user to use their client to resolve InputPeerSelf if we got one
-  if (entity.$t === "InputPeerSelf") {
-    return undefined;
-    // throw new Error(peer, "int (you might want to use client.get_peer_id)");
-  }
-
-  let peer;
-
-  try {
-    peer = getPeer(entity);
-  } catch (e) {
-    console.log(e);
-    _raiseCastFail(entity, "int");
-  }
-  if (peer.$t === "PeerUser") {
-    return peer.userId;
-  } else if (peer.$t === "PeerChat") {
-    // Check in case the user mixed things up to avoid blowing up
-    if (!numberInRange(0, peer.chatId, 0x7fffffff)) {
-      peer.chatId = resolveId(peer.chatId)[0];
-    }
-
-    return addMark ? -peer.chatId : peer.chatId;
-  } else {
-    // if (peer instanceof types.PeerChannel)
-    // Check in case the user mixed things up to avoid blowing up
-    if (!numberInRange(0, peer.channelId, 0x7fffffff)) {
-      peer.channelId = resolveId(peer.channelId)[0];
-    }
-    if (!addMark) {
-      return peer.channelId;
-    }
-    // Concat -100 through math tricks, .to_supergroup() on
-    // Madeline IDs will be strictly positive -> log works.
-    try {
-      return -(
-        peer.channelId +
-        Math.pow(10, Math.floor(Math.log10(peer.channelId) + 3))
-      );
-    } catch (e) {
-      throw new Error(
-        "Cannot get marked ID of a channel unless its ID is strictly positive"
-      );
-    }
-  }
-}
-
 export function simplifyPeerType(
   type: AllDialogPeerTypes["$t"] | "PeerChat" | "PeerUser" | "PeerChannel"
 ): "Chat" | "Channel" | "User" {
-  if (/^Chat/.test(type) || type === "PeerChat") {
+  if (
+    type === "Chat" ||
+    type === "ChatEmpty" ||
+    type === "ChatForbidden" ||
+    type === "PeerChat"
+  ) {
     return "Chat";
   }
-  if (/^Channel/.test(type) || type === "PeerChannel") {
+  if (
+    type === "Channel" ||
+    type === "ChannelForbidden" ||
+    type === "PeerChannel"
+  ) {
     return "Channel";
   }
   return "User";
 }
 
 export function extractIdFromPeer(peer: PeerChannel | PeerChat | PeerUser) {
-  const typeToIdKey = {
-    PeerChannel: "channelId",
-    PeerChat: "chatId",
-    PeerUser: "userId"
-  };
+  let idKey: string;
+  switch (peer.$t) {
+    case "PeerChannel":
+      idKey = "channelId";
+      break;
+    case "PeerChat":
+      idKey = "chatId";
+      break;
+    case "PeerUser":
+      idKey = "userId";
+      break;
+  }
 
-  const idKey = typeToIdKey[peer.$t];
   return {
     id: peer[idKey],
     type: simplifyPeerType(peer.$t)
