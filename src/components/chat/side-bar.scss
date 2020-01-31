@@ -3,7 +3,7 @@
 .container {
   background-color: #fff;
   border-right: 1px solid $grey-light;
-  width: 350px;
+  width: 25em;
 
   .dialogsWrapper {
     flex-grow: 1;
@@ -15,7 +15,7 @@
     }
 
     &::-webkit-scrollbar-track , &::-webkit-scrollbar-thumb {
-      background-color: #fff;
+      background-color: transparent;
     }
 
     &:hover {

@@ -1,4 +1,5 @@
 @import "../../variables.scss";
+@import "../ui/icon.global.scss";
 
 $time-size: 0.75rem;
 
@@ -9,6 +10,13 @@ $time-size: 0.75rem;
   flex-grow: 1;
   display: flex;
   flex-direction: column;
+
+  .sentIndicator {
+    display: block;
+    margin-left: 0.2em;
+
+    @extend .ic-green;
+  }
 
   .wrapper {
     flex-grow: 1;
@@ -79,6 +87,10 @@ $time-size: 0.75rem;
     .inner {
       display: flex;
       flex-direction: row;
+    }
+
+    .sentIndicator {
+      @extend .ic-white;
     }
   }
 
@@ -245,10 +257,5 @@ $time-size: 0.75rem;
     .bubble:first-child:last-child {
       border-radius: 12px 12px 0px 12px;
     }
-  }
-
-  .sentIndicator {
-    display: block;
-    margin-left: 0.2em;
   }
 }
