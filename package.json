@@ -8,7 +8,7 @@
   ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "webpack-dev-server --env.NODE_ENV=development --mode development",
+    "dev": "webpack-dev-server --host 0.0.0.0 --disable-host-check --env.NODE_ENV=development --mode development",
     "build": "webpack --env.NODE_ENV=production --mode production",
     "generator": "ts-node-dev --project tsconfig.generator.json --respawn --transpileOnly ./generators/index.ts",
     "stats": "webpack --env.NODE_ENV=production --profile --json > compilation-stats.json"
@@ -54,6 +54,7 @@
   },
   "dependencies": {
     "autosize": "^4.0.2",
+    "big-integer": "^1.6.48",
     "dayjs": "^1.8.17",
     "dexie": "^2.0.4",
     "lottie-web": "^5.5.9",

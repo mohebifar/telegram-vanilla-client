@@ -1,21 +1,22 @@
-import { MTProtoPlainSender } from "./MTProtoPlainSender";
+import jBigInt, { BigInteger as JBigInt } from "big-integer";
 import {
+  concatBuffers,
   generateRandomBytes,
+  getByteArray,
+  modExp,
+  pack,
   readBigIntFromBuffer,
   readBufferFromBigInt,
-  pack,
-  concatBuffers,
-  readBufferFromHex,
-  getByteArray,
-  modExp
+  readBufferFromHex
 } from "../binary";
-import { serializeTLObject, invariant } from "../tl/types";
+import { decryptIGE, encryptIGE, sha1 } from "../crypto";
+import { AuthKey } from "../crypto/AuthKey";
 import { Factorizator } from "../crypto/Factorizer";
 import * as RSA from "../crypto/RSA";
-import { AuthKey } from "../crypto/AuthKey";
-import { decryptIGE, sha1, encryptIGE } from "../crypto";
 import { BinaryReader } from "../extensions/BinaryReader";
-import { TLObjectTypes, ResPQ, ServerDHInnerData } from "../tl/TLObjects";
+import { ResPQ, ServerDHInnerData, TLObjectTypes } from "../tl/TLObjects";
+import { invariant, serializeTLObject } from "../tl/types";
+import { MTProtoPlainSender } from "./MTProtoPlainSender";
 
 export async function performAuthentication(sender: MTProtoPlainSender) {
   // Step 1 sending: PQ Request, endianness doesn't matter since it's random
@@ -34,7 +35,7 @@ export async function performAuthentication(sender: MTProtoPlainSender) {
   }
   console.debug("Starting authKey generation step 1");
 
-  if (resPQ.nonce !== nonce) {
+  if (!nonce.equals(resPQ.nonce)) {
     throw new Error("Step 1 invalid nonce from server");
   }
   const pq = readBigIntFromBuffer(resPQ.pq, false, true);
@@ -57,14 +58,14 @@ export async function performAuthentication(sender: MTProtoPlainSender) {
     q,
     nonce: resPQ.nonce,
     serverNonce: resPQ.serverNonce,
-    newNonce
+    newNonce: newNonce.toString()
   });
 
   // sha_digest + data + random_bytes
-  let cipherText = null;
+  let cipherText: Uint8Array | undefined = null;
   let targetFingerprint = null;
   for (const fingerprint of resPQ.serverPublicKeyFingerprints) {
-    cipherText = await RSA.encrypt(fingerprint, pqInnerData);
+    cipherText = await RSA.encrypt(jBigInt(fingerprint), pqInnerData);
     if (cipherText !== null && cipherText !== undefined) {
       targetFingerprint = fingerprint;
       break;
@@ -84,6 +85,16 @@ export async function performAuthentication(sender: MTProtoPlainSender) {
     encryptedData: cipherText
   });
 
+  console.log("a", {
+    $t: "ReqDHParamsRequest",
+    nonce: resPQ.nonce,
+    serverNonce: resPQ.serverNonce,
+    p,
+    q,
+    publicKeyFingerprint: targetFingerprint,
+    encryptedData: cipherText
+  });
+
   const serverDhParams = (await sender.send(reqDHParams)) as TLObjectTypes;
 
   if (serverDhParams.$t === "ServerDHParamsFail") {
@@ -91,7 +102,7 @@ export async function performAuthentication(sender: MTProtoPlainSender) {
       readBufferFromBigInt(newNonce, 32, true, true).slice(4, 20)
     );
     const nnh = readBigIntFromBuffer(sh, true, true);
-    if (serverDhParams.newNonceHash !== nnh) {
+    if (!nnh.equals(serverDhParams.newNonceHash)) {
       throw new Error("Step 2 invalid DH fail nonce from server");
     }
   }
@@ -105,7 +116,7 @@ export async function performAuthentication(sender: MTProtoPlainSender) {
 
   // Step 3 sending: Complete DH Exchange
   const { key, iv } = await generateKeyDataFromNonce(
-    resPQ.serverNonce,
+    jBigInt(resPQ.serverNonce),
     newNonce
   );
   if (serverDhParams.encryptedAnswer.length % 16 !== 0) {
@@ -125,10 +136,10 @@ export async function performAuthentication(sender: MTProtoPlainSender) {
     throw new Error(`Step 3 answer was ${serverDhInner}`);
   }
 
-  if (serverDhInner.nonce !== resPQ.nonce) {
+  if (!jBigInt(resPQ.nonce).equals(serverDhInner.nonce)) {
     throw new Error("Step 3 Invalid nonce in encrypted answer");
   }
-  if (serverDhInner.serverNonce !== resPQ.serverNonce) {
+  if (!jBigInt(resPQ.serverNonce).equals(serverDhInner.serverNonce)) {
     throw new Error("Step 3 Invalid server nonce in encrypted answer");
   }
 
@@ -138,7 +149,7 @@ export async function performAuthentication(sender: MTProtoPlainSender) {
     serverDhInner.serverTime - Math.floor(new Date().getTime() / 1000);
 
   const b = readBigIntFromBuffer(generateRandomBytes(256), false, false);
-  const gb = modExp(BigInt(serverDhInner.g), b, dhPrime);
+  const gb = modExp(jBigInt(serverDhInner.g), b, dhPrime);
   const gab = modExp(ga, b, dhPrime);
 
   // Prepare client DH Inner Data
@@ -146,7 +157,7 @@ export async function performAuthentication(sender: MTProtoPlainSender) {
     $t: "ClientDHInnerData",
     nonce: resPQ.nonce,
     serverNonce: resPQ.serverNonce,
-    retryId: BigInt(0),
+    retryId: jBigInt(0).toString(),
     gB: getByteArray(gb)
   });
 
@@ -176,11 +187,11 @@ export async function performAuthentication(sender: MTProtoPlainSender) {
   }
 
   const { name } = dhGen.constructor;
-  if (dhGen.nonce !== resPQ.nonce) {
+  if (!jBigInt(resPQ.nonce).equals(dhGen.nonce)) {
     throw new Error(`Step 3 invalid ${name} nonce from server`);
   }
 
-  if (dhGen.serverNonce !== resPQ.serverNonce) {
+  if (!jBigInt(dhGen.serverNonce).equals(resPQ.serverNonce)) {
     throw new Error(`Step 3 invalid ${name} server nonce from server`);
   }
   const authKey = new AuthKey();
@@ -192,7 +203,7 @@ export async function performAuthentication(sender: MTProtoPlainSender) {
   const newNonceHash = await calcNewNonceHash(newNonce, nonceNumber, authKey);
   const dhHash = dhGen[`newNonceHash${nonceNumber}`];
 
-  if (dhHash !== newNonceHash) {
+  if (!newNonceHash.equals(dhHash)) {
     throw new Error("Step 3 invalid new nonce hash");
   }
 
@@ -206,7 +217,7 @@ export async function performAuthentication(sender: MTProtoPlainSender) {
 }
 
 async function calcNewNonceHash(
-  nonce: bigint,
+  nonce: JBigInt,
   nonceNumber: number,
   authKey: AuthKey
 ) {
@@ -224,8 +235,8 @@ async function calcNewNonceHash(
 }
 
 async function generateKeyDataFromNonce(
-  serverNonceBigInt: bigint,
-  newNonceBigInt: bigint
+  serverNonceBigInt: JBigInt,
+  newNonceBigInt: JBigInt
 ) {
   const serverNonce = readBufferFromBigInt(serverNonceBigInt, 16, true, true);
   const newNonce = readBufferFromBigInt(newNonceBigInt, 32, true, true);

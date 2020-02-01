@@ -1,3 +1,5 @@
+import jBigInt, { BigInteger as JBigInt } from "big-integer";
+
 export function byteBuffersEqual(
   a: Uint8Array | number[],
   b: Uint8Array | number[]
@@ -29,7 +31,7 @@ export function unpack(
   type: "q" | "Q",
   little?: boolean,
   offset?: number
-): bigint;
+): JBigInt;
 
 export function unpack(
   bytes: Uint8Array,
@@ -43,7 +45,7 @@ export function unpack(
   type: "I" | "i" | "B" | "q" | "Q" | "h" | "H",
   little: boolean = true,
   offset = 0
-): bigint | number {
+): JBigInt | number {
   const dataView = new DataView(bytes.buffer);
   switch (type) {
     case "I":
@@ -67,12 +69,12 @@ export function unpack(
 }
 
 export function readBufferFromHex(hex: number | string) {
-  const number = typeof hex === "string" ? parseInt("0x" + hex) : hex;
+  const number = typeof hex === "string" ? parseInt(hex, 16) : hex;
   return pack(number, "i", false);
 }
 
 export function pack(
-  input: number | bigint,
+  input: number | JBigInt,
   type: "I" | "i" | "B" | "q" | "Q",
   little: boolean = true
 ): Uint8Array {
@@ -94,7 +96,7 @@ export function pack(
       return new Uint8Array(buffer);
     case "q":
     case "Q":
-      return readBufferFromBigInt(input as bigint, 8, little, type === "q");
+      return readBufferFromBigInt(input as JBigInt, 8, little, type === "q");
   }
 }
 
@@ -116,35 +118,35 @@ export function readBigIntFromBuffer(
     return a + h;
   }, "");
 
-  let bigInt = BigInt("0x" + hex);
+  let bigInt = jBigInt(hex, 16);
   if (signed && Math.floor(bigInt.toString(2).length / 8) >= bytesNumber) {
-    bigInt -= BigInt(2) ** BigInt(bytesNumber * 8);
+    bigInt = bigInt.minus(jBigInt(2).pow(jBigInt(bytesNumber * 8)));
   }
   return bigInt;
 }
 
 export function readBufferFromBigInt(
-  bigInt: bigint,
+  input: JBigInt,
   bytesNumber: number,
   little = true,
   signed = false
 ) {
-  const bitLength = bigInt.toString(2).length;
+  const bitLength = input.toString(2).length;
 
   const bytes = Math.ceil(bitLength / 8);
   if (bytesNumber < bytes) {
     throw new Error("OverflowError: int too big to convert");
   }
-  if (!signed && bigInt < 0) {
+  if (!signed && input.lesser(0)) {
     throw new Error("Cannot convert to unsigned");
   }
   let below = false;
-  if (bigInt < 0) {
+  if (input.lesser(0)) {
     below = true;
-    bigInt = -bigInt;
+    input = input.multiply(-1);
   }
 
-  const hex = bigInt.toString(16).padStart(bytesNumber * 2, "0");
+  const hex = input.toString(16).padStart(bytesNumber * 2, "0");
 
   var len = hex.length / 2;
   var l = new Uint8Array(len);
@@ -189,8 +191,15 @@ export function concatBuffers(buffers: Array<number[] | Uint8Array>) {
   return array;
 }
 
-export function mod(n: any, m: any) {
-  return ((n % m) + m) % m;
+export function mod<T extends number | JBigInt>(n: T, m: T): T {
+  if (typeof n === "number" && typeof m === "number") {
+    return (((n % m) + m) % m) as T;
+  }
+
+  return (n as JBigInt)
+    .mod(m)
+    .add(m)
+    .mod(m) as T;
 }
 
 export function getRandomInt(min: number, max: number) {
@@ -199,27 +208,27 @@ export function getRandomInt(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-export function modExp(a: bigint, b: bigint, n: bigint) {
-  a = a % n;
-  let result = BigInt(1);
+export function modExp(a: JBigInt, b: JBigInt, n: JBigInt) {
+  a = a.mod(n);
+  let result = jBigInt(1);
   let x = a;
-  while (b > BigInt(0)) {
-    const leastSignificantBit = b % BigInt(2);
-    b = b / BigInt(2);
-    if (leastSignificantBit === BigInt(1)) {
-      result = result * x;
-      result = result % n;
+  while (b.greater(0)) {
+    const leastSignificantBit = b.mod(2);
+    b = b.divide(2);
+    if (leastSignificantBit.equals(1)) {
+      result = result.multiply(x);
+      result = result.mod(n);
     }
-    x = x * x;
-    x = x % n;
+    x = x.multiply(x);
+    x = x.mod(n);
   }
   return result;
 }
 
-export function getByteArray(integer: bigint, signed = false) {
+export function getByteArray(integer: JBigInt, signed = false) {
   const { length: bits } = integer.toString(2);
   const byteLength = Math.floor((bits + 8 - 1) / 8);
-  return readBufferFromBigInt(BigInt(integer), byteLength, false, signed);
+  return readBufferFromBigInt(jBigInt(integer), byteLength, false, signed);
 }
 
 export async function base64ToBufferAsync(base64: string) {

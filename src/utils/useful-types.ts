@@ -13,7 +13,14 @@ import {
   UpdateShortChatMessage,
   UpdateShortSentMessage,
   UpdateShortMessage,
-  Updates
+  Updates,
+  InputPeerSelf,
+  InputPeerUser,
+  InputPeerChannel,
+  InputPeerEmpty,
+  InputPeerUserFromMessage,
+  InputPeerChat,
+  InputPeerChannelFromMessage
 } from "../core/tl/TLObjects";
 
 export type AllChatTypes =
@@ -41,7 +48,6 @@ export type AllUpdateTypes = Updates | UpdateShort | Update;
 export type InputPeerTypes =
   | InputPeerSelf
   | InputPeerUser
-  | InputPeerChannel
   | InputPeerChannel
   | InputPeerEmpty
   | InputPeerUserFromMessage

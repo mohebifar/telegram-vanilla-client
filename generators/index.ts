@@ -55,10 +55,10 @@ const TLTypeToTSTypeMap = new Map<string, string>([
   ["string", "string"],
   ["bytes", "Uint8Array"],
   ["int", "number"],
-  ["long", "bigint"],
-  ["int64", "bigint"],
-  ["int128", "bigint"],
-  ["int256", "bigint"],
+  ["long", "BigInteger | string"],
+  ["int64", "BigInteger | string"],
+  ["int128", "BigInteger | string"],
+  ["int256", "BigInteger | string"],
   ["double", "number"],
   ["Bool", "boolean"],
   ["true", "boolean"]
@@ -86,9 +86,9 @@ function getArgTypeDef(arg: TLArg) {
 
   const isOptional = arg.isFlag || arg.canBeInferred;
 
-  return `${argName}${isOptional ? "?" : ""}: ${type}${
-    arg.isVector ? "[]" : ""
-  };`;
+  return `${argName}${isOptional ? "?" : ""}: ${
+    arg.isVector && type.includes(" ") ? `(${type})` : type
+  }${arg.isVector ? "[]" : ""};`;
 }
 
 function tlObjectToRuntimeDefinition({
@@ -106,8 +106,7 @@ function tlObjectToRuntimeDefinition({
 
   const argName = variableSnakeToCamelCase(name);
 
-
-  let normalizedType = TLTypeToTSTypeMap.has(type) ? type : '_';
+  let normalizedType = TLTypeToTSTypeMap.has(type) ? type : "_";
 
   if (flagIndicator) {
     normalizedType = "#FLAG";
@@ -171,6 +170,7 @@ export const tlObjectsDefinitions: any[] = [${mergeLines(runtimeTypeDefs)}]
 `;
 
 const typesAst = template.ast`
+import { BigInteger } from "big-integer";
 import { TLObjectType } from "./types";
 
 ${mergeLines(typeDefs)}

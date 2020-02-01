@@ -1,12 +1,13 @@
-import { RequestState } from "./RequestState";
-import { MTProtoState } from "./MTProtoState";
-import { pack, concatBuffers } from "../binary";
+import { BigInteger as JBigInt } from "big-integer";
+import { concatBuffers, pack } from "../binary";
 import { BinaryWriter } from "../extensions/BinaryWriter";
 import {
+  CONSTRUCTOR_ID as MESSAGE_CONTAINER_CONSTRUCTOR_ID,
   MAXIMUM_LENGTH,
-  MAXIMUM_SIZE,
-  CONSTRUCTOR_ID as MESSAGE_CONTAINER_CONSTRUCTOR_ID
+  MAXIMUM_SIZE
 } from "../tl/core/MessageContainer";
+import { MTProtoState } from "./MTProtoState";
+import { RequestState } from "./RequestState";
 
 const SIZE_OVERHEAD = 12;
 
@@ -64,7 +65,7 @@ export class MessagePacker {
       const state = this.queue.shift();
       size += state.data.length + SIZE_OVERHEAD;
       if (size <= MAXIMUM_SIZE) {
-        let afterId: bigint;
+        let afterId: JBigInt;
         // if (state.after) {
         //   afterId = state.after.msgId;
         // }
@@ -75,9 +76,7 @@ export class MessagePacker {
           afterId
         );
 
-        console.debug(
-          `Assigned msgId = ${state.msgId} to ${state.request.$t}`
-        );
+        console.debug(`Assigned msgId = ${state.msgId} to ${state.request.$t}`);
 
         buffer.write(state.data);
         batch.push(state);

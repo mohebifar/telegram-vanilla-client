@@ -1,3 +1,4 @@
+import jBigInt, { BigInteger as JBigInt } from "big-integer";
 import { MTConnection } from "./MTConnection";
 import { MTProtoState } from "./MTProtoState";
 import { TLMessage } from "../types";
@@ -26,8 +27,8 @@ export class MTProtoSender {
   private sendQueue = new MessagePacker(this.state);
   private lastAcks: RequestState[] = [];
   private userConnected = false;
-  private pendingState = new Map<bigint, RequestState>();
-  private pendingAck = new Set<bigint>();
+  private pendingState = new Map<string, RequestState>();
+  private pendingAck = new Set<string>();
   private authKeyCallback: Options["authKeyCallback"];
   private updateCallback: Options["updateCallback"];
   private autoReconnectCallback: Options["autoReconnectCallback"];
@@ -75,6 +76,7 @@ export class MTProtoSender {
           if (this.authKeyCallback) {
             this.authKeyCallback(this.session.authKey);
           }
+          this.session.save();
           break;
         } catch {
           console.error("Failed to initiate MTProto connection attempt: ", i);
@@ -150,7 +152,7 @@ export class MTProtoSender {
       if (this.pendingAck.size) {
         const ack = new RequestState({
           $t: "MsgsAck",
-          msgIds: Array.from(this.pendingAck)
+          msgIds: Array.from(this.pendingAck).map(v => jBigInt(v).toString())
         });
 
         this.sendQueue.append(ack);
@@ -181,7 +183,7 @@ export class MTProtoSender {
         return;
       }
       for (const state of batch) {
-        this.pendingState.set(state.msgId, state);
+        this.pendingState.set(state.msgId.toString(), state);
       }
       console.debug("Encrypted messages put in a queue to be sent");
     }
@@ -225,21 +227,21 @@ export class MTProtoSender {
   }
 
   private async processMessage(message: TLMessage<any>) {
-    this.pendingAck.add(message.msgId);
+    this.pendingAck.add(message.msgId.toString());
     const handler =
       this.handlers.get(message.obj.$t) || this.handleUpdate.bind(this);
 
     await handler(message);
   }
 
-  private popStates(msgId: bigint): RequestState[] {
-    let state = this.pendingState.get(msgId);
+  private popStates(msgId: JBigInt): RequestState[] {
+    let state = this.pendingState.get(msgId.toString());
     if (state) {
-      this.pendingState.delete(msgId);
+      this.pendingState.delete(msgId.toString());
       return [state];
     }
 
-    const toPop: bigint[] = [];
+    const toPop: JBigInt[] = [];
 
     this.pendingState.forEach(state => {
       if (state.containerId === msgId) {
@@ -250,8 +252,8 @@ export class MTProtoSender {
     if (toPop.length) {
       const temp = [];
       for (const x of toPop) {
-        temp.push(this.pendingState.get(x));
-        this.pendingState.delete(x);
+        temp.push(this.pendingState.get(x.toString()));
+        this.pendingState.delete(x.toString());
       }
       return temp;
     }
@@ -267,15 +269,18 @@ export class MTProtoSender {
 
   private async handleRPCResult(message: TLMessage<any>) {
     const rpcResult = message.obj;
-    const state = this.pendingState.get(rpcResult.reqMsgId);
+    const reqMsgId = rpcResult.reqMsgId.toString();
+    const state = this.pendingState.get(reqMsgId);
     if (state) {
-      this.pendingState.delete(rpcResult.reqMsgId);
+      this.pendingState.delete(reqMsgId);
     }
-    console.debug(`Handling RPC result for message ${rpcResult.reqMsgId}`);
+    console.debug(`Handling RPC result for message ${reqMsgId}`);
 
     if (!state) {
       try {
         const reader = new BinaryReader(rpcResult.body);
+
+        console.log("reader.tgReadObject()", reader.tgReadObject());
         if (!(reader.tgReadObject() instanceof File)) {
           throw new Error("Not an upload.File");
         }
@@ -298,7 +303,7 @@ export class MTProtoSender {
         rpcResult.error.errorCode
       );
       this.sendQueue.append(
-        new RequestState({ msgIds: [state.msgId], $t: "MsgsAck" })
+        new RequestState({ msgIds: [state.msgId.toString()], $t: "MsgsAck" })
       );
       state.reject(error);
     } else {
@@ -350,7 +355,7 @@ export class MTProtoSender {
   private async handleBadServerSalt(message: TLMessage<any>) {
     const badSalt = message.obj;
     console.debug(`Handling bad salt for message ${badSalt.badMsgId}`);
-    this.state.salt = badSalt.newServerSalt;
+    this.state.salt = jBigInt(badSalt.newServerSalt);
     const states = this.popStates(badSalt.badMsgId);
     this.sendQueue.extend(states);
     console.debug(`${states.length} message(s) will be resent`);
@@ -403,7 +408,7 @@ export class MTProtoSender {
   private async handleNewSessionCreated(message: TLMessage<any>) {
     // TODO https://goo.gl/LMyN7A
     console.debug("Handling new session created");
-    this.state.salt = message.obj.serverSalt;
+    this.state.salt = jBigInt(message.obj.serverSalt);
   }
 
   private async handleAck(message: TLMessage<any>) {
@@ -422,10 +427,10 @@ export class MTProtoSender {
     // TODO save these salts and automatically adjust to the
     // correct one whenever the salt in use expires.
     console.debug(`Handling future salts for message ${message.msgId}`);
-    const state = this.pendingState.get(message.msgId);
+    const state = this.pendingState.get(message.msgId.toString());
 
     if (state) {
-      this.pendingState.delete(message.msgId);
+      this.pendingState.delete(message.msgId.toString());
       state.resolve(message.obj);
     }
   }
@@ -434,7 +439,7 @@ export class MTProtoSender {
     this.sendQueue.append(
       new RequestState({
         $t: "MsgsStateInfo",
-        reqMsgId: message.msgId,
+        reqMsgId: message.msgId.toString(),
         info: String.fromCharCode(1).repeat(message.obj.msgIds)
       })
     );

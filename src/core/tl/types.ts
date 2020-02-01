@@ -1,26 +1,27 @@
-import { BinaryReader } from "../extensions/BinaryReader";
+import jBigInt, { BigInteger as JBigInt } from "big-integer";
 import {
-  pack,
   concatBuffers,
+  pack,
   readBufferFromBigInt,
   readBytesFromString
 } from "../binary";
-import { tlObjectsDefinitions } from "./schema";
-import { TLObjectTypes } from "./TLObjects";
+import { BinaryReader } from "../extensions/BinaryReader";
 import {
-  gzipPackedReader,
-  CONSTRUCTOR_ID as GZIP_CONSTRUCTOR_ID
+  CONSTRUCTOR_ID as GZIP_CONSTRUCTOR_ID,
+  gzipPackedReader
 } from "./core/GZIPPacked";
 import {
-  RPCResult,
-  rpcResultReader,
-  CONSTRUCTOR_ID as RPC_RESULT_CONSTRUCTOR_ID
-} from "./core/RPCResult";
-import {
-  MessageContainer,
+  CONSTRUCTOR_ID as MESSAGE_CONTAINER_CONSTRUCTOR_ID,
   messageContaienerReader,
-  CONSTRUCTOR_ID as MESSAGE_CONTAINER_CONSTRUCTOR_ID
+  MessageContainer
 } from "./core/MessageContainer";
+import {
+  CONSTRUCTOR_ID as RPC_RESULT_CONSTRUCTOR_ID,
+  RPCResult,
+  rpcResultReader
+} from "./core/RPCResult";
+import { tlObjectsDefinitions } from "./schema";
+import { TLObjectTypes } from "./TLObjects";
 
 type CoreTypes = MessageContainer | RPCResult;
 
@@ -184,9 +185,11 @@ export function invariant(tlRawObject: any, $t: TLTypeNames): boolean {
 
 function deserializePrimitive(type: PrimitiveTypes, reader: BinaryReader) {
   if (type === "int128") {
-    return reader.readLargeInt(128);
+    return reader.readLargeInt(128).toString();
+  } else if (type === "int256") {
+    return reader.readLargeInt(256).toString();
   } else if (type === "long") {
-    return reader.readLong();
+    return reader.readLong().toString();
   } else if (type === "bytes") {
     return reader.tgReadBytes();
   } else if (type === "string") {
@@ -260,15 +263,23 @@ export function serializeTLObject(object: TLObjectTypes) {
   return concatBuffers(buffers);
 }
 
+function castBigInt(input: string | number | JBigInt) {
+  if (typeof input === "string" || typeof input === "number") {
+    return jBigInt(input as any);
+  }
+
+  return input;
+}
+
 function serializeScalar(type: PrimitiveTypes | string, value: any) {
   if (type === "bytes") {
     return serializeBytes(value);
   } else if (type === "int128") {
-    return readBufferFromBigInt(value, 16, true, true);
+    return readBufferFromBigInt(castBigInt(value), 16, true, true);
   } else if (type === "int256") {
-    return readBufferFromBigInt(value, 32, true, true);
+    return readBufferFromBigInt(castBigInt(value), 32, true, true);
   } else if (type === "long") {
-    return readBufferFromBigInt(value, 8, true, true);
+    return readBufferFromBigInt(castBigInt(value), 8, true, true);
   } else if (type === "string") {
     return serializeBytes(value);
   } else if (type === "int") {

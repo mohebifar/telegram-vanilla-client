@@ -9,6 +9,8 @@ import { createElement } from "./utils/dom";
 
 async function start() {
   const tgProxy = await makeProxy(TG_API_ID, TG_API_HASH, handleUpdate);
+  // @ts-ignore
+  window.tgProxy = tgProxy;
   const isUserAuthorized = await tgProxy.isUserAuthorized();
   Model.tg = tgProxy;
 

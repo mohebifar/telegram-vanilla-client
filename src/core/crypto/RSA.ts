@@ -1,14 +1,7 @@
-import { sha1 } from "../crypto";
-import {
-  readBufferFromBigInt,
-  readBigIntFromBuffer,
-  generateRandomBytes,
-  modExp,
-  concatBuffers,
-  getByteArray,
-  base64ToBufferAsync
-} from "../binary";
+import { BigInteger as JBigInt } from "big-integer";
 import { serializeBytes } from "../../core/tl/types";
+import { base64ToBufferAsync, concatBuffers, generateRandomBytes, getByteArray, modExp, readBigIntFromBuffer, readBufferFromBigInt } from "../binary";
+import { sha1 } from "../crypto";
 import { BerReader } from "./ASN1";
 
 interface RSAKeyPair {
@@ -16,7 +9,7 @@ interface RSAKeyPair {
   e: Uint8Array; // Public Exponent
 }
 
-const serverKeys = new Map<bigint, RSAKeyPair>();
+const serverKeys = new Map<string, RSAKeyPair>();
 
 const PUBLIC_OPENING_BOUNDARY = "-----BEGIN RSA PUBLIC KEY-----";
 const PUBLIC_CLOSING_BOUNDARY = "-----END RSA PUBLIC KEY-----";
@@ -112,12 +105,12 @@ async function addKey(publicKey: string | Uint8Array) {
   const key = await readKey(publicKey);
   const fingerPrint = await computeFingerprint(key);
 
-  serverKeys.set(fingerPrint, key);
+  serverKeys.set(fingerPrint.toString(), key);
 }
 
-async function encrypt(fingerprint: bigint, data: Uint8Array) {
+async function encrypt(fingerprint: JBigInt, data: Uint8Array) {
   await loadDefault();
-  const keyPair = serverKeys.get(fingerprint);
+  const keyPair = serverKeys.get(fingerprint.toString());
   if (!keyPair) {
     return undefined;
   }
@@ -132,3 +125,4 @@ async function encrypt(fingerprint: bigint, data: Uint8Array) {
 }
 
 export { encrypt, addKey };
+

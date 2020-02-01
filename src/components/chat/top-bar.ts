@@ -60,7 +60,10 @@ export default class TopBar implements Component<Options> {
 
     switch (this.peer.$t) {
       case "User":
-        return getLastSeenTime(this.peer.status);
+        if (this.peer.status) {
+          return getLastSeenTime(this.peer.status);
+        }
+        return this.peer.firstName;
       case "UserEmpty":
         return "Last seen a long time ago";
       case "Channel":

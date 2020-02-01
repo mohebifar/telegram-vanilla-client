@@ -1,3 +1,4 @@
+import { BigInteger as JBigInt } from "big-integer";
 import { BinaryReader } from "../../extensions/BinaryReader";
 import {
   CONSTRUCTOR_ID as GZIP_CONSTRUCTOR_ID,
@@ -6,7 +7,7 @@ import {
 
 export interface RPCResult {
   $t: "RPCResult";
-  reqMsgId: bigint;
+  reqMsgId: JBigInt;
   body?: Uint8Array;
   error?: any;
 }

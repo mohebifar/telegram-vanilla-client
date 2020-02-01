@@ -1,15 +1,16 @@
+import { BigInteger as JBigInt } from "big-integer";
 import {
   UpdateNewChannelMessage,
   UpdateNewMessage,
-  UpdateShortMessage,
   UpdateShortChatMessage,
+  UpdateShortMessage,
   UpdateShortSentMessage
 } from "./core/tl/TLObjects";
-import { Message, IMessage } from "./models/message";
+import { IMessage, Message } from "./models/message";
 import { AllUpdateTypes, DialogMessageTypes } from "./utils/useful-types";
 
 interface TransientMessageData {
-  randomId: bigint;
+  randomId: JBigInt;
   message: IMessage;
 }
 

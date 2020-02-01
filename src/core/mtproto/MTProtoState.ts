@@ -1,3 +1,4 @@
+import jBigInt, { BigInteger as JBigInt } from "big-integer";
 import {
   generateRandomLong,
   generateRandomBytes,
@@ -19,10 +20,10 @@ import { MTSession } from "./MTSessionManager";
 
 export class MTProtoState {
   public timeOffset = 0;
-  private lastMsgId: bigint;
+  private lastMsgId: JBigInt;
   public sequence: number;
-  private id: bigint;
-  public salt: bigint = BigInt(0);
+  private id: JBigInt;
+  public salt: JBigInt = jBigInt(0);
 
   constructor(public session?: MTSession) {
     this.reset();
@@ -31,15 +32,15 @@ export class MTProtoState {
   public reset() {
     this.id = generateRandomLong(true);
     this.sequence = 0;
-    this.lastMsgId = BigInt(0);
+    this.lastMsgId = jBigInt(0);
   }
 
   public writeDataAsMessage(
     buffer: BinaryWriter,
     data: Uint8Array,
     contentRelated: boolean,
-    afterId?: bigint
-  ): bigint {
+    afterId?: JBigInt
+  ): JBigInt {
     const msgId = this.getNewMessageId();
     const seqNo = this.getSequenceNumber(contentRelated);
     let body: Uint8Array;
@@ -51,7 +52,7 @@ export class MTProtoState {
         contentRelated,
         serializeTLObject({
           $t: "InvokeAfterMsgRequest",
-          msgId: afterId,
+          msgId: afterId.toString(),
           query: data as any
         })
       );
@@ -105,7 +106,7 @@ export class MTProtoState {
     // TODO Check salt,sessionId, and sequenceNumber
     const keyId = readBigIntFromBuffer(body.slice(0, 8));
 
-    if (keyId !== this.session.authKey.keyId) {
+    if (!keyId.equals(this.session.authKey.keyId)) {
       throw new Error("Server replied with an invalid auth key");
     }
 
@@ -131,7 +132,7 @@ export class MTProtoState {
     const reader = new BinaryReader(body);
     reader.readLong(); // removeSalt
     const serverId = reader.readLong();
-    if (serverId !== this.id) {
+    if (!serverId.equals(this.id)) {
       throw new Error("Server replied with a wrong session ID");
     }
 
@@ -154,25 +155,26 @@ export class MTProtoState {
   public getNewMessageId() {
     const now = new Date().getTime() / 1000 + this.timeOffset;
     const nanoseconds = Math.floor((now - Math.floor(now)) * 1e9);
-    let newMsgId =
-      (BigInt(Math.floor(now)) << BigInt(32)) |
-      (BigInt(nanoseconds) << BigInt(2));
-    if (this.lastMsgId >= newMsgId) {
-      newMsgId = this.lastMsgId + BigInt(4);
+    let newMsgId = jBigInt(Math.floor(now))
+      .shiftLeft(32)
+      .or(jBigInt(nanoseconds).shiftLeft(2));
+
+    if (this.lastMsgId.greaterOrEquals(newMsgId)) {
+      newMsgId = this.lastMsgId.add(4);
     }
     this.lastMsgId = newMsgId;
     return newMsgId;
   }
 
-  public updateTimeOffset(correctMsgId: bigint) {
+  public updateTimeOffset(correctMsgId: JBigInt) {
     const bad = this.getNewMessageId();
     const old = this.timeOffset;
     const now = Math.floor(new Date().getTime() / 1000);
-    const correct = correctMsgId >> BigInt(32);
+    const correct = correctMsgId.shiftRight(32);
     this.timeOffset = Number(correct) - now;
 
     if (this.timeOffset !== old) {
-      this.lastMsgId = BigInt(0);
+      this.lastMsgId = jBigInt(0);
       console.log(
         `Updated time offset (old offset ${old}, bad ${bad}, good ${correctMsgId}, new ${this.timeOffset})`
       );

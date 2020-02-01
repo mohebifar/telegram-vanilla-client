@@ -1,8 +1,9 @@
-import { TLObjectTypes, serializeTLObject } from "../tl/types";
+import { BigInteger as JBigInt } from "big-integer";
+import { serializeTLObject, TLObjectTypes } from "../tl/types";
 
 export class RequestState {
-  public msgId: bigint = null;
-  public containerId: bigint = null;
+  public msgId: JBigInt = null;
+  public containerId: JBigInt = null;
   public isRequest = false;
   public data: Uint8Array;
   public resolve: (state?: any) => void;

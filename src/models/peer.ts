@@ -40,12 +40,12 @@ export type SimplifiedMessageRequest = (
   randomId?: messages_SendMessageRequest["randomId"];
 };
 
-let transientIds = new Set<bigint>();
+let transientIds = new Set<number>();
 
 function generateTransientId() {
-  let randomId: bigint;
+  let randomId: number;
   do {
-    randomId = BigInt(Math.floor(Math.random() * 999999));
+    randomId = Math.floor(Math.random() * 999999);
   } while (transientIds.has(randomId));
   transientIds.add(randomId);
   return randomId;
@@ -118,7 +118,7 @@ export class Peer extends Model<"peers"> implements ExtraMethods {
   public sendMessage(
     message: SimplifiedMessageRequest
   ): [IMessage, Promise<any>] {
-    const randomId = generateTransientId();
+    const randomId = generateTransientId() as any;
     const messageModel = Message.fromObject({
       ...message,
       $t: "Message",

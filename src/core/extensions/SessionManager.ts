@@ -71,7 +71,11 @@ function dbProxy<
 
 export class DBSessionManager implements MTSessionManager {
   public async getDefaultSession() {
-    const primaryDc = await dbProxy("configs", "get", "primaryDc");
+    const primaryDc = (await dbProxy("configs", "get", "primaryDc")) || {
+      key: "primaryDc",
+      value: defaultDc
+    };
+
     if (primaryDc && primaryDc.value) {
       const sessionData = await dbProxy("sessions", "get", primaryDc.value);
       if (sessionData) {

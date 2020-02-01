@@ -1,12 +1,13 @@
-import { encryptorCTR, decryptorCTR } from "../crypto";
+import jBigInt from "big-integer";
 import {
   byteBuffersEqual,
-  unpack,
-  generateRandomBytes,
   concatBuffers,
+  generateRandomBytes,
+  pack,
   readBufferFromBigInt,
-  pack
+  unpack
 } from "../binary";
+import { decryptorCTR, encryptorCTR } from "../crypto";
 import { MTConnection } from "./MTConnection";
 
 export class MTTransport {
@@ -72,7 +73,7 @@ export class MTTransport {
     } else {
       length = concatBuffers([
         [127],
-        readBufferFromBigInt(BigInt(dataLength), 3)
+        readBufferFromBigInt(jBigInt(dataLength), 3)
       ]);
     }
     return concatBuffers([length, data]);

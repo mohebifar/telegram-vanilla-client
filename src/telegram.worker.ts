@@ -1,3 +1,4 @@
+import setupShims from "./utils/shims";
 import { TelegramClient } from "./core/TelegramClient";
 import { ClientProxiedMethods } from "./telegram-worker-proxy";
 import { DBSessionManager } from "./core/extensions/SessionManager";
@@ -53,6 +54,8 @@ addEventListener("message", ({ data }: MessageEventWithData) => {
 });
 
 async function connect(apiId: number, apiHash: string) {
+  setupShims();
+
   console.time("Telegram Connect");
   const manager = new DBSessionManager();
 

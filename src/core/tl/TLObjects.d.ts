@@ -1,17 +1,18 @@
+import { BigInteger } from "big-integer";
 import { TLObjectType } from "./types";
 
 export interface ResPQ extends TLObjectType<"ResPQ", 0x05162463, 0x786986b8> {
-  serverPublicKeyFingerprints: bigint[];
+  serverPublicKeyFingerprints: (string)[];
   pq: Uint8Array;
-  serverNonce: bigint;
-  nonce: bigint;
+  serverNonce: string;
+  nonce: string;
 }
 
 export interface PQInnerData
   extends TLObjectType<"PQInnerData", 0x83c95aec, 0x41701377> {
-  newNonce: bigint;
-  serverNonce: bigint;
-  nonce: bigint;
+  newNonce: string;
+  serverNonce: string;
+  nonce: string;
   q: Uint8Array;
   p: Uint8Array;
   pq: Uint8Array;
@@ -20,9 +21,9 @@ export interface PQInnerData
 export interface PQInnerDataDc
   extends TLObjectType<"PQInnerDataDc", 0xa9f55f95, 0x41701377> {
   dc: number;
-  newNonce: bigint;
-  serverNonce: bigint;
-  nonce: bigint;
+  newNonce: string;
+  serverNonce: string;
+  nonce: string;
   q: Uint8Array;
   p: Uint8Array;
   pq: Uint8Array;
@@ -31,9 +32,9 @@ export interface PQInnerDataDc
 export interface PQInnerDataTemp
   extends TLObjectType<"PQInnerDataTemp", 0x3c6a84d4, 0x41701377> {
   expiresIn: number;
-  newNonce: bigint;
-  serverNonce: bigint;
-  nonce: bigint;
+  newNonce: string;
+  serverNonce: string;
+  nonce: string;
   q: Uint8Array;
   p: Uint8Array;
   pq: Uint8Array;
@@ -43,9 +44,9 @@ export interface PQInnerDataTempDc
   extends TLObjectType<"PQInnerDataTempDc", 0x56fddf88, 0x41701377> {
   expiresIn: number;
   dc: number;
-  newNonce: bigint;
-  serverNonce: bigint;
-  nonce: bigint;
+  newNonce: string;
+  serverNonce: string;
+  nonce: string;
   q: Uint8Array;
   p: Uint8Array;
   pq: Uint8Array;
@@ -53,16 +54,16 @@ export interface PQInnerDataTempDc
 
 export interface ServerDHParamsFail
   extends TLObjectType<"ServerDHParamsFail", 0x79cb045d, 0xa6188d9e> {
-  newNonceHash: bigint;
-  serverNonce: bigint;
-  nonce: bigint;
+  newNonceHash: string;
+  serverNonce: string;
+  nonce: string;
 }
 
 export interface ServerDHParamsOk
   extends TLObjectType<"ServerDHParamsOk", 0xd0e8075c, 0xa6188d9e> {
   encryptedAnswer: Uint8Array;
-  serverNonce: bigint;
-  nonce: bigint;
+  serverNonce: string;
+  nonce: string;
 }
 
 export interface ServerDHInnerData
@@ -71,37 +72,37 @@ export interface ServerDHInnerData
   gA: Uint8Array;
   dhPrime: Uint8Array;
   g: number;
-  serverNonce: bigint;
-  nonce: bigint;
+  serverNonce: string;
+  nonce: string;
 }
 
 export interface ClientDHInnerData
   extends TLObjectType<"ClientDHInnerData", 0x6643b654, 0xf8eeef6a> {
   gB: Uint8Array;
-  retryId: bigint;
-  serverNonce: bigint;
-  nonce: bigint;
+  retryId: string;
+  serverNonce: string;
+  nonce: string;
 }
 
 export interface DhGenOk
   extends TLObjectType<"DhGenOk", 0x3bcbf734, 0x55dd6cdb> {
-  newNonceHash1: bigint;
-  serverNonce: bigint;
-  nonce: bigint;
+  newNonceHash1: string;
+  serverNonce: string;
+  nonce: string;
 }
 
 export interface DhGenRetry
   extends TLObjectType<"DhGenRetry", 0x46dc1fb9, 0x55dd6cdb> {
-  newNonceHash2: bigint;
-  serverNonce: bigint;
-  nonce: bigint;
+  newNonceHash2: string;
+  serverNonce: string;
+  nonce: string;
 }
 
 export interface DhGenFail
   extends TLObjectType<"DhGenFail", 0xa69dae02, 0x55dd6cdb> {
-  newNonceHash3: bigint;
-  serverNonce: bigint;
-  nonce: bigint;
+  newNonceHash3: string;
+  serverNonce: string;
+  nonce: string;
 }
 
 export interface DestroyAuthKeyOk
@@ -115,29 +116,29 @@ export interface DestroyAuthKeyFail
 
 export interface ReqPqRequest
   extends TLObjectType<"ReqPqRequest", 0x60469778, 0x786986b8> {
-  nonce: bigint;
+  nonce: string;
 }
 
 export interface ReqPqMultiRequest
   extends TLObjectType<"ReqPqMultiRequest", 0xbe7e8ef1, 0x786986b8> {
-  nonce: bigint;
+  nonce: string;
 }
 
 export interface ReqDHParamsRequest
   extends TLObjectType<"ReqDHParamsRequest", 0xd712e4be, 0xa6188d9e> {
   encryptedData: Uint8Array;
-  publicKeyFingerprint: bigint;
+  publicKeyFingerprint: string;
   q: Uint8Array;
   p: Uint8Array;
-  serverNonce: bigint;
-  nonce: bigint;
+  serverNonce: string;
+  nonce: string;
 }
 
 export interface SetClientDHParamsRequest
   extends TLObjectType<"SetClientDHParamsRequest", 0xf5045f1f, 0x55dd6cdb> {
   encryptedData: Uint8Array;
-  serverNonce: bigint;
-  nonce: bigint;
+  serverNonce: string;
+  nonce: string;
 }
 
 export interface DestroyAuthKeyRequest
@@ -145,59 +146,59 @@ export interface DestroyAuthKeyRequest
 
 export interface MsgsAck
   extends TLObjectType<"MsgsAck", 0x62d6b459, 0x827677c4> {
-  msgIds: bigint[];
+  msgIds: (string)[];
 }
 
 export interface BadMsgNotification
   extends TLObjectType<"BadMsgNotification", 0xa7eff811, 0xcebaa157> {
   errorCode: number;
   badMsgSeqno: number;
-  badMsgId: bigint;
+  badMsgId: string;
 }
 
 export interface BadServerSalt
   extends TLObjectType<"BadServerSalt", 0xedab447b, 0xcebaa157> {
-  newServerSalt: bigint;
+  newServerSalt: string;
   errorCode: number;
   badMsgSeqno: number;
-  badMsgId: bigint;
+  badMsgId: string;
 }
 
 export interface MsgsStateReq
   extends TLObjectType<"MsgsStateReq", 0xda69fb52, 0x18f01dd0> {
-  msgIds: bigint[];
+  msgIds: (string)[];
 }
 
 export interface MsgsStateInfo
   extends TLObjectType<"MsgsStateInfo", 0x04deb57d, 0x70a0a64> {
   info: string;
-  reqMsgId: bigint;
+  reqMsgId: string;
 }
 
 export interface MsgsAllInfo
   extends TLObjectType<"MsgsAllInfo", 0x8cc0d131, 0xfa8fcb54> {
   info: string;
-  msgIds: bigint[];
+  msgIds: (string)[];
 }
 
 export interface MsgDetailedInfo
   extends TLObjectType<"MsgDetailedInfo", 0x276d3ec6, 0x5f32d5ee> {
   status: number;
   bytes: number;
-  answerMsgId: bigint;
-  msgId: bigint;
+  answerMsgId: string;
+  msgId: string;
 }
 
 export interface MsgNewDetailedInfo
   extends TLObjectType<"MsgNewDetailedInfo", 0x809db6df, 0x5f32d5ee> {
   status: number;
   bytes: number;
-  answerMsgId: bigint;
+  answerMsgId: string;
 }
 
 export interface MsgResendReq
   extends TLObjectType<"MsgResendReq", 0x7d861a08, 0x2024514> {
-  msgIds: bigint[];
+  msgIds: (string)[];
 }
 
 export interface RpcError
@@ -216,12 +217,12 @@ export interface RpcAnswerDropped
   extends TLObjectType<"RpcAnswerDropped", 0xa43ad8b7, 0x4bca7570> {
   bytes: number;
   seqNo: number;
-  msgId: bigint;
+  msgId: string;
 }
 
 export interface FutureSalt
   extends TLObjectType<"FutureSalt", 0x0949d9dc, 0x45e53dcf> {
-  salt: bigint;
+  salt: string;
   validUntil: number;
   validSince: number;
 }
@@ -230,29 +231,29 @@ export interface FutureSalts
   extends TLObjectType<"FutureSalts", 0xae500895, 0x1090f517> {
   salts: any[];
   now: number;
-  reqMsgId: bigint;
+  reqMsgId: string;
 }
 
 export interface Pong extends TLObjectType<"Pong", 0x347773c5, 0x816aee71> {
-  pingId: bigint;
-  msgId: bigint;
+  pingId: string;
+  msgId: string;
 }
 
 export interface DestroySessionOk
   extends TLObjectType<"DestroySessionOk", 0xe22045fc, 0xaf0ce7bd> {
-  sessionId: bigint;
+  sessionId: string;
 }
 
 export interface DestroySessionNone
   extends TLObjectType<"DestroySessionNone", 0x62d350c9, 0xaf0ce7bd> {
-  sessionId: bigint;
+  sessionId: string;
 }
 
 export interface NewSessionCreated
   extends TLObjectType<"NewSessionCreated", 0x9ec20908, 0x510d3031> {
-  serverSalt: bigint;
-  uniqueId: bigint;
-  firstMsgId: bigint;
+  serverSalt: string;
+  uniqueId: string;
+  firstMsgId: string;
 }
 
 export interface HttpWait
@@ -337,7 +338,7 @@ export interface TlsBlockScope
 
 export interface RpcDropAnswerRequest
   extends TLObjectType<"RpcDropAnswerRequest", 0x58e4a740, 0x4bca7570> {
-  reqMsgId: bigint;
+  reqMsgId: string;
 }
 
 export interface GetFutureSaltsRequest
@@ -347,18 +348,18 @@ export interface GetFutureSaltsRequest
 
 export interface PingRequest
   extends TLObjectType<"PingRequest", 0x7abe77ec, 0x816aee71> {
-  pingId: bigint;
+  pingId: string;
 }
 
 export interface PingDelayDisconnectRequest
   extends TLObjectType<"PingDelayDisconnectRequest", 0xf3427b8c, 0x816aee71> {
   disconnectDelay: number;
-  pingId: bigint;
+  pingId: string;
 }
 
 export interface DestroySessionRequest
   extends TLObjectType<"DestroySessionRequest", 0xe7512126, 0xaf0ce7bd> {
-  sessionId: bigint;
+  sessionId: string;
 }
 
 export interface InputPeerEmpty
@@ -374,13 +375,13 @@ export interface InputPeerChat
 
 export interface InputPeerUser
   extends TLObjectType<"InputPeerUser", 0x7b8e7de6, 0xc91c90b6> {
-  accessHash: bigint;
+  accessHash: string;
   userId: number;
 }
 
 export interface InputPeerChannel
   extends TLObjectType<"InputPeerChannel", 0x20adaef8, 0xc91c90b6> {
-  accessHash: bigint;
+  accessHash: string;
   channelId: number;
 }
 
@@ -420,7 +421,7 @@ export interface InputUserSelf
 
 export interface InputUser
   extends TLObjectType<"InputUser", 0xd8292816, 0xe669bf46> {
-  accessHash: bigint;
+  accessHash: string;
   userId: number;
 }
 
@@ -443,7 +444,7 @@ export interface InputPhoneContact
   lastName: string;
   firstName: string;
   phone: string;
-  clientId: bigint;
+  clientId: string;
 }
 
 export interface InputFile
@@ -451,14 +452,14 @@ export interface InputFile
   md5Checksum: string;
   name: string;
   parts: number;
-  id: bigint;
+  id: string;
 }
 
 export interface InputFileBig
   extends TLObjectType<"InputFileBig", 0xfa4f0bb5, 0xe7655f1f> {
   name: string;
   parts: number;
-  id: bigint;
+  id: string;
 }
 
 export interface InputMediaEmpty
@@ -603,36 +604,36 @@ export interface InputPhotoEmpty
 export interface InputPhoto
   extends TLObjectType<"InputPhoto", 0x3bb3b94a, 0x846363e0> {
   fileReference: Uint8Array;
-  accessHash: bigint;
-  id: bigint;
+  accessHash: string;
+  id: string;
 }
 
 export interface InputFileLocation
   extends TLObjectType<"InputFileLocation", 0xdfdaabe1, 0x1523d462> {
   fileReference: Uint8Array;
-  secret: bigint;
+  secret: string;
   localId: number;
-  volumeId: bigint;
+  volumeId: string;
 }
 
 export interface InputEncryptedFileLocation
   extends TLObjectType<"InputEncryptedFileLocation", 0xf5235d55, 0x1523d462> {
-  accessHash: bigint;
-  id: bigint;
+  accessHash: string;
+  id: string;
 }
 
 export interface InputDocumentFileLocation
   extends TLObjectType<"InputDocumentFileLocation", 0xbad07584, 0x1523d462> {
   thumbSize: string;
   fileReference: Uint8Array;
-  accessHash: bigint;
-  id: bigint;
+  accessHash: string;
+  id: string;
 }
 
 export interface InputSecureFileLocation
   extends TLObjectType<"InputSecureFileLocation", 0xcbc7ee28, 0x1523d462> {
-  accessHash: bigint;
-  id: bigint;
+  accessHash: string;
+  id: string;
 }
 
 export interface InputTakeoutFileLocation
@@ -642,14 +643,14 @@ export interface InputPhotoFileLocation
   extends TLObjectType<"InputPhotoFileLocation", 0x40181ffe, 0x1523d462> {
   thumbSize: string;
   fileReference: Uint8Array;
-  accessHash: bigint;
-  id: bigint;
+  accessHash: string;
+  id: string;
 }
 
 export interface InputPeerPhotoFileLocation
   extends TLObjectType<"InputPeerPhotoFileLocation", 0x27d69997, 0x1523d462> {
   localId: number;
-  volumeId: bigint;
+  volumeId: string;
   peer:
     | InputPeerEmpty
     | InputPeerSelf
@@ -664,7 +665,7 @@ export interface InputPeerPhotoFileLocation
 export interface InputStickerSetThumb
   extends TLObjectType<"InputStickerSetThumb", 0x0dbaeae9, 0x1523d462> {
   localId: number;
-  volumeId: bigint;
+  volumeId: string;
   stickerset:
     | InputStickerSetEmpty
     | InputStickerSetID
@@ -737,7 +738,7 @@ export interface User extends TLObjectType<"User", 0x938458c1, 0x2da17977> {
   botInlineGeo?: boolean;
   support?: boolean;
   scam?: boolean;
-  accessHash?: bigint;
+  accessHash?: string;
   firstName?: string;
   lastName?: string;
   username?: string;
@@ -767,7 +768,7 @@ export interface UserProfilePhoto
   dcId: number;
   photoBig: FileLocationToBeDeprecated;
   photoSmall: FileLocationToBeDeprecated;
-  photoId: bigint;
+  photoId: string;
 }
 
 export interface UserStatusEmpty
@@ -838,7 +839,7 @@ export interface Channel
   hasLink?: boolean;
   hasGeo?: boolean;
   slowmodeEnabled?: boolean;
-  accessHash?: bigint;
+  accessHash?: string;
   username?: string;
   restrictionReason?: RestrictionReason[];
   adminRights?: ChatAdminRights;
@@ -850,7 +851,7 @@ export interface Channel
 export interface ChannelForbidden
   extends TLObjectType<"ChannelForbidden", 0x289da732, 0xc5af5d94> {
   title: string;
-  accessHash: bigint;
+  accessHash: string;
   id: number;
   broadcast?: boolean;
   megagroup?: boolean;
@@ -1029,7 +1030,7 @@ export interface Message
   views?: number;
   editDate?: number;
   postAuthor?: string;
-  groupedId?: bigint;
+  groupedId?: string;
   restrictionReason?: RestrictionReason[];
 }
 
@@ -1136,7 +1137,7 @@ export interface MessageMediaGame
 export interface MessageMediaInvoice
   extends TLObjectType<"MessageMediaInvoice", 0x84551347, 0x476cbe32> {
   startParam: string;
-  totalAmount: bigint;
+  totalAmount: string;
   currency: string;
   description: string;
   title: string;
@@ -1232,14 +1233,14 @@ export interface MessageActionHistoryClear
 export interface MessageActionGameScore
   extends TLObjectType<"MessageActionGameScore", 0x92a72876, 0x8680d126> {
   score: number;
-  gameId: bigint;
+  gameId: string;
 }
 
 export interface MessageActionPaymentSentMe
   extends TLObjectType<"MessageActionPaymentSentMe", 0x8f31b327, 0x8680d126> {
   charge: PaymentCharge;
   payload: Uint8Array;
-  totalAmount: bigint;
+  totalAmount: string;
   currency: string;
   info?: PaymentRequestedInfo;
   shippingOptionId?: string;
@@ -1247,13 +1248,13 @@ export interface MessageActionPaymentSentMe
 
 export interface MessageActionPaymentSent
   extends TLObjectType<"MessageActionPaymentSent", 0x40699cd0, 0x8680d126> {
-  totalAmount: bigint;
+  totalAmount: string;
   currency: string;
 }
 
 export interface MessageActionPhoneCall
   extends TLObjectType<"MessageActionPhoneCall", 0x80e11a7f, 0x8680d126> {
-  callId: bigint;
+  callId: string;
   video?: boolean;
   reason?:
     | PhoneCallDiscardReasonMissed
@@ -1345,7 +1346,7 @@ export interface DialogFolder
 
 export interface PhotoEmpty
   extends TLObjectType<"PhotoEmpty", 0x2331b22d, 0xd576ab1c> {
-  id: bigint;
+  id: string;
 }
 
 export interface Photo extends TLObjectType<"Photo", 0xd07504a5, 0xd576ab1c> {
@@ -1353,8 +1354,8 @@ export interface Photo extends TLObjectType<"Photo", 0xd07504a5, 0xd576ab1c> {
   sizes: (PhotoSizeEmpty | PhotoSize | PhotoCachedSize | PhotoStrippedSize)[];
   date: number;
   fileReference: Uint8Array;
-  accessHash: bigint;
-  id: bigint;
+  accessHash: string;
+  id: string;
   hasStickers?: boolean;
 }
 
@@ -1392,7 +1393,7 @@ export interface GeoPointEmpty
 
 export interface GeoPoint
   extends TLObjectType<"GeoPoint", 0x0296f104, 0xd610e16d> {
-  accessHash: bigint;
+  accessHash: string;
   lat: number;
   long: number;
 }
@@ -1490,8 +1491,8 @@ export interface WallPaper
     | account_UploadThemeRequest
     | messages_GetDocumentByHashRequest;
   slug: string;
-  accessHash: bigint;
-  id: bigint;
+  accessHash: string;
+  id: string;
   creator?: boolean;
   default?: boolean;
   pattern?: boolean;
@@ -1561,7 +1562,7 @@ export interface Contact
 
 export interface ImportedContact
   extends TLObjectType<"ImportedContact", 0xd0028438, 0xb545bbda> {
-  clientId: bigint;
+  clientId: string;
   userId: number;
 }
 
@@ -1612,7 +1613,7 @@ export interface contacts_ImportedContacts
     | account_UpdateUsernameRequest
     | account_ChangePhoneRequest
   )[];
-  retryContacts: bigint[];
+  retryContacts: (string)[];
   popularInvites: PopularContact[];
   imported: ImportedContact[];
 }
@@ -1841,7 +1842,7 @@ export interface UpdateNewMessage
 export interface UpdateMessageID
   extends TLObjectType<"UpdateMessageID", 0x4e90bfd6, 0x9f89304e> {
   id: number;
-  randomId?: bigint;
+  randomId?: string;
 }
 
 export interface UpdateDeleteMessages
@@ -2162,7 +2163,7 @@ export interface UpdateNewStickerSet
 
 export interface UpdateStickerSetsOrder
   extends TLObjectType<"UpdateStickerSetsOrder", 0x0bb2d201, 0x9f89304e> {
-  order: bigint[];
+  order: (string)[];
   masks?: boolean;
 }
 
@@ -2177,7 +2178,7 @@ export interface UpdateBotInlineQuery
   offset: string;
   query: string;
   userId: number;
-  queryId: bigint;
+  queryId: string;
   geo?: GeoPointEmpty | GeoPoint;
 }
 
@@ -2205,11 +2206,11 @@ export interface UpdateChannelPinnedMessage
 
 export interface UpdateBotCallbackQuery
   extends TLObjectType<"UpdateBotCallbackQuery", 0xe73547e1, 0x9f89304e> {
-  chatInstance: bigint;
+  chatInstance: string;
   msgId: number;
   peer: PeerUser | PeerChat | PeerChannel;
   userId: number;
-  queryId: bigint;
+  queryId: string;
   data?: Uint8Array;
   gameShortName?: string;
 }
@@ -2223,10 +2224,10 @@ export interface UpdateEditMessage
 
 export interface UpdateInlineBotCallbackQuery
   extends TLObjectType<"UpdateInlineBotCallbackQuery", 0xf9d27a5a, 0x9f89304e> {
-  chatInstance: bigint;
+  chatInstance: string;
   msgId: InputBotInlineMessageID;
   userId: number;
-  queryId: bigint;
+  queryId: string;
   data?: Uint8Array;
   gameShortName?: string;
 }
@@ -2290,7 +2291,7 @@ export interface UpdateBotWebhookJSONQuery
   extends TLObjectType<"UpdateBotWebhookJSONQuery", 0x9b9240a6, 0x9f89304e> {
   timeout: number;
   data: DataJSON | bots_SendCustomRequestRequest | phone_GetCallConfigRequest;
-  queryId: bigint;
+  queryId: string;
 }
 
 export interface UpdateBotShippingQuery
@@ -2298,16 +2299,16 @@ export interface UpdateBotShippingQuery
   shippingAddress: PostAddress;
   payload: Uint8Array;
   userId: number;
-  queryId: bigint;
+  queryId: string;
 }
 
 export interface UpdateBotPrecheckoutQuery
   extends TLObjectType<"UpdateBotPrecheckoutQuery", 0x5d2f3aa9, 0x9f89304e> {
-  totalAmount: bigint;
+  totalAmount: string;
   currency: string;
   payload: Uint8Array;
   userId: number;
-  queryId: bigint;
+  queryId: string;
   info?: PaymentRequestedInfo;
   shippingOptionId?: string;
 }
@@ -2384,7 +2385,7 @@ export interface UpdateChatPinnedMessage
 export interface UpdateMessagePoll
   extends TLObjectType<"UpdateMessagePoll", 0xaca1657b, 0x9f89304e> {
   results: PollResults;
-  pollId: bigint;
+  pollId: string;
   poll?: Poll;
 }
 
@@ -3216,7 +3217,7 @@ export interface EncryptedChatWaiting
   participantId: number;
   adminId: number;
   date: number;
-  accessHash: bigint;
+  accessHash: string;
   id: number;
 }
 
@@ -3226,18 +3227,18 @@ export interface EncryptedChatRequested
   participantId: number;
   adminId: number;
   date: number;
-  accessHash: bigint;
+  accessHash: string;
   id: number;
 }
 
 export interface EncryptedChat
   extends TLObjectType<"EncryptedChat", 0xfa56ce36, 0x6d28a37a> {
-  keyFingerprint: bigint;
+  keyFingerprint: string;
   gAOrB: Uint8Array;
   participantId: number;
   adminId: number;
   date: number;
-  accessHash: bigint;
+  accessHash: string;
   id: number;
 }
 
@@ -3248,7 +3249,7 @@ export interface EncryptedChatDiscarded
 
 export interface InputEncryptedChat
   extends TLObjectType<"InputEncryptedChat", 0xf141b5e1, 0x6c7606c0> {
-  accessHash: bigint;
+  accessHash: string;
   chatId: number;
 }
 
@@ -3260,8 +3261,8 @@ export interface EncryptedFile
   keyFingerprint: number;
   dcId: number;
   size: number;
-  accessHash: bigint;
-  id: bigint;
+  accessHash: string;
+  id: string;
 }
 
 export interface InputEncryptedFileEmpty
@@ -3272,13 +3273,13 @@ export interface InputEncryptedFileUploaded
   keyFingerprint: number;
   md5Checksum: string;
   parts: number;
-  id: bigint;
+  id: string;
 }
 
 export interface InputEncryptedFile
   extends TLObjectType<"InputEncryptedFile", 0x5a17b5e5, 0x8574c27a> {
-  accessHash: bigint;
-  id: bigint;
+  accessHash: string;
+  id: string;
 }
 
 export interface InputEncryptedFileBigUploaded
@@ -3289,7 +3290,7 @@ export interface InputEncryptedFileBigUploaded
   > {
   keyFingerprint: number;
   parts: number;
-  id: bigint;
+  id: string;
 }
 
 export interface EncryptedMessage
@@ -3301,7 +3302,7 @@ export interface EncryptedMessage
   bytes: Uint8Array;
   date: number;
   chatId: number;
-  randomId?: bigint;
+  randomId?: string;
 }
 
 export interface EncryptedMessageService
@@ -3309,7 +3310,7 @@ export interface EncryptedMessageService
   bytes: Uint8Array;
   date: number;
   chatId: number;
-  randomId?: bigint;
+  randomId?: string;
 }
 
 export interface messages_DhConfigNotModified
@@ -3349,13 +3350,13 @@ export interface InputDocumentEmpty
 export interface InputDocument
   extends TLObjectType<"InputDocument", 0x1abfb575, 0xf33fdb68> {
   fileReference: Uint8Array;
-  accessHash: bigint;
-  id: bigint;
+  accessHash: string;
+  id: string;
 }
 
 export interface DocumentEmpty
   extends TLObjectType<"DocumentEmpty", 0x36f8c871, 0x211fe820> {
-  id: bigint;
+  id: string;
 }
 
 export interface Document
@@ -3374,8 +3375,8 @@ export interface Document
   mimeType: string;
   date: number;
   fileReference: Uint8Array;
-  accessHash: bigint;
-  id: bigint;
+  accessHash: string;
+  id: string;
   thumbs?: (PhotoSizeEmpty | PhotoSize | PhotoCachedSize | PhotoStrippedSize)[];
 }
 
@@ -3741,7 +3742,7 @@ export interface messages_Stickers
 
 export interface StickerPack
   extends TLObjectType<"StickerPack", 0x12b299d4, 0x9fefa4d4> {
-  documents: bigint[];
+  documents: (string)[];
   emoticon: string;
 }
 
@@ -3766,13 +3767,13 @@ export interface messages_AffectedMessages
 
 export interface WebPageEmpty
   extends TLObjectType<"WebPageEmpty", 0xeb1477e8, 0x55a97481> {
-  id: bigint;
+  id: string;
 }
 
 export interface WebPagePending
   extends TLObjectType<"WebPagePending", 0xc586da1c, 0x55a97481> {
   date: number;
-  id: bigint;
+  id: string;
 }
 
 export interface WebPage
@@ -3780,7 +3781,7 @@ export interface WebPage
   hash: number;
   displayUrl: string;
   url: string;
-  id: bigint;
+  id: string;
   type?: string;
   siteName?: string;
   title?: string;
@@ -3822,7 +3823,7 @@ export interface Authorization
   systemVersion: string;
   platform: string;
   deviceModel: string;
-  hash: bigint;
+  hash: string;
   current?: boolean;
   officialApp?: boolean;
   passwordPending?: boolean;
@@ -3850,7 +3851,7 @@ export interface account_Password
     | PasswordKdfAlgoUnknown
     | PasswordKdfAlgoSHA256SHA256PBKDF2HMACSHA512iter100000SHA256ModPow;
   srp_B?: Uint8Array;
-  srpId?: bigint;
+  srpId?: string;
   hint?: string;
   emailUnconfirmedPattern?: string;
 }
@@ -3919,8 +3920,8 @@ export interface InputStickerSetEmpty
 
 export interface InputStickerSetID
   extends TLObjectType<"InputStickerSetID", 0x9de7a269, 0x3da389aa> {
-  accessHash: bigint;
-  id: bigint;
+  accessHash: string;
+  id: string;
 }
 
 export interface InputStickerSetShortName
@@ -3941,8 +3942,8 @@ export interface StickerSet
   count: number;
   shortName: string;
   title: string;
-  accessHash: bigint;
-  id: bigint;
+  accessHash: string;
+  id: string;
   archived?: boolean;
   official?: boolean;
   masks?: boolean;
@@ -4203,7 +4204,7 @@ export interface InputChannelEmpty
 
 export interface InputChannel
   extends TLObjectType<"InputChannel", 0xafeb712e, 0x40f202fd> {
-  accessHash: bigint;
+  accessHash: string;
   channelId: number;
 }
 
@@ -4891,7 +4892,7 @@ export interface messages_BotResults
   )[];
   cacheTime: number;
   results: (BotInlineResult | BotInlineMediaResult)[];
-  queryId: bigint;
+  queryId: string;
   gallery?: boolean;
   nextOffset?: string;
   switchPm?: InlineBotSwitchPM;
@@ -4961,8 +4962,8 @@ export interface messages_MessageEditData
 
 export interface InputBotInlineMessageID
   extends TLObjectType<"InputBotInlineMessageID", 0x890c3d89, 0x2dcd6300> {
-  accessHash: bigint;
-  id: bigint;
+  accessHash: string;
+  id: string;
   dcId: number;
 }
 
@@ -5101,7 +5102,7 @@ export interface messages_FeaturedStickersNotModified
 
 export interface messages_FeaturedStickers
   extends TLObjectType<"messages_FeaturedStickers", 0xf89d88e5, 0x2614b722> {
-  unread: bigint[];
+  unread: (string)[];
   sets: (StickerSetCovered | StickerSetMultiCovered)[];
   hash: number;
 }
@@ -5192,8 +5193,8 @@ export interface Game extends TLObjectType<"Game", 0xbdf9653b, 0x83199eb2> {
   description: string;
   title: string;
   shortName: string;
-  accessHash: bigint;
-  id: bigint;
+  accessHash: string;
+  id: string;
   document?:
     | DocumentEmpty
     | Document
@@ -5203,8 +5204,8 @@ export interface Game extends TLObjectType<"Game", 0xbdf9653b, 0x83199eb2> {
 
 export interface InputGameID
   extends TLObjectType<"InputGameID", 0x032c3e77, 0x48d15883> {
-  accessHash: bigint;
-  id: bigint;
+  accessHash: string;
+  id: string;
 }
 
 export interface InputGameShortName
@@ -5347,7 +5348,7 @@ export interface TextFixed
 
 export interface TextUrl
   extends TLObjectType<"TextUrl", 0x3c2884c1, 0xf1d0b479> {
-  webpageId: bigint;
+  webpageId: string;
   url: string;
   text:
     | TextEmpty
@@ -5501,7 +5502,7 @@ export interface TextImage
   extends TLObjectType<"TextImage", 0x081ccf4f, 0xf1d0b479> {
   h: number;
   w: number;
-  documentId: bigint;
+  documentId: string;
 }
 
 export interface TextAnchor
@@ -5791,15 +5792,15 @@ export interface PageBlockPullquote
 export interface PageBlockPhoto
   extends TLObjectType<"PageBlockPhoto", 0x1759c560, 0x1aca5644> {
   caption: PageCaption;
-  photoId: bigint;
+  photoId: string;
   url?: string;
-  webpageId?: bigint;
+  webpageId?: string;
 }
 
 export interface PageBlockVideo
   extends TLObjectType<"PageBlockVideo", 0x7c8fe7b6, 0x1aca5644> {
   caption: PageCaption;
-  videoId: bigint;
+  videoId: string;
   autoplay?: boolean;
   loop?: boolean;
 }
@@ -5845,7 +5846,7 @@ export interface PageBlockEmbed
   allowScrolling?: boolean;
   url?: string;
   html?: string;
-  posterPhotoId?: bigint;
+  posterPhotoId?: string;
   w?: number;
   h?: number;
 }
@@ -5886,8 +5887,8 @@ export interface PageBlockEmbedPost
   )[];
   date: number;
   author: string;
-  authorPhotoId: bigint;
-  webpageId: bigint;
+  authorPhotoId: string;
+  webpageId: string;
   url: string;
 }
 
@@ -5971,7 +5972,7 @@ export interface PageBlockChannel
 export interface PageBlockAudio
   extends TLObjectType<"PageBlockAudio", 0x804361ea, 0x1aca5644> {
   caption: PageCaption;
-  audioId: bigint;
+  audioId: string;
 }
 
 export interface PageBlockKicker
@@ -6139,7 +6140,7 @@ export interface DataJSON
 
 export interface LabeledPrice
   extends TLObjectType<"LabeledPrice", 0xcb296bf8, 0x1c84047a> {
-  amount: bigint;
+  amount: string;
   label: string;
 }
 
@@ -6200,7 +6201,7 @@ export interface WebDocument
   )[];
   mimeType: string;
   size: number;
-  accessHash: bigint;
+  accessHash: string;
   url: string;
 }
 
@@ -6238,7 +6239,7 @@ export interface InputWebDocument
 
 export interface InputWebFileLocation
   extends TLObjectType<"InputWebFileLocation", 0xc239d686, 0xf72ed8d9> {
-  accessHash: bigint;
+  accessHash: string;
   url: string;
 }
 
@@ -6248,7 +6249,7 @@ export interface InputWebFileGeoPointLocation
   zoom: number;
   h: number;
   w: number;
-  accessHash: bigint;
+  accessHash: string;
   geoPoint: InputGeoPointEmpty | InputGeoPoint;
 }
 
@@ -6382,7 +6383,7 @@ export interface payments_PaymentReceipt
     | account_ChangePhoneRequest
   )[];
   credentialsTitle: string;
-  totalAmount: bigint;
+  totalAmount: string;
   currency: string;
   providerId: number;
   invoice: Invoice;
@@ -6457,13 +6458,13 @@ export interface InputStickerSetItem
 
 export interface InputPhoneCall
   extends TLObjectType<"InputPhoneCall", 0x1e36fded, 0xbcaaf240> {
-  accessHash: bigint;
-  id: bigint;
+  accessHash: string;
+  id: string;
 }
 
 export interface PhoneCallEmpty
   extends TLObjectType<"PhoneCallEmpty", 0x5366c915, 0xc47f1bd1> {
-  id: bigint;
+  id: string;
 }
 
 export interface PhoneCallWaiting
@@ -6472,8 +6473,8 @@ export interface PhoneCallWaiting
   participantId: number;
   adminId: number;
   date: number;
-  accessHash: bigint;
-  id: bigint;
+  accessHash: string;
+  id: string;
   video?: boolean;
   receiveDate?: number;
 }
@@ -6485,8 +6486,8 @@ export interface PhoneCallRequested
   participantId: number;
   adminId: number;
   date: number;
-  accessHash: bigint;
-  id: bigint;
+  accessHash: string;
+  id: string;
   video?: boolean;
 }
 
@@ -6497,8 +6498,8 @@ export interface PhoneCallAccepted
   participantId: number;
   adminId: number;
   date: number;
-  accessHash: bigint;
-  id: bigint;
+  accessHash: string;
+  id: string;
   video?: boolean;
 }
 
@@ -6507,19 +6508,19 @@ export interface PhoneCall
   startDate: number;
   connections: PhoneConnection[];
   protocol: PhoneCallProtocol;
-  keyFingerprint: bigint;
+  keyFingerprint: string;
   gAOrB: Uint8Array;
   participantId: number;
   adminId: number;
   date: number;
-  accessHash: bigint;
-  id: bigint;
+  accessHash: string;
+  id: string;
   p2pAllowed?: boolean;
 }
 
 export interface PhoneCallDiscarded
   extends TLObjectType<"PhoneCallDiscarded", 0x50ca4de1, 0xc47f1bd1> {
-  id: bigint;
+  id: string;
   needRating?: boolean;
   needDebug?: boolean;
   video?: boolean;
@@ -6537,7 +6538,7 @@ export interface PhoneConnection
   port: number;
   ipv6: string;
   ip: string;
-  id: bigint;
+  id: string;
 }
 
 export interface PhoneCallProtocol
@@ -6892,7 +6893,7 @@ export interface ChannelAdminLogEvent
     | ChannelAdminLogEventActionToggleSlowMode;
   userId: number;
   date: number;
-  id: bigint;
+  id: string;
 }
 
 export interface channels_AdminLogResults
@@ -6929,7 +6930,7 @@ export interface ChannelAdminLogEventsFilter
 export interface PopularContact
   extends TLObjectType<"PopularContact", 0x5ce14175, 0x409255a> {
   importers: number;
-  clientId: bigint;
+  clientId: string;
 }
 
 export interface messages_FavedStickersNotModified
@@ -7018,7 +7019,7 @@ export interface InputSingleMedia
     | InputMediaInvoice
     | InputMediaGeoLive
     | InputMediaPoll;
-  randomId?: bigint;
+  randomId?: string;
   entities?: (
     | MessageEntityUnknown
     | MessageEntityMention
@@ -7051,7 +7052,7 @@ export interface WebAuthorization
   browser: string;
   domain: string;
   botId: number;
-  hash: bigint;
+  hash: string;
 }
 
 export interface account_WebAuthorizations
@@ -7172,13 +7173,13 @@ export interface InputSecureFileUploaded
   fileHash: Uint8Array;
   md5Checksum: string;
   parts: number;
-  id: bigint;
+  id: string;
 }
 
 export interface InputSecureFile
   extends TLObjectType<"InputSecureFile", 0x5367e5be, 0xdac8adfc> {
-  accessHash: bigint;
-  id: bigint;
+  accessHash: string;
+  id: string;
 }
 
 export interface SecureFileEmpty
@@ -7191,8 +7192,8 @@ export interface SecureFile
   date: number;
   dcId: number;
   size: number;
-  accessHash: bigint;
-  id: bigint;
+  accessHash: string;
+  id: string;
 }
 
 export interface SecureData
@@ -7615,7 +7616,7 @@ export interface SavedPhoneContact
 
 export interface account_Takeout
   extends TLObjectType<"account_Takeout", 0x4dba4501, 0x843ebe85> {
-  id: bigint;
+  id: string;
 }
 
 export interface PasswordKdfAlgoUnknown
@@ -7656,7 +7657,7 @@ export interface SecurePasswordKdfAlgoSHA512
 
 export interface SecureSecretSettings
   extends TLObjectType<"SecureSecretSettings", 0x1527bcac, 0xc6c802fb> {
-  secureSecretId: bigint;
+  secureSecretId: string;
   secureSecret: Uint8Array;
   secureAlgo:
     | SecurePasswordKdfAlgoUnknown
@@ -7671,7 +7672,7 @@ export interface InputCheckPasswordSRP
   extends TLObjectType<"InputCheckPasswordSRP", 0xd27ff082, 0xd41af560> {
   M1: Uint8Array;
   A: Uint8Array;
-  srpId: bigint;
+  srpId: string;
 }
 
 export interface SecureRequiredType
@@ -7726,7 +7727,7 @@ export interface InputAppEvent
     | JsonArray
     | JsonObject
     | help_GetAppConfigRequest;
-  peer: bigint;
+  peer: string;
   type: string;
   time: number;
 }
@@ -7967,11 +7968,11 @@ export interface PageListOrderedItemBlocks
 
 export interface PageRelatedArticle
   extends TLObjectType<"PageRelatedArticle", 0xb390dc08, 0x36d05822> {
-  webpageId: bigint;
+  webpageId: string;
   url: string;
   title?: string;
   description?: string;
-  photoId?: bigint;
+  photoId?: string;
   author?: string;
   publishedDate?: number;
 }
@@ -8065,7 +8066,7 @@ export interface PollAnswer
 export interface Poll extends TLObjectType<"Poll", 0xd5529d06, 0x248e557b> {
   answers: PollAnswer[];
   question: string;
-  id: bigint;
+  id: string;
   closed?: boolean;
 }
 
@@ -8124,8 +8125,8 @@ export interface ChatBannedRights
 
 export interface InputWallPaper
   extends TLObjectType<"InputWallPaper", 0xe630b979, 0xee77201a> {
-  accessHash: bigint;
-  id: bigint;
+  accessHash: string;
+  id: string;
 }
 
 export interface InputWallPaperSlug
@@ -8216,7 +8217,7 @@ export interface EmojiLanguage
 export interface FileLocationToBeDeprecated
   extends TLObjectType<"FileLocationToBeDeprecated", 0xbc7fc6cd, 0x90f76823> {
   localId: number;
-  volumeId: bigint;
+  volumeId: string;
 }
 
 export interface Folder extends TLObjectType<"Folder", 0xff544e65, 0xeb0e0cfb> {
@@ -8315,8 +8316,8 @@ export interface RestrictionReason
 
 export interface InputTheme
   extends TLObjectType<"InputTheme", 0x3c5693e9, 0x7a100f0> {
-  accessHash: bigint;
-  id: bigint;
+  accessHash: string;
+  id: string;
 }
 
 export interface InputThemeSlug
@@ -8331,8 +8332,8 @@ export interface Theme extends TLObjectType<"Theme", 0xf7d90ce0, 0x56b4c80c> {
   installsCount: number;
   title: string;
   slug: string;
-  accessHash: bigint;
-  id: bigint;
+  accessHash: string;
+  id: string;
   creator?: boolean;
   default?: boolean;
   document?:
@@ -8367,7 +8368,7 @@ export interface InvokeAfterMsgRequest
     | InvokeWithoutUpdatesRequest
     | InvokeWithMessagesRangeRequest
     | InvokeWithTakeoutRequest;
-  msgId: bigint;
+  msgId: string;
 }
 
 export interface InvokeAfterMsgsRequest
@@ -8380,7 +8381,7 @@ export interface InvokeAfterMsgsRequest
     | InvokeWithoutUpdatesRequest
     | InvokeWithMessagesRangeRequest
     | InvokeWithTakeoutRequest;
-  msgIds: bigint[];
+  msgIds: (string)[];
 }
 
 export interface InitConnectionRequest
@@ -8455,7 +8456,7 @@ export interface InvokeWithTakeoutRequest
     | InvokeWithoutUpdatesRequest
     | InvokeWithMessagesRangeRequest
     | InvokeWithTakeoutRequest;
-  takeoutId: bigint;
+  takeoutId: string;
 }
 
 export interface auth_SendCodeRequest
@@ -8514,8 +8515,8 @@ export interface auth_BindTempAuthKeyRequest
   extends TLObjectType<"auth_BindTempAuthKeyRequest", 0xcdd42a05, 0xf5b399ac> {
   encryptedMessage: Uint8Array;
   expiresAt: number;
-  nonce: bigint;
-  permAuthKeyId: bigint;
+  nonce: string;
+  permAuthKeyId: string;
 }
 
 export interface auth_ImportBotAuthorizationRequest
@@ -8561,7 +8562,7 @@ export interface auth_CancelCodeRequest
 
 export interface auth_DropTempAuthKeysRequest
   extends TLObjectType<"auth_DropTempAuthKeysRequest", 0x8e48a188, 0xf5b399ac> {
-  exceptAuthKeys: bigint[];
+  exceptAuthKeys: (string)[];
 }
 
 export interface account_RegisterDeviceRequest
@@ -8766,7 +8767,7 @@ export interface account_ResetAuthorizationRequest
     0xdf77f3bc,
     0xf5b399ac
   > {
-  hash: bigint;
+  hash: string;
 }
 
 export interface account_GetPasswordRequest
@@ -8830,7 +8831,7 @@ export interface account_ResetWebAuthorizationRequest
     0x2d01b9ef,
     0xf5b399ac
   > {
-  hash: bigint;
+  hash: string;
 }
 
 export interface account_ResetWebAuthorizationsRequest
@@ -8876,7 +8877,7 @@ export interface account_SaveSecureValueRequest
     0x899fe31d,
     0x51138ae
   > {
-  secureSecretId: bigint;
+  secureSecretId: string;
   value: InputSecureValue;
 }
 
@@ -9133,7 +9134,7 @@ export interface account_InstallThemeRequest
 
 export interface account_GetThemeRequest
   extends TLObjectType<"account_GetThemeRequest", 0x8d9d742b, 0x56b4c80c> {
-  documentId: bigint;
+  documentId: string;
   theme: InputTheme | InputThemeSlug;
   format: string;
 }
@@ -9501,7 +9502,7 @@ export interface messages_SendMessageRequest
   background?: boolean;
   clearDraft?: boolean;
   replyToMsgId?: number;
-  randomId?: bigint;
+  randomId?: string;
   replyMarkup?:
     | ReplyKeyboardHide
     | ReplyKeyboardForceReply
@@ -9561,7 +9562,7 @@ export interface messages_SendMediaRequest
   background?: boolean;
   clearDraft?: boolean;
   replyToMsgId?: number;
-  randomId?: bigint;
+  randomId?: string;
   replyMarkup?:
     | ReplyKeyboardHide
     | ReplyKeyboardForceReply
@@ -9617,7 +9618,7 @@ export interface messages_ForwardMessagesRequest
   background?: boolean;
   withMyScore?: boolean;
   grouped?: boolean;
-  randomId?: bigint[];
+  randomId?: (string)[];
   scheduleDate?: number;
 }
 
@@ -9746,7 +9747,7 @@ export interface messages_AcceptEncryptionRequest
     0x3dbc0415,
     0x6d28a37a
   > {
-  keyFingerprint: bigint;
+  keyFingerprint: string;
   gB: Uint8Array;
   peer: InputEncryptedChat;
 }
@@ -9788,7 +9789,7 @@ export interface messages_SendEncryptedRequest
   > {
   data: Uint8Array;
   peer: InputEncryptedChat;
-  randomId?: bigint;
+  randomId?: string;
 }
 
 export interface messages_SendEncryptedFileRequest
@@ -9804,7 +9805,7 @@ export interface messages_SendEncryptedFileRequest
     | InputEncryptedFileBigUploaded;
   data: Uint8Array;
   peer: InputEncryptedChat;
-  randomId?: bigint;
+  randomId?: string;
 }
 
 export interface messages_SendEncryptedServiceRequest
@@ -9815,7 +9816,7 @@ export interface messages_SendEncryptedServiceRequest
   > {
   data: Uint8Array;
   peer: InputEncryptedChat;
-  randomId?: bigint;
+  randomId?: string;
 }
 
 export interface messages_ReceivedQueueRequest
@@ -9975,7 +9976,7 @@ export interface messages_StartBotRequest
     | InputPeerUserFromMessage
     | InputPeerChannelFromMessage;
   bot: InputUserEmpty | InputUserSelf | InputUser | InputUserFromMessage;
-  randomId?: bigint;
+  randomId?: string;
 }
 
 export interface messages_GetMessagesViewsRequest
@@ -10035,7 +10036,7 @@ export interface messages_ReorderStickerSetsRequest
     0x78337739,
     0xf5b399ac
   > {
-  order: bigint[];
+  order: (string)[];
   masks?: boolean;
 }
 
@@ -10100,7 +10101,7 @@ export interface messages_SetInlineBotResultsRequest
     | InputBotInlineResultDocument
     | InputBotInlineResultGame
   )[];
-  queryId: bigint;
+  queryId: string;
   gallery?: boolean;
   private?: boolean;
   nextOffset?: string;
@@ -10114,7 +10115,7 @@ export interface messages_SendInlineBotResultRequest
     0x8af52aac
   > {
   id: string;
-  queryId: bigint;
+  queryId: string;
   peer:
     | InputPeerEmpty
     | InputPeerSelf
@@ -10128,7 +10129,7 @@ export interface messages_SendInlineBotResultRequest
   clearDraft?: boolean;
   hideVia?: boolean;
   replyToMsgId?: number;
-  randomId?: bigint;
+  randomId?: string;
   scheduleDate?: number;
 }
 
@@ -10284,7 +10285,7 @@ export interface messages_SetBotCallbackAnswerRequest
     0xf5b399ac
   > {
   cacheTime: number;
-  queryId: bigint;
+  queryId: string;
   alert?: boolean;
   message?: string;
   url?: string;
@@ -10356,7 +10357,7 @@ export interface messages_ReadFeaturedStickersRequest
     0x5b118126,
     0xf5b399ac
   > {
-  id: bigint[];
+  id: (string)[];
 }
 
 export interface messages_GetRecentStickersRequest
@@ -10396,7 +10397,7 @@ export interface messages_GetArchivedStickersRequest
     0x7296d771
   > {
   limit: number;
-  offsetId: bigint;
+  offsetId: string;
   masks?: boolean;
 }
 
@@ -10534,7 +10535,7 @@ export interface messages_SetBotShippingResultsRequest
     0xe5f672fa,
     0xf5b399ac
   > {
-  queryId: bigint;
+  queryId: string;
   error?: string;
   shippingOptions?: ShippingOption[];
 }
@@ -10545,7 +10546,7 @@ export interface messages_SetBotPrecheckoutResultsRequest
     0x09c2dd95,
     0xf5b399ac
   > {
-  queryId: bigint;
+  queryId: string;
   success?: boolean;
   error?: string;
 }
@@ -10593,7 +10594,7 @@ export interface messages_SendScreenshotNotificationRequest
     | InputPeerChannel
     | InputPeerUserFromMessage
     | InputPeerChannelFromMessage;
-  randomId?: bigint;
+  randomId?: string;
 }
 
 export interface messages_GetFavedStickersRequest
@@ -11087,7 +11088,7 @@ export interface photos_DeletePhotosRequest
 export interface photos_GetUserPhotosRequest
   extends TLObjectType<"photos_GetUserPhotosRequest", 0x91cd32a8, 0x27cfb967> {
   limit: number;
-  maxId: bigint;
+  maxId: string;
   offset: number;
   userId: InputUserEmpty | InputUserSelf | InputUser | InputUserFromMessage;
 }
@@ -11096,7 +11097,7 @@ export interface upload_SaveFilePartRequest
   extends TLObjectType<"upload_SaveFilePartRequest", 0xb304a621, 0xf5b399ac> {
   bytes: Uint8Array;
   filePart: number;
-  fileId: bigint;
+  fileId: string;
 }
 
 export interface upload_GetFileRequest
@@ -11124,7 +11125,7 @@ export interface upload_SaveBigFilePartRequest
   bytes: Uint8Array;
   fileTotalParts: number;
   filePart: number;
-  fileId: bigint;
+  fileId: string;
 }
 
 export interface upload_GetWebFileRequest
@@ -11497,8 +11498,8 @@ export interface channels_EditBannedRequest
 export interface channels_GetAdminLogRequest
   extends TLObjectType<"channels_GetAdminLogRequest", 0x33ddf480, 0x51f076bc> {
   limit: number;
-  minId: bigint;
-  maxId: bigint;
+  minId: string;
+  maxId: string;
   q: string;
   channel: InputChannelEmpty | InputChannel | InputChannelFromMessage;
   eventsFilter?: ChannelAdminLogEventsFilter;
@@ -11617,7 +11618,7 @@ export interface bots_AnswerWebhookJSONQueryRequest
     0xf5b399ac
   > {
   data: DataJSON | bots_SendCustomRequestRequest | phone_GetCallConfigRequest;
-  queryId: bigint;
+  queryId: string;
 }
 
 export interface payments_GetPaymentFormRequest
@@ -11750,7 +11751,7 @@ export interface phone_AcceptCallRequest
 export interface phone_ConfirmCallRequest
   extends TLObjectType<"phone_ConfirmCallRequest", 0x2efe1722, 0xd48afe4f> {
   protocol: PhoneCallProtocol;
-  keyFingerprint: bigint;
+  keyFingerprint: string;
   gA: Uint8Array;
   peer: InputPhoneCall;
 }
@@ -11762,7 +11763,7 @@ export interface phone_ReceivedCallRequest
 
 export interface phone_DiscardCallRequest
   extends TLObjectType<"phone_DiscardCallRequest", 0xb2cbc1c0, 0x8af52aac> {
-  connectionId: bigint;
+  connectionId: string;
   reason:
     | PhoneCallDiscardReasonMissed
     | PhoneCallDiscardReasonDisconnect

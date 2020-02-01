@@ -1,10 +1,11 @@
-import { BinaryReader } from "../extensions/BinaryReader";
+import { BigInteger as JBigInt } from "big-integer";
 import { sha1 } from "../crypto";
+import { BinaryReader } from "../extensions/BinaryReader";
 
 export class AuthKey {
   private _key: Uint8Array = null;
-  public auxHash: bigint = null;
-  public keyId: bigint = null;
+  public auxHash: JBigInt = null;
+  public keyId: JBigInt = null;
 
   async setKey(value: Uint8Array) {
     this._key = value;

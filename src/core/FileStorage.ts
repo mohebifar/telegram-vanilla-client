@@ -1,10 +1,7 @@
+import { BigInteger as JBigInt } from "big-integer";
 import { inflate } from "pako";
 import { MD5 } from "spu-md5";
-import {
-  concatBuffers,
-  generateRandomLong,
-  readBufferFromHex
-} from "./binary";
+import { concatBuffers, generateRandomLong, readBufferFromHex } from "./binary";
 import { TelegramClient } from "./TelegramClient";
 import {
   Channel,
@@ -59,7 +56,7 @@ export class FileStorage {
   private downloadQueue: {
     [dcId: number]: Array<Promise<any> | undefined>;
   } = {};
-  private uploadedFiles = new Map<bigint, Blob | null>();
+  private uploadedFiles = new Map<string, Blob | null>();
 
   constructor(private client: TelegramClient) {
     this.setupCache();
@@ -67,10 +64,10 @@ export class FileStorage {
 
   public async upload(buffer: ArrayBuffer): Promise<InputFile> {
     const bytes = new Uint8Array(buffer);
-    let fileId: bigint;
+    let fileId: string;
     do {
-      fileId = generateRandomLong();
-    } while (this.uploadedFiles.has(fileId));
+      fileId = generateRandomLong().toString();
+    } while (this.uploadedFiles.has(fileId.toString()));
     this.uploadedFiles.set(fileId, null);
 
     const partSize = 16384;
@@ -103,8 +100,8 @@ export class FileStorage {
     };
   }
 
-  public getUploadedFile(uploadId: bigint) {
-    return this.uploadedFiles.get(uploadId);
+  public getUploadedFile(uploadId: JBigInt) {
+    return this.uploadedFiles.get(uploadId.toString());
   }
 
   public async download(
@@ -162,7 +159,17 @@ export class FileStorage {
         });
         bytesArray.push(file.bytes);
         offset += partSize;
-      } catch {
+      } catch (err) {
+        console.error(
+          err,
+          {
+            $t: "upload_GetFileRequest",
+            limit: partSize,
+            offset,
+            location
+          },
+          dcId
+        );
         if (++retries > MAX_RETRIES_PER_FILE) {
           console.debug(`Retried downloading ${retries} times.`);
           finish();
@@ -174,6 +181,7 @@ export class FileStorage {
     } while (
       (file && file.bytes.length !== 0) ||
       (fileSize && bytesArray.length * partSize < fileSize)
+      // || (!file && !fileSize)
     );
 
     finish();
@@ -416,10 +424,10 @@ export class FileStorage {
   private generateKey(location: upload_GetFileRequest["location"]) {
     switch (location.$t) {
       case "InputPeerPhotoFileLocation":
-        return `${location.localId},${location.volumeId}`;
+        return `${location.localId},${location.volumeId.toString()}`;
       case "InputPhotoFileLocation":
       case "InputDocumentFileLocation":
-        return `${location.constructorId}_${String(location.id)}`;
+        return `${location.constructorId}_${location.id.toString()}`;
       default:
         return location.$t;
     }

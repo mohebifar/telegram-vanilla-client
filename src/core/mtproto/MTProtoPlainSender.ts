@@ -29,11 +29,11 @@ export class MTProtoPlainSender {
     }
     const reader = new BinaryReader(body);
     const authKeyId = reader.readLong();
-    if (authKeyId !== BigInt(0)) {
+    if (!authKeyId.equals(0)) {
       throw new Error("Bad authKeyId");
     }
     msgId = reader.readLong();
-    if (msgId === BigInt(0)) {
+    if (msgId.equals(0)) {
       throw new Error("Bad msgId");
     }
     const length = reader.readInt();

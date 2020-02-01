@@ -1,4 +1,5 @@
 import { Factorizator } from "../crypto/Factorizer";
+import jBigInt, { BigInteger as JBigInt } from "big-integer";
 import {
   readBigIntFromBuffer,
   modExp,
@@ -18,9 +19,9 @@ import { sha256 } from "../crypto";
 
 const SIZE_FOR_HASH = 256;
 
-function checkPrimeAndGoodCheck(prime: bigint, g: bigint) {
+function checkPrimeAndGoodCheck(prime: JBigInt, g: JBigInt) {
   const goodPrimeBitsCount = 2048;
-  if (prime < 0 || prime.toString(2).length !== goodPrimeBitsCount) {
+  if (prime.lesser(0) || prime.toString(2).length !== goodPrimeBitsCount) {
     throw new Error(
       `bad prime count ${
         prime.toString(2).length
@@ -31,32 +32,32 @@ function checkPrimeAndGoodCheck(prime: bigint, g: bigint) {
   if (Factorizator.factorize(prime)[0] !== 1) {
     throw new Error('give "prime" is not prime');
   }
-  if (g === BigInt(2)) {
-    if (prime % BigInt(8) !== BigInt(7)) {
+  if (g.equals(2)) {
+    if (!prime.mod(8).equals(7)) {
       throw new Error(`bad g mod8`);
     }
-  } else if (g === BigInt(3)) {
-    if (prime % BigInt(3) !== BigInt(2)) {
+  } else if (g.equals(3)) {
+    if (!prime.mod(3).equals(2)) {
       throw new Error(`bad g, mod3`);
     }
-  } else if (g === BigInt(4)) {
-  } else if (g === BigInt(5)) {
-    if (![BigInt(1), BigInt(4)].includes(prime % BigInt(5))) {
+  } else if (g.equals(4)) {
+  } else if (g.equals(5)) {
+    if (![1, 4].includes(prime.mod(5).toJSNumber())) {
       throw new Error(`bad g, mod8`);
     }
-  } else if (g === BigInt(6)) {
-    if (![BigInt(19), BigInt(23)].includes(prime % BigInt(24))) {
+  } else if (g.equals(6)) {
+    if (![19, 23].includes(prime.mod(24).toJSNumber())) {
       throw new Error(`bad g, mod8}`);
     }
-  } else if (g === BigInt(7)) {
-    if (![BigInt(3), BigInt(5), BigInt(6)].includes(prime % BigInt(7))) {
+  } else if (g.equals(7)) {
+    if (![jBigInt(3), jBigInt(5), jBigInt(6)].includes(prime.mod(7))) {
       throw new Error(`bad g, mod8`);
     }
   } else {
     throw new Error(`bad g`);
   }
-  const primeSub1Div2 = (prime - BigInt(1)) / BigInt(2);
-  if (Factorizator.factorize(primeSub1Div2)[0] !== 1) {
+  const primeSub1Div2 = prime.minus(1).divide(2);
+  if (!Factorizator.factorize(primeSub1Div2).p.equals(1)) {
     throw new Error("(prime - 1) // 2 is not prime");
   }
 }
@@ -325,29 +326,29 @@ function checkPrimeAndGood(primeBytes: Uint8Array, g: number) {
       return; // It's good
     }
   }
-  checkPrimeAndGoodCheck(readBigIntFromBuffer(primeBytes, false), BigInt(g));
+  checkPrimeAndGoodCheck(readBigIntFromBuffer(primeBytes, false), jBigInt(g));
 }
 
-function isGoodLarge(number: bigint, p: bigint) {
-  return number > BigInt(0) && p - number > BigInt(0);
+function isGoodLarge(number: JBigInt, p: JBigInt) {
+  return number.greater(0) && p.minus(number).greater(0);
 }
 
 function numBytesForHash(number: Uint8Array) {
   return concatBuffers([new Uint8Array(SIZE_FOR_HASH - number.length), number]);
 }
 
-function bigNumForHash(g: bigint) {
+function bigNumForHash(g: JBigInt) {
   return readBufferFromBigInt(g, SIZE_FOR_HASH, false);
 }
 
-function isGoodModExpFirst(modexp: bigint, prime: bigint) {
-  const diff = prime - modexp;
+function isGoodModExpFirst(modexp: JBigInt, prime: JBigInt) {
+  const diff = prime.minus(modexp);
 
   const minDiffBitsCount = 2048 - 64;
   const maxModExpSize = 256;
 
   return !(
-    diff < 0 ||
+    diff.lesser(0) ||
     diff.toString(2).length < minDiffBitsCount ||
     modexp.toString(2).length < minDiffBitsCount ||
     Math.floor((modexp.toString(2).length + 7) / 8) > maxModExpSize
@@ -369,7 +370,7 @@ async function pbkdf2sha512(
   salt: Uint8Array,
   iterations: number
 ) {
-  const key = await window.crypto.subtle.importKey(
+  const key = await crypto.subtle.importKey(
     "raw",
     password,
     {
@@ -379,7 +380,7 @@ async function pbkdf2sha512(
     ["deriveBits"]
   );
 
-  const buffer = await window.crypto.subtle.deriveBits(
+  const buffer = await crypto.subtle.deriveBits(
     {
       name: "PBKDF2",
       salt,
@@ -416,7 +417,7 @@ export async function computeDigest(
   }
 
   const value = modExp(
-    BigInt(algo.g),
+    jBigInt(algo.g),
     readBigIntFromBuffer(await computeHash(algo, password), false),
     readBigIntFromBuffer(algo.p, false)
   );
@@ -449,32 +450,32 @@ export async function computeCheck(
   }
   const x = readBigIntFromBuffer(pwHash, false);
   const pForHash = numBytesForHash(algo.p);
-  const gForHash = bigNumForHash(BigInt(g));
+  const gForHash = bigNumForHash(jBigInt(g));
   const bForHash = numBytesForHash(request.srp_B);
-  const gX = modExp(BigInt(g), x, p);
+  const gX = modExp(jBigInt(g), x, p);
   const k = readBigIntFromBuffer(
     await sha256(concatBuffers([pForHash, gForHash])),
     false
   );
-  const kgX = (k * gX) % p;
+  const kgX = k.multiply(gX).mod(p);
   const generateAndCheckRandom = async (): Promise<[
-    bigint,
+    JBigInt,
     Uint8Array,
-    bigint
+    JBigInt
   ]> => {
     const randomSize = 256;
 
     while (true) {
       const random = generateRandomBytes(randomSize);
       const a = readBigIntFromBuffer(random, false);
-      const A = modExp(BigInt(g), a, p);
+      const A = modExp(jBigInt(g), a, p);
       if (isGoodModExpFirst(A, p)) {
         const aForHash = bigNumForHash(A);
         const u = readBigIntFromBuffer(
           await sha256(concatBuffers([aForHash, bForHash])),
           false
         );
-        if (u > BigInt(0)) {
+        if (u.greater(0)) {
           return [a, aForHash, u];
         }
       }
@@ -482,14 +483,14 @@ export async function computeCheck(
   };
 
   const [a, aForHash, u] = await generateAndCheckRandom();
-  const gB: bigint = mod(B - kgX, p) as any;
+  const gB: JBigInt = mod(B.minus(kgX), p) as any;
 
   if (!isGoodModExpFirst(gB, p)) {
     throw new Error("bad gB");
   }
 
-  const ux = u * x;
-  const aUx = a + ux;
+  const ux = u.multiply(x);
+  const aUx = a.add(ux);
   const S = modExp(gB, aUx, p);
   const K = await sha256(bigNumForHash(S));
   const M1 = await sha256(
