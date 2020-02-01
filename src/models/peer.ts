@@ -105,7 +105,10 @@ export class Peer extends Model<"peers"> implements ExtraMethods {
       messages.push(messageObject);
     }
 
-    await Message.bulkFetch(extraMessagesToFetch);
+    await Message.bulkFetch(
+      extraMessagesToFetch,
+      this._proxy.$t === "Channel" ? this._proxy : undefined
+    );
 
     return messages;
   }

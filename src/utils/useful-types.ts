@@ -20,7 +20,8 @@ import {
   InputPeerEmpty,
   InputPeerUserFromMessage,
   InputPeerChat,
-  InputPeerChannelFromMessage
+  InputPeerChannelFromMessage,
+  messages_GetMessagesRequest
 } from "../core/tl/TLObjects";
 
 export type AllChatTypes =
@@ -53,3 +54,5 @@ export type InputPeerTypes =
   | InputPeerUserFromMessage
   | InputPeerChat
   | InputPeerChannelFromMessage;
+
+export type InputMessageIdTypes = messages_GetMessagesRequest["id"][0];

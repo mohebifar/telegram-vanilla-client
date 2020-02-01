@@ -1,14 +1,14 @@
 import dayjs from "dayjs";
 import {
+  messages_MessagesSlice,
   UpdateShortChatMessage,
-  UpdateShortMessage,
-  messages_MessagesSlice
+  UpdateShortMessage
 } from "../core/tl/TLObjects";
+import { extractIdFromPeer, getInputPeer } from "../core/tl/utils";
 import { TelegramDatabase } from "../utils/db";
-import { DialogMessageTypes } from "../utils/useful-types";
+import { DialogMessageTypes, InputMessageIdTypes } from "../utils/useful-types";
 import { Model, ModelDecorator, ModelKey, ModelWithProxy } from "./model";
-import { Peer, IPeer } from "./peer";
-import { extractIdFromPeer } from "../core/tl/utils";
+import { IPeer, Peer } from "./peer";
 
 interface ExtraMethods {
   date: dayjs.Dayjs;
@@ -91,14 +91,21 @@ export class Message extends Model<"messages"> {
     return Peer.get(extractIdFromPeer(this._proxy.toId));
   }
 
-  public static async bulkFetch(ids: number[]) {
+  public static async bulkFetch(
+    ids: (number | InputMessageIdTypes)[],
+    channel?: IPeer
+  ) {
+    const base = channel
+      ? { $t: "channels_GetMessagesRequest", channel: getInputPeer(channel) }
+      : {
+          $t: "messages_GetMessagesRequest"
+        };
     const messagesSlice = (await this.tg.invoke({
-      $t: "messages_GetMessagesRequest",
-      id: ids.map(id => ({
-        $t: "InputMessageID",
-        id
-      }))
-    })) as messages_MessagesSlice;
+      ...base,
+      id: ids.map(id =>
+        typeof id === "number" ? { $t: "InputMessageID", id } : id
+      )
+    } as any)) as messages_MessagesSlice;
 
     for (const user of messagesSlice.users) {
       Peer.fromObject(user).save();
