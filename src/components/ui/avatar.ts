@@ -6,15 +6,18 @@ import { IPeer } from "../../models/peer";
 
 interface Options {
   peer: IPeer;
+  size?: "md" | "sm" | "xs";
 }
 
 export default class Avatar implements Component<Options> {
   public element: HTMLElement;
   private avatar: Element;
   private peer: Options["peer"];
+  private size: Options["size"];
 
-  constructor({ peer }: Options) {
+  constructor({ peer, size }: Options) {
     this.peer = peer;
+    this.size = size;
 
     this.register();
   }
@@ -48,7 +51,9 @@ export default class Avatar implements Component<Options> {
   }
 
   private async register() {
-    this.element = createElement("div", { class: styles.avatar });
+    this.element = createElement("div", {
+      class: styles.avatar + (this.size ? " " + styles[this.size] : "")
+    });
 
     const { img, name } = await this.getInfo();
 
