@@ -93,13 +93,19 @@ export class Peer extends Model<"peers"> implements ExtraMethods {
       }
     }
 
+    const extraMessagesToFetch: number[] = [];
     const messages: IMessage[] = [];
 
     for (const message of history.messages) {
       const messageObject = Message.fromObject(message);
+      if (message.$t === "Message" && message.replyToMsgId) {
+        extraMessagesToFetch.push(message.replyToMsgId);
+      }
       messageObject.save();
       messages.push(messageObject);
     }
+
+    await Message.bulkFetch(extraMessagesToFetch);
 
     return messages;
   }

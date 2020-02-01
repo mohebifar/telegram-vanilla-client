@@ -381,11 +381,12 @@ export class FileStorage {
   }
 
   private downloadCachedPhotoSize(size: PhotoStrippedSize | PhotoCachedSize) {
-    const [, url] = this.generateBlobUrl(
+    const bytes =
       size.$t === "PhotoStrippedSize"
         ? strippedPhotoToJpg(size.bytes)
-        : size.bytes
-    );
+        : size.bytes;
+    const [, url] = this.generateBlobUrl(bytes);
+    console.log("stripped size", bytes);
 
     return url;
   }

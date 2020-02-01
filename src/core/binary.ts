@@ -69,8 +69,11 @@ export function unpack(
 }
 
 export function readBufferFromHex(hex: number | string) {
-  const number = typeof hex === "string" ? parseInt(hex, 16) : hex;
-  return pack(number, "i", false);
+  if (typeof hex === "string") {
+    return new Uint8Array(hex.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+  }
+
+  return pack(hex, "i", false);
 }
 
 export function pack(

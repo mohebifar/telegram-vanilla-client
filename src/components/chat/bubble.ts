@@ -1,6 +1,6 @@
 import { PhotoSize } from "../../core/tl/TLObjects";
 import { IMessage, Message } from "../../models/message";
-import { IPeer } from "../../models/peer";
+import { IPeer, Peer } from "../../models/peer";
 import { Component, createElement, Element } from "../../utils/dom";
 import { EMPTY_IMG } from "../../utils/images";
 import Icon, { Icons } from "../ui/icon";
@@ -46,7 +46,17 @@ export default class Bubble implements Component<Options> {
       createElement("span", { class: styles.time, dir: "auto" }, this.inner)
     );
 
-    this.element = createElement("div", {}, this.attachment, messageWrapper);
+    if (message.$t === "Message" && message.replyToMsgId) {
+      this.element = createElement(
+        "div",
+        {},
+        this.getReplyElement(message.replyToMsgId),
+        this.attachment,
+        messageWrapper
+      );
+    } else {
+      this.element = createElement("div", {}, this.attachment, messageWrapper);
+    }
 
     if (message.justSent) {
       const listener = ({ message }) => {
@@ -73,7 +83,7 @@ export default class Bubble implements Component<Options> {
     if (isSticker) {
       baseClassName = styles.sticker;
     } else if (attachmentType === "photo" && text === "") {
-      baseClassName += ' ' + styles.imageOnly;
+      baseClassName += " " + styles.imageOnly;
     }
     let bubbleClassName = isSticker ? styles.sticker : baseClassName;
 
@@ -187,6 +197,45 @@ export default class Bubble implements Component<Options> {
     }
 
     return [undefined, undefined];
+  }
+
+  private getReplyElement(replyMsgId: number) {
+    const title = createElement("div", { class: styles.replyContentTitle }, "");
+    const tile = createElement("div");
+    const text = createElement("div", { class: styles.replyContentText }, "");
+    Message.get(replyMsgId).then(message => {
+      if (message.$t === "Message") {
+        let content = message.message;
+        if (message.media && message.media.$t === "MessageMediaPhoto") {
+          if (content === "") {
+            content = "Photo";
+          }
+
+          this.peer.tg.fileStorage
+            .downloadMedia(message.media, 0)
+            .then(photo => {
+              tile.className = styles.replyTile;
+              tile.append(createElement("img", { src: photo }));
+            });
+        }
+
+        text.innerHTML = content;
+        Peer.get({ type: "User", id: message.fromId }).then(peer => {
+          title.innerHTML = peer.displayName;
+        });
+      }
+    });
+    return createElement(
+      "div",
+      { class: styles.reply },
+      createElement(
+        "div",
+        { class: styles.replyWrapper },
+        createElement("div", { class: styles.replyBorder }),
+        tile,
+        createElement("div", { class: styles.replyContent }, title, text)
+      )
+    );
   }
 
   private getInfo() {

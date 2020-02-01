@@ -1,7 +1,8 @@
 import dayjs from "dayjs";
 import {
   UpdateShortChatMessage,
-  UpdateShortMessage
+  UpdateShortMessage,
+  messages_MessagesSlice
 } from "../core/tl/TLObjects";
 import { TelegramDatabase } from "../utils/db";
 import { DialogMessageTypes } from "../utils/useful-types";
@@ -13,6 +14,7 @@ interface ExtraMethods {
   date: dayjs.Dayjs;
   justSent: boolean;
   getPeer(): Promise<IPeer | undefined>;
+  bulkFetch(ids: number[]): Promise<IMessage[]>;
 }
 
 export type IMessage = ModelWithProxy<"messages"> & ExtraMethods;
@@ -87,6 +89,33 @@ export class Message extends Model<"messages"> {
     }
 
     return Peer.get(extractIdFromPeer(this._proxy.toId));
+  }
+
+  public static async bulkFetch(ids: number[]) {
+    const messagesSlice = (await this.tg.invoke({
+      $t: "messages_GetMessagesRequest",
+      id: ids.map(id => ({
+        $t: "InputMessageID",
+        id
+      }))
+    })) as messages_MessagesSlice;
+
+    for (const user of messagesSlice.users) {
+      Peer.fromObject(user).save();
+    }
+
+    for (const chat of messagesSlice.chats) {
+      Peer.fromObject(chat).save();
+    }
+
+    const messages = [];
+    for (const message of messagesSlice.messages) {
+      const model = Message.fromObject(message);
+      model.save();
+      messages.push(model);
+    }
+
+    return messages;
   }
 
   get date() {
