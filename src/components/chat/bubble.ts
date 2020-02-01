@@ -136,8 +136,7 @@ export default class Bubble implements Component<Options> {
             if (media.document.mimeType === "application/x-tgsticker") {
               // Animated sticker
               const sticker = createElement(Lottie, {
-                class: styles.attachment,
-                config: { path: "" }
+                class: styles.attachment
               });
 
               this.message.tg.fileStorage.downloadMedia(media).then(url => {

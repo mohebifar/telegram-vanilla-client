@@ -1,11 +1,14 @@
-import { AnimationItem, AnimationConfigWithPath } from "lottie-web";
+import {
+  AnimationItem,
+  AnimationConfigWithPath
+} from "lottie-web/build/player/lottie_light";
 import { createElement, Component } from "../../utils/dom";
 
 type AnimationConfig = Omit<AnimationConfigWithPath, "container">;
 
 interface Options {
   [s: string]: any;
-  config: AnimationConfig;
+  config?: AnimationConfig;
   onReady?(animation: AnimationItem): void;
 }
 
@@ -22,39 +25,42 @@ export default class Lottie implements Component<Options> {
 
     this.onReady = onReady;
 
-    this.loadAnimation({
-      ...config,
-      container: this.element
-    });
+    if (config) {
+      this.loadAnimation({
+        ...config,
+        renderer: "svg",
+        container: this.element
+      });
+    }
   }
 
   private loadAnimation(config: AnimationConfigWithPath) {
-    import(/* webpackChunkName: "lottie" */ "lottie-web").then(
-      ({ default: lottie }) => {
-        this.animation = lottie.loadAnimation(config);
-        let options = {
-          root: document.body,
-          rootMargin: "0px",
-          threshold: 0
-        };
+    import(
+      /* webpackChunkName: "lottie" */ "lottie-web/build/player/lottie_light"
+    ).then(({ default: lottie }) => {
+      this.animation = lottie.loadAnimation(config);
+      let options = {
+        root: document.body,
+        rootMargin: "0px",
+        threshold: 0
+      };
 
-        let observer = new IntersectionObserver(entries => {
-          const entry = entries[0];
-          if (entry) {
-            if (entry.isIntersecting) {
-              this.animation.play();
-            } else {
-              this.animation.stop();
-            }
+      let observer = new IntersectionObserver(entries => {
+        const entry = entries[0];
+        if (entry) {
+          if (entry.isIntersecting) {
+            this.animation.play();
+          } else {
+            this.animation.stop();
           }
-        }, options);
-        observer.observe(this.element);
-
-        if (this.onReady) {
-          this.onReady(this.animation);
         }
+      }, options);
+      observer.observe(this.element);
+
+      if (this.onReady) {
+        this.onReady(this.animation);
       }
-    );
+    });
   }
 
   public updateConfig(config: AnimationConfig) {

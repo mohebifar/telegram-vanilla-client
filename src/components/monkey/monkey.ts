@@ -2,7 +2,7 @@ import { createElement, Element } from "../../utils/dom";
 import Lottie from "../ui/lottie";
 
 import "./monkey.scss";
-import { AnimationItem } from "lottie-web";
+import { AnimationItem } from "lottie-web/build/player/lottie_light";
 
 export type MonkeyId =
   | "idle"
