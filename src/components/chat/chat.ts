@@ -104,21 +104,29 @@ export default class Chat implements Component<Options> {
           return;
         }
 
-        const lastBubbleHolder = this.chatContainer.childNodes.item(
+        const lastBubbleWrapper = this.chatContainer.childNodes.item(
           this.chatContainer.childNodes.length - 1
+        ).childNodes;
+
+        const lastBubbleHolder = lastBubbleWrapper.item(
+          lastBubbleWrapper.length - 1
         ).childNodes;
 
         const lastBubble = lastBubbleHolder.item(
           lastBubbleHolder.length - 1
         ) as Element<Bubble>;
+
         const lastRenderedMessage = lastBubble.instance.message;
 
         if (message.date.isAfter(lastRenderedMessage.date)) {
           const wasAtBottom = this.isAtBottom();
+          console.log("wasAtBottom", wasAtBottom);
           await this.addMessage(message);
 
           if (wasAtBottom) {
-            this.scrollToEnd();
+            requestAnimationFrame(() => {
+              this.scrollToEnd();
+            });
           }
         }
       }
@@ -148,7 +156,7 @@ export default class Chat implements Component<Options> {
 
   private isAtBottom() {
     const obj = this.scrollView;
-    return obj.scrollTop === obj.scrollHeight - obj.offsetHeight;
+    return Math.abs(obj.scrollTop - (obj.scrollHeight - obj.offsetHeight)) < 50;
   }
 
   private scrollToEnd() {
@@ -164,6 +172,9 @@ export default class Chat implements Component<Options> {
   private async addMessage(message: IMessage, prepend = false) {
     let type: BubbleType;
     switch (message.$t) {
+      case "MessageService":
+        type = "service";
+        break;
       case "Message":
         type = message.out ? "out" : "in";
         break;
@@ -182,7 +193,7 @@ export default class Chat implements Component<Options> {
       this.peer.$t === "Chat" ||
       (this.peer.$t === "Channel" && !this.peer.broadcast);
 
-    if (isGroupChat && message.$t === "Message") {
+    if (isGroupChat && message.$t === "Message" && !message.out) {
       peer = await Peer.get({
         id: message.fromId,
         type: "User"
@@ -201,17 +212,14 @@ export default class Chat implements Component<Options> {
         lastBubbleType = "in";
       } else if (classList.contains(styles.out)) {
         lastBubbleType = "out";
-      } else {
-        lastBubbleType = "service";
       }
+      // We don't want to consolidate serivce messages
 
       if (isGroupChat && lastBubbleType === "in") {
         lastBubblePeer = (lastBubbleWrapper.childNodes
           .item(lastBubbleWrapper.childNodes.length - 1)
           .childNodes.item(0) as Element<Bubble>).instance.peer;
       }
-
-      console.log({ a: lastBubbleWrapper.childNodes, peer });
     }
 
     if (

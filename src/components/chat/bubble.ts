@@ -7,6 +7,7 @@ import Icon, { Icons } from "../ui/icon";
 import Lottie from "../ui/lottie";
 import { messageToHTML } from "./chat";
 import * as styles from "./chat.scss";
+import ServiceBubble from "./service-bubble";
 
 interface Options {
   message: IMessage;
@@ -28,6 +29,11 @@ export default class Bubble implements Component<Options> {
   constructor({ message, peer }: Options) {
     this.message = message;
     this.peer = peer;
+
+    if (message.$t === "MessageService") {
+      this.element = createElement(ServiceBubble, { message });
+      return;
+    }
 
     this.messageText = createElement("span", { dir: "auto" });
     this.inner = createElement("div", { class: styles.inner }, this.time);
@@ -63,7 +69,13 @@ export default class Bubble implements Component<Options> {
 
     const isAnimatedSticker = attachmentType == "animated-sticker";
     const isSticker = attachmentType === "sticker" || isAnimatedSticker;
-    let bubbleClassName = isSticker ? styles.sticker : styles.bubble;
+    let baseClassName = styles.bubble;
+    if (isSticker) {
+      baseClassName = styles.sticker;
+    } else if (attachmentType === "photo" && text === "") {
+      baseClassName += ' ' + styles.imageOnly;
+    }
+    let bubbleClassName = isSticker ? styles.sticker : baseClassName;
 
     if (isAnimatedSticker) {
       bubbleClassName += " " + styles.animated;

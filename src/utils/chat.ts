@@ -1,8 +1,14 @@
 import dayjs, { Dayjs } from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import { DocumentAttributeSticker, Message, User } from "../core/tl/TLObjects";
+import {
+  DocumentAttributeSticker,
+  Message,
+  User,
+  MessageService
+} from "../core/tl/TLObjects";
 import { DBPeer } from "./db";
 import { DialogMessageTypes } from "./useful-types";
+import { Peer } from "../models/peer";
 
 dayjs.extend(relativeTime);
 
@@ -66,11 +72,11 @@ export function getDialogDisplayName(entity: DBPeer) {
   }
 }
 
-export function getShortLastText(message: DialogMessageTypes) {
+export async function getShortLastText(message: DialogMessageTypes) {
   switch (message.$t) {
     case "Message":
       let text = message.out ? "You: " : "";
-      let mediaType;
+      let mediaType: string;
 
       if (message.media && message.media.$t !== "MessageMediaEmpty") {
         [text, mediaType] = getMessageMediaType(message.media);
@@ -82,11 +88,40 @@ export function getShortLastText(message: DialogMessageTypes) {
 
       return text + (mediaType || "");
     case "MessageService":
-      // TODO: Support service message
-      return "Service message";
+      return getServiceMessage(message);
     case "MessageEmpty":
       return "Empty chat";
   }
+}
+
+export async function getServiceMessage(message: MessageService) {
+  const id = message.fromId;
+  const peer = await Peer.get({
+    id,
+    type: "User"
+  });
+  switch (message.action.$t) {
+    case "MessageActionChatEditTitle":
+      return `${peer.displayName} renamed the group to ${message.action.title}`;
+    case "MessageActionChannelCreate":
+      return `${message.action.title}`;
+    case "MessageActionChatAddUser":
+      const users = await Promise.all(
+        message.action.users.map(id => Peer.get({ id, type: "User" }))
+      );
+      const names = users.map(({ displayName }) => displayName).join(", ");
+      return `${peer.displayName} invited ${names}`;
+    case "MessageActionChatCreate":
+      return `${peer.displayName} created the group "${message.action.title}"`;
+    case "MessageActionChatDeleteUser":
+      const deletedUser = await Peer.get({
+        id: message.action.userId,
+        type: "User"
+      });
+      return `${peer.displayName} removed "${deletedUser.displayName}"`;
+  }
+
+  return "Service Message";
 }
 
 function getMessageMediaType(media: Message["media"]): [string, string] {

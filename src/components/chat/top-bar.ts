@@ -53,7 +53,6 @@ export default class TopBar implements Component<Options> {
   }
 
   private getSubdueText() {
-    console.log("this.peer.full", this.peer.fields);
     if (this.peer.full && this.peer.full.$t === "ChannelFull") {
       return `${this.peer.full.participantsCount} members`;
     }

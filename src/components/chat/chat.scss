@@ -43,7 +43,7 @@ $time-size: 0.75rem;
   .service {
     justify-content: center;
 
-    .service-msg {
+    .serviceMsg {
       color: #fff;
       background-color: rgba(#000, 0.22);
       font-weight: 500;
@@ -52,45 +52,6 @@ $time-size: 0.75rem;
       font-size: 15px;
       border-radius: 12px;
       user-select: none;
-    }
-  }
-
-  .sticker {
-    position: relative;
-    margin: 1rem 0;
-    width: 180px !important;
-    &.animated {
-      height: 180px !important;
-    }
-
-    img,
-    svg {
-      width: 100%;
-    }
-
-    .message {
-      position: absolute;
-      right: 0;
-      bottom: 0;
-      height: fit-content;
-      padding: 0.2rem 0.5rem;
-      font-size: 0.7rem;
-      color: white;
-      background: #00000029;
-      border-radius: 0.9rem;
-    }
-
-    p {
-      margin: 0;
-    }
-
-    .inner {
-      display: flex;
-      flex-direction: row;
-    }
-
-    .sentIndicator {
-      @extend .ic-white;
     }
   }
 
@@ -159,17 +120,19 @@ $time-size: 0.75rem;
       padding: 9px;
     }
 
-    .time {
-      float: right;
-      display: block;
-      font-size: $time-size;
-      user-select: none;
-      height: 20px;
+    &:not(.imageOnly) {
+      .time {
+        float: right;
+        display: block;
+        font-size: $time-size;
+        user-select: none;
+        height: 20px;
 
-      .inner {
-        position: absolute;
-        bottom: 0;
-        right: 0;
+        .inner {
+          position: absolute;
+          bottom: 0;
+          right: 0;
+        }
       }
     }
   }
@@ -204,11 +167,13 @@ $time-size: 0.75rem;
         }
       }
       .bubble {
-        .time {
-          color: rgba($grey, 0.6);
-          width: 33px;
-          .inner {
-            padding: 6px 8px;
+        &:not(.imageOnly) {
+          .time {
+            color: rgba($grey, 0.6);
+            width: 33px;
+            .inner {
+              padding: 6px 8px;
+            }
           }
         }
         background-color: #ffffff;
@@ -242,16 +207,18 @@ $time-size: 0.75rem;
         background-color: #eeffde;
         border-radius: 12px 6px 6px 12px;
 
-        .time {
-          color: $green-dark;
-          min-width: 48px;
-          display: inline-block;
-          margin-left: 1em;
+        &:not(.imageOnly) {
+          .time {
+            color: $green-dark;
+            min-width: 48px;
+            display: inline-block;
+            margin-left: 1em;
 
-          .inner {
-            display: flex;
-            flex-direction: row;
-            padding: 6px 5px;
+            .inner {
+              display: flex;
+              flex-direction: row;
+              padding: 6px 5px;
+            }
           }
         }
       }
@@ -264,6 +231,62 @@ $time-size: 0.75rem;
       .bubble:first-child:last-child {
         border-radius: 12px 12px 0px 12px;
       }
+    }
+  }
+
+  .sticker {
+    margin: 1rem 0;
+    width: 180px !important;
+    &.animated {
+      height: 180px !important;
+    }
+
+    img,
+    svg {
+      width: 100%;
+    }
+  }
+
+  .sticker,
+  .imageOnly {
+    position: relative;
+
+    .message {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      height: fit-content;
+      font-size: 0.7rem;
+      background: #00000029;
+      border-radius: 0.9rem;
+      padding: 0;
+
+      .time {
+        float: none;
+
+        .inner {
+          position: relative;
+          color: white !important;
+          display: flex;
+          flex-direction: row;
+          padding: 0.2rem 0.5rem;
+        }
+      }
+    }
+
+    p {
+      margin: 0;
+    }
+
+    .sentIndicator {
+      @extend .ic-white;
+    }
+  }
+
+  .imageOnly {
+    .message {
+      right: 1em;
+      bottom: 1em;
     }
   }
 }

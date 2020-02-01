@@ -96,10 +96,6 @@ export class Peer extends Model<"peers"> implements ExtraMethods {
     const messages: IMessage[] = [];
 
     for (const message of history.messages) {
-      if (message.$t === "MessageService") {
-        continue;
-      }
-
       const messageObject = Message.fromObject(message);
       messageObject.save();
       messages.push(messageObject);

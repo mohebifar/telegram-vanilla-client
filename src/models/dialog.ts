@@ -89,12 +89,12 @@ export class Dialog extends Model<"dialogs"> {
     }
 
     for (const message of response.messages) {
-      if (message.$t === "Message" || message.$t === "MessageEmpty") {
+      // if (message.$t === "Message" || message.$t === "MessageEmpty") {
         Message.fromObject(message).save();
-      } else {
+      // } else {
         // TODO: handle MessageService
-        console.debug("Unsupported message", message);
-      }
+        // console.debug("Unsupported message", message);
+      // }
     }
 
     const dialogs = [];
