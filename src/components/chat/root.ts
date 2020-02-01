@@ -13,17 +13,19 @@ export default class Root implements Component<Options> {
   public readonly element: HTMLElement;
   public tgProxy: TelegramClientProxy;
   private chat: Element<Chat>;
+  private sideBar: Element<SideBar>;
 
   constructor({ tgProxy }: Options) {
     this.tgProxy = tgProxy;
 
     this.chat = createElement(Chat, {});
+    this.sideBar = createElement(SideBar, {
+      onChatSelect: this.onChatSelect
+    });
     this.element = createElement(
       "div",
       { class: styles.container },
-      createElement(SideBar, {
-        onChatSelect: this.onChatSelect
-      }),
+      this.sideBar,
       this.chat
     );
 
@@ -33,6 +35,7 @@ export default class Root implements Component<Options> {
   private async register() {}
 
   private onChatSelect = async (dialog: IDialog) => {
-    this.chat.instance.setChat(dialog);
+    this.chat.instance.setActiveDialog(dialog);
+    this.sideBar.instance.setActiveDialog(dialog);
   };
 }

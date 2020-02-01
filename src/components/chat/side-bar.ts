@@ -1,5 +1,6 @@
 import { createElement, Component, Element } from "../../utils/dom";
 import * as styles from "./side-bar.scss";
+import * as dialogItemStyles from "../ui/dialog-item.scss";
 import DialogItem from "../ui/dialog-item";
 import SearchInput from "../ui/search-input";
 import IconButton from "../ui/icon-button";
@@ -18,6 +19,7 @@ export default class SideBar implements Component<Options> {
   private readonly pinnedDialogsContainer: HTMLElement;
   private readonly scrollView: HTMLElement;
   private sortedDialogs: IDialog[] = [];
+  private activeDialog: IDialog;
 
   private search: Element<SearchInput>;
   private iconButton: Element<IconButton>;
@@ -57,6 +59,21 @@ export default class SideBar implements Component<Options> {
     );
 
     this.register();
+  }
+
+  public setActiveDialog(newDialog: IDialog) {
+    const oldElement = this.dialogsToElement.get(this.activeDialog);
+    if (oldElement) {
+      oldElement.classList.remove(dialogItemStyles.active);
+    }
+
+    this.activeDialog = newDialog;
+    const newElement = this.dialogsToElement.get(this.activeDialog);
+    if (newElement) {
+      newElement.classList.add(dialogItemStyles.active);
+    }
+
+    this.activeDialog = newDialog;
   }
 
   private async register() {
@@ -147,6 +164,6 @@ export default class SideBar implements Component<Options> {
     const referenceNode = this.dialogsToElement.get(referenceDialog);
     const node = this.dialogsToElement.get(updatedDialog);
     this.dialogsContainer.insertBefore(node, referenceNode);
-    console.log('move ', node, referenceNode)
+    console.log("Reposition dialog ", node, referenceNode);
   }
 }

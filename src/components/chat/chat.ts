@@ -207,12 +207,11 @@ export default class Chat implements Component<Options> {
     }
   };
 
-  public async setChat(dialog: IDialog) {
+  public async setActiveDialog(dialog: IDialog) {
     if (dialog === this.dialog) {
       return;
     }
 
-    console.log("dialog", dialog);
     this.dialog = dialog;
     // model.events.on("message", this.handleNewMessage);
     this.peer = await dialog.getPeer();
