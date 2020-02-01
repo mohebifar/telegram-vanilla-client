@@ -180,82 +180,94 @@ $time-size: 0.75rem;
 
   .in,
   .out {
-    flex-direction: column;
+    > :last-child {
+      flex-direction: column;
+      display: flex;
+      width: 100%;
+    }
   }
 
   .in {
-    align-items: flex-start;
+    > :last-child {
+      align-items: flex-start;
 
-    a {
-      color: $blue-dark;
-    }
-    .box:hover {
-      background-color: $light;
-    }
-    .quote {
-      border-left: 2px $blue-dark solid;
-      .name {
+      a {
         color: $blue-dark;
       }
-    }
-    .bubble {
-      .time {
-        color: rgba($grey, 0.6);
-        width: 33px;
-        .inner {
-          padding: 6px 8px;
+      .box:hover {
+        background-color: $light;
+      }
+      .quote {
+        border-left: 2px $blue-dark solid;
+        .name {
+          color: $blue-dark;
         }
       }
-      background-color: #ffffff;
-      border-radius: 6px 12px 12px 6px;
-    }
-    .bubble:first-child {
-      border-radius: 12px 12px 12px 6px;
-    }
-    .bubble:last-child {
-      border-radius: 6px 12px 12px 0px;
-    }
-    .bubble:first-child:last-child {
-      border-radius: 12px 12px 12px 0px;
+      .bubble {
+        .time {
+          color: rgba($grey, 0.6);
+          width: 33px;
+          .inner {
+            padding: 6px 8px;
+          }
+        }
+        background-color: #ffffff;
+        border-radius: 6px 12px 12px 6px;
+      }
+      .bubble:first-child {
+        border-radius: 12px 12px 12px 6px;
+      }
+      .bubble:last-child {
+        border-radius: 6px 12px 12px 0px;
+      }
+      .bubble:first-child:last-child {
+        border-radius: 12px 12px 12px 0px;
+      }
     }
   }
 
   .out {
-    align-items: flex-end;
-    .box:hover {
-      background-color: rgba($green, 0.12);
-    }
-    .quote {
-      border-left: 2px $green-dark solid;
-      .name {
-        color: $green-dark;
+    > :last-child {
+      align-items: flex-end;
+      .box:hover {
+        background-color: rgba($green, 0.12);
       }
-    }
-    .bubble {
-      background-color: #eeffde;
-      border-radius: 12px 6px 6px 12px;
-
-      .time {
-        color: $green-dark;
-        min-width: 48px;
-        display: inline-block;
-        margin-left: 1em;
-
-        .inner {
-          display: flex;
-          flex-direction: row;
-          padding: 6px 5px;
+      .quote {
+        border-left: 2px $green-dark solid;
+        .name {
+          color: $green-dark;
         }
       }
-    }
-    .bubble:first-child {
-      border-radius: 12px 12px 6px 12px;
-    }
-    .bubble:last-child {
-      border-radius: 12px 6px 0px 12px;
-    }
-    .bubble:first-child:last-child {
-      border-radius: 12px 12px 0px 12px;
+      .bubble {
+        background-color: #eeffde;
+        border-radius: 12px 6px 6px 12px;
+
+        .time {
+          color: $green-dark;
+          min-width: 48px;
+          display: inline-block;
+          margin-left: 1em;
+
+          .inner {
+            display: flex;
+            flex-direction: row;
+            padding: 6px 5px;
+          }
+        }
+      }
+      .bubble:first-child {
+        border-radius: 12px 12px 6px 12px;
+      }
+      .bubble:last-child {
+        border-radius: 12px 6px 0px 12px;
+      }
+      .bubble:first-child:last-child {
+        border-radius: 12px 12px 0px 12px;
+      }
     }
   }
+}
+
+.avatar {
+  align-self: flex-end;
 }

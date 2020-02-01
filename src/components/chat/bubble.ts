@@ -1,5 +1,6 @@
 import { PhotoSize } from "../../core/tl/TLObjects";
 import { IMessage, Message } from "../../models/message";
+import { IPeer } from "../../models/peer";
 import { Component, createElement, Element } from "../../utils/dom";
 import { EMPTY_IMG } from "../../utils/images";
 import Icon, { Icons } from "../ui/icon";
@@ -9,6 +10,7 @@ import * as styles from "./chat.scss";
 
 interface Options {
   message: IMessage;
+  peer: IPeer;
   isTransient?: boolean;
 }
 
@@ -21,9 +23,11 @@ export default class Bubble implements Component<Options> {
   private time: HTMLElement;
   private sentIndicator?: Element<Icon>;
   public message: IMessage;
+  public peer: IPeer;
 
-  constructor({ message }: Options) {
+  constructor({ message, peer }: Options) {
     this.message = message;
+    this.peer = peer;
 
     this.messageText = createElement("span", { dir: "auto" });
     this.inner = createElement("div", { class: styles.inner }, this.time);

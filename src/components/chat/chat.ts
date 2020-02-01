@@ -1,12 +1,13 @@
 import { extractIdFromPeer } from "../../core/tl/utils";
 import { IDialog } from "../../models/dialog";
 import { IMessage, Message } from "../../models/message";
-import { IPeer, SimplifiedMessageRequest } from "../../models/peer";
+import { IPeer, SimplifiedMessageRequest, Peer } from "../../models/peer";
 import { Component, createElement, Element } from "../../utils/dom";
 import Bubble from "./bubble";
 import * as styles from "./chat.scss";
 import SendMessageForm from "./send-message";
 import TopBar from "./top-bar";
+import Avatar from "../ui/avatar";
 
 interface Options {}
 
@@ -54,8 +55,10 @@ export default class Chat implements Component<Options> {
         this.chatContainer.childNodes.length > 0
       ) {
         this.paginating = true;
-        const firstBubble = this.chatContainer.childNodes
-          .item(0)
+        const bubbleWrapperChildNodes = this.chatContainer.childNodes.item(0)
+          .childNodes;
+        const firstBubble = bubbleWrapperChildNodes
+          .item(bubbleWrapperChildNodes.length - 1)
           .childNodes.item(0) as Element<Bubble>;
         const message = firstBubble.instance && firstBubble.instance.message;
         if (message) {
@@ -111,9 +114,10 @@ export default class Chat implements Component<Options> {
         const lastRenderedMessage = lastBubble.instance.message;
 
         if (message.date.isAfter(lastRenderedMessage.date)) {
-          this.addMessage(message);
+          const wasAtBottom = this.isAtBottom();
+          await this.addMessage(message);
 
-          if (this.isAtBottom()) {
+          if (wasAtBottom) {
             this.scrollToEnd();
           }
         }
@@ -126,13 +130,13 @@ export default class Chat implements Component<Options> {
     this.addMessages(messages);
   }
 
-  private addMessages(messages: IMessage[]) {
+  private async addMessages(messages: IMessage[]) {
     const shouldScroll = this.isAtBottom();
     const currentScroll = this.scrollView.scrollHeight;
 
-    messages.forEach(message => {
-      this.addMessage(message, true);
-    });
+    for (const message of messages) {
+      await this.addMessage(message, true);
+    }
 
     if (shouldScroll) {
       this.scrollToEnd();
@@ -157,7 +161,7 @@ export default class Chat implements Component<Options> {
     this.handleNewMessage(model);
   };
 
-  private addMessage(message: IMessage, prepend = false) {
+  private async addMessage(message: IMessage, prepend = false) {
     let type: BubbleType;
     switch (message.$t) {
       case "Message":
@@ -168,15 +172,31 @@ export default class Chat implements Component<Options> {
     }
 
     const children = this.chatContainer.childNodes;
-    let lastBubbleHolder = children.item(
+    let lastBubbleWrapper = children.item(
       prepend ? 0 : children.length - 1
     ) as HTMLElement;
+    let lastBubbleHolder: HTMLElement;
+
+    let peer: IPeer;
+    const isGroupChat =
+      this.peer.$t === "Chat" ||
+      (this.peer.$t === "Channel" && !this.peer.broadcast);
+
+    if (isGroupChat && message.$t === "Message") {
+      peer = await Peer.get({
+        id: message.fromId,
+        type: "User"
+      });
+    } else {
+      peer = this.peer;
+    }
 
     const insertFn = prepend ? "prepend" : "append";
 
     let lastBubbleType = null;
-    if (lastBubbleHolder) {
-      const { classList } = lastBubbleHolder;
+    let lastBubblePeer: IPeer;
+    if (lastBubbleWrapper) {
+      const { classList } = lastBubbleWrapper;
       if (classList.contains(styles.in)) {
         lastBubbleType = "in";
       } else if (classList.contains(styles.out)) {
@@ -184,15 +204,46 @@ export default class Chat implements Component<Options> {
       } else {
         lastBubbleType = "service";
       }
-    }
-    console.log("lastBubbleType", lastBubbleType, lastBubbleHolder);
 
-    if (!lastBubbleHolder || lastBubbleType !== type) {
-      lastBubbleHolder = createElement("div", { class: styles[type] });
-      this.chatContainer[insertFn](lastBubbleHolder);
+      if (isGroupChat && lastBubbleType === "in") {
+        lastBubblePeer = (lastBubbleWrapper.childNodes
+          .item(lastBubbleWrapper.childNodes.length - 1)
+          .childNodes.item(0) as Element<Bubble>).instance.peer;
+      }
+
+      console.log({ a: lastBubbleWrapper.childNodes, peer });
     }
 
-    const messageElement = createElement(Bubble, { message });
+    if (
+      !lastBubbleWrapper ||
+      lastBubbleType !== type ||
+      (isGroupChat && lastBubblePeer && lastBubblePeer.id !== peer.id)
+    ) {
+      lastBubbleWrapper = createElement("div", { class: styles[type] });
+      this.chatContainer[insertFn](lastBubbleWrapper);
+
+      lastBubbleHolder = createElement("div");
+      if (isGroupChat && message.$t === "Message" && !message.out) {
+        const avatar = createElement(Avatar, {
+          peer,
+          size: "sm",
+          class: styles.avatar
+        });
+
+        lastBubbleWrapper.append(avatar, lastBubbleHolder);
+      } else {
+        lastBubbleWrapper.append(lastBubbleHolder);
+      }
+    } else {
+      lastBubbleHolder = lastBubbleWrapper.childNodes.item(
+        lastBubbleWrapper.childNodes.length - 1
+      ) as HTMLElement;
+    }
+
+    const messageElement = createElement(Bubble, {
+      message,
+      peer
+    });
     lastBubbleHolder[insertFn](messageElement);
   }
 
