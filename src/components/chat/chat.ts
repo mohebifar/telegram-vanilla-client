@@ -59,25 +59,38 @@ export default class Chat implements Component<Options> {
   }
 
   public async setActiveDialog(dialog: IDialog, offsetMessage?: number) {
-    if (dialog === this.dialog) {
+    if (
+      (dialog === this.dialog && !offsetMessage) ||
+      typeof dialog === "undefined"
+    ) {
       return;
     }
 
     let unreadCount: number;
-    this.lockLoad = true;
-
-    this.dialog = dialog;
-    this.peer = await dialog.getPeer();
-
     if (!offsetMessage) {
       unreadCount = dialog.unreadCount;
     }
 
-    this.idToElementMap.clear();
-    this.chatContainer.innerHTML = "";
-    this.topBarContainer.innerHTML = "";
+    console.log(offsetMessage, "<---", this.dialog === dialog);
+    if (dialog === this.dialog && this.idToElementMap.has(offsetMessage)) {
+      this.idToElementMap.get(offsetMessage).scrollIntoView({
+        behavior: "smooth"
+      });
+    } else {
+      this.lockLoad = true;
+      this.peer = await dialog.getPeer();
+      if (dialog !== this.dialog) {
+        this.topBarContainer.innerHTML = "";
+        this.topBarContainer.append(
+          createElement(TopBar, { dialog, peer: this.peer })
+        );
+      }
 
-    if (dialog !== undefined) {
+      this.idToElementMap.clear();
+      this.chatContainer.innerHTML = "";
+
+      this.dialog = dialog;
+
       const whatToDoWithInvisibilityOfSendForm =
         this.peer.$t === "Channel" && this.peer.broadcast && !this.peer.creator
           ? "add"
@@ -86,14 +99,15 @@ export default class Chat implements Component<Options> {
       this.sendMessageForm.classList[whatToDoWithInvisibilityOfSendForm](
         "hidden"
       );
-      this.topBarContainer.append(
-        createElement(TopBar, { dialog, peer: this.peer })
-      );
 
       this.noMoreTop = this.noMoreBottom = false;
-      this.loadChat({ unreadCount });
+      this.loadChat(offsetMessage ? { offsetMessage } : { unreadCount });
     }
   }
+
+  handleReplyClick = (messageId: number) => {
+    this.setActiveDialog(this.dialog, messageId);
+  };
 
   private register() {
     this.scrollView.addEventListener("scroll", () => {
@@ -256,16 +270,16 @@ export default class Chat implements Component<Options> {
     }
 
     requestAnimationFrame(() => {
-      if (unreadCount < LIMIT - BACK_LIMIT) {
-        this.noMoreBottom = true;
-      }
-
       if (jumpToBackLimit) {
         const id =
           sortedMessages[
             Math.max(sortedMessages.length - jumpToBackLimit - 1, 0)
           ].id;
         this.idToElementMap.get(id).scrollIntoView();
+
+        if (unreadCount < LIMIT - BACK_LIMIT) {
+          this.noMoreBottom = true;
+        }
       } else if (messageToScrollTo) {
         this.idToElementMap.get(messageToScrollTo).scrollIntoView();
       } else if (prepend) {
@@ -381,6 +395,7 @@ export default class Chat implements Component<Options> {
     }
 
     const messageElement = createElement(Bubble, {
+      onReplyClick: this.handleReplyClick,
       message,
       peer
     });

@@ -13,6 +13,7 @@ import ServiceBubble from "./service-bubble";
 interface Options {
   message: IMessage;
   peer: IPeer;
+  onReplyClick(messageId?: number): void;
   isTransient?: boolean;
 }
 
@@ -24,12 +25,14 @@ export default class Bubble implements Component<Options> {
   private messageText: HTMLElement;
   private time: HTMLElement;
   private sentIndicator?: Element<Icon>;
+  private onReplyClick: Options["onReplyClick"];
   public message: IMessage;
   public peer: IPeer;
 
-  constructor({ message, peer }: Options) {
+  constructor({ message, peer, onReplyClick }: Options) {
     this.message = message;
     this.peer = peer;
+    this.onReplyClick = onReplyClick;
 
     if (message.$t === "MessageService") {
       this.element = createElement(ServiceBubble, { message });
@@ -47,7 +50,12 @@ export default class Bubble implements Component<Options> {
       createElement("span", { class: styles.time, dir: "auto" }, this.inner)
     );
 
-    this.element = createElement("div", {'data-id': message.id}, this.attachment, messageWrapper);
+    this.element = createElement(
+      "div",
+      { "data-id": message.id },
+      this.attachment,
+      messageWrapper
+    );
 
     if (message.$t === "Message" && message.replyToMsgId) {
       this.element.prepend(this.getReplyElement(message.replyToMsgId));
@@ -234,7 +242,7 @@ export default class Bubble implements Component<Options> {
         });
       }
     });
-    return createElement(
+    const element = createElement(
       "div",
       { class: styles.reply },
       createElement(
@@ -245,6 +253,11 @@ export default class Bubble implements Component<Options> {
         createElement("div", { class: styles.replyContent }, title, text)
       )
     );
+    element.addEventListener("click", () => {
+      this.onReplyClick(replyMsgId);
+    });
+
+    return element;
   }
 
   private getInfo() {
