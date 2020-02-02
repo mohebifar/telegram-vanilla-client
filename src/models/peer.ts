@@ -16,9 +16,18 @@ import { IMessage, Message } from "./message";
 import { Model, ModelDecorator, ModelKey, ModelWithProxy } from "./model";
 import { AllUpdateTypes } from "../utils/useful-types";
 
+interface FetchHistoryInput {
+  offsetId?: number;
+  offsetDate?: number;
+  addOffset?: number;
+  limit?: number;
+  minId?: number;
+  maxId?: number;
+}
+
 interface ExtraMethods {
   displayName: string;
-  fetchHistory(offsetId?: number, offsetDate?: number): Promise<IMessage[]>;
+  fetchHistory(options: FetchHistoryInput): Promise<IMessage[]>;
   sendMessage(message: SimplifiedMessageRequest): [IMessage, Promise<any>];
   getDialog(): Promise<IDialog | undefined>;
   loadFull(): Promise<void>;
@@ -72,19 +81,24 @@ export class Peer extends Model<"peers"> implements ExtraMethods {
     return getDialogDisplayName(this.fields);
   }
 
-  public async fetchHistory(offsetId = 0, offsetDate = 0) {
-    const limit = 20;
-
+  public async fetchHistory({
+    offsetId = 0,
+    offsetDate = 0,
+    addOffset = 0,
+    limit = 20,
+    minId = 0,
+    maxId = 0
+  }: FetchHistoryInput = {}) {
     const history = (await this.tg.invoke({
       $t: "messages_GetHistoryRequest",
       offsetId,
       offsetDate,
-      addOffset: 0,
+      addOffset,
       limit,
       peer: getInputPeer(this.fields),
       hash: 0,
-      maxId: 0,
-      minId: 0
+      maxId,
+      minId
     })) as messages_DialogsSlice;
 
     for (const user of history.users) {
@@ -105,10 +119,12 @@ export class Peer extends Model<"peers"> implements ExtraMethods {
       messages.push(messageObject);
     }
 
-    await Message.bulkFetch(
-      extraMessagesToFetch,
-      this._proxy.$t === "Channel" ? this._proxy : undefined
-    );
+    if (extraMessagesToFetch.length > 0) {
+      await Message.bulkFetch(
+        extraMessagesToFetch,
+        this._proxy.$t === "Channel" ? this._proxy : undefined
+      );
+    }
 
     return messages;
   }

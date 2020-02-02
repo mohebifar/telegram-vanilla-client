@@ -109,3 +109,20 @@ function createElementFromTag(
 
   return element;
 }
+
+export function getNthChild<T extends HTMLElement>(
+  element: T,
+  n: number | "first" | "last"
+) {
+  let num: number;
+  const childNodes = element.childNodes;
+  if (n === "first") {
+    num = 0;
+  } else if (n === "last") {
+    num = childNodes.length - 1;
+  } else {
+    num = n;
+  }
+
+  return childNodes.item(num) as HTMLElement;
+}
