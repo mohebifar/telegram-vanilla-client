@@ -6,7 +6,7 @@ import jBigInt, {
 } from "big-integer";
 
 export class Factorizator {
-  static findSmallMultiplierLopatin(pq: JBigInt) {
+  static findSmallMultiplier(pq: JBigInt) {
     if (pq.mod(2).equals(0)) {
       return jBigInt(2);
     }
@@ -68,32 +68,8 @@ export class Factorizator {
     return p.lesser(g) ? p : g;
   }
 
-  /**
-   * Calculates the greatest common divisor
-   */
-  static gcd(a: JBigInt, b: JBigInt) {
-    while (!a.equals(0) && !b.equals(0)) {
-      while (b.and(1).equals(0)) {
-        b = b.shiftRight(1);
-      }
-
-      while (a.and(1).equals(0)) {
-        a = a.shiftRight(1);
-      }
-      if (a.greater(b)) {
-        a = a.minus(b);
-      } else {
-        b = b.minus(a);
-      }
-    }
-    return b.equals(0) ? a : b;
-  }
-
-  /**
-   * Factorizes the given number and returns both the divisor and the number divided by the divisor
-   */
   static factorize(pq: JBigInt): { p: JBigInt; q: JBigInt } {
-    const divisor = this.findSmallMultiplierLopatin(pq);
+    const divisor = this.findSmallMultiplier(pq);
     return { p: divisor, q: pq.divide(divisor) };
   }
 }
