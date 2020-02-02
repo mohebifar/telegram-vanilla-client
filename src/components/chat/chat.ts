@@ -108,6 +108,14 @@ export default class Chat implements Component<Options> {
     this.setActiveDialog(this.dialog, messageId);
   };
 
+  private getFirstOrLastBubble(childPosToLookAt: "first" | "last") {
+    const bubbleWrapper = getNthChild(this.chatContainer, childPosToLookAt);
+    return getNthChild(
+      getNthChild(bubbleWrapper, "last"),
+      childPosToLookAt
+    ) as Element<Bubble>;
+  }
+
   private register() {
     this.scrollView.addEventListener("scroll", () => {
       if (this.lockLoad || this.chatContainer.childNodes.length === 0) {
@@ -115,15 +123,10 @@ export default class Chat implements Component<Options> {
       }
       const isAtTop = this.isAtTop();
       const isAtBottom = this.isAtBottom();
+      const lastBubble = this.getFirstOrLastBubble(isAtTop ? "first" : "last");
 
       if ((isAtTop && !this.noMoreTop) || (isAtBottom && !this.noMoreBottom)) {
-        const childPosToLookAt = isAtTop ? "first" : "last";
         this.lockLoad = true;
-        const bubbleWrapper = getNthChild(this.chatContainer, childPosToLookAt);
-        const lastBubble = getNthChild(
-          getNthChild(bubbleWrapper, "last"),
-          childPosToLookAt
-        ) as Element<Bubble>;
 
         const message = lastBubble.instance && lastBubble.instance.message;
         if (message) {
@@ -284,6 +287,19 @@ export default class Chat implements Component<Options> {
       } else if (prepend) {
         const endScroll = this.scrollView.scrollHeight;
         this.scrollView.scrollTop = endScroll - currentScroll;
+      }
+
+      let numberOfSeen = 0;
+      let recentMessage: IMessage;
+      (prepend ? messages.reverse() : messages).forEach(message => {
+        if (!(message as any).out && message.id > this.dialog.readInboxMaxId) {
+          numberOfSeen++;
+          recentMessage = message;
+        }
+      });
+
+      if (recentMessage) {
+        recentMessage.markAsRead(numberOfSeen);
       }
 
       requestAnimationFrame(() => {

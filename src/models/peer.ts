@@ -31,6 +31,7 @@ interface ExtraMethods {
   sendMessage(message: SimplifiedMessageRequest): [IMessage, Promise<any>];
   getDialog(): Promise<IDialog | undefined>;
   loadFull(): Promise<void>;
+  isChannel(): boolean;
 }
 
 export type IPeer = ModelWithProxy<"peers"> & ExtraMethods;
@@ -122,7 +123,7 @@ export class Peer extends Model<"peers"> implements ExtraMethods {
     if (extraMessagesToFetch.length > 0) {
       await Message.bulkFetch(
         extraMessagesToFetch,
-        this._proxy.$t === "Channel" ? this._proxy : undefined
+        this.isChannel() ? this._proxy : undefined
       );
     }
 
@@ -211,5 +212,9 @@ export class Peer extends Model<"peers"> implements ExtraMethods {
     // }
 
     this.save();
+  }
+
+  public isChannel() {
+    return this._proxy.$t === "Channel";
   }
 }

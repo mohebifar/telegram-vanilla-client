@@ -1,5 +1,7 @@
 import dayjs from "dayjs";
 import {
+  Channel,
+  InputPeerUser,
   messages_MessagesSlice,
   UpdateShortChatMessage,
   UpdateShortMessage
@@ -15,6 +17,7 @@ interface ExtraMethods {
   justSent: boolean;
   getPeer(): Promise<IPeer | undefined>;
   bulkFetch(ids: number[]): Promise<IMessage[]>;
+  markAsRead(numberOfRead?: number): Promise<boolean>;
 }
 
 export type IMessage = ModelWithProxy<"messages"> & ExtraMethods;
@@ -88,7 +91,42 @@ export class Message extends Model<"messages"> {
       return undefined;
     }
 
+    if (this._proxy.toId.$t === "PeerUser" && !this._proxy.out) {
+      return Peer.get({ type: "User", id: this._proxy.fromId });
+    }
     return Peer.get(extractIdFromPeer(this._proxy.toId));
+  }
+
+  public async markAsRead(numberOfRead = 0) {
+    const peer = await this.getPeer();
+    const dialog = await peer.getDialog();
+    if (dialog) {
+      dialog.readInboxMaxId = this._proxy.id;
+      dialog.unreadCount = Math.max(
+        numberOfRead && dialog.unreadCount - numberOfRead,
+        0
+      );
+      dialog.save();
+    }
+
+    const input = peer.isChannel()
+      ? {
+          $t: "channels_ReadHistoryRequest",
+          channel: {
+            $t: "InputChannel",
+            channelId: peer.id,
+            accessHash: (peer as Channel).accessHash
+          },
+          maxId: this._proxy.id
+        }
+      : {
+          $t: "messages_ReadHistoryRequest",
+          maxId: this._proxy.id,
+          peer: getInputPeer(peer) as InputPeerUser
+        };
+
+        console.log('input', input, this._proxy.toId.$t, this._proxy.fromId)
+    return this.tg.invoke(input as any);
   }
 
   public static async bulkFetch(
