@@ -3,6 +3,7 @@ import { IMessage, Message } from "../../models/message";
 import { IPeer, Peer } from "../../models/peer";
 import { Component, createElement, Element } from "../../utils/dom";
 import { EMPTY_IMG } from "../../utils/images";
+import { getMessageMediaType } from "../../utils/chat";
 import Icon, { Icons } from "../ui/icon";
 import Lottie from "../ui/lottie";
 import { messageToHTML } from "./chat";
@@ -46,16 +47,10 @@ export default class Bubble implements Component<Options> {
       createElement("span", { class: styles.time, dir: "auto" }, this.inner)
     );
 
+    this.element = createElement("div", {'data-id': message.id}, this.attachment, messageWrapper);
+
     if (message.$t === "Message" && message.replyToMsgId) {
-      this.element = createElement(
-        "div",
-        {},
-        this.getReplyElement(message.replyToMsgId),
-        this.attachment,
-        messageWrapper
-      );
-    } else {
-      this.element = createElement("div", {}, this.attachment, messageWrapper);
+      this.element.prepend(this.getReplyElement(message.replyToMsgId));
     }
 
     if (message.justSent) {
@@ -79,13 +74,17 @@ export default class Bubble implements Component<Options> {
 
     const isAnimatedSticker = attachmentType == "animated-sticker";
     const isSticker = attachmentType === "sticker" || isAnimatedSticker;
-    let baseClassName = styles.bubble;
+    let bubbleClassName = styles.bubble;
+
     if (isSticker) {
-      baseClassName = styles.sticker;
+      bubbleClassName = styles.sticker;
     } else if (attachmentType === "photo" && text === "") {
-      baseClassName += " " + styles.imageOnly;
+      bubbleClassName += " " + styles.imageOnly;
     }
-    let bubbleClassName = isSticker ? styles.sticker : baseClassName;
+
+    if (this.message.$t === "Message" && this.message.replyToMsgId) {
+      bubbleClassName += " " + styles.hasReply;
+    }
 
     if (isAnimatedSticker) {
       bubbleClassName += " " + styles.animated;
@@ -189,7 +188,6 @@ export default class Bubble implements Component<Options> {
         }
       }
 
-      console.log(this.message.media, "Unsupported media");
       return [
         createElement("div", { class: styles.message }, "[Unsupported media]"),
         "unknown"
@@ -206,17 +204,28 @@ export default class Bubble implements Component<Options> {
     Message.get(replyMsgId).then(message => {
       if (message.$t === "Message") {
         let content = message.message;
-        if (message.media && message.media.$t === "MessageMediaPhoto") {
+
+        if (message.media) {
+          const [alt, type, srcPromise] = getMessageMediaType(
+            message.media,
+            true,
+            this.message.tg
+          );
+
           if (content === "") {
-            content = "Photo";
+            content = type;
           }
 
-          this.peer.tg.fileStorage
-            .downloadMedia(message.media, 0)
-            .then(photo => {
+          if (type === "Sticker") {
+            content = alt + content;
+          }
+
+          if (srcPromise) {
+            srcPromise.then(src => {
               tile.className = styles.replyTile;
-              tile.append(createElement("img", { src: photo }));
+              tile.append(createElement("img", { src }));
             });
+          }
         }
 
         text.innerHTML = content;

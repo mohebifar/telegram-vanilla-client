@@ -5,7 +5,7 @@ import {
   messages_GetDialogsRequest
 } from "../core/tl/TLObjects";
 import { extractIdFromPeer, getInputPeer } from "../core/tl/utils";
-import { getDialogDisplayDate, getShortLastText } from "../utils/chat";
+import { getDialogDisplayDate, getMessageSummary } from "../utils/chat";
 import { DBDialog, TelegramDatabase } from "../utils/db";
 import { IMessage, Message } from "./message";
 import { Model, ModelDecorator, ModelKey, ModelWithProxy } from "./model";
@@ -142,7 +142,7 @@ export class Dialog extends Model<"dialogs"> {
       return "";
     }
 
-    return getShortLastText(message);
+    return getMessageSummary(message);
   }
 
   public async getDisplayDate() {

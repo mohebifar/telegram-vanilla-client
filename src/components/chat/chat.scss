@@ -44,6 +44,71 @@ $time-size: 0.75rem;
     }
   }
 
+  .reply {
+    background: transparent;
+    cursor: pointer;
+    padding: 9px 9px 0;
+
+    .replyWrapper {
+      pointer-events: none;
+      flex-direction: row;
+      align-items: center;
+      display: flex;
+      width: 100%;
+      height: 38px;
+
+      .replyBorder {
+        height: 32px;
+        border-radius: 1px;
+        min-width: 2px;
+        background: $blue;
+      }
+
+      .replyTile {
+        margin-left: 4px;
+        width: 32px;
+        height: 32px;
+        min-height: 32px;
+        min-width: 32px;
+        border-radius: 5px;
+        overflow: hidden;
+
+        img {
+          user-select: none;
+          display: block;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          object-position: center;
+          border-radius: 4px;
+        }
+      }
+
+      .replyContent {
+        font-size: 0.9rem;
+        line-height: 1.4;
+        margin-left: 8px;
+        flex-grow: 1;
+        flex-shrink: 1;
+        overflow: hidden;
+
+        .replyContentTitle {
+          overflow: hidden;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+          color: $blue;
+        }
+
+        .replyContentText {
+          overflow: hidden;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+          font-size: 0.8rem;
+        }
+      }
+    }
+  }
+
   .service {
     justify-content: center;
 
@@ -67,69 +132,8 @@ $time-size: 0.75rem;
     overflow: hidden;
     overflow-wrap: break-word;
 
-    .reply {
-      background: transparent;
-      cursor: pointer;
-      padding: 9px 9px 0;
-
-      .replyWrapper {
-        pointer-events: none;
-        flex-direction: row;
-        align-items: center;
-        display: flex;
-        width: 100%;
-        height: 38px;
-
-        .replyBorder {
-          height: 32px;
-          border-radius: 1px;
-          min-width: 2px;
-          background: $blue;
-        }
-
-        .replyTile {
-          margin-left: 4px;
-          width: 32px;
-          height: 32px;
-          min-height: 32px;
-          min-width: 32px;
-          border-radius: 5px;
-          overflow: hidden;
-
-          img {
-            user-select: none;
-            display: block;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            object-position: center;
-            border-radius: 4px;
-          }
-        }
-
-        .replyContent {
-          font-size: 0.9rem;
-          line-height: 1.4;
-          margin-left: 8px;
-          flex-grow: 1;
-          flex-shrink: 1;
-          overflow: hidden;
-
-          .replyContentTitle {
-            overflow: hidden;
-            white-space: nowrap;
-            text-overflow: ellipsis;
-            color: $blue;
-          }
-
-          .replyContentText {
-            overflow: hidden;
-            white-space: nowrap;
-            text-overflow: ellipsis;
-            font-size: 0.9rem;
-          }
-        }
-      }
+    .reply + :not(.message) {
+      margin-top: 0.4em;
     }
 
     p {
@@ -314,6 +318,32 @@ $time-size: 0.75rem;
     svg {
       width: 100%;
     }
+
+    .reply {
+      position: absolute;
+      background: #00000029;
+      color: white;
+      border-radius: 3px;
+      padding: 5px 9px;
+      z-index: 9999;
+      right: 0.5rem;
+      bottom: 0.5rem;
+      max-width: 100px;
+
+      .replyBorder {
+        background: $white !important;
+      }
+
+      .replyContentTitle {
+        color: $white !important;
+      }
+    }
+
+    &.hasReply {
+      .message {
+        display: none;
+      }
+    }
   }
 
   .sticker,
@@ -335,7 +365,7 @@ $time-size: 0.75rem;
 
         .inner {
           position: relative;
-          color: white !important;
+          color: $white !important;
           display: flex;
           flex-direction: row;
           padding: 0.2rem 0.5rem;

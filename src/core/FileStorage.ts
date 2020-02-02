@@ -125,7 +125,7 @@ export class FileStorage {
       const match = await cache.match(key);
       if (match) {
         const url = URL.createObjectURL(await match.blob());
-        console.debug("Cache hit", cacheKey, url);
+        // console.debug("Cache hit", cacheKey, url);
         return url;
       }
     }
@@ -386,7 +386,6 @@ export class FileStorage {
         ? strippedPhotoToJpg(size.bytes)
         : size.bytes;
     const [, url] = this.generateBlobUrl(bytes);
-    console.log("stripped size", bytes);
 
     return url;
   }

@@ -3,12 +3,13 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import {
   DocumentAttributeSticker,
   Message,
-  User,
-  MessageService
+  MessageService,
+  User
 } from "../core/tl/TLObjects";
+import { Peer } from "../models/peer";
+import { TelegramClientProxy } from "../telegram-worker-proxy";
 import { DBPeer } from "./db";
 import { DialogMessageTypes } from "./useful-types";
-import { Peer } from "../models/peer";
 
 dayjs.extend(relativeTime);
 
@@ -72,7 +73,7 @@ export function getDialogDisplayName(entity: DBPeer) {
   }
 }
 
-export async function getShortLastText(message: DialogMessageTypes) {
+export async function getMessageSummary(message: DialogMessageTypes) {
   switch (message.$t) {
     case "Message":
       let text = message.out ? "You: " : "";
@@ -124,7 +125,11 @@ export async function getServiceMessage(message: MessageService) {
   return "Service Message";
 }
 
-function getMessageMediaType(media: Message["media"]): [string, string] {
+export function getMessageMediaType(
+  media: Message["media"],
+  includeContent = false,
+  tgProxy?: TelegramClientProxy
+): [string, string, any] {
   if (media.$t === "MessageMediaDocument") {
     if (media.document.$t === "Document") {
       const sticker = media.document.attributes.find(
@@ -132,7 +137,12 @@ function getMessageMediaType(media: Message["media"]): [string, string] {
       ) as DocumentAttributeSticker;
 
       if (sticker) {
-        return [sticker.alt, "Sticker"];
+        let content = null;
+        if (includeContent) {
+          content =
+            includeContent && tgProxy.fileStorage.downloadMedia(media, 0);
+        }
+        return [sticker.alt, "Sticker", content];
       }
 
       const video = media.document.attributes.find(
@@ -140,14 +150,18 @@ function getMessageMediaType(media: Message["media"]): [string, string] {
       ) as DocumentAttributeSticker;
 
       if (video) {
-        return ["📹 ", "Video"];
+        return ["📹 ", "Video", null];
       }
     }
   } else if (media.$t === "MessageMediaPhoto") {
-    return ["🖼 ", "Photo"];
+    return [
+      "🖼 ",
+      "Photo",
+      includeContent && tgProxy.fileStorage.downloadMedia(media, 0)
+    ];
   }
 
-  return ["Unsupported media", null];
+  return ["Unsupported media", null, null];
 }
 
 export function getDialogDisplayDate(date: Dayjs | Date | number) {
