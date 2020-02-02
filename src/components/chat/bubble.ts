@@ -2,7 +2,8 @@ import {
   PhotoSize,
   MessageMediaPhoto,
   Photo,
-  MessageMediaDocument
+  MessageMediaDocument,
+  DocumentAttributeVideo
 } from "../../core/tl/TLObjects";
 import { IMessage, Message } from "../../models/message";
 import { IPeer, Peer } from "../../models/peer";
@@ -91,7 +92,7 @@ export default class Bubble implements Component<Options> {
 
     if (isSticker) {
       bubbleClassName = styles.sticker;
-    } else if (attachmentType === "photo" && text === "") {
+    } else if (["photo", "video"].includes(attachmentType) && text === "") {
       bubbleClassName += " " + styles.imageOnly;
     }
 
@@ -238,12 +239,17 @@ export default class Bubble implements Component<Options> {
     });
     const wrapper = createElement("div", { class: styles.attachment }, img);
 
-    const sorted = sortPhotoSizes(media.document.thumbs);
-    const size = sorted[0] as PhotoSize;
+    const videoAttributes = media.document.attributes.find(
+      ({ $t }) => $t === "DocumentAttributeVideo"
+    ) as DocumentAttributeVideo;
+    if (videoAttributes) {
+      let [width, height] = [videoAttributes.w, videoAttributes.h];
+      if (width > 400) {
+        [width, height] = [400, Math.floor((height * 400) / width)];
+      }
 
-    if (size) {
-      wrapper.style.height = `${size.h}px`;
-      wrapper.style.width = `${size.w}px`;
+      wrapper.style.width = `${width}px`;
+      wrapper.style.height = `${height}px`;
     }
 
     this.message.tg.fileStorage.downloadMedia(media, 0).then(url => {
