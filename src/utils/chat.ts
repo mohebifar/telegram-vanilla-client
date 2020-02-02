@@ -124,7 +124,10 @@ export async function getServiceMessage(message: MessageService) {
         type: "User"
       });
       return `${peer.displayName} removed "${deletedUser.displayName}"`;
+    case "MessageActionPinMessage":
+      return `A message was pinned`;
   }
+  console.log("Unsupported service messsage", message);
 
   return "Service Message";
 }
