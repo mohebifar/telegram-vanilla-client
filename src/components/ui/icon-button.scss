@@ -1,4 +1,5 @@
 @import "../../styles.global.scss";
+@import "../../variables.scss";
 
 .btn {
   @extend .ripple;
@@ -11,4 +12,5 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  background-color: $white;
 }
