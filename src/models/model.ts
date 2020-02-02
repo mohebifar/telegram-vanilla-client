@@ -166,11 +166,19 @@ export class Model<
   }
 
   public save() {
+    const gid = this.getGid();
+    const isInMemory = this.constructor.isInMemory(gid);
     this.saveInMemory();
-    this.constructor.events.emit("saved", {
-      object: this._proxy,
-      gid: this.getGid()
-    });
+
+    const eventPayload = { object: this._proxy, gid };
+    this.constructor.events.emit("saved", eventPayload);
+    if (!isInMemory) {
+      this.constructor.events.emit(
+        isInMemory ? "created" : "updated",
+        eventPayload
+      );
+    }
+
     return this.saveInDb();
   }
 
@@ -190,7 +198,7 @@ export class Model<
   }
 
   public getGid() {
-    return this.constructor.getMemoryCacheKey(this);
+    return this.constructor.getMemoryCacheKey(this.toJSON() as any);
   }
 
   get tg() {
