@@ -132,7 +132,7 @@ $time-size: 0.75rem;
     overflow: hidden;
     overflow-wrap: break-word;
 
-    .reply + :not(.message) {
+    .reply + :not(.message):not(:empty) {
       margin-top: 0.4em;
     }
 
@@ -140,8 +140,14 @@ $time-size: 0.75rem;
       margin: 0;
     }
 
-    .attachment {
-      width: 100%;
+    .attachmentWrapper {
+      .attachment {
+        &,
+        img,
+        video {
+          width: 100%;
+        }
+      }
     }
 
     .box {

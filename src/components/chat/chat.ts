@@ -71,7 +71,6 @@ export default class Chat implements Component<Options> {
       unreadCount = dialog.unreadCount;
     }
 
-    console.log(offsetMessage, "<---", this.dialog === dialog);
     if (dialog === this.dialog && this.idToElementMap.has(offsetMessage)) {
       this.idToElementMap.get(offsetMessage).scrollIntoView({
         behavior: "smooth"

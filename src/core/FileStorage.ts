@@ -427,7 +427,7 @@ export class FileStorage {
         return `${location.localId},${location.volumeId.toString()}`;
       case "InputPhotoFileLocation":
       case "InputDocumentFileLocation":
-        return `${location.constructorId}_${location.id.toString()}`;
+        return `${location.$t}_${location.thumbSize},${location.id.toString()}`;
       default:
         return location.$t;
     }

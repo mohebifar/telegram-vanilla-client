@@ -4,7 +4,11 @@ import {
   DocumentAttributeSticker,
   Message,
   MessageService,
-  User
+  User,
+  PhotoSize,
+  PhotoCachedSize,
+  PhotoStrippedSize,
+  PhotoSizeEmpty
 } from "../core/tl/TLObjects";
 import { Peer } from "../models/peer";
 import { TelegramClientProxy } from "../telegram-worker-proxy";
@@ -215,4 +219,22 @@ export function getLastSeenTime(status: User["status"]) {
     case "UserStatusEmpty":
       return "Last seen a long time ago";
   }
+}
+
+export function sortPhotoSizes(
+  sizes: (PhotoSize | PhotoCachedSize | PhotoStrippedSize | PhotoSizeEmpty)[]
+) {
+  const presetOrder = ["m", "x", "s", "y"];
+
+  const arr = sizes.slice();
+  const result = [];
+  let i: number;
+  let j: number;
+
+  for (i = 0; i < presetOrder.length; i++) {
+    while (-1 != (j = arr.findIndex(item => item.type === presetOrder[i]))) {
+      result.push(arr.splice(j, 1)[0]);
+    }
+  }
+  return result.concat(arr);
 }

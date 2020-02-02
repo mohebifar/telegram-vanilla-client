@@ -1,9 +1,14 @@
-import { PhotoSize } from "../../core/tl/TLObjects";
+import {
+  PhotoSize,
+  MessageMediaPhoto,
+  Photo,
+  MessageMediaDocument
+} from "../../core/tl/TLObjects";
 import { IMessage, Message } from "../../models/message";
 import { IPeer, Peer } from "../../models/peer";
+import { getMessageMediaType, sortPhotoSizes } from "../../utils/chat";
 import { Component, createElement, Element } from "../../utils/dom";
 import { EMPTY_IMG } from "../../utils/images";
-import { getMessageMediaType } from "../../utils/chat";
 import Icon, { Icons } from "../ui/icon";
 import Lottie from "../ui/lottie";
 import { messageToHTML } from "./chat";
@@ -41,7 +46,7 @@ export default class Bubble implements Component<Options> {
 
     this.messageText = createElement("span", { dir: "auto" });
     this.inner = createElement("div", { class: styles.inner }, this.time);
-    this.attachment = createElement("div");
+    this.attachment = createElement("div", { class: styles.attachmentWrapper });
 
     const messageWrapper = createElement(
       "div",
@@ -125,6 +130,10 @@ export default class Bubble implements Component<Options> {
     if (attachment) {
       this.attachment.innerHTML = "";
       this.attachment.append(attachment);
+
+      if (attachment.style.width) {
+        this.element.style.width = attachment.style.width;
+      }
     }
 
     this.element.className = bubbleClassName;
@@ -138,60 +147,21 @@ export default class Bubble implements Component<Options> {
     ) {
       const { media } = this.message;
       if (media.$t === "MessageMediaPhoto" && media.photo.$t === "Photo") {
-        this.img = createElement("img", {
-          class: styles.attachment,
-          src: EMPTY_IMG
-        });
-        const size = media.photo.sizes.find(
-          size => size.$t === "PhotoSize" || size.$t === "PhotoCachedSize"
-        ) as PhotoSize;
-
-        if (size) {
-          // TODO: Figure out a better way to handle this
-          const photoWidth = 400;
-          const aspectRatio = size.h / size.w;
-          this.img.style.height = `${aspectRatio * photoWidth}px`;
-          this.img.style.width = `${photoWidth}px`;
-        }
-
-        this.message.tg.fileStorage.downloadMedia(media).then(url => {
-          this.img.setAttribute("src", url);
-        });
-        return [this.img, "photo"];
+        return this.getPhotoAttachment(media);
       } else if (media.$t === "MessageMediaDocument") {
         if (media.document.$t === "Document") {
+          const { attributes } = media.document;
           // Check for sticker
-          if (
-            media.document.attributes.some(
-              attr => attr.$t === "DocumentAttributeSticker"
-            )
-          ) {
+          if (attributes.some(attr => attr.$t === "DocumentAttributeSticker")) {
             if (media.document.mimeType === "application/x-tgsticker") {
-              // Animated sticker
-              const sticker = createElement(Lottie, {
-                class: styles.attachment
-              });
-
-              this.message.tg.fileStorage.downloadMedia(media).then(url => {
-                sticker.instance.updateConfig({
-                  path: url,
-                  loop: true,
-                  autoplay: true
-                });
-              });
-              return [sticker, "animated-sticker"];
+              return this.getAnimatedSticker(media);
             } else {
-              // Normal sticker
-              this.img = createElement("img", {
-                class: styles.attachment,
-                src: EMPTY_IMG
-              });
-
-              this.message.tg.fileStorage.downloadMedia(media).then(url => {
-                this.img.setAttribute("src", url);
-              });
-              return [this.img, "sticker"];
+              return this.getImageSticker(media);
             }
+          } else if (
+            attributes.some(attr => attr.$t === "DocumentAttributeVideo")
+          ) {
+            return this.getVideoAttachment(media);
           }
         }
       }
@@ -203,6 +173,93 @@ export default class Bubble implements Component<Options> {
     }
 
     return [undefined, undefined];
+  }
+
+  private getAnimatedSticker(
+    media: MessageMediaDocument
+  ): [HTMLElement, "animated-sticker"] {
+    const sticker = createElement(Lottie, {
+      class: styles.attachment
+    });
+
+    this.message.tg.fileStorage.downloadMedia(media).then(url => {
+      sticker.instance.updateConfig({
+        path: url,
+        loop: true,
+        autoplay: true
+      });
+    });
+    return [sticker, "animated-sticker"];
+  }
+
+  private getImageSticker(
+    media: MessageMediaDocument
+  ): [HTMLElement, "sticker"] {
+    const sticker = createElement("img", {
+      class: styles.attachment,
+      src: EMPTY_IMG
+    });
+
+    this.message.tg.fileStorage.downloadMedia(media).then(url => {
+      sticker.setAttribute("src", url);
+    });
+    return [sticker, "sticker"];
+  }
+
+  private getPhotoAttachment(media: MessageMediaPhoto): [HTMLElement, "photo"] {
+    this.img = createElement("img", {
+      class: styles.attachment,
+      src: EMPTY_IMG
+    });
+    const sorted = sortPhotoSizes((media.photo as Photo).sizes.slice());
+    const size = sorted[0] as PhotoSize;
+
+    if (size) {
+      this.img.style.height = `${size.h}px`;
+      this.img.style.width = `${size.w}px`;
+    }
+
+    this.message.tg.fileStorage.downloadMedia(media, size).then(url => {
+      this.img.setAttribute("src", url);
+    });
+    return [this.img, "photo"];
+  }
+
+  private getVideoAttachment(
+    media: MessageMediaDocument
+  ): [HTMLElement | undefined, "video" | undefined] {
+    if (media.document.$t !== "Document") {
+      return [undefined, undefined];
+    }
+
+    const img = createElement("img", {
+      src: EMPTY_IMG,
+      class: "blur"
+    });
+    const wrapper = createElement("div", { class: styles.attachment }, img);
+
+    const sorted = sortPhotoSizes(media.document.thumbs);
+    const size = sorted[0] as PhotoSize;
+
+    if (size) {
+      wrapper.style.height = `${size.h}px`;
+      wrapper.style.width = `${size.w}px`;
+    }
+
+    this.message.tg.fileStorage.downloadMedia(media, 0).then(url => {
+      img.setAttribute("src", url);
+      img.addEventListener("click", () => {
+        this.message.tg.fileStorage.downloadMedia(media).then(src => {
+          img.remove();
+          const video = createElement("video", { src }) as HTMLVideoElement;
+          video.muted = true;
+          video.loop = true;
+          video.autoplay = true;
+          wrapper.append(video);
+        });
+      });
+    });
+    return [wrapper, "video"];
   }
 
   private getReplyElement(replyMsgId: number) {

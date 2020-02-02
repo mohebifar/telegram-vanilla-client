@@ -6,6 +6,17 @@
     <title>Telegram web</title>
   </head>
   <body>
+    <svg class="hideSVG">
+      <filter id="sharpBlur">
+        <feGaussianBlur stdDeviation="8"></feGaussianBlur>
+        <feColorMatrix
+          type="matrix"
+          values="1 0 0 0 0, 0 1 0 0 0, 0 0 1 0 0, 0 0 0 9 0"
+        ></feColorMatrix>
+        <feComposite in2="SourceGraphic" operator="in"></feComposite>
+      </filter>
+    </svg>
+
     <div id="initial-loading">
       <img
         src="/assets/icons/spinner.svg"
