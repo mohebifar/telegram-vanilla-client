@@ -1,0 +1,22 @@
+.wrapper {
+  cursor: pointer;
+  position: relative;
+
+  .inner {
+    transform: translate(-50%, -50%);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+  }
+
+  svg.inner {
+    transform: none;
+    width: 2.8em;
+    top: calc(50% - 1.4em);
+    left: calc(50% - 1.4em);
+  }
+
+  img.inner:global(.ic-close) {
+    width: 1.2em;
+  }
+}

@@ -126,3 +126,9 @@ export function getNthChild<T extends HTMLElement>(
 
   return childNodes.item(num) as HTMLElement;
 }
+
+export function removeChildren<T extends HTMLElement | Element<any>>(parent: T) {
+  while (parent.firstChild) {
+    parent.firstChild.remove();
+  }
+}

@@ -1,0 +1,20 @@
+.progress {
+  transform: rotate(-90deg);
+  animation-duration: 1.3s;
+}
+
+.meter,
+.value {
+  fill: none;
+}
+
+.meter {
+  fill: rgba(255, 255, 255, 0.2);
+}
+
+.value {
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset .2s ease;
+  stroke: #ffffff;
+  stroke-linecap: round;
+}

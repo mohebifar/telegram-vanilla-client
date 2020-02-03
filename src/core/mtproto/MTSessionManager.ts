@@ -11,4 +11,5 @@ export interface MTSessionManager {
   getDefaultSession(): Promise<MTSession>;
   getSessionByDc(dcId: number, port?: number): Promise<MTSession>;
   setDefaultDc(dcId: number): Promise<any>;
+  clearAll(): Promise<any>;
 }

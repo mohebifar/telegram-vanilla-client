@@ -13,7 +13,9 @@ export enum Icons {
   Send = "send",
   PinnedChat = "pinned_chat",
   Check = "check",
-  Checks = "2checks"
+  Checks = "2checks",
+  Download = "download",
+  Close = "close"
 }
 
 export interface Options {
@@ -28,7 +30,7 @@ export default class Icon implements Component<Options> {
   constructor({ icon, color = "black", ...rest }: Options) {
     this.element = createElement("img", {
       src: `/assets/icons/${icon}.svg`,
-      class: `ic ic-${color} ${rest["class"] || ""}`
+      class: `ic ic-${color} ic-${icon} ${rest["class"] || ""}`
     });
   }
 }

@@ -18,6 +18,12 @@ type MethodRequestEvent = {
   args: any[];
 };
 
+type CallbackReturnEvent = {
+  type: "callback_return";
+  r: string;
+  return: any;
+};
+
 type ConnectedEvent = {
   type: "connected";
 };
@@ -29,16 +35,26 @@ type MethodResponseEvent = {
   error: boolean;
 };
 
+type CallbackResponseEvent = {
+  type: "callback";
+  r: string;
+  args: any[];
+};
+
 type UpdateEvent = {
   type: "update";
   short: boolean;
   update: AllUpdateTypes;
 };
 
-export type OutgoingEventData = ConnectRequestEvent | MethodRequestEvent;
+export type OutgoingEventData =
+  | ConnectRequestEvent
+  | MethodRequestEvent
+  | CallbackReturnEvent;
 export type IncomingEventData =
   | ConnectedEvent
   | MethodResponseEvent
+  | CallbackResponseEvent
   | UpdateEvent;
 
 export type EventData = OutgoingEventData | IncomingEventData;
@@ -69,27 +85,52 @@ async function connect(apiId: number, apiHash: string) {
   await tg.connect();
 
   console.timeEnd("Telegram Connect");
+  const callbacks = new Map<string, Function>();
 
   addEventListener("message", async ({ data }: MessageEventWithData) => {
     if (data.type === "method_request") {
       let result: any;
       let hasError = false;
+      const callbackIds: string[] = [];
+
+      const newArgs = data.args.map(arg => {
+        if (typeof arg === "object" && arg.__ === "c" && arg.r) {
+          return (args: any[]) =>
+            new Promise(resolve => {
+              postMessage({
+                type: "callback",
+                r: arg.r,
+                result: args
+              });
+              callbacks.set(arg.r, resolve);
+              callbackIds.push(arg.r);
+            });
+        }
+        return arg;
+      });
+
       try {
         if (data.object === "client") {
-          result = await (tg[data.method] as any)(...data.args);
+          result = await (tg[data.method] as any)(...newArgs);
         } else if (data.object === "fileStorage") {
-          result = await (tg.fileStorage[data.method] as any)(...data.args);
+          result = await (tg.fileStorage[data.method] as any)(...newArgs);
         }
       } catch (error) {
         result = error;
         hasError = true;
       } finally {
+        callbackIds.forEach(id => callbacks.delete(id));
         postMessage({
           type: "method",
           requestId: data.requestId,
           result,
           error: hasError
         } as MethodResponseEvent);
+      }
+    } else if (data.type === "callback_return") {
+      const resolve = callbacks.get(data.r);
+      if (resolve) {
+        resolve(data.return);
       }
     }
   });

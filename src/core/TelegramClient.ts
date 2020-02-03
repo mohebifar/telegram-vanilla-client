@@ -77,7 +77,11 @@ export class TelegramClient {
     public session: MTSession,
     private updateCallback?: (update: AllUpdateTypes) => void
   ) {
-    this.sender = new MTProtoSender(session, {
+    this.prepareSender();
+  }
+
+  private prepareSender() {
+    this.sender = new MTProtoSender(this.session, {
       // delay: this._retryDelay,
       autoReconnectCallback: () => {},
       authKeyCallback: this.authKeyCallback.bind(this),
@@ -281,7 +285,10 @@ export class TelegramClient {
     await this.sessionManager.setDefaultDc(newDc);
 
     this.disconnect();
+    this.sender.disconnect();
     await sleep(500);
+    this.sessionManager.clearAll();
+    this.prepareSender();
     await this.connect();
   }
 

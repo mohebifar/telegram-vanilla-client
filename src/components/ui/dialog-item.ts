@@ -1,4 +1,4 @@
-import { createElement, Component } from "../../utils/dom";
+import { createElement, Component, removeChildren } from "../../utils/dom";
 import { shortenCount } from "../../utils/chat";
 import * as styles from "./dialog-item.scss";
 import Avatar from "./avatar";
@@ -14,11 +14,11 @@ interface Options {
 
 export default class DialogItem implements Component<Options> {
   public element: HTMLElement;
-  private avatar: Element;
-  private text: Element;
-  private title: Element;
-  private date: Element;
-  private unreadCount: Element;
+  private avatar: HTMLElement;
+  private text: HTMLElement;
+  private title: HTMLElement;
+  private date: HTMLElement;
+  private unreadCount: HTMLElement;
   private dialog: Options["dialog"];
   private peer: Options["peer"];
   private onClick: Options["onClick"];
@@ -77,7 +77,7 @@ export default class DialogItem implements Component<Options> {
     this.text.innerHTML = text;
     this.title.innerHTML = title;
     this.date.innerHTML = date;
-    this.unreadCount.innerHTML = "";
+    removeChildren(this.unreadCount);
     this.unreadCount.append(unread);
 
     const classList = [];

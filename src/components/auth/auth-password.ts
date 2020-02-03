@@ -1,4 +1,9 @@
-import { createElement, Component, Element } from "../../utils/dom";
+import {
+  createElement,
+  Component,
+  Element,
+  removeChildren
+} from "../../utils/dom";
 import Input from "../ui/input";
 import Button from "../ui/button";
 import MonkeyPassword from "../monkey/monkey-password";
@@ -83,7 +88,7 @@ export default class AuthPassword implements Component<Options> {
   }
 
   renderPeekButton() {
-    this.peekButton.innerHTML = "";
+    removeChildren(this.peekButton);
     const icon = this.isPeeking ? Icons.Eye2 : Icons.Eye1;
 
     this.peekButton.append(createElement(Icon, { icon, color: "grey" }));

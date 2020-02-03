@@ -8,7 +8,8 @@ import {
   PhotoSize,
   PhotoCachedSize,
   PhotoStrippedSize,
-  PhotoSizeEmpty
+  PhotoSizeEmpty,
+  DocumentAttributeFilename
 } from "../core/tl/TLObjects";
 import { Peer } from "../models/peer";
 import { TelegramClientProxy } from "../telegram-worker-proxy";
@@ -125,7 +126,9 @@ export async function getServiceMessage(message: MessageService) {
       });
       return `${peer.displayName} removed "${deletedUser.displayName}"`;
     case "MessageActionPinMessage":
-      return `A message was pinned`;
+      return "A message was pinned";
+    case "MessageActionPhoneCall":
+      return "Phone call";
   }
   console.log("Unsupported service messsage", message);
 
@@ -158,6 +161,13 @@ export function getMessageMediaType(
 
       if (video) {
         return ["📹 ", "Video", null];
+      }
+
+      const fileAttribute = media.document.attributes.find(
+        t => t.$t === "DocumentAttributeFilename"
+      ) as DocumentAttributeFilename;
+      if (fileAttribute) {
+        return ["", fileAttribute.fileName, null];
       }
     }
   } else if (media.$t === "MessageMediaPhoto") {
@@ -240,4 +250,10 @@ export function sortPhotoSizes(
     }
   }
   return result.concat(arr);
+}
+
+export function parseFileSize(size: number) {
+  const i = Math.floor(Math.log(size) / Math.log(1024));
+  const units = ["B", "kB", "MB", "GB", "TB"];
+  return `${(size / Math.pow(1024, i)).toFixed(2)}${units[i]}`;
 }

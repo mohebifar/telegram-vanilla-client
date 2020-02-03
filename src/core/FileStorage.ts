@@ -51,6 +51,8 @@ type CacheKey =
   | typeof CACHE_KEY_FILE
   | typeof CACHE_KEY_DOCUMENT;
 
+type ProgressCallback = (progress: number) => any;
+
 export class FileStorage {
   private cache: Record<CacheKey, Cache>;
   private downloadQueue: {
@@ -110,12 +112,14 @@ export class FileStorage {
       dcId,
       fileSize,
       cacheKey = null,
-      shouldInflate = false
+      shouldInflate = false,
+      onProgress
     }: {
       dcId: number;
       fileSize?: number;
       cacheKey?: CacheKey;
       shouldInflate?: boolean;
+      onProgress?: ProgressCallback;
     }
   ) {
     const key = this.generateKey(location);
@@ -143,14 +147,15 @@ export class FileStorage {
     let retries = 0;
     let file: upload_File;
 
+    const sender = await this.client.borrowSender(
+      dcId || this.client.session.dcId
+    );
+    const send = sender.send.bind(sender);
+
+    let aborted = false;
+
     do {
       try {
-        let send = this.client.invoke.bind(this.client);
-        if (dcId !== this.client.session.dcId) {
-          const sender = await this.client.borrowSender(dcId);
-          send = sender.send.bind(sender);
-        }
-
         file = await send({
           $t: "upload_GetFileRequest",
           limit: partSize,
@@ -159,17 +164,23 @@ export class FileStorage {
         });
         bytesArray.push(file.bytes);
         offset += partSize;
+
+        if (onProgress) {
+          const shouldContinue = await onProgress(
+            fileSize && offset / fileSize
+          );
+          if (shouldContinue === false) {
+            aborted = true;
+            break;
+          }
+        }
       } catch (err) {
-        console.error(
-          err,
-          {
-            $t: "upload_GetFileRequest",
-            limit: partSize,
-            offset,
-            location
-          },
-          dcId
-        );
+        console.error({
+          limit: partSize,
+          offset,
+          location
+        });
+        console.error(err);
         if (++retries > MAX_RETRIES_PER_FILE) {
           console.debug(`Retried downloading ${retries} times.`);
           finish();
@@ -185,6 +196,10 @@ export class FileStorage {
     );
 
     finish();
+
+    if (aborted) {
+      return undefined;
+    }
 
     const bytes = shouldInflate
       ? inflate(concatBuffers(bytesArray))
@@ -274,7 +289,8 @@ export class FileStorage {
 
   public async downloadMedia(
     message: Message | Message["media"] | WebDocument | WebDocumentNoProxy,
-    thumb: PhotoSizesTypes | number = null
+    thumb: PhotoSizesTypes | number = null,
+    onProgress?: ProgressCallback
   ) {
     let media: TLObjectTypes;
 
@@ -295,7 +311,12 @@ export class FileStorage {
       if (document.$t !== "Document") {
         return undefined;
       }
-      return await this.downloadDocument(document, thumb, document.dcId);
+      return await this.downloadDocument(
+        document,
+        thumb,
+        document.dcId,
+        onProgress
+      );
     } else if (media.$t === "MessageMediaContact" && thumb == null) {
       // return this.downloadContact(media);
     } else if (
@@ -308,10 +329,11 @@ export class FileStorage {
     return undefined;
   }
 
-  private async downloadDocument(
+  public async downloadDocument(
     document: Document,
     thumb: PhotoSizesTypes | number,
-    dcId?: number
+    dcId?: number,
+    onProgress?: ProgressCallback
   ) {
     let size: PhotoSizesTypes;
 
@@ -336,7 +358,8 @@ export class FileStorage {
         fileSize: size && "size" in size ? size.size : document.size,
         cacheKey: CACHE_KEY_DOCUMENT,
         dcId,
-        shouldInflate
+        shouldInflate,
+        onProgress
       }
     );
     return result;
@@ -471,15 +494,11 @@ function getContentType(type: upload_File["type"]) {
 function getPartSize(fileSize: number) {
   if (fileSize <= 104857600) {
     // 100MB
-    return 128;
-  }
-  if (fileSize <= 786432000) {
-    // 750MB
-    return 256;
+    return 32;
   }
   if (fileSize <= 1572864000) {
     // 1500MB
-    return 512;
+    return 64;
   }
 
   throw new Error("File size too large");

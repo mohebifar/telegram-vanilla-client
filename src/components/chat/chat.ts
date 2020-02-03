@@ -6,7 +6,8 @@ import {
   Component,
   createElement,
   Element,
-  getNthChild
+  getNthChild,
+  removeChildren
 } from "../../utils/dom";
 import Avatar from "../ui/avatar";
 import Bubble from "./bubble";
@@ -79,14 +80,14 @@ export default class Chat implements Component<Options> {
       this.lockLoad = true;
       this.peer = await dialog.getPeer();
       if (dialog !== this.dialog) {
-        this.topBarContainer.innerHTML = "";
+        removeChildren(this.topBarContainer);
         this.topBarContainer.append(
           createElement(TopBar, { dialog, peer: this.peer })
         );
       }
 
       this.idToElementMap.clear();
-      this.chatContainer.innerHTML = "";
+      removeChildren(this.chatContainer);
 
       this.dialog = dialog;
 

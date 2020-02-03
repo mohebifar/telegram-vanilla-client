@@ -214,6 +214,36 @@ $time-size: 0.75rem;
         }
       }
     }
+
+    .documentWrapper {
+      margin: 0.5em 0.5em -1.3em;
+      display: flex;
+      min-width: 12em;
+      min-height: 3em;
+      align-items: center;
+
+      .documentType {
+        width: 3em;
+        height: 3em;
+      }
+
+      .documentContent {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        padding-left: 0.5em;
+        font-size: 0.8em;
+        justify-content: space-between;
+        min-height: 3em;
+        color: $grey;
+
+        .title {
+          font-weight: 600;
+          font-size: 1.2em;
+          color: $black;
+        }
+      }
+    }
   }
 
   .bubble + .bubble {
@@ -246,6 +276,9 @@ $time-size: 0.75rem;
         }
       }
       .bubble {
+        background-color: #ffffff;
+        border-radius: 6px 12px 12px 6px;
+
         &:not(.imageOnly) {
           .time {
             color: rgba($grey, 0.6);
@@ -255,8 +288,6 @@ $time-size: 0.75rem;
             }
           }
         }
-        background-color: #ffffff;
-        border-radius: 6px 12px 12px 6px;
       }
       .bubble:first-child {
         border-radius: 12px 12px 12px 6px;
@@ -299,6 +330,10 @@ $time-size: 0.75rem;
               padding: 6px 5px;
             }
           }
+        }
+
+        .documentContent {
+          color: $green-dark;
         }
       }
       .bubble:first-child {

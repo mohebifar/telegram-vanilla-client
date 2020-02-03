@@ -37,6 +37,8 @@ function dbProxy(
   ...args: any[]
 ): Promise<DBSession>;
 
+function dbProxy(table: "sessions", method: "clear"): Promise<DBSession>;
+
 function dbProxy(table: "configs", method: "put", ...args: any[]): Promise<any>;
 
 function dbProxy(
@@ -96,6 +98,10 @@ export class DBSessionManager implements MTSessionManager {
 
   public setDefaultDc(value: number) {
     return dbProxy("configs", "put", { value, key: "primaryDc" });
+  }
+
+  public clearAll() {
+    return dbProxy("sessions", "clear");
   }
 
   private makeSessionFromData(sessionData: DBSession) {

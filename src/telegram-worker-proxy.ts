@@ -16,6 +16,7 @@ const fileStorageProxiedMethods = <const>[
   "download",
   "downloadProfilePhoto",
   "downloadMedia",
+  "downloadDocument",
   "upload"
 ];
 
@@ -40,7 +41,8 @@ export async function makeProxy(
   const tgWorker = new Worker("./telegram.worker.ts", {
     type: "module"
   });
-  let handlers = new Map<string, { resolve: Function; reject: Function }>();
+  const handlers = new Map<string, { resolve: Function; reject: Function }>();
+  const callbacks = new Map<string, Function>();
 
   tgWorker.addEventListener("message", ({ data }: MessageEvent) => {
     if (data.type === "method" && handlers.has(data.requestId)) {
@@ -70,6 +72,15 @@ export async function makeProxy(
             result
           });
         });
+    } else if (data.type === "callback") {
+      const callback = callbacks.get(data.r);
+      if (callback) {
+        tgWorker.postMessage({
+          type: "callback_return",
+          r: data.r,
+          return: callback(data.result)
+        });
+      }
     }
   });
 
@@ -84,18 +95,36 @@ export async function makeProxy(
         .toString(36)
         .slice(-5);
     } while (handlers.has(requestId));
+    const callbackIds: string[] = [];
 
     return new Promise((resolve, reject) => {
       handlers.set(requestId, { resolve, reject });
+      const newArgs = args.map((arg, i) => {
+        if (typeof arg === "function") {
+          const r = requestId + "_" + i;
+          callbackIds.push(r);
+          callbacks.set(r, arg);
+          return { __: "c", r };
+        }
+        return arg;
+      });
 
       tgWorker.postMessage({
         type: "method_request",
         requestId: requestId,
+        args: newArgs,
         method,
-        object,
-        args
+        object
       });
-    });
+    })
+      .then(result => {
+        callbackIds.forEach(id => callbacks.delete(id));
+        return result;
+      })
+      .catch(result => {
+        callbackIds.forEach(id => callbacks.delete(id));
+        throw result;
+      });
   }
 
   return new Promise(resolve => {

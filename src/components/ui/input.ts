@@ -1,4 +1,9 @@
-import { createElement, Component, Element } from "../../utils/dom";
+import {
+  createElement,
+  Component,
+  Element,
+  removeChildren
+} from "../../utils/dom";
 import * as styles from "./input.scss";
 
 enum EventMap {
@@ -98,7 +103,7 @@ export default class Input implements Component<Options> {
   }
 
   setSuffix(node: HTMLElement) {
-    this.suffix.innerHTML = "";
+    removeChildren(this.suffix);
     this.suffix.append(node);
   }
 }
