@@ -5,7 +5,8 @@ import {
   MessageMediaDocument,
   MessageMediaPhoto,
   Photo,
-  PhotoSize
+  PhotoSize,
+  PhotoCachedSize
 } from "../../core/tl/TLObjects";
 import { IMessage, Message } from "../../models/message";
 import { IPeer, Peer } from "../../models/peer";
@@ -14,7 +15,12 @@ import {
   parseFileSize,
   sortPhotoSizes
 } from "../../utils/chat";
-import { Component, createElement, Element, removeChildren } from "../../utils/dom";
+import {
+  Component,
+  createElement,
+  Element,
+  removeChildren
+} from "../../utils/dom";
 import { EMPTY_IMG } from "../../utils/images";
 import FileIcon from "../ui/file-icon";
 import Icon, { Icons } from "../ui/icon";
@@ -112,8 +118,12 @@ export default class Bubble implements Component<Options> {
 
     if (isSticker) {
       bubbleClassName = styles.sticker;
-    } else if (["photo", "video"].includes(attachmentType) && text === "") {
-      bubbleClassName += " " + styles.imageOnly;
+    } else if (text === "") {
+      bubbleClassName += " " + styles.emptyText;
+
+      if (["photo", "video"].includes(attachmentType)) {
+        bubbleClassName += " " + styles.imageOnly;
+      }
     }
 
     if (this.message.$t === "Message" && this.message.replyToMsgId) {
@@ -211,14 +221,32 @@ export default class Bubble implements Component<Options> {
       class: styles.attachment
     });
 
-    this.message.tg.fileStorage.downloadMedia(media).then(url => {
-      sticker.instance.updateConfig({
-        path: url,
-        loop: true,
-        autoplay: true
+    const fallbackImage = createElement("img", { src: EMPTY_IMG });
+    const wrapper = createElement("div", sticker, fallbackImage);
+
+    (async () => {
+      const cachedSize = (media.document as Document).thumbs.find(
+        ({ $t }) => $t === "PhotoCachedSize"
+      ) as PhotoCachedSize;
+
+      if (cachedSize) {
+        const fallback = await this.message.tg.fileStorage.downloadMedia(
+          media,
+          cachedSize
+        );
+        fallbackImage.setAttribute("src", fallback);
+      }
+
+      this.message.tg.fileStorage.downloadMedia(media).then(url => {
+        sticker.instance.updateConfig({
+          path: url,
+          loop: true,
+          autoplay: true
+        });
       });
-    });
-    return [sticker, "animated-sticker"];
+    })();
+
+    return [wrapper, "animated-sticker"];
   }
 
   private getImageSticker(

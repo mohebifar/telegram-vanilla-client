@@ -16,6 +16,7 @@ export default class Lottie implements Component<Options> {
   public readonly element: HTMLElement;
   public animation: AnimationItem;
   private onReady?: Options["onReady"];
+  private isVisible = true;
 
   constructor({ config, onReady, ...rest }: Options) {
     this.element = createElement("div", {
@@ -49,9 +50,13 @@ export default class Lottie implements Component<Options> {
         const entry = entries[0];
         if (entry) {
           if (entry.isIntersecting) {
-            this.animation.play();
+            if (!this.isVisible) {
+              this.loadAnimation(config);
+              this.isVisible = true;
+            }
           } else {
-            this.animation.stop();
+            this.isVisible = false;
+            this.animation.destroy();
           }
         }
       }, options);

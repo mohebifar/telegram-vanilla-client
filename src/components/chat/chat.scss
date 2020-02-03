@@ -216,7 +216,7 @@ $time-size: 0.75rem;
     }
 
     .documentWrapper {
-      margin: 0.5em 0.5em -1.3em;
+      margin: 0.5em 0.5em 0;
       display: flex;
       min-width: 12em;
       min-height: 3em;
@@ -242,6 +242,12 @@ $time-size: 0.75rem;
           font-size: 1.2em;
           color: $black;
         }
+      }
+    }
+
+    &.emptyText {
+      .documentWrapper {
+        margin-bottom: -1.3em;
       }
     }
   }
@@ -353,6 +359,16 @@ $time-size: 0.75rem;
     width: 180px !important;
     &.animated {
       height: 180px !important;
+
+      .attachmentWrapper {
+        img {
+          display: none;
+        }
+
+        :global(.lottie):empty + img {
+          display: block;
+        }
+      }
     }
 
     img,
