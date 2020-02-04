@@ -15,7 +15,9 @@ export enum Icons {
   Check = "check",
   Checks = "2checks",
   Download = "download",
-  Close = "close"
+  Close = "close",
+  Play = "play",
+  Pause = "pause",
 }
 
 export interface Options {

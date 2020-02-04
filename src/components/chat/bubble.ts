@@ -1,20 +1,16 @@
 import {
   Document,
-  DocumentAttributeFilename,
   DocumentAttributeVideo,
   MessageMediaDocument,
   MessageMediaPhoto,
   Photo,
+  PhotoCachedSize,
   PhotoSize,
-  PhotoCachedSize
+  MessageMediaWebPage
 } from "../../core/tl/TLObjects";
 import { IMessage, Message } from "../../models/message";
 import { IPeer, Peer } from "../../models/peer";
-import {
-  getMessageMediaType,
-  parseFileSize,
-  sortPhotoSizes
-} from "../../utils/chat";
+import { getMessageMediaType, sortPhotoSizes } from "../../utils/chat";
 import {
   Component,
   createElement,
@@ -22,7 +18,8 @@ import {
   removeChildren
 } from "../../utils/dom";
 import { EMPTY_IMG } from "../../utils/images";
-import FileIcon from "../ui/file-icon";
+import AudioPlayer from "../ui/audio-player";
+import FileDownloader from "../ui/file-downloader";
 import Icon, { Icons } from "../ui/icon";
 import Lottie from "../ui/lottie";
 import { messageToHTML } from "./chat";
@@ -35,19 +32,6 @@ interface Options {
   onReplyClick(messageId?: number): void;
   isTransient?: boolean;
 }
-
-const saveData = (function() {
-  const a = document.createElement("a");
-  document.body.appendChild(a);
-  a.style.display = "none";
-
-  return function(url: string, fileName: string) {
-    a.href = url;
-    a.download = fileName;
-    a.click();
-    window.URL.revokeObjectURL(url);
-  };
-})();
 
 export default class Bubble implements Component<Options> {
   public readonly element: HTMLElement;
@@ -196,11 +180,13 @@ export default class Bubble implements Component<Options> {
           } else if (
             attributes.some(attr => attr.$t === "DocumentAttributeAudio")
           ) {
-            return this.getFileAttachment(media);
+            return this.getAudioAttachment(media);
           } else {
             return this.getFileAttachment(media);
           }
         }
+      } else if (media.$t === "MessageMediaWebPage") {
+        this.getWebAttachment(media);
       }
 
       console.log("Unsupported media", media);
@@ -326,88 +312,25 @@ export default class Bubble implements Component<Options> {
 
   private getFileAttachment(
     media: MessageMediaDocument
-  ): [HTMLElement | undefined, "voice" | undefined] {
-    const fileNameAttribute = (media.document as Document).attributes.find(
-      t => t.$t === "DocumentAttributeFilename"
-    ) as DocumentAttributeFilename;
-    if (!fileNameAttribute) {
-      return [undefined, undefined];
-    }
-    const { fileName } = fileNameAttribute;
+  ): [HTMLElement | undefined, "file" | undefined] {
+    return [
+      createElement(FileDownloader, { media, tg: this.message.tg }),
+      "file"
+    ];
+  }
 
-    const extensionMatch = fileName.match(/\.([\w\d]+)$/);
-    const extension = extensionMatch
-      ? extensionMatch[1]
-      : fileName.substr(fileName.length - 3);
-    const fileNameToRender =
-      fileName.length > 20
-        ? `${fileName.substr(0, 20)}… .${extension}`
-        : fileName;
-    const fileIcon = createElement(FileIcon, { extension });
-    fileIcon.instance.showEmpty();
-    const iconWrapper = createElement(
-      "div",
-      { class: styles.documentType },
-      fileIcon
-    );
+  private getAudioAttachment(
+    media: MessageMediaDocument
+  ): [Element<AudioPlayer>, "audio"] {
+    return [
+      createElement(AudioPlayer, { media, tg: this.message.tg }),
+      "audio"
+    ];
+  }
 
-    let shouldContinue = true;
-
-    const stopListener = () => {
-      iconWrapper.removeEventListener("click", stopListener);
-      iconWrapper.addEventListener("click", downloadListener);
-      fileIcon.instance.showEmpty();
-
-      shouldContinue = false;
-    };
-
-    const minProgress = 0.01;
-
-    const downloadListener = () => {
-      iconWrapper.removeEventListener("click", downloadListener);
-      iconWrapper.addEventListener("click", stopListener);
-      fileIcon.instance.showProgress(minProgress);
-
-      const callback = (progress: number) => {
-        if (shouldContinue && fileIcon) {
-          fileIcon.instance.showProgress(Math.max(progress, minProgress));
-        }
-
-        return shouldContinue;
-      };
-
-      this.message.tg.fileStorage
-        .downloadMedia(media, undefined, callback)
-        .then(file => {
-          if (file && iconWrapper) {
-            fileIcon.instance.showDocument();
-            iconWrapper.removeEventListener("click", stopListener);
-            iconWrapper.removeEventListener("click", downloadListener);
-            iconWrapper.addEventListener("click", () => {
-              saveData(file, fileName);
-            });
-          }
-
-          console.log("ended download with", shouldContinue);
-
-          shouldContinue = true;
-        });
-    };
-
-    iconWrapper.addEventListener("click", downloadListener);
-
-    const element = createElement(
-      "div",
-      { class: styles.documentWrapper },
-      iconWrapper,
-      createElement(
-        "div",
-        { class: styles.documentContent },
-        createElement("div", { class: styles.title }, fileNameToRender),
-        createElement("div", parseFileSize((media.document as Document).size))
-      )
-    );
-    return [element, "voice"];
+  private getWebAttachment(_media: MessageMediaWebPage): [HTMLElement, "web"] {
+    const element = createElement("div", {});
+    return [element, "web"];
   }
 
   private getReplyElement(replyMsgId: number) {

@@ -167,3 +167,14 @@ svg .extension {
   font-weight: 500;
   font-size: 1.7em;
 }
+
+svg.waveform {
+  #g {
+    --color1: black;
+    --color2: grey;
+
+    stop {
+      transition: offset 0.2s ease;
+    }
+  }
+}

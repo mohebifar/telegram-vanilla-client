@@ -38,16 +38,9 @@ export default class FileIcon implements Component<Options> {
     this.element = createElement("div", { class: styles.wrapper });
   }
 
-  public showProgress(progress = 0) {
+  public showProgress(progress = 0, type: "r" | "c" = "r") {
     if (!this.progressElement) {
-      const svg = this.createSVG();
-
-      const path = document.createElementNS(NS, "path");
-
-      path.setAttributeNS(null, "d", D_EMPTY);
-      path.setAttribute("fill", this.color);
-      svg.append(path);
-
+      const svg = type === "r" ? this.rectangularSVG() : this.roundSVG();
       this.progressElement = createElement(Progress, { class: styles.inner });
 
       const close = createElement(Icon, {
@@ -65,36 +58,25 @@ export default class FileIcon implements Component<Options> {
 
   public showEmpty() {
     this.destroyProgress();
-    const svg = this.createSVG();
-
-    const path = document.createElementNS(NS, "path");
-
-    path.setAttributeNS(null, "d", D_EMPTY);
-    path.setAttribute("fill", this.color);
-    svg.append(path);
-
-    const download = createElement(Icon, {
-      class: styles.inner,
-      icon: Icons.Download,
-      color: "white"
-    });
+    const svg = this.rectangularSVG();
 
     removeChildren(this.element);
+
+    const download = this.createIcon(Icons.Download);
     this.element.append(svg, download);
   }
 
   public showDocument() {
     this.destroyProgress();
-    const path1 = document.createElementNS(NS, "path");
 
-    path1.setAttributeNS(null, "d", D_LARGE);
-    path1.setAttribute("fill", this.color);
+    const file = document.createElementNS(NS, "path");
+    file.setAttributeNS(null, "d", D_LARGE);
+    file.setAttribute("fill", this.color);
 
-    const path2 = document.createElementNS(NS, "path");
-
-    path2.setAttributeNS(null, "d", D_FOLD);
-    path2.setAttribute("fill", "#000000");
-    path2.setAttribute("fill-opacity", "0.3");
+    const fold = document.createElementNS(NS, "path");
+    fold.setAttributeNS(null, "d", D_FOLD);
+    fold.setAttribute("fill", "#000000");
+    fold.setAttribute("fill-opacity", "0.3");
 
     const text = document.createElementNS(NS, "text");
     text.innerHTML = this.extension;
@@ -108,10 +90,20 @@ export default class FileIcon implements Component<Options> {
     ].forEach(([k, v]) => text.setAttribute(k, v));
 
     const svg = this.createSVG();
-    svg.append(path1, path2, text);
+    svg.append(file, fold, text);
 
     removeChildren(this.element);
     this.element.append(svg);
+  }
+
+  public showAudio(icon: Icons) {
+    this.destroyProgress();
+
+    removeChildren(this.element);
+
+    const svg = this.roundSVG();
+    const download = this.createIcon(icon);
+    this.element.append(svg, download);
   }
 
   private destroyProgress() {
@@ -119,6 +111,30 @@ export default class FileIcon implements Component<Options> {
       this.progressElement.remove();
       this.progressElement = undefined;
     }
+  }
+
+  private roundSVG() {
+    const svg = this.createSVG();
+    const circle = document.createElementNS(NS, "circle");
+
+    circle.setAttribute("class", "audioCircle");
+    circle.setAttribute("cx", "48");
+    circle.setAttribute("cy", "48");
+    circle.setAttribute("r", "48");
+    svg.append(circle);
+
+    return svg;
+  }
+
+  private rectangularSVG() {
+    const svg = this.createSVG();
+    const path = document.createElementNS(NS, "path");
+
+    path.setAttributeNS(null, "d", D_EMPTY);
+    path.setAttribute("fill", this.color);
+    svg.append(path);
+
+    return svg;
   }
 
   private createSVG() {
@@ -129,5 +145,13 @@ export default class FileIcon implements Component<Options> {
     svg.setAttributeNS(null, "fill", "none");
 
     return svg;
+  }
+
+  private createIcon(icon: Icons) {
+    return createElement(Icon, {
+      class: styles.inner,
+      color: "white",
+      icon
+    });
   }
 }

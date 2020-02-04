@@ -24,7 +24,7 @@ export default class Progress implements Component<Options> {
       styles.progress + " spinner " + (options.class || "")
     );
     this.element.setAttribute("xmlns", NS);
-    this.element.setAttributeNS(null, "viewBox", "0 0 120 120");
+    this.element.setAttributeNS(null, "viewBox", "0 0 84 84");
 
     const circle = document.createElementNS(
       NS,
@@ -40,10 +40,10 @@ export default class Progress implements Component<Options> {
     this.progressValue.setAttribute("class", styles.value);
 
     [
-      ["cx", "60"],
-      ["cy", "60"],
+      ["cx", "42"],
+      ["cy", "42"],
       ["r", String(RADIUS)],
-      ["stroke-width", "5"]
+      ["stroke-width", "4"]
     ].forEach(([k, v]) => {
       circle.setAttribute(k, v);
       this.progressValue.setAttribute(k, v);
@@ -56,7 +56,7 @@ export default class Progress implements Component<Options> {
   }
 
   public progress(progress: number) {
-    const dashoffset = CIRCUMFERENCE * (1 - progress);
+    const dashoffset = CIRCUMFERENCE * (1 - Math.max(progress, 0.02));
 
     this.progressValue.style.strokeDashoffset = String(dashoffset);
   }

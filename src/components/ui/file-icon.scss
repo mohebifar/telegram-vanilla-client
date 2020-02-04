@@ -8,15 +8,26 @@
     top: 50%;
     left: 50%;
   }
+}
 
+:global(.fileDownload) {
   svg.inner {
     transform: none;
-    width: 2.8em;
-    top: calc(50% - 1.4em);
-    left: calc(50% - 1.4em);
+    width: 2em;
+    top: calc(50% - 1em);
+    left: calc(50% - 1em);
   }
 
   img.inner:global(.ic-close) {
     width: 1.2em;
+  }
+}
+
+:global(.audioPlayer) {
+  svg.inner {
+    transform: none;
+    width: 2.8em;
+    top: 0.1em;
+    left: 0.1em;
   }
 }
