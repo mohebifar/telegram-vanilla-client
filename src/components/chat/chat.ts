@@ -2,6 +2,7 @@ import { extractIdFromPeer } from "../../core/tl/utils";
 import { IDialog } from "../../models/dialog";
 import { IMessage, Message } from "../../models/message";
 import { IPeer, Peer, SimplifiedMessageRequest } from "../../models/peer";
+import { Message as TLMessage } from "../../core/tl/TLObjects";
 import {
   Component,
   createElement,
@@ -441,9 +442,53 @@ function messageToParagraphs(message: string) {
   return message;
 }
 
-export function messageToHTML(message: string) {
-  return messageToParagraphs(message).replace(
-    /@(\w[0-9a-zA-Z_\.]+)/g,
-    "<a href='#'>@$1</a>"
-  );
+export function messageToHTML(message: TLMessage) {
+  let currentOffset = 0;
+  const rawMessage = message.message;
+  let html = "";
+
+  if (message.entities) {
+    if (message.id === 47729) {
+      console.log("hello");
+    }
+    message.entities.forEach(entity => {
+      const entityText = rawMessage.substr(entity.offset, entity.length);
+      const textToHere = rawMessage.substring(currentOffset, entity.offset);
+      html += textToHere;
+      switch (entity.$t) {
+        case "MessageEntityTextUrl":
+          html += `<a href="${entity.url}" target="_blank">${entityText}</a>`;
+          break;
+        case "MessageEntityBlockquote":
+          html += `<blockquote">${entityText}</blockquote>`;
+          break;
+        case "MessageEntityBold":
+          html += `<strong>${entityText}</strong>`;
+          break;
+        case "MessageEntityItalic":
+          html += `<em>${entityText}</em>`;
+          break;
+        case "MessageEntityMention":
+          html += `<a href="#mention">${entityText}</a>`;
+          break;
+        case "MessageEntityMentionName":
+          html += `<a href="#">${entityText}</a>`;
+          break;
+        case "MessageEntityUrl":
+          html += `<a href="${entityText}" target="_blank">${entityText}</a>`;
+          break;
+        case "MessageEntityUnderline":
+          html += `<u>${entityText}</u>`;
+          break;
+        default:
+          html += entityText;
+      }
+
+      currentOffset = entity.offset + entity.length;
+    });
+  }
+
+  html += rawMessage.substring(currentOffset);
+
+  return messageToParagraphs(html);
 }

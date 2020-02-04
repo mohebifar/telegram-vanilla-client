@@ -146,6 +146,10 @@ export default class Bubble implements Component<Options> {
       removeChildren(this.attachment);
       this.attachment.append(attachment);
 
+      if (attachmentType === "web") {
+        this.element.append(this.attachment);
+      }
+
       if (attachment.style.width) {
         this.element.style.width = attachment.style.width;
       }
@@ -186,7 +190,7 @@ export default class Bubble implements Component<Options> {
           }
         }
       } else if (media.$t === "MessageMediaWebPage") {
-        this.getWebAttachment(media);
+        return this.getWebAttachment(media);
       }
 
       console.log("Unsupported media", media);
@@ -328,8 +332,29 @@ export default class Bubble implements Component<Options> {
     ];
   }
 
-  private getWebAttachment(_media: MessageMediaWebPage): [HTMLElement, "web"] {
-    const element = createElement("div", {});
+  private getWebAttachment(media: MessageMediaWebPage): [HTMLElement, "web"] {
+    if (media.webpage.$t !== "WebPage") {
+      return [undefined, "web"];
+    }
+
+    const img = createElement("img", { src: EMPTY_IMG });
+
+    const fs = this.message.tg.fileStorage;
+    fs.downloadMedia(media).then(src => {
+      img.setAttribute("src", src);
+    });
+
+    const element = createElement(
+      "a",
+      {
+        class: styles.webPageWrapper,
+        href: media.webpage.url,
+        target: "_blank"
+      },
+      createElement("div", { class: styles.photo }, img),
+      createElement("div", { class: styles.name }, media.webpage.siteName),
+      createElement("div", media.webpage.description)
+    );
     return [element, "web"];
   }
 
@@ -391,8 +416,9 @@ export default class Bubble implements Component<Options> {
   private getInfo() {
     switch (this.message.$t) {
       case "Message":
+        console.log("this.message", this.message);
         return {
-          text: messageToHTML(this.message.message),
+          text: messageToHTML(this.message),
           time: this.message.date.format("HH:mm")
         };
       case "MessageEmpty":

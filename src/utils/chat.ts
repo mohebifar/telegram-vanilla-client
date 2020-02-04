@@ -9,7 +9,8 @@ import {
   PhotoCachedSize,
   PhotoStrippedSize,
   PhotoSizeEmpty,
-  DocumentAttributeFilename
+  DocumentAttributeFilename,
+  DocumentAttributeAudio
 } from "../core/tl/TLObjects";
 import { Peer } from "../models/peer";
 import { TelegramClientProxy } from "../telegram-worker-proxy";
@@ -169,6 +170,19 @@ export function getMessageMediaType(
       if (fileAttribute) {
         return ["", fileAttribute.fileName, null];
       }
+
+      const audioAttribute = media.document.attributes.find(
+        t => t.$t === "DocumentAttributeAudio"
+      ) as DocumentAttributeAudio;
+      if (audioAttribute) {
+        return [
+          "",
+          (audioAttribute.voice && "Voice message") ||
+            audioAttribute.title ||
+            "Audio",
+          null
+        ];
+      }
     }
   } else if (media.$t === "MessageMediaPhoto") {
     return [
@@ -176,6 +190,8 @@ export function getMessageMediaType(
       "Photo",
       includeContent && tgProxy.fileStorage.downloadMedia(media, 0)
     ];
+  } else if (media.$t === "MessageMediaWebPage") {
+    return ["", "", undefined];
   }
 
   return ["Unsupported media", null, null];
@@ -234,13 +250,11 @@ export function getLastSeenTime(status: User["status"]) {
   }
 }
 
-export function sortPhotoSizes(
-  sizes: (PhotoSize | PhotoCachedSize | PhotoStrippedSize | PhotoSizeEmpty)[]
-) {
-  const presetOrder = ["m", "x", "s", "y"];
-
+export function sortPhotoSizes<
+  T extends PhotoSize | PhotoCachedSize | PhotoStrippedSize | PhotoSizeEmpty
+>(sizes: T[], presetOrder = ["m", "x", "s", "y"]): T[] {
   const arr = sizes.slice();
-  const result = [];
+  const result: T[] = [];
   let i: number;
   let j: number;
 
