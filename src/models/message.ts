@@ -125,7 +125,6 @@ export class Message extends Model<"messages"> {
           peer: getInputPeer(peer) as InputPeerUser
         };
 
-        console.log('input', input, this._proxy.toId.$t, this._proxy.fromId)
     return this.tg.invoke(input as any);
   }
 
@@ -155,6 +154,40 @@ export class Message extends Model<"messages"> {
 
     const messages = [];
     for (const message of messagesSlice.messages) {
+      const model = Message.fromObject(message);
+      model.save();
+      messages.push(model);
+    }
+
+    return messages;
+  }
+
+  public static async globalSearch(q: string) {
+    let offsetId = 0;
+
+    const response = (await this.tg.invoke({
+      $t: "messages_SearchGlobalRequest",
+      offsetId,
+      offsetPeer: {
+        $t: "InputPeerSelf"
+      },
+      offsetRate: 0,
+      limit: 20,
+      q
+    })) as messages_MessagesSlice;
+
+    for (const chat of response.chats) {
+      Peer.fromObject(chat).save();
+    }
+
+    for (const user of response.users) {
+      if (user.$t === "User" || user.$t === "UserEmpty") {
+        Peer.fromObject(user).save();
+      }
+    }
+
+    const messages: IMessage[] = [];
+    for (const message of response.messages) {
       const model = Message.fromObject(message);
       model.save();
       messages.push(model);

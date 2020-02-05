@@ -2,11 +2,13 @@ import dayjs from "dayjs";
 import {
   Dialog as TLDialog,
   messages_DialogsSlice,
-  messages_GetDialogsRequest
+  messages_GetDialogsRequest,
+  messages_PeerDialogs
 } from "../core/tl/TLObjects";
 import { extractIdFromPeer, getInputPeer } from "../core/tl/utils";
 import { getDialogDisplayDate, getMessageSummary } from "../utils/chat";
 import { DBDialog, TelegramDatabase } from "../utils/db";
+import { InputPeerTypes } from "../utils/useful-types";
 import { IMessage, Message } from "./message";
 import { Model, ModelDecorator, ModelKey, ModelWithProxy } from "./model";
 import { IPeer, Peer } from "./peer";
@@ -90,10 +92,10 @@ export class Dialog extends Model<"dialogs"> {
 
     for (const message of response.messages) {
       // if (message.$t === "Message" || message.$t === "MessageEmpty") {
-        Message.fromObject(message).save();
+      Message.fromObject(message).save();
       // } else {
-        // TODO: handle MessageService
-        // console.debug("Unsupported message", message);
+      // TODO: handle MessageService
+      // console.debug("Unsupported message", message);
       // }
     }
 
@@ -112,6 +114,47 @@ export class Dialog extends Model<"dialogs"> {
     // console.log("messagesToFetch", messagesToFetch);
     // await this.fetchMessages(messagesToFetch);
     // }
+
+    for (const dialog of response.dialogs) {
+      if (dialog.$t === "Dialog") {
+        const message = Message.getFromMemory(dialog.topMessage) as IMessage;
+        if (!message) {
+          continue;
+        }
+        const object = Dialog.fromObject({
+          dialog,
+          lastMessageDate: message.date.unix()
+        });
+        object.save();
+        dialogs.push(object);
+      }
+    }
+
+    return dialogs;
+  }
+
+  static async fetchByPeer(inputPeers: InputPeerTypes[]) {
+    const peers = inputPeers.filter(({ $t }) => $t !== "InputPeerEmpty") as any;
+    const response = (await this.tg.invoke({
+      $t: "messages_GetPeerDialogsRequest",
+      peers
+    })) as messages_PeerDialogs;
+
+    for (const chat of response.chats) {
+      Peer.fromObject(chat).save();
+    }
+
+    for (const user of response.users) {
+      if (user.$t === "User" || user.$t === "UserEmpty") {
+        Peer.fromObject(user).save();
+      }
+    }
+
+    for (const message of response.messages) {
+      Message.fromObject(message).save();
+    }
+
+    const dialogs: IDialog[] = [];
 
     for (const dialog of response.dialogs) {
       if (dialog.$t === "Dialog") {

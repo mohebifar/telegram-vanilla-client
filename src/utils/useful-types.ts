@@ -40,6 +40,7 @@ export type DialogMessageTypes = Message | MessageEmpty | MessageService;
 export type Update = Updates["updates"][0];
 export type UpdateShort =
   | TLUpdateShort["update"]
+  | TLUpdateShort
   | UpdateShortMessage
   | UpdateShortChatMessage
   | UpdateShortSentMessage;

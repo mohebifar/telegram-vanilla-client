@@ -238,7 +238,7 @@ export function getLastSeenTime(status: User["status"]) {
     case "UserStatusOffline":
       return `Last seen ${dayjs(status.wasOnline * 1000).fromNow()}`;
     case "UserStatusOnline":
-      return "Online";
+      return "online";
     case "UserStatusLastMonth":
       return "Last seen a month ago";
     case "UserStatusLastWeek":

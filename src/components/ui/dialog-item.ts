@@ -1,15 +1,17 @@
 import { createElement, Component, removeChildren } from "../../utils/dom";
-import { shortenCount } from "../../utils/chat";
+import { shortenCount, getDialogDisplayDate } from "../../utils/chat";
 import * as styles from "./dialog-item.scss";
 import Avatar from "./avatar";
 import Icon, { Icons } from "./icon";
 import { IDialog } from "../../models/dialog";
 import { IPeer } from "../../models/peer";
+import { IMessage } from "../../models/message";
 
 interface Options {
-  dialog: IDialog;
+  dialog?: IDialog;
+  message?: IMessage;
   peer: IPeer;
-  onClick: (dialog: IDialog) => any;
+  onClick: (dialog: IDialog, message: IMessage, peer: IPeer) => any;
 }
 
 export default class DialogItem implements Component<Options> {
@@ -20,6 +22,7 @@ export default class DialogItem implements Component<Options> {
   private date: HTMLElement;
   private unreadCount: HTMLElement;
   private dialog: Options["dialog"];
+  private message: Options["message"];
   private peer: Options["peer"];
   private onClick: Options["onClick"];
 
@@ -31,6 +34,7 @@ export default class DialogItem implements Component<Options> {
     this.element = wrapper;
     this.peer = options.peer;
     this.dialog = options.dialog;
+    this.message = options.message;
     this.onClick = options.onClick;
 
     // this.register(options);
@@ -64,7 +68,9 @@ export default class DialogItem implements Component<Options> {
       this.unreadCount
     );
 
-    this.element.addEventListener("click", () => this.onClick(this.dialog));
+    this.element.addEventListener("click", () =>
+      this.onClick(this.dialog, this.message, this.peer)
+    );
     this.element.appendChild(this.avatar);
     this.element.appendChild(textWrapper);
     this.element.appendChild(meta);
@@ -94,19 +100,30 @@ export default class DialogItem implements Component<Options> {
   }
 
   private async getInfo() {
-    const shouldShowPin = this.dialog.unreadCount === 0 && this.dialog.pinned;
-    const text = await this.dialog.getText();
-    const date = await this.dialog.getDisplayDate();
+    if (this.dialog) {
+      const shouldShowPin = this.dialog.unreadCount === 0 && this.dialog.pinned;
+      const text = await this.dialog.getText();
+      const date = await this.dialog.getDisplayDate();
 
-    return {
-      unread: shouldShowPin
-        ? createElement(Icon, { icon: Icons.PinnedChat, color: "white" })
-        : shortenCount(this.dialog.unreadCount || 0),
-      title: this.peer.displayName,
-      date,
-      text: (text && text.slice(0, 50)) || "",
-      silent: this.dialog.slient,
-      peer: this.peer
-    };
+      return {
+        unread: shouldShowPin
+          ? createElement(Icon, { icon: Icons.PinnedChat, color: "white" })
+          : shortenCount(this.dialog.unreadCount || 0),
+        title: this.peer.displayName,
+        date,
+        text: (text && text.slice(0, 50)) || "",
+        silent: this.dialog.slient
+      };
+    } else {
+      const text = (this.message as any).message || "";
+
+      return {
+        unread: undefined,
+        title: this.peer.displayName,
+        date: getDialogDisplayDate(this.message.date),
+        text: (text && text.slice(0, 50)) || "",
+        silent: false
+      };
+    }
   }
 }

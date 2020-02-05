@@ -4,6 +4,8 @@
   background-color: #fff;
   border-right: 1px solid $grey-light;
   width: 25em;
+  position: relative;
+  overflow: hidden;
 
   .dialogsWrapper {
     flex-grow: 1;

@@ -73,7 +73,16 @@ export function ModelDecorator({
 
     modelClass.fromObject =
       modelClass.fromObject ||
-      function(object: any) {
+      function(object: any, forceRecreate: boolean = false) {
+        if (!forceRecreate) {
+          const preparedValues = modelClass.prototype.prepareValues(object);
+          if (modelClass.isInMemory(preparedValues)) {
+            const model = modelClass.getFromMemory(preparedValues);
+            model.assignValues(object);
+            return model;
+          }
+        }
+
         const model = this.makeProxy();
         model.assignValues(object);
         return model;
@@ -106,7 +115,7 @@ export class Model<
 
   static getMemoryCacheKey(object: Model<any> | PrimaryKey) {
     if (typeof object === "string" || typeof object === "number") {
-      return "_" + String(object);
+      return "_" + String(object).replace(/^_/, "");
     }
 
     return this.primaryKey.reduce(
@@ -170,7 +179,9 @@ export class Model<
     const isInMemory = this.constructor.isInMemory(gid);
     this.saveInMemory();
 
-    const eventPayload = { object: this._proxy, gid };
+    const object = this.constructor.getFromMemory(this._proxy);
+
+    const eventPayload = { object, gid };
     this.constructor.events.emit("saved", eventPayload);
     if (!isInMemory) {
       this.constructor.events.emit(

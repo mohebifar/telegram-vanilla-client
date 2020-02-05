@@ -2,11 +2,16 @@ import { BigInteger as JBigInt } from "big-integer";
 import {
   UpdateNewChannelMessage,
   UpdateNewMessage,
+  UpdateReadHistoryInbox,
   UpdateShortChatMessage,
   UpdateShortMessage,
-  UpdateShortSentMessage
+  UpdateShortSentMessage,
+  UpdateUserStatus,
+  UpdateReadChannelInbox
 } from "./core/tl/TLObjects";
+import { extractIdFromPeer } from "./core/tl/utils";
 import { IMessage, Message } from "./models/message";
+import { Peer } from "./models/peer";
 import { AllUpdateTypes, DialogMessageTypes } from "./utils/useful-types";
 
 interface TransientMessageData {
@@ -34,6 +39,16 @@ export function handleUpdate(update: AllUpdateTypes, extras: Extras = {}) {
       for (const individualUpdate of update.updates) {
         handleUpdate(individualUpdate, extras);
       }
+      break;
+    case "UpdateShort":
+      handleUpdate(update.update);
+      break;
+    case "UpdateReadHistoryInbox":
+    case "UpdateReadChannelInbox":
+      handleUpdateReadInbox(update);
+      break;
+    case "UpdateUserStatus":
+      handleUpdateUserStatus(update);
       break;
     default:
       console.debug("Unsupported update", update);
@@ -107,4 +122,28 @@ async function handleNewMessageUpdate(
   dialog.lastMessageDate = message.date.unix();
   dialog.topMessage = message.id;
   dialog.save();
+}
+
+async function handleUpdateReadInbox(
+  update: UpdateReadHistoryInbox | UpdateReadChannelInbox
+) {
+  const peer = await Peer.get(
+    update.$t === "UpdateReadChannelInbox"
+      ? { type: "Channel", id: update.channelId }
+      : extractIdFromPeer(update.peer)
+  );
+  const dialog = await peer.getDialog();
+  if (dialog) {
+    dialog.unreadCount = update.stillUnreadCount;
+    dialog.readInboxMaxId = update.maxId;
+    dialog.save();
+  }
+}
+
+async function handleUpdateUserStatus(update: UpdateUserStatus) {
+  const peer = await Peer.get({ type: "User", id: update.userId });
+  if (peer && peer.$t === "User") {
+    peer.status = update.status;
+    peer.save();
+  }
 }

@@ -1,5 +1,5 @@
 import { IDialog } from "../../models/dialog";
-import { IPeer } from "../../models/peer";
+import { IPeer, Peer } from "../../models/peer";
 import { getLastSeenTime } from "../../utils/chat";
 import { Component, createElement } from "../../utils/dom";
 import Avatar from "../ui/avatar";
@@ -45,11 +45,21 @@ export default class TopBar implements Component<Options> {
     });
 
     this.update();
+
+    Peer.events.on("saved", async ({ object }: { object: any }) => {
+      if (object === this.peer) {
+        this.update();
+      }
+    });
   }
 
-  private update() {
+  public update() {
     this.displayNameContainer.innerHTML = this.peer.displayName;
-    this.subdueText.innerHTML = this.getSubdueText();
+    let subdue = this.getSubdueText();
+    if (subdue === "online") {
+      subdue = `<span class="${styles.online}">${subdue}</span>`;
+    }
+    this.subdueText.innerHTML = subdue;
   }
 
   private getSubdueText() {

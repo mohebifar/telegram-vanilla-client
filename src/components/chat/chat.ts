@@ -30,6 +30,7 @@ export default class Chat implements Component<Options> {
   private chatContainer: HTMLElement;
   private topBarContainer: HTMLElement;
   private sendMessageForm: Element<SendMessageForm>;
+  private topBar: Element<TopBar>;
   private dialog?: IDialog;
   private peer?: IPeer;
   private lockLoad = false;
@@ -81,10 +82,9 @@ export default class Chat implements Component<Options> {
       this.lockLoad = true;
       this.peer = await dialog.getPeer();
       if (dialog !== this.dialog) {
+        this.topBar = createElement(TopBar, { dialog, peer: this.peer });
         removeChildren(this.topBarContainer);
-        this.topBarContainer.append(
-          createElement(TopBar, { dialog, peer: this.peer })
-        );
+        this.topBarContainer.append(this.topBar);
       }
 
       this.idToElementMap.clear();
@@ -162,6 +162,12 @@ export default class Chat implements Component<Options> {
         }
       }
     });
+
+    setInterval(() => {
+      if (this.topBar) {
+        this.topBar.instance.update();
+      }
+    }, 60000);
 
     Message.events.on("synced", async ({ message }: { message: IMessage }) => {
       if (message.$t === "MessageEmpty") {
@@ -448,9 +454,6 @@ export function messageToHTML(message: TLMessage) {
   let html = "";
 
   if (message.entities) {
-    if (message.id === 47729) {
-      console.log("hello");
-    }
     message.entities.forEach(entity => {
       const entityText = rawMessage.substr(entity.offset, entity.length);
       const textToHere = rawMessage.substring(currentOffset, entity.offset);

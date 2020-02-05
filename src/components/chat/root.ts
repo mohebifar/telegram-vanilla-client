@@ -4,6 +4,7 @@ import SideBar from "./side-bar";
 import Chat from "./chat";
 import { TelegramClientProxy } from "../../telegram-worker-proxy";
 import { IDialog } from "../../models/dialog";
+import { IMessage } from "../../models/message";
 
 interface Options {
   tgProxy: TelegramClientProxy;
@@ -34,8 +35,8 @@ export default class Root implements Component<Options> {
 
   private async register() {}
 
-  private onChatSelect = async (dialog: IDialog) => {
-    this.chat.instance.setActiveDialog(dialog);
+  private onChatSelect = async (dialog: IDialog, message: IMessage) => {
+    this.chat.instance.setActiveDialog(dialog, message && message.id);
     this.sideBar.instance.setActiveDialog(dialog);
   };
 }

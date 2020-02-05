@@ -23,6 +23,10 @@
         font-weight: 400;
         color: $grey;
         font-size: 0.8rem;
+
+        .online {
+          color: $blue;
+        }
       }
     }
   }
