@@ -18,6 +18,13 @@ export enum Icons {
   Close = "close",
   Play = "play",
   Pause = "pause",
+  Smile = "smile",
+  Animals = "animals",
+  Eats = "eats",
+  Car = "car",
+  Sport = "sport",
+  Lamp = "lamp",
+  Flag = "flag"
 }
 
 export interface Options {
@@ -28,11 +35,20 @@ export interface Options {
 
 export default class Icon implements Component<Options> {
   public readonly element: HTMLElement;
+  private color: Options["color"];
 
   constructor({ icon, color = "black", ...rest }: Options) {
+    this.color = color;
     this.element = createElement("img", {
       src: `/assets/icons/${icon}.svg`,
       class: `ic ic-${color} ic-${icon} ${rest["class"] || ""}`
     });
+  }
+
+  public setColor(color: Options["color"]) {
+    const { classList } = this.element;
+    classList.remove("ic-" + this.color);
+    classList.add("ic-" + color);
+    this.color = color;
   }
 }

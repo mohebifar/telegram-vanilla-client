@@ -416,7 +416,6 @@ export default class Bubble implements Component<Options> {
   private getInfo() {
     switch (this.message.$t) {
       case "Message":
-        console.log("this.message", this.message);
         return {
           text: messageToHTML(this.message),
           time: this.message.date.format("HH:mm")

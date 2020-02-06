@@ -12,6 +12,8 @@ interface Attributes {
 
 type OptionsType<T> = T extends new (options: infer U) => any ? U : never;
 
+type ComponentType<T> = T extends new (options: any) => infer U ? U : never;
+
 interface ComponentClass<P = {}> {
   new (props?: P): Component<P>;
 }
@@ -31,11 +33,15 @@ export function preload(
 
 type Children = Node | Component | string;
 
-export function createElement<P extends {}, C extends ComponentClass<P>>(
-  component: C,
-  attrs?: OptionsType<C> | undefined,
+export function createElement<
+  CC,
+  C extends ComponentType<CC>,
+  P extends OptionsType<CC>
+>(
+  component: CC,
+  attrs?: OptionsType<CC> | undefined,
   ...children: Children[]
-): Element<C[keyof C]>;
+): Element<C>;
 
 export function createElement<P extends {}>(
   component: string,
@@ -127,7 +133,9 @@ export function getNthChild<T extends HTMLElement>(
   return childNodes.item(num) as HTMLElement;
 }
 
-export function removeChildren<T extends HTMLElement | Element<any>>(parent: T) {
+export function removeChildren<T extends HTMLElement | Element<any>>(
+  parent: T
+) {
   while (parent.firstChild) {
     parent.firstChild.remove();
   }

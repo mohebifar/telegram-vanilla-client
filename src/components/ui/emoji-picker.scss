@@ -1,0 +1,72 @@
+@import "../../variables.scss";
+
+.container {
+  position: relative;
+  height: 20em;
+
+  &,
+  .emojiWrapper {
+    width: 21em;
+  }
+
+  .emojiWrapper {
+    height: 17.5em;
+    flex: 1;
+    overflow: scroll;
+
+    .category {
+      .title {
+        top: 0;
+        margin: 0;
+        padding: 0.5em;
+        position: sticky;
+        font-size: 1em;
+        font-weight: 500;
+        background-color: rgba(255, 255, 255, 0.9);
+        color: $grey;
+      }
+
+      .emojisList {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        padding: 0 0.5em;
+
+        button {
+          background: transparent;
+          border: none;
+          width: 35px;
+          height: 35px;
+          padding: 0;
+          text-align: center;
+          font-size: 1.6em;
+          border-radius: 7px;
+          outline: none;
+          cursor: pointer;
+
+          &,
+          &:hover {
+            transition: background-color 0.3s ease;
+          }
+        }
+
+        button:hover {
+          background-color: rgba(0, 0, 0, 0.1);
+        }
+      }
+    }
+  }
+
+  .tabs {
+    display: flex;
+    padding: 0.5em 0;
+    border-top: 1px solid $grey-light;
+    justify-content: space-around;
+    align-items: center;
+
+    :global(.ic) {
+      width: 1.3em;
+      cursor: pointer;
+    }
+  }
+}

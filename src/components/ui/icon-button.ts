@@ -5,20 +5,32 @@ import Icon, { Icons, Options as IconOptions } from "./icon";
 interface Options {
   icon: Icons;
   color?: IconOptions["color"];
-  onClick?(): void;
+  onClick?(event: Event): void;
+  onHover?(event: Event): void;
+  onHoverOut?(event: Event): void;
+  [s: string]: any;
 }
 
 enum EventMap {
-  onClick = "click"
+  onClick = "click",
+  onHover = "mouseenter",
+  onHoverOut = "mouseleave"
 }
 
 export default class IconButton implements Component<Options> {
   public readonly element: HTMLElement;
 
   constructor({ icon, color, ...rest }: Options) {
+    const props = {};
+    for (const k in rest) {
+      if (!(k in EventMap)) {
+        props[k] = rest[k];
+      }
+    }
+
     this.element = createElement(
       "button",
-      { class: styles.btn },
+      { class: styles.btn, ...props },
       createElement(Icon, {
         icon,
         color: color || "grey"

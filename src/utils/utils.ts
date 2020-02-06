@@ -11,12 +11,38 @@ export function formatPhoneNumber(phoneNumber: string) {
   return phoneNumber;
 }
 
-export function debounce<T extends Function>(func: T, wait = 300) {
+export function debounce<T extends Function>(callback: T, wait = 300) {
   let timeout: number;
 
   return (function(...args: any[]) {
     const context = this;
     clearTimeout(timeout);
-    timeout = setTimeout(() => func.apply(context, args), wait);
+    timeout = setTimeout(() => callback.apply(context, args), wait);
+  } as never) as T;
+}
+
+export function throttle<T extends Function>(
+  callback: T,
+  wait = 300,
+  immediate = false
+) {
+  let timeout = null;
+  let initialCall = true;
+
+  return (function(...args: any[]) {
+    const callNow = immediate && initialCall;
+    const next = () => {
+      callback.apply(this, args);
+      timeout = null;
+    };
+
+    if (callNow) {
+      initialCall = false;
+      next();
+    }
+
+    if (!timeout) {
+      timeout = setTimeout(next, wait);
+    }
   } as never) as T;
 }

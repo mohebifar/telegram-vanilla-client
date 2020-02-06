@@ -1,0 +1,72 @@
+@import "../../variables.scss";
+
+.container {
+  border-radius: 10px;
+  position: absolute;
+  left: 0;
+  bottom: 60px;
+  background-color: #fff;
+  box-shadow: 0 0 10px #00000030;
+  transform-origin: bottom left;
+  display: none;
+
+  &.visible {
+    display: block;
+    animation: animateIn 0.4s cubic-bezier(0.5, 0.65, 0.25, 0.9) forwards;
+  }
+
+  .tabs {
+    position: relative;
+    padding: 0 0.5em;
+    border-bottom: 1px solid $grey-light;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    &:after {
+      content: "";
+      display: block;
+      clear: both;
+    }
+
+    .tab {
+      text-align: center;
+      padding: 0.8em 0;
+      cursor: pointer;
+      color: $grey;
+      font-weight: 500;
+      position: relative;
+      margin: 0 0.8em;
+      border: none;
+      background: none;
+      outline: none;
+
+      &.active {
+        &:after {
+          content: "";
+          display: block;
+          height: 3px;
+          background-color: $blue;
+          border-radius: 3px 3px 0 0;
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
+        }
+
+        color: $blue;
+      }
+    }
+  }
+}
+
+@keyframes animateIn {
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}

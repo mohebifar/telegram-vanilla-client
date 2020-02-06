@@ -90,7 +90,7 @@ export async function getMessageSummary(message: DialogMessageTypes) {
       }
 
       if (message.message) {
-        return text + message.message.slice(0, 70);
+        return text + message.message.replace(/[\r\n]/, ' ').slice(0, 70);
       }
 
       return text + (mediaType || "");

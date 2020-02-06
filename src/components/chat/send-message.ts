@@ -3,6 +3,7 @@ import { SimplifiedMessageRequest, Peer } from "../../models/peer";
 import { Component, createElement } from "../../utils/dom";
 import { Icons } from "../ui/icon";
 import IconButton from "../ui/icon-button";
+import EmojiPanel from "../ui/emoji-panel";
 import * as styles from "./send-message.scss";
 
 interface Options {
@@ -20,6 +21,7 @@ export default class SendMessageForm implements Component<Options> {
     this.callback = callback;
     this.inputNode = createElement("textarea", {
       rows: "1",
+      class: styles.messageInput,
       placeholder: "Message"
     }) as HTMLTextAreaElement;
     autosize(this.inputNode);
@@ -36,6 +38,31 @@ export default class SendMessageForm implements Component<Options> {
       this.filePicker
     ) as HTMLButtonElement;
 
+    const emojiPicker = createElement(EmojiPanel, {
+      onEmojiSelect: emoji => {
+        const target = this.inputNode;
+        if (target.setRangeText) {
+          target.setRangeText(emoji);
+          target.focus();
+        } else {
+          target.focus();
+          document.execCommand("insertText", false, emoji);
+        }
+      }
+    });
+
+    const emojiActivator = createElement(IconButton, {
+      icon: Icons.Smile,
+      type: "button",
+      onHover: event => {
+        event.stopPropagation();
+        emojiPicker.instance.setVisibility(true);
+      },
+      onHoverOut: () => {
+        emojiPicker.instance.deferHide();
+      }
+    });
+
     this.filePicker.addEventListener("change", event => {
       let reader = new FileReader();
       reader.onload = async function(e) {
@@ -51,6 +78,7 @@ export default class SendMessageForm implements Component<Options> {
           }
         });
       };
+
       reader.readAsArrayBuffer((event.target as HTMLInputElement).files[0]);
     });
 
@@ -60,8 +88,10 @@ export default class SendMessageForm implements Component<Options> {
       createElement(
         "div",
         { class: styles.inputWrapper },
+        emojiActivator,
         this.inputNode,
-        this.attachmentButton
+        this.attachmentButton,
+        emojiPicker
       ),
       createElement(IconButton, { icon: Icons.Send, color: "white" })
     );

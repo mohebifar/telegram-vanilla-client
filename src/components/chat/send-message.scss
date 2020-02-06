@@ -1,4 +1,5 @@
 @import "../../variables.scss";
+@import "../ui/icon.global.scss";
 
 .container {
   display: flex;
@@ -14,6 +15,21 @@
     box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.08);
     margin-right: 1rem;
     position: relative;
+    padding: 0 $input-padding-h/2;
+    background-color: #fff;
+    display: flex;
+    align-items: flex-end;
+    border-radius: 1rem 1rem 0 1rem;
+
+    > button {
+      height: auto;
+      margin: 0;
+      padding: $input-padding-v $input-padding-h/2;
+
+      &:hover > :global(.ic) {
+        @extend .ic-blue;
+      }
+    }
 
     &:after {
       content: "";
@@ -27,21 +43,23 @@
       box-shadow: -14px 0 0 #fff;
     }
 
-    &,
-    textarea {
-      border-radius: 1rem 1rem 0 1rem;
-    }
-
-    textarea {
+    .messageInput {
+      line-height: 1.2;
       max-height: 10rem;
+      overflow-y: auto;
       width: 100%;
       outline: none;
       font-size: 1rem;
-      padding: $input-padding-v $input-padding-h;
       border: none;
       resize: none;
       min-width: 2rem;
       display: block;
+      padding: $input-padding-v $input-padding-h/2;
+      margin-right: 1em;
+
+      p {
+        margin: 0;
+      }
     }
   }
 
