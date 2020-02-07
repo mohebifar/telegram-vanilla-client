@@ -23,3 +23,14 @@ $green: #4ccd5e;
 $green-dark: #50af4f;
 
 $red: #e53934;
+
+@keyframes popoverAnimateIn {
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}

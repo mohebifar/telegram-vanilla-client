@@ -12,7 +12,7 @@
 
   &.visible {
     display: block;
-    animation: animateIn 0.4s cubic-bezier(0.5, 0.65, 0.25, 0.9) forwards;
+    animation: popoverAnimateIn 0.4s cubic-bezier(0.5, 0.65, 0.25, 0.9) forwards;
   }
 
   .tabs {
@@ -57,16 +57,5 @@
         color: $blue;
       }
     }
-  }
-}
-
-@keyframes animateIn {
-  from {
-    transform: scale(0);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
-    opacity: 1;
   }
 }

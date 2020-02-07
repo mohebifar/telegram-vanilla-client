@@ -234,8 +234,9 @@ export default class Chat implements Component<Options> {
     unreadCount = 0
   }: { offsetMessage?: number; unreadCount?: number } = {}) {
     this.lockLoad = true;
+    const peer = this.peer;
     const jumpCount = unreadCount ? unreadCount - LIMIT + BACK_LIMIT : 0;
-    const messages = await this.peer.fetchHistory(
+    const messages = await peer.fetchHistory(
       unreadCount
         ? {
             addOffset: Math.max(0, jumpCount),
@@ -247,6 +248,10 @@ export default class Chat implements Component<Options> {
             addOffset: offsetMessage ? -LIMIT : 0
           }
     );
+    if (peer !== this.peer) {
+      return;
+    }
+
     await this.addMessages(messages, {
       messageToScrollTo: offsetMessage,
       jumpToBackLimit: unreadCount

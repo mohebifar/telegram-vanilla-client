@@ -24,7 +24,11 @@ export enum Icons {
   Car = "car",
   Sport = "sport",
   Lamp = "lamp",
-  Flag = "flag"
+  Flag = "flag",
+  Attach = "attach",
+  Photo = "photo",
+  Document = "document",
+  Poll = "poll"
 }
 
 export interface Options {
