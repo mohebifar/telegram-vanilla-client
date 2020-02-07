@@ -21,7 +21,8 @@ export default class Lottie implements Component<Options> {
   constructor({ config, onReady, ...rest }: Options) {
     this.element = createElement("div", {
       ...rest,
-      class: `lottie ${rest.class}`
+      class: `lottie ${rest.class}`,
+      "data-bm-renderer": "svg"
     });
 
     this.onReady = onReady;
