@@ -1,13 +1,15 @@
 import { BigInteger as JBigInt } from "big-integer";
 import {
+  UpdateDeleteChannelMessages,
+  UpdateDeleteMessages,
   UpdateNewChannelMessage,
   UpdateNewMessage,
+  UpdateReadChannelInbox,
   UpdateReadHistoryInbox,
   UpdateShortChatMessage,
   UpdateShortMessage,
   UpdateShortSentMessage,
-  UpdateUserStatus,
-  UpdateReadChannelInbox
+  UpdateUserStatus
 } from "./core/tl/TLObjects";
 import { extractIdFromPeer } from "./core/tl/utils";
 import { IMessage, Message } from "./models/message";
@@ -49,6 +51,12 @@ export function handleUpdate(update: AllUpdateTypes, extras: Extras = {}) {
       break;
     case "UpdateUserStatus":
       handleUpdateUserStatus(update);
+      break;
+    case "UpdateDeleteMessages":
+      handleUpdateDeleteMessages(update, false);
+      break;
+    case "UpdateDeleteChannelMessages":
+      handleUpdateDeleteMessages(update, true);
       break;
     default:
       console.debug("Unsupported update", update);
@@ -145,5 +153,17 @@ async function handleUpdateUserStatus(update: UpdateUserStatus) {
   if (peer && peer.$t === "User") {
     peer.status = update.status;
     peer.save();
+  }
+}
+
+async function handleUpdateDeleteMessages(
+  update: UpdateDeleteMessages | UpdateDeleteChannelMessages,
+  isChannel: boolean
+) {
+  for (const id of update.messages) {
+    const model = await Message.get({ id, isChannel: Number(isChannel) });
+    if (model) {
+      model.destroy();
+    }
   }
 }
