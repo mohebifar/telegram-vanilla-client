@@ -6,7 +6,7 @@ import {
 import { TelegramClientProxy } from "../../telegram-worker-proxy";
 import { Component, createElement } from "../../utils/dom";
 import * as styles from "../chat/chat.scss";
-import FileIcon from "./file-icon";
+import FileIcon from "../ui/file-icon";
 import { parseFileSize } from "../../utils/chat";
 import { TransientMedia } from "../../utils/useful-types";
 
@@ -28,7 +28,7 @@ const saveData = (function() {
   };
 })();
 
-export default class FileDownloader implements Component<Options> {
+export default class FileAttachment implements Component<Options> {
   public readonly element: HTMLElement;
 
   constructor({ media, tg }: Options) {

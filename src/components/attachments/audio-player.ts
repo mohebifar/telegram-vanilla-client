@@ -4,20 +4,20 @@ import {
   MessageMediaDocument
 } from "../../core/tl/TLObjects";
 import { Component, createElement, Element } from "../../utils/dom";
-import Waveform from "./waveform";
+import Waveform from "../ui/waveform";
 
 import * as styles from "../chat/chat.scss";
 import { formatDuration } from "../../utils/chat";
-import FileIcon from "./file-icon";
+import FileIcon from "../ui/file-icon";
 import { TelegramClientProxy } from "../../telegram-worker-proxy";
-import { Icons } from "./icon";
+import { Icons } from "../ui/icon";
 
 export interface Options {
   media: MessageMediaDocument;
   tg: TelegramClientProxy;
 }
 
-export default class AudioPlayer implements Component<Options> {
+export default class AudioAttachment implements Component<Options> {
   public readonly element: HTMLElement;
 
   constructor({ media, tg }: Options) {

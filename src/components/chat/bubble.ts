@@ -1,16 +1,13 @@
 import {
-  Document,
   DocumentAttributeVideo,
   MessageMediaDocument,
   MessageMediaPhoto,
-  Photo,
-  PhotoCachedSize,
-  PhotoSize,
   MessageMediaWebPage
 } from "../../core/tl/TLObjects";
+import { IDialog } from "../../models/dialog";
 import { IMessage, Message } from "../../models/message";
 import { IPeer, Peer } from "../../models/peer";
-import { getMessageMediaType, sortPhotoSizes } from "../../utils/chat";
+import { getMessageMediaType } from "../../utils/chat";
 import {
   Component,
   createElement,
@@ -18,15 +15,16 @@ import {
   removeChildren
 } from "../../utils/dom";
 import { EMPTY_IMG } from "../../utils/images";
-import AudioPlayer from "../ui/audio-player";
-import FileDownloader from "../ui/file-downloader";
+import { TransientMedia } from "../../utils/useful-types";
+import AnimatedStickerAttachment from "../attachments/animated-sticker";
+import AudioAttachment from "../attachments/audio-player";
+import FileAttachment from "../attachments/file";
+import PhotoAttachment from "../attachments/photo";
+import WebAttachment from "../attachments/web";
 import Icon, { Icons } from "../ui/icon";
-import Lottie from "../ui/lottie";
 import { messageToHTML } from "./chat";
 import * as styles from "./chat.scss";
 import ServiceBubble from "./service-bubble";
-import { IDialog } from "../../models/dialog";
-import { TransientMedia } from "../../utils/useful-types";
 
 interface Options {
   message: IMessage;
@@ -38,7 +36,6 @@ interface Options {
 
 export default class Bubble implements Component<Options> {
   public readonly element: HTMLElement;
-  private img: HTMLElement;
   private inner: HTMLElement;
   private attachment: HTMLElement;
   private messageText: HTMLElement;
@@ -214,36 +211,10 @@ export default class Bubble implements Component<Options> {
   private getAnimatedSticker(
     media: MessageMediaDocument
   ): [HTMLElement, "animated-sticker"] {
-    const sticker = createElement(Lottie, {
-      class: styles.attachment
-    });
-
-    const fallbackImage = createElement("img", { src: EMPTY_IMG });
-    const wrapper = createElement("div", sticker, fallbackImage);
-
-    (async () => {
-      const cachedSize = (media.document as Document).thumbs.find(
-        ({ $t }) => $t === "PhotoCachedSize"
-      ) as PhotoCachedSize;
-
-      if (cachedSize) {
-        const fallback = await this.message.tg.fileStorage.downloadMedia(
-          media,
-          cachedSize
-        );
-        fallbackImage.setAttribute("src", fallback);
-      }
-
-      this.message.tg.fileStorage.downloadMedia(media).then(url => {
-        sticker.instance.updateConfig({
-          path: url,
-          loop: true,
-          autoplay: true
-        });
-      });
-    })();
-
-    return [wrapper, "animated-sticker"];
+    return [
+      createElement(AnimatedStickerAttachment, { media, tg: this.message.tg }),
+      "animated-sticker"
+    ];
   }
 
   private getImageSticker(
@@ -261,22 +232,10 @@ export default class Bubble implements Component<Options> {
   }
 
   private getPhotoAttachment(media: MessageMediaPhoto): [HTMLElement, "photo"] {
-    this.img = createElement("img", {
-      class: styles.attachment,
-      src: EMPTY_IMG
-    });
-    const sorted = sortPhotoSizes((media.photo as Photo).sizes.slice());
-    const size = sorted[0] as PhotoSize;
-
-    if (size) {
-      this.img.style.height = `${size.h}px`;
-      this.img.style.width = `${size.w}px`;
-    }
-
-    this.message.tg.fileStorage.downloadMedia(media, size).then(url => {
-      this.img.setAttribute("src", url);
-    });
-    return [this.img, "photo"];
+    return [
+      createElement(PhotoAttachment, { media, tg: this.message.tg }),
+      "photo"
+    ];
   }
 
   private getVideoAttachment(
@@ -325,7 +284,7 @@ export default class Bubble implements Component<Options> {
     media: MessageMediaDocument
   ): [HTMLElement | undefined, "file" | undefined] {
     return [
-      createElement(FileDownloader, { media, tg: this.message.tg }),
+      createElement(FileAttachment, { media, tg: this.message.tg }),
       "file"
     ];
   }
@@ -334,44 +293,25 @@ export default class Bubble implements Component<Options> {
     media: TransientMedia
   ): [HTMLElement | undefined, "file" | undefined] {
     return [
-      createElement(FileDownloader, { media, tg: this.message.tg }),
+      createElement(FileAttachment, { media, tg: this.message.tg }),
       "file"
     ];
   }
 
   private getAudioAttachment(
     media: MessageMediaDocument
-  ): [Element<AudioPlayer>, "audio"] {
+  ): [Element<AudioAttachment>, "audio"] {
     return [
-      createElement(AudioPlayer, { media, tg: this.message.tg }),
+      createElement(AudioAttachment, { media, tg: this.message.tg }),
       "audio"
     ];
   }
 
   private getWebAttachment(media: MessageMediaWebPage): [HTMLElement, "web"] {
-    if (media.webpage.$t !== "WebPage") {
-      return [undefined, "web"];
-    }
-
-    const img = createElement("img", { src: EMPTY_IMG });
-
-    const fs = this.message.tg.fileStorage;
-    fs.downloadMedia(media).then(src => {
-      img.setAttribute("src", src);
-    });
-
-    const element = createElement(
-      "a",
-      {
-        class: styles.webPageWrapper,
-        href: media.webpage.url,
-        target: "_blank"
-      },
-      createElement("div", { class: styles.photo }, img),
-      createElement("div", { class: styles.name }, media.webpage.siteName),
-      createElement("div", media.webpage.description)
-    );
-    return [element, "web"];
+    return [
+      createElement(WebAttachment, { media, tg: this.message.tg }),
+      "web"
+    ];
   }
 
   private getReplyElement(replyMsgId: number) {
