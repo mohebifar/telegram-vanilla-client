@@ -43,13 +43,76 @@ export function makeFileDialog(
 }
 
 export function readFile(file: File): Promise<ArrayBuffer> {
-  const reader = new FileReader();
   return new Promise(resolve => {
+    const reader = new FileReader();
+
     reader.onload = async e => {
       const buffer = e.target.result as ArrayBuffer;
       resolve(buffer);
     };
 
     reader.readAsArrayBuffer(file);
+  });
+}
+
+export function readImage(data: ArrayBuffer): Promise<HTMLImageElement> {
+  return new Promise(resolve => {
+    const image = new Image();
+    const blob = new Blob([data]);
+    const blobURL = URL.createObjectURL(blob);
+
+    image.onload = function() {
+      resolve(image);
+    };
+    image.src = blobURL;
+  });
+}
+
+export async function resizeImage(
+  data: ArrayBuffer,
+  contentType?: string
+): Promise<ArrayBuffer> {
+  const maxWidth = 1000;
+  const maxHeight = 1000;
+  const img = await readImage(data);
+  let { width, height } = img;
+
+  if (contentType === "image/jpeg" && width * height <= maxWidth * maxHeight) {
+    console.log("Skipped resizing jpeg");
+    return data;
+  }
+
+  return new Promise(resolve => {
+    const canvas = document.createElement("canvas");
+
+    if (width > height) {
+      if (width > maxWidth) {
+        //height *= maxWidth / width;
+        height = Math.round((height *= maxWidth / width));
+        width = maxWidth;
+      }
+    } else {
+      if (height > maxHeight) {
+        //width *= maxHeight / height;
+        width = Math.round((width *= maxHeight / height));
+        height = maxHeight;
+      }
+    }
+
+    canvas.width = width;
+    canvas.height = height;
+
+    var ctx = canvas.getContext("2d");
+    ctx.drawImage(img, 0, 0, width, height);
+
+    return canvas.toBlob(
+      blob => {
+        new Response(blob).arrayBuffer().then(buffer => {
+          resolve(buffer);
+        });
+      },
+      "image/jpeg",
+      0.7
+    );
   });
 }

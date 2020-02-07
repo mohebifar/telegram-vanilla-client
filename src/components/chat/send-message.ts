@@ -1,7 +1,7 @@
 import autosize from "autosize";
 import { Peer, SimplifiedMessageRequest } from "../../models/peer";
 import { Component, createElement } from "../../utils/dom";
-import { makeFileDialog, readFile } from "../../utils/upload-file";
+import { makeFileDialog, readFile, resizeImage } from "../../utils/upload-file";
 import { ContextMenu } from "../ui/context-menu";
 import EmojiPanel from "../ui/emoji-panel";
 import { Icons } from "../ui/icon";
@@ -91,7 +91,9 @@ export default class SendMessageForm implements Component<Options> {
 
     const imageDialog = makeFileDialog("image/*", false, async file => {
       const buffer = await readFile(file);
-      const uploadedFile = await Peer.tg.fileStorage.upload(buffer);
+      const resized = await resizeImage(buffer, file.type);
+      const uploadedFile = await Peer.tg.fileStorage.upload(resized);
+
       this.callback({
         $t: "messages_SendMediaRequest",
         message: this.inputNode.value,
@@ -103,11 +105,10 @@ export default class SendMessageForm implements Component<Options> {
     });
 
     const fileDialog = makeFileDialog("*", true, async files => {
-      console.log('file upload');
       for (const file of files) {
         const buffer = await readFile(file);
         const uploadedFile = await Peer.tg.fileStorage.upload(buffer);
-        // uploadedFile.
+
         this.callback({
           $t: "messages_SendMediaRequest",
           message: this.inputNode.value,
