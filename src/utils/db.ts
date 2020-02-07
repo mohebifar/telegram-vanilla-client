@@ -18,7 +18,9 @@ export interface DBSession {
   authKey: number[];
 }
 
-export type DBMessage = DialogMessageTypes;
+export type DBMessage = DialogMessageTypes & {
+  isChannel: number;
+};
 
 export interface DBDialog extends Omit<TLDialog, "$t" | "peer"> {
   lastMessageDate: number;
@@ -41,12 +43,19 @@ export interface DBPeerUser {
   full?: UserFull;
 }
 
-export type DBPeer = AllDialogPeerTypes & (DBPeerChat | DBPeerChannel | DBPeerUser);
+export type DBPeer = AllDialogPeerTypes &
+  (DBPeerChat | DBPeerChannel | DBPeerUser);
 
 export interface TelegramDatabaseTables {
   configs: Dexie.Table<DBConfig, string>;
   sessions: Dexie.Table<DBSession, number>;
-  messages: Dexie.Table<DBMessage, number>;
+  messages: Dexie.Table<
+    DBMessage,
+    {
+      isChannel: DBMessage["isChannel"];
+      id: number;
+    }
+  >;
   dialogs: Dexie.Table<
     DBDialog,
     {
@@ -82,7 +91,7 @@ export class TelegramDatabase extends Dexie implements TelegramDatabaseTables {
     this.version(1).stores({
       sessions: "&dcId",
       configs: "&key, value",
-      messages: "id, date, $t",
+      messages: "[id+isChannel], date, $t",
       peers: "[id+type]",
       dialogs: "[peerType+peerId], lastMessageDate"
     });

@@ -25,9 +25,11 @@ import Lottie from "../ui/lottie";
 import { messageToHTML } from "./chat";
 import * as styles from "./chat.scss";
 import ServiceBubble from "./service-bubble";
+import { IDialog } from "../../models/dialog";
 
 interface Options {
   message: IMessage;
+  dialog: IDialog;
   peer: IPeer;
   onReplyClick(messageId?: number): void;
   isTransient?: boolean;
@@ -43,10 +45,12 @@ export default class Bubble implements Component<Options> {
   private sentIndicator?: Element<Icon>;
   private onReplyClick: Options["onReplyClick"];
   public message: IMessage;
+  public dialog: IDialog;
   public peer: IPeer;
 
-  constructor({ message, peer, onReplyClick }: Options) {
+  constructor({ message, dialog, peer, onReplyClick }: Options) {
     this.message = message;
+    this.dialog = dialog;
     this.peer = peer;
     this.onReplyClick = onReplyClick;
 
@@ -362,7 +366,10 @@ export default class Bubble implements Component<Options> {
     const title = createElement("div", { class: styles.replyContentTitle }, "");
     const tile = createElement("div");
     const text = createElement("div", { class: styles.replyContentText }, "");
-    Message.get(replyMsgId).then(message => {
+    Message.get({
+      id: replyMsgId,
+      isChannel: Number(this.dialog.peerType === "Channel")
+    }).then(message => {
       if (message.$t === "Message") {
         let content = message.message;
 

@@ -117,7 +117,10 @@ export class Dialog extends Model<"dialogs"> {
 
     for (const dialog of response.dialogs) {
       if (dialog.$t === "Dialog") {
-        const message = Message.getFromMemory(dialog.topMessage) as IMessage;
+        const message = Message.getFromMemory({
+          id: dialog.topMessage,
+          isChannel: Number(dialog.peer.$t === "PeerChannel")
+        }) as IMessage;
         if (!message) {
           continue;
         }
@@ -158,7 +161,10 @@ export class Dialog extends Model<"dialogs"> {
 
     for (const dialog of response.dialogs) {
       if (dialog.$t === "Dialog") {
-        const message = Message.getFromMemory(dialog.topMessage) as IMessage;
+        const message = Message.getFromMemory({
+          id: dialog.topMessage,
+          isChannel: Number(dialog.peer.$t === "PeerChannel")
+        }) as IMessage;
         if (!message) {
           continue;
         }
@@ -175,7 +181,10 @@ export class Dialog extends Model<"dialogs"> {
   }
 
   public async loadMessage() {
-    return Message.get(this._proxy.topMessage);
+    return Message.get({
+      id: this._proxy.topMessage,
+      isChannel: Number(this._proxy.peerType === "Channel")
+    });
   }
 
   public async getText() {

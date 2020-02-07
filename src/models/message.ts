@@ -2,12 +2,14 @@ import dayjs from "dayjs";
 import {
   Channel,
   InputPeerUser,
+  channels_GetMessagesRequest,
+  messages_GetMessagesRequest,
   messages_MessagesSlice,
   UpdateShortChatMessage,
   UpdateShortMessage
 } from "../core/tl/TLObjects";
 import { extractIdFromPeer, getInputPeer } from "../core/tl/utils";
-import { TelegramDatabase } from "../utils/db";
+import { DBMessage, TelegramDatabase } from "../utils/db";
 import { DialogMessageTypes, InputMessageIdTypes } from "../utils/useful-types";
 import { Model, ModelDecorator, ModelKey, ModelWithProxy } from "./model";
 import { IPeer, Peer } from "./peer";
@@ -24,7 +26,7 @@ export type IMessage = ModelWithProxy<"messages"> & ExtraMethods;
 
 @ModelDecorator({
   tableName: "messages",
-  primaryKey: ["id"]
+  primaryKey: ["id", "isChannel"]
 })
 export class Message extends Model<"messages"> {
   static get: (id: ModelKey<"messages">) => Promise<undefined | IMessage>;
@@ -39,16 +41,29 @@ export class Message extends Model<"messages"> {
   protected prepareValues(
     message: DialogMessageTypes | UpdateShortMessage | UpdateShortChatMessage
   ) {
-    let normalizedMessage: DialogMessageTypes;
+    let normalizedMessage: DBMessage;
 
-    if (message.$t === "UpdateShortMessage") {
+    if (
+      message.$t === "UpdateShortMessage" ||
+      message.$t === "UpdateShortChatMessage"
+    ) {
       normalizedMessage = {
+        ...(message.$t === "UpdateShortMessage"
+          ? {
+              toId: {
+                $t: "PeerUser",
+                userId: message.userId
+              },
+              fromId: message.userId
+            }
+          : {
+              toId: {
+                $t: "PeerChat",
+                chatId: message.chatId
+              },
+              fromId: message.fromId
+            }),
         $t: "Message",
-        toId: {
-          $t: "PeerUser",
-          userId: message.userId
-        },
-        fromId: message.userId,
         out: message.out,
         date: message.date,
         replyToMsgId: message.replyToMsgId,
@@ -59,29 +74,15 @@ export class Message extends Model<"messages"> {
         mediaUnread: message.mediaUnread,
         silent: message.silent,
         entities: message.entities
-      };
-    } else if (message.$t === "UpdateShortChatMessage") {
-      normalizedMessage = {
-        $t: "Message",
-        toId: {
-          $t: "PeerChat",
-          chatId: message.chatId
-        },
-        fromId: message.fromId,
-        out: message.out,
-        date: message.date,
-        replyToMsgId: message.replyToMsgId,
-        id: message.id,
-        message: message.message,
-        fwdFrom: message.fwdFrom,
-        mentioned: message.mentioned,
-        mediaUnread: message.mediaUnread,
-        silent: message.silent,
-        entities: message.entities
-      };
+      } as any;
     } else {
-      normalizedMessage = message;
+      normalizedMessage = message as any;
     }
+
+    normalizedMessage.isChannel =
+      "toId" in normalizedMessage
+        ? Number(normalizedMessage.toId.$t === "PeerChannel")
+        : 0;
 
     return normalizedMessage;
   }
@@ -132,17 +133,22 @@ export class Message extends Model<"messages"> {
     ids: (number | InputMessageIdTypes)[],
     channel?: IPeer
   ) {
+    const inputIds = ids.map(id =>
+      typeof id === "number" ? { $t: "InputMessageID", id } : id
+    ) as InputMessageIdTypes[];
+
     const base = channel
       ? { $t: "channels_GetMessagesRequest", channel: getInputPeer(channel) }
-      : {
-          $t: "messages_GetMessagesRequest"
-        };
-    const messagesSlice = (await this.tg.invoke({
+      : { $t: "messages_GetMessagesRequest" };
+
+    const input = {
       ...base,
-      id: ids.map(id =>
-        typeof id === "number" ? { $t: "InputMessageID", id } : id
-      )
-    } as any)) as messages_MessagesSlice;
+      id: inputIds
+    } as channels_GetMessagesRequest | messages_GetMessagesRequest;
+
+    const messagesSlice = (await this.tg.invoke(
+      input
+    )) as messages_MessagesSlice;
 
     for (const user of messagesSlice.users) {
       Peer.fromObject(user).save();

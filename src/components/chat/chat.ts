@@ -425,7 +425,8 @@ export default class Chat implements Component<Options> {
     const messageElement = createElement(Bubble, {
       onReplyClick: this.handleReplyClick,
       message,
-      peer
+      peer,
+      dialog: this.dialog
     });
     this.idToElementMap.set(message.id, messageElement);
     lastBubbleHolder[insertFn](messageElement);
