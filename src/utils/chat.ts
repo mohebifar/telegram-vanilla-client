@@ -1,21 +1,20 @@
 import dayjs, { Dayjs } from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import {
-  DocumentAttributeSticker,
-  Message,
-  MessageService,
-  User,
-  PhotoSize,
-  PhotoCachedSize,
-  PhotoStrippedSize,
-  PhotoSizeEmpty,
+  DocumentAttributeAudio,
   DocumentAttributeFilename,
-  DocumentAttributeAudio
+  DocumentAttributeSticker,
+  MessageService,
+  PhotoCachedSize,
+  PhotoSize,
+  PhotoSizeEmpty,
+  PhotoStrippedSize,
+  User
 } from "../core/tl/TLObjects";
 import { Peer } from "../models/peer";
 import { TelegramClientProxy } from "../telegram-worker-proxy";
 import { DBPeer } from "./db";
-import { DialogMessageTypes } from "./useful-types";
+import { DialogMessageTypes, MediaWithTransient } from "./useful-types";
 
 dayjs.extend(relativeTime);
 
@@ -90,7 +89,7 @@ export async function getMessageSummary(message: DialogMessageTypes) {
       }
 
       if (message.message) {
-        return text + message.message.replace(/[\r\n]/, ' ').slice(0, 70);
+        return text + message.message.replace(/[\r\n]/, " ").slice(0, 70);
       }
 
       return text + (mediaType || "");
@@ -137,7 +136,7 @@ export async function getServiceMessage(message: MessageService) {
 }
 
 export function getMessageMediaType(
-  media: Message["media"],
+  media: MediaWithTransient,
   includeContent = false,
   tgProxy?: TelegramClientProxy
 ): [string, string, any] {

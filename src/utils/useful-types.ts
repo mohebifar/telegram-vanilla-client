@@ -37,6 +37,16 @@ export type AllDialogPeerTypes = AllChatTypes | AllUserTypes;
 
 export type DialogMessageTypes = Message | MessageEmpty | MessageService;
 
+export type TransientMedia = {
+  $t: "TransientMedia";
+  file: File;
+  type: "media" | "document";
+  progress?: number;
+  subscribe?: (cb: (progress: number) => any) => void;
+};
+
+export type MediaWithTransient = Message["media"] | TransientMedia;
+
 export type Update = Updates["updates"][0];
 export type UpdateShort =
   | TLUpdateShort["update"]

@@ -8,9 +8,10 @@ import { Component, createElement } from "../../utils/dom";
 import * as styles from "../chat/chat.scss";
 import FileIcon from "./file-icon";
 import { parseFileSize } from "../../utils/chat";
+import { TransientMedia } from "../../utils/useful-types";
 
 export interface Options {
-  media: MessageMediaDocument;
+  media: MessageMediaDocument | TransientMedia;
   tg: TelegramClientProxy;
 }
 
@@ -31,15 +32,22 @@ export default class FileDownloader implements Component<Options> {
   public readonly element: HTMLElement;
 
   constructor({ media, tg }: Options) {
-    const fileNameAttribute = (media.document as Document).attributes.find(
-      t => t.$t === "DocumentAttributeFilename"
-    ) as DocumentAttributeFilename;
-    if (!fileNameAttribute) {
-      this.element = createElement("div", "Unsupported file");
-      return;
+    let fileName: string;
+    let fileSize: number;
+    if (media.$t === "MessageMediaDocument") {
+      const fileNameAttribute = (media.document as Document).attributes.find(
+        t => t.$t === "DocumentAttributeFilename"
+      ) as DocumentAttributeFilename;
+      if (!fileNameAttribute) {
+        this.element = createElement("div", "Unsupported file");
+        return;
+      }
+      fileName = fileNameAttribute.fileName;
+      fileSize = (media.document as Document).size;
+    } else {
+      fileName = media.file.name;
+      fileSize = media.file.size;
     }
-
-    const { fileName } = fileNameAttribute;
 
     const extensionMatch = fileName.match(/\.([\w\d]+)$/);
     const extension = extensionMatch
@@ -56,8 +64,17 @@ export default class FileDownloader implements Component<Options> {
       fileIcon
     );
 
-    fileIcon.instance.showEmpty();
-    iconWrapper.addEventListener("click", downloadListener);
+    if (media.$t === "MessageMediaDocument") {
+      fileIcon.instance.showEmpty();
+      iconWrapper.addEventListener("click", downloadListener);
+    } else {
+      fileIcon.instance.showProgress(media.progress || 0);
+      if (media.subscribe) {
+        media.subscribe(progress => {
+          fileIcon.instance.showProgress(progress || 0);
+        });
+      }
+    }
 
     let shouldContinue = true;
 
@@ -82,18 +99,20 @@ export default class FileDownloader implements Component<Options> {
       iconWrapper.addEventListener("click", stopListener);
       fileIcon.instance.showProgress(0);
 
-      tg.fileStorage.downloadMedia(media, undefined, callback).then(file => {
-        if (file && iconWrapper) {
-          fileIcon.instance.showDocument();
-          iconWrapper.removeEventListener("click", stopListener);
-          iconWrapper.removeEventListener("click", downloadListener);
-          iconWrapper.addEventListener("click", () => {
-            saveData(file, fileName);
-          });
-        }
+      tg.fileStorage
+        .downloadMedia(media as any, undefined, callback)
+        .then(file => {
+          if (file && iconWrapper) {
+            fileIcon.instance.showDocument();
+            iconWrapper.removeEventListener("click", stopListener);
+            iconWrapper.removeEventListener("click", downloadListener);
+            iconWrapper.addEventListener("click", () => {
+              saveData(file, fileName);
+            });
+          }
 
-        shouldContinue = true;
-      });
+          shouldContinue = true;
+        });
     }
 
     const element = createElement(
@@ -104,7 +123,7 @@ export default class FileDownloader implements Component<Options> {
         "div",
         { class: styles.documentContent },
         createElement("div", { class: styles.title }, fileNameToRender),
-        createElement("div", parseFileSize((media.document as Document).size))
+        createElement("div", parseFileSize(fileSize))
       )
     );
 

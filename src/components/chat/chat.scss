@@ -140,6 +140,10 @@ $time-size: 0.75rem;
       margin: 0;
     }
 
+    a {
+      text-decoration: none;
+    }
+
     .attachmentWrapper {
       .attachment {
         &,
@@ -486,7 +490,6 @@ $time-size: 0.75rem;
     padding-left: 0.5em;
     border-left: 2px solid;
     color: black;
-    text-decoration: none;
 
     .name {
       white-space: nowrap;

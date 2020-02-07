@@ -1,4 +1,5 @@
 import autosize from "autosize";
+import { IMessage } from "../../models/message";
 import { Peer, SimplifiedMessageRequest } from "../../models/peer";
 import { Component, createElement } from "../../utils/dom";
 import { makeFileDialog, readFile, resizeImage } from "../../utils/upload-file";
@@ -9,7 +10,7 @@ import IconButton from "../ui/icon-button";
 import * as styles from "./send-message.scss";
 
 interface Options {
-  callback(message: SimplifiedMessageRequest): any;
+  callback(message: SimplifiedMessageRequest): Promise<IMessage>;
 }
 
 export default class SendMessageForm implements Component<Options> {
@@ -105,13 +106,43 @@ export default class SendMessageForm implements Component<Options> {
     });
 
     const fileDialog = makeFileDialog("*", true, async files => {
-      for (const file of files) {
-        const buffer = await readFile(file);
-        const uploadedFile = await Peer.tg.fileStorage.upload(buffer);
+      const transientModels: IMessage[] = [];
+      const message = this.inputNode.value;
+      const subscriptions = new Map<File, (progress: number) => any>();
+      this.inputNode.value = "";
 
-        this.callback({
+      for (const file of files) {
+        const transient = await this.callback({
           $t: "messages_SendMediaRequest",
-          message: this.inputNode.value,
+          media: {
+            $t: "TransientMedia",
+            type: "document",
+            file,
+            subscribe: fn => {
+              subscriptions.set(file, fn);
+            }
+          },
+          message
+        });
+        transientModels.push(transient);
+      }
+
+      for (const index in files) {
+        const file = files[index];
+        const transientModel = transientModels[index];
+        const buffer = await readFile(file);
+        const uploadedFile = await Peer.tg.fileStorage.upload(
+          buffer,
+          progress => {
+            const subscription = subscriptions.get(file);
+            if (subscription) {
+              subscription(progress);
+            }
+          }
+        );
+
+        await this.callback({
+          $t: "messages_SendMediaRequest",
           media: {
             $t: "InputMediaUploadedDocument",
             file: uploadedFile,
@@ -122,8 +153,11 @@ export default class SendMessageForm implements Component<Options> {
                 fileName: file.name
               }
             ]
-          }
+          },
+          message
         });
+
+        transientModel.destroy();
       }
     });
 

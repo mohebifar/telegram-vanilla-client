@@ -1,10 +1,15 @@
 import Dexie from "dexie";
-import { AllDialogPeerTypes, DialogMessageTypes } from "./useful-types";
+import {
+  AllDialogPeerTypes,
+  DialogMessageTypes,
+  MediaWithTransient
+} from "./useful-types";
 import {
   Dialog as TLDialog,
   ChatFull,
   ChannelFull,
-  UserFull
+  UserFull,
+  Message as TLMessage
 } from "../core/tl/TLObjects";
 
 export interface DBConfig {
@@ -18,7 +23,10 @@ export interface DBSession {
   authKey: number[];
 }
 
-export type DBMessage = DialogMessageTypes & {
+export type DBMessage = (
+  | DialogMessageTypes
+  | (Omit<TLMessage, "media"> & { media?: MediaWithTransient })
+) & {
   isChannel: number;
 };
 

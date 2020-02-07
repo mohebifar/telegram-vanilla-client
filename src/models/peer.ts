@@ -11,10 +11,10 @@ import { getInputPeer, getPeer, simplifyPeerType } from "../core/tl/utils";
 import { handleUpdate } from "../update-handler";
 import { getDialogDisplayName } from "../utils/chat";
 import { DBPeer, TelegramDatabase } from "../utils/db";
+import { AllUpdateTypes, TransientMedia } from "../utils/useful-types";
 import { Dialog, IDialog } from "./dialog";
 import { IMessage, Message } from "./message";
 import { Model, ModelDecorator, ModelKey, ModelWithProxy } from "./model";
-import { AllUpdateTypes } from "../utils/useful-types";
 
 interface FetchHistoryInput {
   offsetId?: number;
@@ -36,15 +36,21 @@ interface ExtraMethods {
 
 export type IPeer = ModelWithProxy<"peers"> & ExtraMethods;
 
+type SimplifiedSendMessage = Omit<
+  messages_SendMessageRequest,
+  "peer" | "randomId" | "constructorId" | "subclassOfId"
+>;
+
+type SimplifiedSendMedia = Omit<
+  messages_SendMediaRequest,
+  "peer" | "randomId" | "constructorId" | "subclassOfId" | "media"
+> & {
+  media: messages_SendMediaRequest["media"] | TransientMedia;
+};
+
 export type SimplifiedMessageRequest = (
-  | Omit<
-      messages_SendMessageRequest,
-      "peer" | "randomId" | "constructorId" | "subclassOfId"
-    >
-  | Omit<
-      messages_SendMediaRequest,
-      "peer" | "randomId" | "constructorId" | "subclassOfId"
-    >
+  | SimplifiedSendMessage
+  | SimplifiedSendMedia
 ) & {
   peer?: messages_SendMessageRequest["peer"];
   randomId?: messages_SendMessageRequest["randomId"];
@@ -139,7 +145,7 @@ export class Peer extends Model<"peers"> implements ExtraMethods {
 
   public sendMessage(
     message: SimplifiedMessageRequest
-  ): [IMessage, Promise<any>] {
+  ): [IMessage, Promise<any> | undefined] {
     const randomId = generateTransientId() as any;
     const messageModel = Message.fromObject({
       ...message,
@@ -152,24 +158,28 @@ export class Peer extends Model<"peers"> implements ExtraMethods {
     messageModel.justSent = true;
     messageModel.saveInMemory();
 
-    const promise = this.tg
-      .invoke({
-        ...message,
-        randomId,
-        peer: getInputPeer(this.fields)
-      })
-      .then((updates: AllUpdateTypes) => {
-        transientIds.delete(randomId);
+    let promise: Promise<any> | IMessage = messageModel;
 
-        return handleUpdate(updates, {
-          transientMessage: {
-            randomId,
-            message: messageModel
-          }
+    if (!("media" in message) || message.media.$t !== "TransientMedia") {
+      promise = this.tg
+        .invoke({
+          ...message,
+          randomId,
+          peer: getInputPeer(this.fields)
+        } as any)
+        .then((updates: AllUpdateTypes) => {
+          transientIds.delete(randomId);
+
+          return handleUpdate(updates, {
+            transientMessage: {
+              randomId,
+              message: messageModel
+            }
+          });
         });
-      });
+    }
 
-    return [messageModel, promise];
+    return [messageModel, promise as Promise<IMessage>];
   }
 
   public async loadFull() {

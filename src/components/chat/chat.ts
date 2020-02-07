@@ -227,6 +227,27 @@ export default class Chat implements Component<Options> {
         }
       }
     );
+
+    Message.events.on(
+      "updated",
+      async ({ object: message }: { object: IMessage }) => {
+        if (this.idToElementMap.has(message.id)) {
+          this.idToElementMap.get(message.id).instance.update();
+        }
+      }
+    );
+
+    Message.events.on(
+      "destroyed",
+      ({ object: message }: { object: IMessage }) => {
+        const element = this.idToElementMap.get(message.id);
+
+        if (element) {
+          element.remove();
+          this.idToElementMap.delete(message.id);
+        }
+      }
+    );
   }
 
   private async loadChat({
@@ -250,6 +271,10 @@ export default class Chat implements Component<Options> {
     );
     if (peer !== this.peer) {
       return;
+    }
+
+    if (unreadCount === 0) {
+      this.noMoreBottom = true;
     }
 
     await this.addMessages(messages, {
@@ -338,9 +363,11 @@ export default class Chat implements Component<Options> {
   }
 
   private handleSendMessage = (message: SimplifiedMessageRequest) => {
-    const [model] = this.peer.sendMessage(message);
+    const [model, promise] = this.peer.sendMessage(message);
 
+    console.log("promise", promise);
     this.handleNewMessage(model);
+    return promise;
   };
 
   private async addMessage(message: IMessage, prepend = false) {

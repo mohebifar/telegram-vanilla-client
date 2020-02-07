@@ -64,7 +64,10 @@ export class FileStorage {
     this.setupCache();
   }
 
-  public async upload(buffer: ArrayBuffer): Promise<InputFile> {
+  public async upload(
+    buffer: ArrayBuffer,
+    onProgress?: ProgressCallback
+  ): Promise<InputFile> {
     const bytes = new Uint8Array(buffer);
     let fileId: string;
     do {
@@ -72,7 +75,7 @@ export class FileStorage {
     } while (this.uploadedFiles.has(fileId.toString()));
     this.uploadedFiles.set(fileId, null);
 
-    const partSize = 16384;
+    const partSize = (getPartSize(bytes.length) / 2) * 1024;
     const numberOfParts = Math.ceil(bytes.length / partSize);
     let filePart = 0;
     let retries = 0;
@@ -86,6 +89,9 @@ export class FileStorage {
           filePart
         });
         filePart++;
+        if (onProgress) {
+          onProgress((filePart * partSize) / bytes.length)
+        }
       } catch {
         retries++;
       }

@@ -26,6 +26,7 @@ import { messageToHTML } from "./chat";
 import * as styles from "./chat.scss";
 import ServiceBubble from "./service-bubble";
 import { IDialog } from "../../models/dialog";
+import { TransientMedia } from "../../utils/useful-types";
 
 interface Options {
   message: IMessage;
@@ -95,7 +96,7 @@ export default class Bubble implements Component<Options> {
     this.update();
   }
 
-  private update() {
+  public update() {
     const [attachment, attachmentType] = this.getAttachments();
     const { text, time } = this.getInfo();
     this.messageText.innerHTML = text;
@@ -195,6 +196,8 @@ export default class Bubble implements Component<Options> {
         }
       } else if (media.$t === "MessageMediaWebPage") {
         return this.getWebAttachment(media);
+      } else if (media.$t === "TransientMedia") {
+        return this.getTransientFileAttachment(media);
       }
 
       console.log("Unsupported media", media);
@@ -320,6 +323,15 @@ export default class Bubble implements Component<Options> {
 
   private getFileAttachment(
     media: MessageMediaDocument
+  ): [HTMLElement | undefined, "file" | undefined] {
+    return [
+      createElement(FileDownloader, { media, tg: this.message.tg }),
+      "file"
+    ];
+  }
+
+  private getTransientFileAttachment(
+    media: TransientMedia
   ): [HTMLElement | undefined, "file" | undefined] {
     return [
       createElement(FileDownloader, { media, tg: this.message.tg }),

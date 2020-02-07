@@ -111,8 +111,6 @@ export class Model<
   public fields: Fields = {} as Fields;
   public _proxy: any;
 
-  protected dbPrimaryKey: any = null;
-
   static getMemoryCacheKey(object: Model<any> | PrimaryKey) {
     if (typeof object === "string" || typeof object === "number") {
       return "_" + String(object).replace(/^_/, "");
@@ -183,14 +181,21 @@ export class Model<
 
     const eventPayload = { object, gid };
     this.constructor.events.emit("saved", eventPayload);
-    if (!isInMemory) {
-      this.constructor.events.emit(
-        isInMemory ? "created" : "updated",
-        eventPayload
-      );
-    }
+    this.constructor.events.emit(
+      isInMemory ? "updated" : "created",
+      eventPayload
+    );
 
     return this.saveInDb();
+  }
+
+  public destroy() {
+    const gid = this.getGid();
+    const object = this.constructor.getFromMemory(this._proxy);
+    const eventPayload = { object, gid };
+
+    this.constructor.events.emit("destroyed", eventPayload);
+    return this.destroyInDb();
   }
 
   public saveInMemory() {
@@ -204,6 +209,16 @@ export class Model<
     return this.constructor.table.put(this.normalize() as any);
   }
 
+  public destoryInMemory() {
+    this.constructor.memoryCache.delete(
+      this.constructor.getMemoryCacheKey(this.toJSON() as any)
+    );
+  }
+
+  public destroyInDb() {
+    // return this.constructor.table.delete(this.dbKey as never);
+  }
+
   public toJSON() {
     return this.normalize();
   }
@@ -211,6 +226,17 @@ export class Model<
   public getGid() {
     return this.constructor.getMemoryCacheKey(this.toJSON() as any);
   }
+
+  // private get dbKey() {
+  //   const fields = this.normalize();
+  //   return this.constructor.primaryKey.reduce(
+  //     (obj, key) => ({
+  //       ...obj,
+  //       [key]: fields[key]
+  //     }),
+  //     {}
+  //   );
+  // }
 
   get tg() {
     return this.constructor.tg;

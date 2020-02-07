@@ -26,9 +26,7 @@ export function makeFileDialog(
   input.addEventListener(
     "change",
     () => {
-      console.log("input changed");
       const files = Array.from(input.files);
-      console.log("files", files);
       callback(multiple ? files : files[0]);
     },
     { once: false }
