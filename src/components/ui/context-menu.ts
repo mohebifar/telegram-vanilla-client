@@ -77,9 +77,9 @@ export function makeContextMenu(
     const rect = menu.getBoundingClientRect() as DOMRect;
 
     const isCloseToLeft =
-      Math.abs(rect.x - window.innerWidth) < window.innerWidth / 2;
+      Math.abs(x - window.innerWidth) < window.innerWidth / 2;
     const isCloseToTop =
-      Math.abs(rect.y - window.innerHeight) < window.innerHeight / 2;
+      Math.abs(y - window.innerHeight) < window.innerHeight / 2;
 
     if (isCloseToLeft) {
       menu.style.left = x - rect.width + "px";
