@@ -43,6 +43,9 @@ export type TransientMedia = {
   type: "media" | "document";
   progress?: number;
   subscribe?: (cb: (progress: number) => any) => void;
+  width?: number;
+  height?: number;
+  thumbnail?: string;
 };
 
 export type MediaWithTransient = Message["media"] | TransientMedia;

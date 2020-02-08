@@ -14,10 +14,7 @@ export default class Progress implements Component<Options> {
   private readonly progressValue: SVGCircleElement;
 
   constructor(options: Options) {
-    this.element = document.createElementNS(
-      NS,
-      "svg"
-    );
+    this.element = document.createElementNS(NS, "svg");
 
     this.element.setAttribute(
       "class",
@@ -26,15 +23,9 @@ export default class Progress implements Component<Options> {
     this.element.setAttribute("xmlns", NS);
     this.element.setAttributeNS(null, "viewBox", "0 0 84 84");
 
-    const circle = document.createElementNS(
-      NS,
-      "circle"
-    );
+    const circle = document.createElementNS(NS, "circle");
 
-    this.progressValue = document.createElementNS(
-      NS,
-      "circle"
-    );
+    this.progressValue = document.createElementNS(NS, "circle");
 
     circle.setAttribute("class", styles.meter);
     this.progressValue.setAttribute("class", styles.value);

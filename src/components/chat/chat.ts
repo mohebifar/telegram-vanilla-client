@@ -365,7 +365,6 @@ export default class Chat implements Component<Options> {
   private handleSendMessage = (message: SimplifiedMessageRequest) => {
     const [model, promise] = this.peer.sendMessage(message);
 
-    console.log("promise", promise);
     this.handleNewMessage(model);
     return promise;
   };
@@ -397,6 +396,19 @@ export default class Chat implements Component<Options> {
         id: message.fromId,
         type: "User"
       });
+
+      // Messages can be forwarded by nobody!
+      if (!peer) {
+        const fwdType = message.fwdFrom.fromId ? "User" : "Channel";
+
+        peer = await Peer.get({
+          id:
+            fwdType === "User"
+              ? message.fwdFrom.fromId
+              : message.fwdFrom.channelId,
+          type: fwdType
+        });
+      }
     } else {
       peer = this.peer;
     }
@@ -460,7 +472,14 @@ export default class Chat implements Component<Options> {
   }
 
   private handleNewMessage = (message: IMessage) => {
-    if (message && this.noMoreBottom) {
+    if (
+      message &&
+      this.noMoreBottom &&
+      (message.$t !== "Message" ||
+        !["InputMediaUploadedPhoto", "InputMediaUploadedDocument"].includes(
+          message.media.$t
+        ))
+    ) {
       const shouldScroll = this.isAtBottom();
       this.addMessage(message, false);
 

@@ -1,5 +1,4 @@
 import {
-  DocumentAttributeVideo,
   MessageMediaDocument,
   MessageMediaPhoto,
   MessageMediaWebPage
@@ -20,6 +19,7 @@ import AnimatedStickerAttachment from "../attachments/animated-sticker";
 import AudioAttachment from "../attachments/audio-player";
 import FileAttachment from "../attachments/file";
 import PhotoAttachment from "../attachments/photo";
+import VideoAttachment from "../attachments/video";
 import WebAttachment from "../attachments/web";
 import Icon, { Icons } from "../ui/icon";
 import { messageToHTML } from "./chat";
@@ -194,7 +194,11 @@ export default class Bubble implements Component<Options> {
       } else if (media.$t === "MessageMediaWebPage") {
         return this.getWebAttachment(media);
       } else if (media.$t === "TransientMedia") {
-        return this.getTransientFileAttachment(media);
+        if (media.type === "media") {
+          return this.getTransientPhotoAttachment(media);
+        } else {
+          return this.getTransientFileAttachment(media);
+        }
       }
 
       console.log("Unsupported media", media);
@@ -241,43 +245,10 @@ export default class Bubble implements Component<Options> {
   private getVideoAttachment(
     media: MessageMediaDocument
   ): [HTMLElement | undefined, "video" | undefined] {
-    if (media.document.$t !== "Document") {
-      return [undefined, undefined];
-    }
-
-    const img = createElement("img", {
-      src: EMPTY_IMG,
-      class: "blur"
-    });
-    const wrapper = createElement("div", { class: styles.attachment }, img);
-
-    const videoAttributes = media.document.attributes.find(
-      ({ $t }) => $t === "DocumentAttributeVideo"
-    ) as DocumentAttributeVideo;
-    if (videoAttributes) {
-      let [width, height] = [videoAttributes.w, videoAttributes.h];
-      if (width > 400) {
-        [width, height] = [400, Math.floor((height * 400) / width)];
-      }
-
-      wrapper.style.width = `${width}px`;
-      wrapper.style.height = `${height}px`;
-    }
-
-    this.message.tg.fileStorage.downloadMedia(media, 0).then(url => {
-      img.setAttribute("src", url);
-      img.addEventListener("click", () => {
-        this.message.tg.fileStorage.downloadMedia(media).then(src => {
-          img.remove();
-          const video = createElement("video", { src }) as HTMLVideoElement;
-          video.muted = true;
-          video.loop = true;
-          video.autoplay = true;
-          wrapper.append(video);
-        });
-      });
-    });
-    return [wrapper, "video"];
+    return [
+      createElement(VideoAttachment, { media, tg: this.message.tg }),
+      "video"
+    ];
   }
 
   private getFileAttachment(
@@ -295,6 +266,15 @@ export default class Bubble implements Component<Options> {
     return [
       createElement(FileAttachment, { media, tg: this.message.tg }),
       "file"
+    ];
+  }
+
+  private getTransientPhotoAttachment(
+    media: TransientMedia
+  ): [HTMLElement | undefined, "photo" | undefined] {
+    return [
+      createElement(PhotoAttachment, { media, tg: this.message.tg }),
+      "photo"
     ];
   }
 
@@ -318,11 +298,27 @@ export default class Bubble implements Component<Options> {
     const title = createElement("div", { class: styles.replyContentTitle }, "");
     const tile = createElement("div");
     const text = createElement("div", { class: styles.replyContentText }, "");
+    const element = createElement(
+      "div",
+      { class: styles.reply },
+      createElement(
+        "div",
+        { class: styles.replyWrapper },
+        createElement("div", { class: styles.replyBorder }),
+        tile,
+        createElement("div", { class: styles.replyContent }, title, text)
+      )
+    );
+
     Message.get({
       id: replyMsgId,
       isChannel: Number(this.dialog.peerType === "Channel")
     }).then(message => {
-      if (message.$t === "Message") {
+      if (message && message.$t === "Message") {
+        element.addEventListener("click", () => {
+          this.onReplyClick(replyMsgId);
+        });
+
         let content = message.message;
 
         if (message.media) {
@@ -352,21 +348,9 @@ export default class Bubble implements Component<Options> {
         Peer.get({ type: "User", id: message.fromId }).then(peer => {
           title.innerHTML = peer.displayName;
         });
+      } else {
+        element.remove();
       }
-    });
-    const element = createElement(
-      "div",
-      { class: styles.reply },
-      createElement(
-        "div",
-        { class: styles.replyWrapper },
-        createElement("div", { class: styles.replyBorder }),
-        tile,
-        createElement("div", { class: styles.replyContent }, title, text)
-      )
-    );
-    element.addEventListener("click", () => {
-      this.onReplyClick(replyMsgId);
     });
 
     return element;

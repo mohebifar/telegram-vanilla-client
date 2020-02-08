@@ -127,12 +127,15 @@ h4 {
 }
 
 :global(.spinner) {
-  animation: spinner 0.5s linear infinite;
+  animation: spinner .5s linear infinite;
 }
 
 @keyframes spinner {
+  from {
+    transform: rotate(0);
+  }
   to {
-    transform: rotate(1turn);
+    transform: rotate(360deg);
   }
 }
 
@@ -159,6 +162,10 @@ h4 {
 
 .blur {
   filter: url("#sharpBlur");
+}
+
+.pointer {
+  cursor: pointer;
 }
 
 svg .extension {

@@ -2,12 +2,21 @@ import autosize from "autosize";
 import { IMessage } from "../../models/message";
 import { Peer, SimplifiedMessageRequest } from "../../models/peer";
 import { Component, createElement } from "../../utils/dom";
-import { makeFileDialog, readFile, resizeImage } from "../../utils/upload-file";
+import {
+  makeFileDialog,
+  readFile,
+  resizeImage,
+  getVideoMeta
+} from "../../utils/upload-file";
 import { ContextMenu } from "../ui/context-menu";
 import EmojiPanel from "../ui/emoji-panel";
 import { Icons } from "../ui/icon";
 import IconButton from "../ui/icon-button";
 import * as styles from "./send-message.scss";
+import {
+  InputMediaUploadedPhoto,
+  InputMediaUploadedDocument
+} from "../../core/tl/TLObjects";
 
 interface Options {
   callback(message: SimplifiedMessageRequest): Promise<IMessage>;
@@ -73,64 +82,56 @@ export default class SendMessageForm implements Component<Options> {
   private createAttachment() {
     let timeout: number;
 
-    const clear = () => clearTimeout(timeout);
-    const hide = () => {
-      clear();
-      attachmentDropdown.classList.add("hidden");
-    };
-    const show = () => {
-      clear();
-      attachmentDropdown.classList.remove("hidden");
-      hideWithTimeout();
-    };
-    const hideWithTimeout = () => {
-      clear();
-      timeout = setTimeout(() => {
-        attachmentDropdown.classList.add("hidden");
-      }, 1000);
-    };
-
-    const imageDialog = makeFileDialog("image/*", false, async file => {
-      const buffer = await readFile(file);
-      const resized = await resizeImage(buffer, file.type);
-      const uploadedFile = await Peer.tg.fileStorage.upload(resized);
-
-      this.callback({
-        $t: "messages_SendMediaRequest",
-        message: this.inputNode.value,
-        media: {
-          $t: "InputMediaUploadedPhoto",
-          file: uploadedFile
-        }
-      });
-    });
-
-    const fileDialog = makeFileDialog("*", true, async files => {
+    const uploadFactory = (type: "media" | "document") => async (
+      files: File[]
+    ) => {
       const transientModels: IMessage[] = [];
+      const buffers: ArrayBuffer[] = [];
       const message = this.inputNode.value;
       const subscriptions = new Map<File, (progress: number) => any>();
       this.inputNode.value = "";
 
       for (const file of files) {
+        const isPhoto = type === "media" && file.type.startsWith("image/");
+        const isVideo = type === "media" && file.type.startsWith("video/");
+
+        let buffer = await readFile(file);
+        let width: number;
+        let height: number;
+        let thumbnail: string;
+
+        if (isPhoto) {
+          [buffer, width, height] = await resizeImage(buffer, file.type);
+        }
+        if (isVideo) {
+          try {
+            [thumbnail, width, height] = await getVideoMeta(buffer);
+            console.log("tt", thumbnail);
+          } catch {}
+        }
+
         const transient = await this.callback({
           $t: "messages_SendMediaRequest",
           media: {
             $t: "TransientMedia",
-            type: "document",
+            type,
             file,
-            subscribe: fn => {
-              subscriptions.set(file, fn);
-            }
+            width,
+            height,
+            thumbnail,
+            subscribe: fn => subscriptions.set(file, fn)
           },
           message
         });
+        buffers.push(buffer);
         transientModels.push(transient);
       }
 
       for (const index in files) {
         const file = files[index];
         const transientModel = transientModels[index];
-        const buffer = await readFile(file);
+        const buffer = buffers[index];
+
         const uploadedFile = await Peer.tg.fileStorage.upload(
           buffer,
           progress => {
@@ -141,25 +142,40 @@ export default class SendMessageForm implements Component<Options> {
           }
         );
 
+        const media: InputMediaUploadedPhoto | InputMediaUploadedDocument =
+          type === "media" && file.type.startsWith("image/")
+            ? {
+                $t: "InputMediaUploadedPhoto",
+                file: uploadedFile
+              }
+            : {
+                $t: "InputMediaUploadedDocument",
+                file: uploadedFile,
+                mimeType: file.type,
+                attributes: [
+                  {
+                    $t: "DocumentAttributeFilename",
+                    fileName: file.name
+                  }
+                ]
+              };
+
         await this.callback({
           $t: "messages_SendMediaRequest",
-          media: {
-            $t: "InputMediaUploadedDocument",
-            file: uploadedFile,
-            mimeType: file.type,
-            attributes: [
-              {
-                $t: "DocumentAttributeFilename",
-                fileName: file.name
-              }
-            ]
-          },
+          media,
           message
         });
 
         transientModel.destroy();
       }
-    });
+    };
+
+    const imageDialog = makeFileDialog(
+      "image/*,video/*",
+      true,
+      uploadFactory("media")
+    );
+    const fileDialog = makeFileDialog("*", true, uploadFactory("document"));
 
     const attachmentDropdown = createElement(ContextMenu, {
       class: "hidden " + styles.attachmentMenu,
@@ -187,12 +203,25 @@ export default class SendMessageForm implements Component<Options> {
       ]
     });
 
-    attachmentDropdown.addEventListener("mouseenter", () => {
+    const clear = () => clearTimeout(timeout);
+    const hide = () => {
       clear();
-    });
-    attachmentDropdown.addEventListener("mouseleave", () => {
-      hide();
-    });
+      attachmentDropdown.classList.add("hidden");
+    };
+    const show = () => {
+      clear();
+      attachmentDropdown.classList.remove("hidden");
+      hideWithTimeout();
+    };
+    const hideWithTimeout = () => {
+      clear();
+      timeout = setTimeout(() => {
+        attachmentDropdown.classList.add("hidden");
+      }, 1000);
+    };
+
+    attachmentDropdown.addEventListener("mouseenter", clear);
+    attachmentDropdown.addEventListener("mouseleave", hide);
 
     const attachmentActivator = createElement(IconButton, {
       icon: Icons.Attach,

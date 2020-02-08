@@ -90,7 +90,7 @@ export class FileStorage {
         });
         filePart++;
         if (onProgress) {
-          onProgress((filePart * partSize) / bytes.length)
+          onProgress((filePart * partSize) / bytes.length);
         }
       } catch {
         retries++;
@@ -311,7 +311,7 @@ export class FileStorage {
     }
 
     if (media.$t === "MessageMediaPhoto" || media.$t === "Photo") {
-      return await this.downloadPhoto(media, thumb);
+      return await this.downloadPhoto(media, thumb, onProgress);
     } else if (media.$t === "MessageMediaDocument" || media.$t === "Document") {
       const document = media.$t === "Document" ? media : media.document;
       if (document.$t !== "Document") {
@@ -373,7 +373,8 @@ export class FileStorage {
 
   private downloadPhoto(
     messageMediaPhoto: MessageMediaPhoto | Photo,
-    thumb: PhotoSizesTypes | number
+    thumb: PhotoSizesTypes | number,
+    onProgress?: ProgressCallback
   ): Promise<undefined | string> | string | undefined {
     const photo =
       messageMediaPhoto.$t === "MessageMediaPhoto"
@@ -404,7 +405,8 @@ export class FileStorage {
       {
         dcId: photo.dcId,
         fileSize: size.size,
-        cacheKey: CACHE_KEY_PHOTO
+        cacheKey: CACHE_KEY_PHOTO,
+        onProgress
       }
     );
   }

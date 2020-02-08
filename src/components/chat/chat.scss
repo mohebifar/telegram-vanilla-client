@@ -146,10 +146,39 @@ $time-size: 0.75rem;
 
     .attachmentWrapper {
       .attachment {
+        position: relative;
+
         &,
         img,
         video {
           width: 100%;
+        }
+
+        $download-indicator-size: 5em;
+        .downloadIndicator {
+          position: absolute;
+          width: $download-indicator-size;
+          height: $download-indicator-size;
+          margin-left: -$download-indicator-size/2;
+          margin-top: -$download-indicator-size/2;
+          max-width: 100%;
+          max-height: 100%;
+          top: 50%;
+          left: 50%;
+          border-radius: $download-indicator-size/2;
+          background-color: rgba(0, 0, 0, 0.2);
+          padding: 0.2em;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          svg {
+            width: 100%;
+          }
+
+          :global(.ic) {
+            width: 3em;
+          }
         }
       }
     }

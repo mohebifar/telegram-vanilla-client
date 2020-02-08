@@ -86,7 +86,7 @@ export default class FileAttachment implements Component<Options> {
       shouldContinue = false;
     }
 
-    function callback(progress: number) {
+    function onProgress(progress: number) {
       if (shouldContinue && fileIcon) {
         fileIcon.instance.showProgress(progress);
       }
@@ -100,7 +100,7 @@ export default class FileAttachment implements Component<Options> {
       fileIcon.instance.showProgress(0);
 
       tg.fileStorage
-        .downloadMedia(media as any, undefined, callback)
+        .downloadMedia(media as any, undefined, onProgress)
         .then(file => {
           if (file && iconWrapper) {
             fileIcon.instance.showDocument();
