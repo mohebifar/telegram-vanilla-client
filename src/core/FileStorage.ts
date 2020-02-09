@@ -308,6 +308,9 @@ export class FileStorage {
 
     if (media.$t === "MessageMediaWebPage" && media.webpage.$t === "WebPage") {
       media = media.webpage.document || media.webpage.photo;
+      if (!media) {
+        return undefined;
+      }
     }
 
     if (media.$t === "MessageMediaPhoto" || media.$t === "Photo") {

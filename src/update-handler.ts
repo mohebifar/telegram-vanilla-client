@@ -11,7 +11,9 @@ import {
   UpdateShortSentMessage,
   UpdateUserStatus,
   UpdateChatUserTyping,
-  UpdateUserTyping
+  UpdateUserTyping,
+  UpdateReadChannelOutbox,
+  UpdateReadHistoryOutbox
 } from "./core/tl/TLObjects";
 import { extractIdFromPeer } from "./core/tl/utils";
 import { IMessage, Message } from "./models/message";
@@ -51,6 +53,10 @@ export function handleUpdate(update: AllUpdateTypes, extras: Extras = {}) {
     case "UpdateReadHistoryInbox":
     case "UpdateReadChannelInbox":
       handleUpdateReadInbox(update);
+      break;
+    case "UpdateReadHistoryOutbox":
+    case "UpdateReadChannelOutbox":
+      handleUpdateReadOutbox(update);
       break;
     case "UpdateUserStatus":
       handleUpdateUserStatus(update);
@@ -152,6 +158,24 @@ async function handleUpdateReadInbox(
     dialog.unreadCount = update.stillUnreadCount;
     dialog.readInboxMaxId = update.maxId;
     dialog.save();
+  }
+}
+
+async function handleUpdateReadOutbox(
+  update: UpdateReadHistoryOutbox | UpdateReadChannelOutbox
+) {
+  const peer = await Peer.get(
+    update.$t === "UpdateReadChannelOutbox"
+      ? { type: "Channel", id: update.channelId }
+      : extractIdFromPeer(update.peer)
+  );
+  const dialog = await peer.getDialog();
+  if (dialog) {
+    const prevMaxId = dialog.readOutboxMaxId;
+    dialog.readOutboxMaxId = update.maxId;
+    dialog.save();
+
+    Dialog.events.emit("seen", { dialog, maxId: update.maxId, prevMaxId });
   }
 }
 

@@ -25,6 +25,7 @@ $time-size: 0.75rem;
   .sentIndicator {
     display: block;
     margin-left: 0.2em;
+    height: 1.3em;
 
     @extend .ic-green;
   }

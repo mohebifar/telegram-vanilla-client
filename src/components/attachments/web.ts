@@ -21,6 +21,9 @@ export default class WebAttachment implements Component<Options> {
 
     const fs = tg.fileStorage;
     fs.downloadMedia(media).then(src => {
+      if (!src) {
+        return img.remove();
+      }
       img.setAttribute("src", src);
     });
 
@@ -31,16 +34,20 @@ export default class WebAttachment implements Component<Options> {
         href: media.webpage.url,
         target: "_blank"
       },
-      createElement("div", { class: styles.photo }, img),
-      createElement("div", { class: styles.name }, media.webpage.siteName),
-      (media.webpage.description &&
-        createElement(
-          "div",
-          { class: styles.text },
-          media.webpage.description
-        )) ||
-        ""
+      createElement("div", { class: styles.photo }, img)
     );
+
+    if (media.webpage.siteName) {
+      element.append(
+        createElement("div", { class: styles.name }, media.webpage.siteName)
+      );
+    }
+
+    if (media.webpage.description) {
+      element.append(
+        createElement("div", { class: styles.text }, media.webpage.description)
+      );
+    }
 
     this.element = element;
   }

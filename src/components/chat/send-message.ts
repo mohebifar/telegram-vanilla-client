@@ -241,6 +241,10 @@ export default class SendMessageForm implements Component<Options> {
     return [attachmentDropdown, attachmentActivator];
   }
 
+  public focus() {
+    this.inputNode.focus();
+  }
+
   private createEmojiPanel() {
     const emojiPicker = createElement(EmojiPanel, {
       onEmojiSelect: emoji => {

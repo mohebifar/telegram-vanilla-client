@@ -1,8 +1,8 @@
+import { Message as TLMessage } from "../../core/tl/TLObjects";
 import { extractIdFromPeer } from "../../core/tl/utils";
-import { IDialog } from "../../models/dialog";
+import { Dialog, IDialog } from "../../models/dialog";
 import { IMessage, Message } from "../../models/message";
 import { IPeer, Peer, SimplifiedMessageRequest } from "../../models/peer";
-import { Message as TLMessage } from "../../core/tl/TLObjects";
 import {
   Component,
   createElement,
@@ -10,12 +10,12 @@ import {
   getNthChild,
   removeChildren
 } from "../../utils/dom";
+import { debounce, throttle } from "../../utils/utils";
 import Avatar from "../ui/avatar";
 import Bubble from "./bubble";
 import * as styles from "./chat.scss";
 import SendMessageForm from "./send-message";
 import TopBar from "./top-bar";
-import { throttle } from "../../utils/utils";
 
 interface Options {}
 
@@ -38,6 +38,7 @@ export default class Chat implements Component<Options> {
   private noMoreTop = false;
   private noMoreBottom = false;
   private idToElementMap = new Map<number, Element<Bubble>>();
+  private intersectionObserver: IntersectionObserver;
 
   constructor({}: Options) {
     this.chatContainer = createElement("div", { class: styles.chatContainer });
@@ -94,17 +95,56 @@ export default class Chat implements Component<Options> {
 
       this.dialog = dialog;
 
-      const whatToDoWithInvisibilityOfSendForm =
-        this.peer.$t === "Channel" && this.peer.broadcast && !this.peer.creator
-          ? "add"
-          : "remove";
+      const shouldSeeSendMessageForm =
+        this.peer.$t !== "Channel" || this.peer.broadcast || this.peer.creator;
 
-      this.sendMessageForm.classList[whatToDoWithInvisibilityOfSendForm](
+      if (shouldSeeSendMessageForm) {
+        requestAnimationFrame(() => {
+          this.sendMessageForm.instance.focus();
+        });
+      }
+
+      const whatToDoWithInvisibilityOfSendFormHidden = shouldSeeSendMessageForm
+        ? "remove"
+        : "add";
+
+      this.sendMessageForm.classList[whatToDoWithInvisibilityOfSendFormHidden](
         "hidden"
       );
 
       this.noMoreTop = this.noMoreBottom = false;
-      this.loadChat(offsetMessage ? { offsetMessage } : { unreadCount });
+      try {
+        await this.loadChat(
+          offsetMessage ? { offsetMessage } : { unreadCount }
+        );
+      } finally {
+        this.lockLoad = false;
+      }
+
+      if (this.intersectionObserver) {
+        this.intersectionObserver.disconnect();
+      }
+      this.intersectionObserver = new IntersectionObserver(
+        debounce(entries => {
+          const elements = new Map(
+            entries
+              .filter(entry => entry.isIntersecting)
+              .map(entry => [
+                parseInt(entry.target.getAttribute("data-id")),
+                entry.target as Element<Bubble>
+              ])
+          );
+          const maxId = Math.max(...elements.keys());
+          if (maxId && maxId > this.dialog.readInboxMaxId) {
+            const bubble = elements.get(maxId);
+            bubble.instance.message.markAsRead();
+
+            for (const element of elements.values()) {
+              this.intersectionObserver.unobserve(element);
+            }
+          }
+        }, 500)
+      );
     }
   }
 
@@ -160,6 +200,9 @@ export default class Chat implements Component<Options> {
               }
 
               return this.addMessages(messages, { prepend: isAtTop });
+            })
+            .catch(() => {
+              this.lockLoad = false;
             });
         }
       }
@@ -170,6 +213,54 @@ export default class Chat implements Component<Options> {
         this.topBar.instance.update();
       }
     }, 60000);
+
+    Dialog.events.on(
+      "seen",
+      async ({
+        dialog,
+        maxId,
+        prevMaxId
+      }: {
+        dialog: IDialog;
+        maxId: number;
+        prevMaxId: number;
+      }) => {
+        if (dialog === this.dialog) {
+          console.log({
+            maxId,
+            prevMaxId
+          });
+          // Mark messages as seen
+          for (
+            let bubbleWrapper = this.chatContainer.lastChild as Node;
+            bubbleWrapper !== null;
+            bubbleWrapper = bubbleWrapper.previousSibling
+          ) {
+            const lastBubbleHolder = getNthChild(bubbleWrapper, "last");
+
+            for (
+              let bubble = lastBubbleHolder.lastChild as Element<Bubble>;
+              bubble !== null;
+              bubble = bubble.previousSibling as Element<Bubble>
+            ) {
+              const message = bubble.instance.message;
+
+              if (message.$t !== "Message" || !message.out) {
+                continue;
+              }
+
+              if (message.id <= prevMaxId) {
+                return;
+              }
+
+              if (message.id <= maxId) {
+                bubble.instance.updateInner();
+              }
+            }
+          }
+        }
+      }
+    );
 
     Message.events.on("synced", async ({ message }: { message: IMessage }) => {
       if (message.$t === "MessageEmpty") {
@@ -194,7 +285,7 @@ export default class Chat implements Component<Options> {
         if (
           message.$t === "MessageEmpty" ||
           this.chatContainer.childNodes.length === 0 ||
-          this.lockLoad ||
+          // this.lockLoad ||
           this.idToElementMap.has(message.id)
         ) {
           return;
@@ -213,28 +304,24 @@ export default class Chat implements Component<Options> {
           return;
         }
 
-        const lastBubbleWrapper = this.chatContainer.childNodes.item(
-          this.chatContainer.childNodes.length - 1
-        ).childNodes;
-
-        const lastBubbleHolder = lastBubbleWrapper.item(
-          lastBubbleWrapper.length - 1
-        ).childNodes;
-
-        const lastBubble = lastBubbleHolder.item(
-          lastBubbleHolder.length - 1
-        ) as Element<Bubble>;
+        const lastBubbleWrapper = getNthChild(this.chatContainer, "last");
+        const lastBubbleHolder = getNthChild(lastBubbleWrapper, "last");
+        const lastBubble = getNthChild(lastBubbleHolder, "last") as Element<
+          Bubble
+        >;
 
         const lastRenderedMessage = lastBubble.instance.message;
         const wasAtBottom = this.isAtBottom();
 
-        if (message.date.isAfter(lastRenderedMessage.date)) {
-          await this.addMessage(message);
-        }
+        if (message.id > lastRenderedMessage.id) {
+          const element = await this.addMessage(message);
 
-        if (wasAtBottom) {
-          message.markAsRead();
-          this.scrollToEnd();
+          if (wasAtBottom) {
+            message.markAsRead();
+            this.scrollToEnd();
+          } else if (this.intersectionObserver && element) {
+            this.intersectionObserver.observe(element);
+          }
         }
       }
     );
@@ -242,8 +329,10 @@ export default class Chat implements Component<Options> {
     Message.events.on(
       "updated",
       async ({ object: message }: { object: IMessage }) => {
-        if (this.idToElementMap.has(message.id)) {
-          this.idToElementMap.get(message.id).instance.update();
+        const element = this.idToElementMap.get(message.id);
+
+        if (element) {
+          element.instance.update();
         }
       }
     );
@@ -265,7 +354,6 @@ export default class Chat implements Component<Options> {
     offsetMessage,
     unreadCount = 0
   }: { offsetMessage?: number; unreadCount?: number } = {}) {
-    this.lockLoad = true;
     const peer = this.peer;
     const jumpCount = unreadCount ? unreadCount - LIMIT + BACK_LIMIT : 0;
     const messages = await peer.fetchHistory(
@@ -388,7 +476,10 @@ export default class Chat implements Component<Options> {
     true
   );
 
-  private async addMessage(message: IMessage, prepend = false) {
+  private async addMessage(
+    message: IMessage,
+    prepend = false
+  ): Promise<Element<Bubble> | void> {
     this.idToElementMap.set(message.id, null);
     let type: BubbleType;
     switch (message.$t) {
@@ -480,14 +571,19 @@ export default class Chat implements Component<Options> {
       lastBubbleHolder = getNthChild(lastBubbleWrapper, "last");
     }
 
-    const messageElement = createElement(Bubble, {
-      onReplyClick: this.handleReplyClick,
-      message,
-      peer,
-      dialog: this.dialog
-    });
-    this.idToElementMap.set(message.id, messageElement);
-    lastBubbleHolder[insertFn](messageElement);
+    try {
+      const messageElement = createElement(Bubble, {
+        onReplyClick: this.handleReplyClick,
+        message,
+        peer,
+        dialog: this.dialog
+      });
+      this.idToElementMap.set(message.id, messageElement);
+      lastBubbleHolder[insertFn](messageElement);
+      return messageElement;
+    } catch (err) {
+      console.log("failed to show a message", message, err);
+    }
   }
 
   private handleNewMessage = (message: IMessage) => {

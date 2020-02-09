@@ -116,7 +116,7 @@ function createElementFromTag(
   return element;
 }
 
-export function getNthChild<T extends HTMLElement>(
+export function getNthChild<T extends HTMLElement | Node>(
   element: T,
   n: number | "first" | "last"
 ) {

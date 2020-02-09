@@ -553,7 +553,7 @@
     ],
     [
         "Message",
-        "BR"
+        "Message"
     ],
     [
         "MessageService",
@@ -1434,10 +1434,6 @@
     [
         "DocumentEmpty",
         "DX"
-    ],
-    [
-        "Document",
-        "Dx"
     ],
     [
         "help_Support",

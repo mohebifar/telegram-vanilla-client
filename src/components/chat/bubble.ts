@@ -121,6 +121,30 @@ export default class Bubble implements Component<Options> {
       bubbleClassName += " " + styles.animated;
     }
 
+    this.element.className = bubbleClassName;
+
+    this.updateInner(time);
+
+    if (attachment) {
+      removeChildren(this.attachment);
+      this.attachment.append(attachment);
+
+      if (attachmentType === "web") {
+        this.element.append(this.attachment);
+      }
+
+      if (attachment.style.width) {
+        this.element.style.width = attachment.style.width;
+      }
+    }
+  }
+
+  public async updateInner(time?: string) {
+    if (!time) {
+      time = this.getInfo().time;
+    }
+    const isSticker = this.element.classList.contains(styles.sticker);
+
     removeChildren(this.inner);
 
     if (this.time) {
@@ -136,29 +160,19 @@ export default class Bubble implements Component<Options> {
     this.inner.append(this.time);
 
     if (this.message.$t === "Message" && this.message.out) {
+      const icon = this.message.justSent
+        ? Icons.Spinner
+        : this.message.id > this.dialog.readOutboxMaxId
+        ? Icons.Check
+        : Icons.Checks;
       this.sentIndicator = createElement(Icon, {
-        icon: this.message.mediaUnread ? Icons.Check : Icons.Checks,
+        icon,
         color: isSticker ? "white" : "green",
         class: styles.sentIndicator
       });
 
       this.inner.append(this.sentIndicator);
     }
-
-    if (attachment) {
-      removeChildren(this.attachment);
-      this.attachment.append(attachment);
-
-      if (attachmentType === "web") {
-        this.element.append(this.attachment);
-      }
-
-      if (attachment.style.width) {
-        this.element.style.width = attachment.style.width;
-      }
-    }
-
-    this.element.className = bubbleClassName;
   }
 
   private getAttachments(): [HTMLElement | undefined, string | undefined] {
