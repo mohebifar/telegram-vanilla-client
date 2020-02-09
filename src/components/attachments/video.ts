@@ -5,20 +5,21 @@ import {
 import { TelegramClientProxy } from "../../telegram-worker-proxy";
 import { Component, createElement, removeChildren } from "../../utils/dom";
 import { EMPTY_IMG } from "../../utils/images";
+import { fitImageSize } from "../../utils/upload-file";
 import * as styles from "../chat/chat.scss";
 import Icon, { Icons } from "../ui/icon";
 import Progress from "../ui/progress";
-import { fitImageSize } from "../../utils/upload-file";
 
 export interface Options {
   media: MessageMediaDocument;
   tg: TelegramClientProxy;
+  onClick?: (photo: string) => any;
 }
 
 export default class VideoAttachment implements Component<Options> {
   public readonly element: HTMLElement;
 
-  constructor({ media, tg }: Options) {
+  constructor({ media, onClick, tg }: Options) {
     if (media.document.$t !== "Document") {
       return;
     }
@@ -29,9 +30,7 @@ export default class VideoAttachment implements Component<Options> {
 
     const downloadIndicator = createElement(
       "div",
-      {
-        class: styles.downloadIndicator
-      },
+      { class: "downloadIndicator" },
       createElement(Icon, { icon: Icons.Download, color: "white" })
     );
     const img = createElement("img", { src: EMPTY_IMG, class: "blur" });
@@ -55,7 +54,6 @@ export default class VideoAttachment implements Component<Options> {
           progress.instance.progress(t);
         })
         .then(src => {
-          element.classList.remove("pointer");
           progress.remove();
           downloadIndicator.remove();
           downloaded = true;
@@ -65,6 +63,19 @@ export default class VideoAttachment implements Component<Options> {
           video.loop = true;
           video.autoplay = true;
           element.append(video);
+          if (!isGIF) {
+            element.addEventListener("click", () => {
+              const canvas = document.createElement("canvas");
+              canvas.width = video.videoWidth;
+              canvas.height = video.videoHeight;
+              canvas
+                .getContext("2d")
+                .drawImage(video, 0, 0, canvas.width, canvas.height);
+              const initialPhoto = canvas.toDataURL();
+
+              onClick(initialPhoto);
+            });
+          }
         });
     };
 
@@ -90,7 +101,6 @@ export default class VideoAttachment implements Component<Options> {
       if (!downloaded) {
         img.setAttribute("src", url);
       }
-      console.log(url, media, isGIF);
     });
 
     this.element = element;

@@ -91,14 +91,14 @@ export function getVideoMeta(
     let height = 1;
 
     const snapImage = function() {
-      var canvas = document.createElement("canvas");
+      const canvas = document.createElement("canvas");
       width = canvas.width = video.videoWidth;
       height = canvas.height = video.videoHeight;
       canvas
         .getContext("2d")
         .drawImage(video, 0, 0, canvas.width, canvas.height);
-      var image = canvas.toDataURL();
-      var success = image.length > 10000;
+      const image = canvas.toDataURL();
+      const success = image.length > 10000;
       if (success) {
         resolve([image, width, height]);
         return image;
@@ -156,7 +156,7 @@ export async function resizeImage(
     canvas.width = width;
     canvas.height = height;
 
-    var ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d");
     ctx.drawImage(img, 0, 0, width, height);
 
     return canvas.toBlob(
@@ -193,3 +193,16 @@ export function fitImageSize(
 
   return [width, height];
 }
+
+export const saveData = (function() {
+  const a = document.createElement("a");
+  document.body.appendChild(a);
+  a.style.display = "none";
+
+  return function(url: string, fileName: string) {
+    a.href = url;
+    a.download = fileName;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+})();

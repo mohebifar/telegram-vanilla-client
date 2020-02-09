@@ -14,6 +14,12 @@ $white: white;
 $black: black;
 $light: rgba($grey, 0.08);
 
+$light-hover-base: #707579;
+$light-hover: rgba($light-hover-base, 0.08);
+
+$dark-hover-base: $black;
+$dark-hover: rgba($light-hover-base, 0.08);
+
 $blue: #4ea4f7;
 $blue-dark: #1da1f1;
 
@@ -23,6 +29,8 @@ $green: #4ccd5e;
 $green-dark: #50af4f;
 
 $red: #e53934;
+
+$download-indicator-size: 5em;
 
 @keyframes popoverAnimateIn {
   from {

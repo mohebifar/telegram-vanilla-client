@@ -12,5 +12,22 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: $white;
+  background-color: transparent;
+
+  &,
+  &:hover {
+    transition: background-color 0.3s ease;
+  }
+
+  &.light {
+    &:hover {
+      background-color: $light-hover;
+    }
+  }
+
+  &.dark {
+    &:hover {
+      background-color: $dark-hover;
+    }
+  }
 }

@@ -109,7 +109,7 @@ h4 {
     pointer-events: none;
     background-image: radial-gradient(
       circle,
-      rgba(0, 0, 0, 0.2) 10%,
+      rgba($light-hover-base, 0.4) 10%,
       transparent 10.01%
     );
     background-repeat: no-repeat;
@@ -126,8 +126,18 @@ h4 {
   }
 }
 
+.ripple-dark {
+  &:after {
+    background-image: radial-gradient(
+      circle,
+      rgba($light-hover-base, 0.4) 10%,
+      transparent 10.01%
+    );
+  }
+}
+
 :global(.spinner) {
-  animation: spinner .5s linear infinite;
+  animation: spinner 0.5s linear infinite;
 }
 
 @keyframes spinner {
@@ -183,5 +193,31 @@ svg.waveform {
     stop {
       transition: offset 0.2s ease;
     }
+  }
+}
+
+.downloadIndicator {
+  position: absolute;
+  width: $download-indicator-size;
+  height: $download-indicator-size;
+  margin-left: -$download-indicator-size/2;
+  margin-top: -$download-indicator-size/2;
+  max-width: 100%;
+  max-height: 100%;
+  top: 50%;
+  left: 50%;
+  border-radius: $download-indicator-size/2;
+  background-color: rgba(0, 0, 0, 0.2);
+  padding: 0.2em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  svg {
+    width: 100% !important;
+  }
+
+  .ic {
+    width: 3em !important;
   }
 }

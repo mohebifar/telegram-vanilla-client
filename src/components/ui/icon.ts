@@ -28,7 +28,9 @@ export enum Icons {
   Attach = "attach",
   Photo = "photo",
   Document = "document",
-  Poll = "poll"
+  Poll = "poll",
+  Delete = "delete",
+  Forward = "forward"
 }
 
 export interface Options {

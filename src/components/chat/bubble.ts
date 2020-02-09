@@ -25,6 +25,7 @@ import Icon, { Icons } from "../ui/icon";
 import { messageToHTML } from "./chat";
 import * as styles from "./chat.scss";
 import ServiceBubble from "./service-bubble";
+import { mediaLightBox } from "../ui/media-lightbox";
 
 interface Options {
   message: IMessage;
@@ -236,19 +237,48 @@ export default class Bubble implements Component<Options> {
   }
 
   private getPhotoAttachment(media: MessageMediaPhoto): [HTMLElement, "photo"] {
-    return [
-      createElement(PhotoAttachment, { media, tg: this.message.tg }),
-      "photo"
-    ];
+    const onClick = () => {
+      this.dialog.getPeer().then(peer => {
+        mediaLightBox({
+          initialPhoto: element.instance.getSrc(),
+          peer,
+          message: this.message,
+          source: element,
+          tg: this.message.tg
+        });
+      });
+    };
+
+    const element = createElement(PhotoAttachment, {
+      tg: this.message.tg,
+      media,
+      onClick
+    });
+
+    return [element, "photo"];
   }
 
   private getVideoAttachment(
     media: MessageMediaDocument
   ): [HTMLElement | undefined, "video" | undefined] {
-    return [
-      createElement(VideoAttachment, { media, tg: this.message.tg }),
-      "video"
-    ];
+    const onClick = (initialPhoto: string) => {
+      this.dialog.getPeer().then(peer => {
+        mediaLightBox({
+          initialPhoto,
+          peer,
+          message: this.message,
+          source: element,
+          tg: this.message.tg
+        });
+      });
+    };
+
+    const element = createElement(VideoAttachment, {
+      tg: this.message.tg,
+      media,
+      onClick
+    });
+    return [element, "video"];
   }
 
   private getFileAttachment(

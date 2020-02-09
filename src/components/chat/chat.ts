@@ -476,6 +476,7 @@ export default class Chat implements Component<Options> {
       message &&
       this.noMoreBottom &&
       (message.$t !== "Message" ||
+        !message.media ||
         !["InputMediaUploadedPhoto", "InputMediaUploadedDocument"].includes(
           message.media.$t
         ))

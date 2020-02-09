@@ -1,32 +1,20 @@
 import {
   Document,
-  MessageMediaDocument,
-  DocumentAttributeFilename
+  DocumentAttributeFilename,
+  MessageMediaDocument
 } from "../../core/tl/TLObjects";
 import { TelegramClientProxy } from "../../telegram-worker-proxy";
+import { parseFileSize } from "../../utils/chat";
 import { Component, createElement } from "../../utils/dom";
+import { saveData } from "../../utils/upload-file";
+import { TransientMedia } from "../../utils/useful-types";
 import * as styles from "../chat/chat.scss";
 import FileIcon from "../ui/file-icon";
-import { parseFileSize } from "../../utils/chat";
-import { TransientMedia } from "../../utils/useful-types";
 
 export interface Options {
   media: MessageMediaDocument | TransientMedia;
   tg: TelegramClientProxy;
 }
-
-const saveData = (function() {
-  const a = document.createElement("a");
-  document.body.appendChild(a);
-  a.style.display = "none";
-
-  return function(url: string, fileName: string) {
-    a.href = url;
-    a.download = fileName;
-    a.click();
-    window.URL.revokeObjectURL(url);
-  };
-})();
 
 export default class FileAttachment implements Component<Options> {
   public readonly element: HTMLElement;

@@ -5,6 +5,7 @@ import Icon, { Icons, Options as IconOptions } from "./icon";
 interface Options {
   icon: Icons;
   color?: IconOptions["color"];
+  variant?: "light" | "dark" | "none";
   onClick?(event: Event): void;
   onHover?(event: Event): void;
   onHoverOut?(event: Event): void;
@@ -20,7 +21,7 @@ enum EventMap {
 export default class IconButton implements Component<Options> {
   public readonly element: HTMLElement;
 
-  constructor({ icon, color, ...rest }: Options) {
+  constructor({ icon, color, variant = "light", ...rest }: Options) {
     const props = {};
     for (const k in rest) {
       if (!(k in EventMap)) {
@@ -28,12 +29,21 @@ export default class IconButton implements Component<Options> {
       }
     }
 
+    let extraClass = " ";
+    let finalColor = color;
+    if (variant === "light") {
+      extraClass += styles.light;
+    } else if (variant === "dark") {
+      extraClass += styles.dark;
+      finalColor = finalColor || "white";
+    }
+
     this.element = createElement(
       "button",
-      { class: styles.btn, ...props },
+      { class: styles.btn + extraClass, ...props },
       createElement(Icon, {
         icon,
-        color: color || "grey"
+        color: finalColor || "grey"
       })
     );
 

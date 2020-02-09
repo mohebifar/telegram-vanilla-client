@@ -30,6 +30,12 @@ export type DBMessage = (
   isChannel: number;
 };
 
+export type DBSharedMedia = TLMessage & {
+  channelId?: number;
+  peerType: DBPeer["type"];
+  peerId: number;
+};
+
 export interface DBDialog extends Omit<TLDialog, "$t" | "peer"> {
   lastMessageDate: number;
   peerType: DBPeer["type"];
@@ -64,6 +70,14 @@ export interface TelegramDatabaseTables {
       id: number;
     }
   >;
+  sharedMedia: Dexie.Table<
+    DBSharedMedia,
+    {
+      peerType: DBPeer["type"];
+      peerId: DBPeer["id"];
+      id: number;
+    }
+  >;
   dialogs: Dexie.Table<
     DBDialog,
     {
@@ -86,6 +100,7 @@ export class TelegramDatabase extends Dexie implements TelegramDatabaseTables {
   public configs: TelegramDatabaseTables["configs"];
   public dialogs: TelegramDatabaseTables["dialogs"];
   public messages: TelegramDatabaseTables["messages"];
+  public sharedMedia: TelegramDatabaseTables["sharedMedia"];
   public peers: TelegramDatabaseTables["peers"];
 
   static get singleton() {
@@ -100,6 +115,7 @@ export class TelegramDatabase extends Dexie implements TelegramDatabaseTables {
       sessions: "&dcId",
       configs: "&key, value",
       messages: "[id+isChannel], date, $t",
+      sharedMedia: "[id+peerType+peerId]",
       peers: "[id+type]",
       dialogs: "[peerType+peerId], lastMessageDate"
     });
@@ -107,6 +123,7 @@ export class TelegramDatabase extends Dexie implements TelegramDatabaseTables {
     this.sessions = this.table("sessions");
     this.configs = this.table("configs");
     this.messages = this.table("messages");
+    this.sharedMedia = this.table("sharedMedia");
     this.dialogs = this.table("dialogs");
     this.peers = this.table("peers");
   }

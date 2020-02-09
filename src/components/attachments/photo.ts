@@ -3,29 +3,32 @@ import { TelegramClientProxy } from "../../telegram-worker-proxy";
 import { sortPhotoSizes } from "../../utils/chat";
 import { Component, createElement } from "../../utils/dom";
 import { EMPTY_IMG } from "../../utils/images";
+import { fitImageSize, readDataURL } from "../../utils/upload-file";
 import { TransientMedia } from "../../utils/useful-types";
 import * as styles from "../chat/chat.scss";
 import Progress from "../ui/progress";
-import { readDataURL, fitImageSize } from "../../utils/upload-file";
 
 export interface Options {
   media: MessageMediaPhoto | TransientMedia;
   tg: TelegramClientProxy;
+  onClick?: () => any;
 }
 
 export default class PhotoAttachment implements Component<Options> {
   public readonly element: HTMLElement;
+  private img: HTMLImageElement;
 
-  constructor({ media, tg }: Options) {
+  constructor({ media, onClick, tg }: Options) {
     const img = createElement("img", {
-      class: " blur",
+      class: "pointer blur",
       src: (media.$t === "TransientMedia" && media.thumbnail) || EMPTY_IMG
-    });
+    }) as HTMLImageElement;
+    this.img = img;
 
     const progress = createElement(Progress);
     const downloadIndicator = createElement(
       "div",
-      { class: styles.downloadIndicator },
+      { class: "downloadIndicator" },
       progress
     );
     const element = createElement(
@@ -36,7 +39,7 @@ export default class PhotoAttachment implements Component<Options> {
     );
 
     if (media.$t === "MessageMediaPhoto") {
-      const sorted = sortPhotoSizes((media.photo as Photo).sizes.slice());
+      const sorted = sortPhotoSizes((media.photo as Photo).sizes);
       const size = sorted[0] as PhotoSize;
 
       if (size) {
@@ -61,6 +64,7 @@ export default class PhotoAttachment implements Component<Options> {
           img.classList.remove("blur");
           img.setAttribute("src", url);
           downloadIndicator.remove();
+          element.addEventListener("click", onClick);
         });
     } else {
       if (media.subscribe) {
@@ -81,5 +85,9 @@ export default class PhotoAttachment implements Component<Options> {
     }
 
     this.element = element;
+  }
+
+  public getSrc() {
+    return this.img.src;
   }
 }
