@@ -20,6 +20,7 @@ import {
 
 interface Options {
   callback(message: SimplifiedMessageRequest): Promise<IMessage>;
+  startTyping(): void;
 }
 
 export default class SendMessageForm implements Component<Options> {
@@ -28,7 +29,7 @@ export default class SendMessageForm implements Component<Options> {
   private inputNode: HTMLTextAreaElement;
   // private attachmentButton: HTMLButtonElement;
 
-  constructor({ callback }: Options) {
+  constructor({ callback, startTyping }: Options) {
     this.callback = callback;
     this.inputNode = createElement("textarea", {
       rows: "1",
@@ -55,6 +56,12 @@ export default class SendMessageForm implements Component<Options> {
       ),
       createElement(IconButton, { icon: Icons.Send, color: "white" })
     );
+
+    this.inputNode.addEventListener("input", () => {
+      if (this.inputNode.value !== "") {
+        startTyping();
+      }
+    });
 
     this.inputNode.addEventListener("keypress", e => {
       if (e.which == 13 && !e.shiftKey) {

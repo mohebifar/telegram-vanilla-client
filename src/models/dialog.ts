@@ -23,6 +23,7 @@ interface ExtraMethods {
   loadMessage(): Promise<IMessage>;
   getPeer(): Promise<IPeer | undefined>;
   setTyping(userId: number, action: IsTypingAction): void;
+  startTyping(): void;
   getIsTyping(): TypingState[];
   slient: boolean;
 }
@@ -246,6 +247,17 @@ export class Dialog extends Model<"dialogs"> implements ExtraMethods {
 
   public getIsTyping() {
     return this.isTyping;
+  }
+
+  public async startTyping() {
+    const peer = await this.getPeer();
+    this.tg.invoke({
+      $t: "messages_SetTypingRequest",
+      peer: getInputPeer(peer),
+      action: {
+        $t: "SendMessageTypingAction"
+      }
+    });
   }
 
   get slient() {

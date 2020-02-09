@@ -15,6 +15,7 @@ import Bubble from "./bubble";
 import * as styles from "./chat.scss";
 import SendMessageForm from "./send-message";
 import TopBar from "./top-bar";
+import { throttle } from "../../utils/utils";
 
 interface Options {}
 
@@ -47,7 +48,8 @@ export default class Chat implements Component<Options> {
     );
     this.topBarContainer = createElement("div");
     this.sendMessageForm = createElement(SendMessageForm, {
-      callback: this.handleSendMessage
+      callback: this.handleSendMessage,
+      startTyping: this.startTyping
     });
 
     this.element = createElement(
@@ -377,6 +379,14 @@ export default class Chat implements Component<Options> {
     this.handleNewMessage(model);
     return promise;
   };
+
+  private startTyping = throttle(
+    () => {
+      this.dialog.startTyping();
+    },
+    4500,
+    true
+  );
 
   private async addMessage(message: IMessage, prepend = false) {
     this.idToElementMap.set(message.id, null);
