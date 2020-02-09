@@ -199,6 +199,14 @@ export default class Chat implements Component<Options> {
         }
 
         const peerId = extractIdFromPeer(message.toId);
+        if (
+          !message.out &&
+          peerId.type === "User" &&
+          this.peer.type === "User"
+        ) {
+          peerId.id = message.fromId;
+        }
+
         if (peerId.id !== this.peer.id || peerId.type !== this.peer.type) {
           return;
         }
@@ -223,6 +231,7 @@ export default class Chat implements Component<Options> {
         }
 
         if (wasAtBottom) {
+          message.markAsRead();
           this.scrollToEnd();
         }
       }
