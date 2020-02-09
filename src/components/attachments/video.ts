@@ -63,7 +63,30 @@ export default class VideoAttachment implements Component<Options> {
           video.loop = true;
           video.autoplay = true;
           element.append(video);
-          if (!isGIF) {
+
+          let observer = new IntersectionObserver(
+            entries => {
+              const entry = entries[0];
+              if (entry) {
+                if (entry.isIntersecting) {
+                  video.play();
+                } else {
+                  video.pause();
+                }
+              }
+            },
+            {
+              root: document.body,
+              rootMargin: "0px",
+              threshold: 0
+            }
+          );
+
+          observer.observe(video);
+
+          if (isGIF) {
+            element.classList.remove("pointer");
+          } else {
             element.addEventListener("click", () => {
               const canvas = document.createElement("canvas");
               canvas.width = video.videoWidth;
