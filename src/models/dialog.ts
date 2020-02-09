@@ -25,6 +25,7 @@ interface ExtraMethods {
   setTyping(userId: number, action: IsTypingAction): void;
   startTyping(): void;
   getIsTyping(): TypingState[];
+  clearTypingTimeout(userId: number): void;
   slient: boolean;
 }
 
@@ -218,17 +219,7 @@ export class Dialog extends Model<"dialogs"> implements ExtraMethods {
   }
 
   public setTyping(userId: number, action: IsTypingAction) {
-    const timeout = this.isTypingTimeouts.get(userId);
-    if (timeout) {
-      clearTimeout(timeout);
-      this.isTypingTimeouts.delete(userId);
-    }
-
-    const clear = () => {
-      this.isTyping = this.isTyping.filter(typing => typing.userId !== userId);
-    };
-
-    clear();
+    this.clearTypingTimeout(userId);
 
     this.isTyping.push({
       action,
@@ -239,7 +230,7 @@ export class Dialog extends Model<"dialogs"> implements ExtraMethods {
     this.isTypingTimeouts.set(
       userId,
       setTimeout(() => {
-        clear();
+        this.clearTypingTimeout(userId);
         this.broadcastTyping();
       }, 5000)
     );
@@ -258,6 +249,16 @@ export class Dialog extends Model<"dialogs"> implements ExtraMethods {
         $t: "SendMessageTypingAction"
       }
     });
+  }
+
+  public clearTypingTimeout(userId: number) {
+    const timeout = this.isTypingTimeouts.get(userId);
+    if (timeout) {
+      clearTimeout(timeout);
+      this.isTypingTimeouts.delete(userId);
+    }
+
+    this.isTyping = this.isTyping.filter(typing => typing.userId !== userId);
   }
 
   get slient() {

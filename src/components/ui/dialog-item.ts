@@ -20,12 +20,13 @@ interface Options {
 
 export default class DialogItem implements Component<Options> {
   public element: HTMLElement;
+  public dialog: Options["dialog"];
+
   private avatar: HTMLElement;
   private text: HTMLElement;
   private title: HTMLElement;
   private date: HTMLElement;
   private unreadCount: HTMLElement;
-  private dialog: Options["dialog"];
   private message: Options["message"];
   private peer: Options["peer"];
   private onClick: Options["onClick"];

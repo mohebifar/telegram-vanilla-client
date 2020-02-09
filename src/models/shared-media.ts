@@ -67,7 +67,6 @@ export class SharedMedia extends Model<"sharedMedia"> implements ExtraMethods {
       limit,
       q: ""
     })) as messages_MessagesSlice;
-    console.log("requested", offsetId, addOffset, response);
 
     for (const peer of [...response.users, ...response.chats]) {
       Peer.fromObject(peer).save();

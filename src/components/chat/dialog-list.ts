@@ -1,7 +1,12 @@
 import { Dialog, IDialog } from "../../models/dialog";
 import { IMessage } from "../../models/message";
 import { IPeer, Peer } from "../../models/peer";
-import { Component, createElement, Element } from "../../utils/dom";
+import {
+  Component,
+  createElement,
+  Element,
+  getNthChild
+} from "../../utils/dom";
 import DialogItem from "../ui/dialog-item";
 import * as dialogItemStyles from "../ui/dialog-item.scss";
 import * as styles from "./side-bar.scss";
@@ -15,7 +20,6 @@ export default class DialogList implements Component<Options> {
 
   private readonly dialogsContainer: HTMLElement;
   private readonly pinnedDialogsContainer: HTMLElement;
-  private sortedDialogs: IDialog[] = [];
   private activeDialog: IDialog;
 
   private paginating = false;
@@ -121,7 +125,6 @@ export default class DialogList implements Component<Options> {
     await element.instance.register();
 
     this.dialogsToElement.set(dialog, element);
-    this.sortedDialogs.push(dialog);
 
     if (dialog.pinned) {
       this.pinnedDialogsContainer.append(element);
@@ -131,7 +134,12 @@ export default class DialogList implements Component<Options> {
   }
 
   private getLastDialog() {
-    return this.sortedDialogs[this.sortedDialogs.length - 1];
+    const lastDialogElement = getNthChild(
+      this.dialogsContainer,
+      "last"
+    ) as Element<DialogItem>;
+
+    return lastDialogElement.instance.dialog;
   }
 
   private rearrangeItems(updatedDialog: IDialog) {
@@ -139,18 +147,17 @@ export default class DialogList implements Component<Options> {
       return;
     }
 
-    const referenceIndex = this.sortedDialogs.findIndex(
-      dialog =>
-        dialog.lastMessageDate < updatedDialog.lastMessageDate && !dialog.pinned
+    let element: Element<DialogItem>;
+    for (
+      element = this.dialogsContainer.firstChild as Element<DialogItem>;
+      element != null &&
+      updatedDialog.lastMessageDate <= element.instance.dialog.lastMessageDate;
+      element = element.nextSibling as Element<DialogItem>
     );
-    const index = this.sortedDialogs.indexOf(updatedDialog);
-    const referenceDialog = this.sortedDialogs[referenceIndex];
 
-    this.sortedDialogs.splice(index, 1);
-    this.sortedDialogs.splice(referenceIndex, 0, updatedDialog);
-    const referenceNode = this.dialogsToElement.get(referenceDialog);
-    const node = this.dialogsToElement.get(updatedDialog);
-    this.dialogsContainer.insertBefore(node, referenceNode);
-    console.log("Reposition dialog ", node, referenceNode);
+    if (element) {
+      const updatedElement = this.dialogsToElement.get(updatedDialog);
+      this.dialogsContainer.insertBefore(updatedElement, element);
+    }
   }
 }

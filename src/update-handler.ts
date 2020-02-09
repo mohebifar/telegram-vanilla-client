@@ -142,6 +142,9 @@ async function handleNewMessageUpdate(
 
   dialog.lastMessageDate = message.date.unix();
   dialog.topMessage = message.id;
+  if (message.$t === "Message") {
+    dialog.clearTypingTimeout(message.fromId);
+  }
   dialog.save();
 }
 

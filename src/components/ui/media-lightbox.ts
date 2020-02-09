@@ -146,7 +146,6 @@ export class LightBox implements Component<Options> {
 
       this.tg.fileStorage.downloadMedia(media, 0).then(url => {
         if (this.media === sharedMedia) {
-          console.log("media", media, url);
           this.setSrc(url);
           this.image.className = "blur";
         }
