@@ -13,6 +13,15 @@ $time-size: 0.75rem;
   background-image: url("/assets/bg.jpg");
   background-size: cover;
 
+  a {
+    &,
+    &:visited,
+    &:active {
+      color: $blue;
+      text-decoration: none;
+    }
+  }
+
   .sentIndicator {
     display: block;
     margin-left: 0.2em;
@@ -140,10 +149,6 @@ $time-size: 0.75rem;
       margin: 0;
     }
 
-    a {
-      text-decoration: none;
-    }
-
     .attachmentWrapper {
       .attachment {
         position: relative;
@@ -230,9 +235,6 @@ $time-size: 0.75rem;
     > :last-child {
       align-items: flex-start;
 
-      a {
-        color: $blue-dark;
-      }
       .box:hover {
         background-color: $light;
       }

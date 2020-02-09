@@ -33,7 +33,13 @@ export default class WebAttachment implements Component<Options> {
       },
       createElement("div", { class: styles.photo }, img),
       createElement("div", { class: styles.name }, media.webpage.siteName),
-      createElement("div", { class: styles.text }, media.webpage.description)
+      (media.webpage.description &&
+        createElement(
+          "div",
+          { class: styles.text },
+          media.webpage.description
+        )) ||
+        ""
     );
 
     this.element = element;

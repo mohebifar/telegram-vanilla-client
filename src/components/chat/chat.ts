@@ -125,8 +125,8 @@ export default class Chat implements Component<Options> {
       if (this.lockLoad || this.chatContainer.childNodes.length === 0) {
         return;
       }
-      const isAtTop = this.isAtTop();
-      const isAtBottom = this.isAtBottom();
+      const isAtTop = this.isAtTop(200);
+      const isAtBottom = this.isAtBottom(200);
       const lastBubble = this.getFirstOrLastBubble(isAtTop ? "first" : "last");
 
       if ((isAtTop && !this.noMoreTop) || (isAtBottom && !this.noMoreBottom)) {
