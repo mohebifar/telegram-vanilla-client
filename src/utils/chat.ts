@@ -127,6 +127,8 @@ export async function getServiceMessage(message: MessageService) {
       return `${peer.displayName} removed "${deletedUser.displayName}"`;
     case "MessageActionPinMessage":
       return "A message was pinned";
+    case "MessageActionContactSignUp":
+      return `${peer.displayName} joined Telegram!`;
     case "MessageActionPhoneCall":
       return "Phone call";
   }
