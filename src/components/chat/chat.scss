@@ -156,52 +156,6 @@ $time-size: 0.75rem;
       }
     }
 
-    .box {
-      font-size: 14px;
-      margin: 5px;
-      padding: 5px;
-      margin-bottom: -5px;
-      border-radius: 4px;
-      transition: anim(background-color);
-      user-select: none;
-
-      &:hover {
-        cursor: pointer;
-      }
-
-      &.web {
-        margin-top: -5px;
-        margin-bottom: 5px;
-        max-width: 320px;
-        .quote {
-          // box-sizing: border-box;
-        }
-        .preview {
-          height: 100px;
-          border-radius: 4px;
-          background-size: cover;
-          background-position: center;
-          margin-bottom: 6px;
-        }
-        .title {
-          line-height: 1.4;
-          font-weight: 500;
-        }
-        .text {
-          line-height: 1.2;
-          color: $black;
-        }
-      }
-
-      .quote {
-        padding-left: 8px;
-      }
-      .name {
-        font-weight: 500;
-        padding-bottom: 4px;
-      }
-    }
-
     .message {
       padding: 9px;
     }
@@ -315,6 +269,9 @@ $time-size: 0.75rem;
           border-color: $blue;
           .name {
             color: $blue;
+          }
+          .text {
+            color: $black;
           }
         }
       }
