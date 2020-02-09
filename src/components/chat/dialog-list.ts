@@ -58,6 +58,7 @@ export default class DialogList implements Component<Options> {
   private async register() {
     const dialogs = await Dialog.fetch();
     await this.addDialogs(dialogs);
+
     Dialog.events.on(
       "saved",
       ({ object }: { object: IDialog; gid: string }) => {
@@ -68,6 +69,13 @@ export default class DialogList implements Component<Options> {
         }
       }
     );
+
+    Dialog.events.on("typing", ({ dialog }: { dialog: IDialog }) => {
+      if (this.dialogsToElement.has(dialog)) {
+        const element = this.dialogsToElement.get(dialog);
+        element.instance.update();
+      }
+    });
 
     this.element.addEventListener("scroll", () => {
       const isAtBottom =

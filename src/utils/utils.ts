@@ -46,3 +46,8 @@ export function throttle<T extends Function>(
     }
   } as never) as T;
 }
+
+export const toListSentence = (arr: string[]) =>
+  arr.length < 3
+    ? arr.join(" and ")
+    : `${arr.slice(0, -1).join(", ")}, and ${arr[arr.length - 1]}`;

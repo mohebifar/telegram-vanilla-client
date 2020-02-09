@@ -9,12 +9,15 @@ import {
   UpdateShortChatMessage,
   UpdateShortMessage,
   UpdateShortSentMessage,
-  UpdateUserStatus
+  UpdateUserStatus,
+  UpdateChatUserTyping,
+  UpdateUserTyping
 } from "./core/tl/TLObjects";
 import { extractIdFromPeer } from "./core/tl/utils";
 import { IMessage, Message } from "./models/message";
 import { Peer } from "./models/peer";
 import { AllUpdateTypes, DialogMessageTypes } from "./utils/useful-types";
+import { Dialog, IDialog } from "./models/dialog";
 
 interface TransientMessageData {
   randomId: JBigInt;
@@ -57,6 +60,10 @@ export function handleUpdate(update: AllUpdateTypes, extras: Extras = {}) {
       break;
     case "UpdateDeleteChannelMessages":
       handleUpdateDeleteMessages(update, true);
+      break;
+    case "UpdateUserTyping":
+    case "UpdateChatUserTyping":
+      handleUpdateTyping(update);
       break;
     default:
       console.debug("Unsupported update", update);
@@ -165,5 +172,32 @@ async function handleUpdateDeleteMessages(
     if (model) {
       model.destroy();
     }
+  }
+}
+
+async function handleUpdateTyping(
+  update: UpdateUserTyping | UpdateChatUserTyping
+) {
+  let dialog: IDialog;
+  if (update.$t === "UpdateUserTyping") {
+    dialog = await Dialog.get({
+      peerId: update.userId,
+      peerType: "User"
+    });
+  } else {
+    dialog = await Dialog.get({
+      peerId: update.chatId,
+      peerType: "Chat"
+    });
+    if (!dialog) {
+      dialog = await Dialog.get({
+        peerId: update.chatId,
+        peerType: "Channel"
+      });
+    }
+  }
+
+  if (dialog) {
+    dialog.setTyping(update.userId, update.action);
   }
 }

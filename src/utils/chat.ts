@@ -14,7 +14,12 @@ import {
 import { Peer } from "../models/peer";
 import { TelegramClientProxy } from "../telegram-worker-proxy";
 import { DBPeer } from "./db";
-import { DialogMessageTypes, MediaWithTransient } from "./useful-types";
+import {
+  DialogMessageTypes,
+  MediaWithTransient,
+  TypingState
+} from "./useful-types";
+import { toListSentence } from "./utils";
 
 dayjs.extend(relativeTime);
 
@@ -215,6 +220,30 @@ export function getDialogDisplayDate(date: Dayjs | Date | number) {
   }
 
   return messageDate.format("YY-M-D");
+}
+
+export async function getIsTypingText(isTypings: TypingState[]) {
+  if (isTypings.length > 0) {
+    const userNames: string[] = [];
+    for (const typing of isTypings) {
+      const user = await Peer.get({ type: "User", id: typing.userId });
+      if (!user || user.$t !== "User") {
+        continue;
+      }
+      userNames.push(user.firstName);
+    }
+
+    if (userNames.length > 0) {
+      return (
+        toListSentence(userNames) +
+        " " +
+        (userNames.length > 1 ? "are" : "is") +
+        " typing..."
+      );
+    }
+  }
+
+  return undefined;
 }
 
 export function shortenCount(count: number) {

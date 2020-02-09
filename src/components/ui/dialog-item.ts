@@ -1,11 +1,15 @@
-import { createElement, Component, removeChildren } from "../../utils/dom";
-import { shortenCount, getDialogDisplayDate } from "../../utils/chat";
-import * as styles from "./dialog-item.scss";
-import Avatar from "./avatar";
-import Icon, { Icons } from "./icon";
 import { IDialog } from "../../models/dialog";
-import { IPeer } from "../../models/peer";
 import { IMessage } from "../../models/message";
+import { IPeer } from "../../models/peer";
+import {
+  getDialogDisplayDate,
+  getIsTypingText,
+  shortenCount
+} from "../../utils/chat";
+import { Component, createElement, removeChildren } from "../../utils/dom";
+import Avatar from "./avatar";
+import * as styles from "./dialog-item.scss";
+import Icon, { Icons } from "./icon";
 
 interface Options {
   dialog?: IDialog;
@@ -101,10 +105,15 @@ export default class DialogItem implements Component<Options> {
 
   private async getInfo() {
     if (this.dialog) {
+      const isTypings = this.dialog.getIsTyping();
       const shouldShowPin = this.dialog.unreadCount === 0 && this.dialog.pinned;
-      const text = await this.dialog.getText();
-      const date = await this.dialog.getDisplayDate();
+      let text = await getIsTypingText(isTypings);
 
+      if (!text) {
+        text = await this.dialog.getText();
+      }
+
+      const date = await this.dialog.getDisplayDate();
       return {
         unread: shouldShowPin
           ? createElement(Icon, { icon: Icons.PinnedChat, color: "white" })

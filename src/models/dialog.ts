@@ -8,7 +8,11 @@ import {
 import { extractIdFromPeer, getInputPeer } from "../core/tl/utils";
 import { getDialogDisplayDate, getMessageSummary } from "../utils/chat";
 import { DBDialog, TelegramDatabase } from "../utils/db";
-import { InputPeerTypes } from "../utils/useful-types";
+import {
+  InputPeerTypes,
+  IsTypingAction,
+  TypingState
+} from "../utils/useful-types";
 import { IMessage, Message } from "./message";
 import { Model, ModelDecorator, ModelKey, ModelWithProxy } from "./model";
 import { IPeer, Peer } from "./peer";
@@ -18,6 +22,8 @@ interface ExtraMethods {
   getDisplayDate(): Promise<string>;
   loadMessage(): Promise<IMessage>;
   getPeer(): Promise<IPeer | undefined>;
+  setTyping(userId: number, action: IsTypingAction): void;
+  getIsTyping(): TypingState[];
   slient: boolean;
 }
 
@@ -27,12 +33,14 @@ export type IDialog = ModelWithProxy<"dialogs"> & ExtraMethods;
   tableName: "dialogs",
   primaryKey: ["peerId", "type"]
 })
-export class Dialog extends Model<"dialogs"> {
+export class Dialog extends Model<"dialogs"> implements ExtraMethods {
   static get: (id: ModelKey<"dialogs">) => Promise<undefined | IDialog>;
   static bulkGet: (
     id: ModelKey<"dialogs">[]
   ) => Promise<(undefined | IDialog)[]>;
   static table: TelegramDatabase["dialogs"];
+  private isTypingTimeouts = new Map<number, number>();
+  private isTyping: TypingState[] = [];
 
   protected prepareValues(
     object: DBDialog | { dialog: TLDialog; lastMessageDate: number }
@@ -208,6 +216,38 @@ export class Dialog extends Model<"dialogs"> {
     });
   }
 
+  public setTyping(userId: number, action: IsTypingAction) {
+    const timeout = this.isTypingTimeouts.get(userId);
+    if (timeout) {
+      clearTimeout(timeout);
+      this.isTypingTimeouts.delete(userId);
+    }
+
+    const clear = () => {
+      this.isTyping = this.isTyping.filter(typing => typing.userId !== userId);
+    };
+
+    clear();
+
+    this.isTyping.push({
+      action,
+      userId
+    });
+
+    this.broadcastTyping();
+    this.isTypingTimeouts.set(
+      userId,
+      setTimeout(() => {
+        clear();
+        this.broadcastTyping();
+      }, 5000)
+    );
+  }
+
+  public getIsTyping() {
+    return this.isTyping;
+  }
+
   get slient() {
     if (this.fields.notifySettings.$t === "PeerNotifySettings") {
       return dayjs(this.fields.notifySettings.muteUntil * 1000).isAfter(
@@ -216,5 +256,11 @@ export class Dialog extends Model<"dialogs"> {
     }
 
     return false;
+  }
+
+  private broadcastTyping() {
+    Dialog.events.emit("typing", {
+      dialog: this._proxy
+    });
   }
 }
