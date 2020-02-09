@@ -44,6 +44,7 @@ export class LightBox implements Component<Options> {
   private nextButton: HTMLElement;
   private prevButton: HTMLElement;
   private tg: TelegramClientProxy;
+  private closed = false;
 
   public mediaWrapper: HTMLElement;
 
@@ -108,6 +109,7 @@ export class LightBox implements Component<Options> {
   }
 
   public close() {
+    this.closed = true;
     startAnimation({ o: { from: 1, to: 0 } }, v => {
       this.element.style.opacity = v.o + "";
       if (v.o === 0) {
@@ -177,7 +179,7 @@ export class LightBox implements Component<Options> {
           progress.instance.progress(t);
         }
 
-        return true;
+        return !this.closed;
       })
       .then(url => {
         if (this.media === sharedMedia) {
