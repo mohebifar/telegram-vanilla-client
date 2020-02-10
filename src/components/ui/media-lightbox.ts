@@ -281,7 +281,7 @@ export function mediaLightBox({
 }: {
   source: HTMLElement;
   peer: IPeer;
-  message: IMessage;
+  message: IMessage | ISharedMedia;
   initialPhoto: string;
   tg: TelegramClientProxy;
 }) {

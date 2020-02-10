@@ -1,0 +1,65 @@
+@import "../../variables.scss";
+
+.root {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.tabs {
+  position: relative;
+  padding: 0 0.5em;
+  border-bottom: 1px solid $grey-light;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  &:after {
+    content: "";
+    display: block;
+    clear: both;
+  }
+
+  .tab {
+    text-align: center;
+    padding: 0.8em 0;
+    cursor: pointer;
+    color: $grey;
+    font-weight: 500;
+    position: relative;
+    margin: 0 0.8em;
+    border: none;
+    background: none;
+    outline: none;
+
+    &.active {
+      &:after {
+        content: "";
+        display: block;
+        height: 3px;
+        background-color: $blue;
+        border-radius: 3px 3px 0 0;
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+      }
+
+      color: $blue;
+    }
+  }
+}
+
+.contentWrapper {
+  flex: 1;
+  position: relative;
+
+  > .content {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 0;
+    overflow-y: hidden;
+  }
+}

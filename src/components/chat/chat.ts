@@ -14,6 +14,7 @@ import { debounce, throttle } from "../../utils/utils";
 import Avatar from "../ui/avatar";
 import Bubble from "./bubble";
 import * as styles from "./chat.scss";
+import RightSidebar from "./right-sidebar";
 import SendMessageForm from "./send-message";
 import TopBar from "./top-bar";
 
@@ -32,6 +33,7 @@ export default class Chat implements Component<Options> {
   private topBarContainer: HTMLElement;
   private sendMessageForm: Element<SendMessageForm>;
   private topBar: Element<TopBar>;
+  private rightSidebar: Element<RightSidebar>;
   private dialog?: IDialog;
   private peer?: IPeer;
   private lockLoad = false;
@@ -53,12 +55,21 @@ export default class Chat implements Component<Options> {
       startTyping: this.startTyping
     });
 
-    this.element = createElement(
+    const chatSection = createElement(
       "div",
       { class: styles.container },
       this.topBarContainer,
       this.scrollView,
       this.sendMessageForm
+    );
+
+    this.rightSidebar = createElement(RightSidebar);
+
+    this.element = createElement(
+      "div",
+      { class: styles.root },
+      chatSection,
+      this.rightSidebar
     );
 
     this.register();
@@ -85,7 +96,14 @@ export default class Chat implements Component<Options> {
       this.lockLoad = true;
       this.peer = await dialog.getPeer();
       if (dialog !== this.dialog) {
-        this.topBar = createElement(TopBar, { dialog, peer: this.peer });
+        this.topBar = createElement(TopBar, {
+          dialog,
+          peer: this.peer,
+          onProfileClick: () => {
+            this.rightSidebar.instance.setPeer(this.peer);
+            this.rightSidebar.instance.show();
+          }
+        });
         removeChildren(this.topBarContainer);
         this.topBarContainer.append(this.topBar);
       }

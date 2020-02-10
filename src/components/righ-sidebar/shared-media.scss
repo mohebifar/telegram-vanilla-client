@@ -1,0 +1,16 @@
+.container {
+  padding: 0.5em;
+  display: grid;
+  grid-gap: 0.2em;
+  grid-template-columns: 1fr 1fr 1fr;
+  overflow-y: auto;
+  height: 100%;
+
+  .tile {
+    padding-bottom: 100%;
+    background-size: cover;
+    border: none;
+    outline: none;
+    cursor: pointer;
+  }
+}

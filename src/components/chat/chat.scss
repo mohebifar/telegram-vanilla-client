@@ -3,6 +3,11 @@
 
 $time-size: 0.75rem;
 
+.root {
+  display: flex;
+  flex-grow: 1;
+}
+
 .container {
   overflow-y: scroll;
   scrollbar-width: none;

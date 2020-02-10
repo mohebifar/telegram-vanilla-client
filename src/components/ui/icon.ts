@@ -30,7 +30,10 @@ export enum Icons {
   Document = "document",
   Poll = "poll",
   Delete = "delete",
-  Forward = "forward"
+  Forward = "forward",
+  Info = "info",
+  Username = "username",
+  Phone = "phone"
 }
 
 export interface Options {

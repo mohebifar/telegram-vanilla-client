@@ -1,0 +1,73 @@
+@import "../../variables.scss";
+
+.root {
+  animation: animateIn 0.3s ease;
+  overflow-x: hidden;
+}
+
+.container {
+  background-color: #fff;
+  border-left: 1px solid $grey-light;
+  display: flex;
+  flex-direction: column;
+  width: 25em;
+  height: 100vh;
+}
+
+@keyframes animateIn {
+  from {
+    width: 0;
+  }
+  to {
+    width: 25em;
+  }
+}
+
+.heading {
+  display: flex;
+  align-items: center;
+  margin: 0.5em;
+
+  .title {
+    flex-grow: 1;
+    font-weight: 500;
+    font-size: 1.1em;
+    padding: 0 1em;
+  }
+}
+
+.profile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 1em;
+
+  .name {
+    font-size: 1.4em;
+    font-weight: 500;
+    margin: 0.5em 0 0.1em;
+  }
+}
+
+.profileDetail {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  padding: 1em;
+
+  > :last-child {
+    margin-left: 1em;
+    display: flex;
+    flex-direction: column;
+
+    > :first-child {
+      font-weight: 300;
+    }
+    > :last-child {
+      font-weight: 300;
+      font-size: 0.98em;
+      margin-top: 0.3em;
+      color: $grey;
+    }
+  }
+}

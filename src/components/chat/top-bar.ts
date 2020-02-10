@@ -8,6 +8,7 @@ import * as styles from "./top-bar.scss";
 interface Options {
   dialog: IDialog;
   peer: IPeer;
+  onProfileClick: () => any;
 }
 
 export default class TopBar implements Component<Options> {
@@ -17,7 +18,7 @@ export default class TopBar implements Component<Options> {
   // private dialog: IDialog;
   private peer: IPeer;
 
-  constructor({ peer }: Options) {
+  constructor({ peer, onProfileClick }: Options) {
     // this.dialog = dialog;
     this.peer = peer;
 
@@ -25,20 +26,21 @@ export default class TopBar implements Component<Options> {
 
     this.subdueText = createElement("div", { class: styles.subdue });
 
-    this.element = createElement(
+    const profile = createElement(
       "div",
-      { class: styles.container },
+      { class: "pointer" },
+      createElement(Avatar, { peer }),
       createElement(
         "div",
-        createElement(Avatar, { peer }),
-        createElement(
-          "div",
-          { class: styles.meta },
-          this.displayNameContainer,
-          this.subdueText
-        )
+        { class: styles.meta },
+        this.displayNameContainer,
+        this.subdueText
       )
     );
+
+    profile.addEventListener("click", onProfileClick);
+
+    this.element = createElement("div", { class: styles.container }, profile);
 
     this.peer.loadFull().then(() => {
       this.update();

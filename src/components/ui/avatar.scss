@@ -63,6 +63,19 @@
     }
   }
 
+  &.l {
+    &,
+    .placeholder,
+    img {
+      width: 6rem;
+      height: 6rem;
+      font-size: 0.9em;
+    }
+    .placeholder {
+      padding-top: 1rem;
+    }
+  }
+
   &,
   .placeholder,
   img {
