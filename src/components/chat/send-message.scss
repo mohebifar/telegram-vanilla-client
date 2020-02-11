@@ -10,28 +10,16 @@
   margin-bottom: 2rem;
   padding: 0 0.5em;
 
-  .inputWrapper {
+  .inputArea {
     flex-grow: 1;
     box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.08);
     margin-right: 1rem;
     position: relative;
-    padding: 0 $input-padding-h/2;
     background-color: #fff;
-    display: flex;
-    align-items: flex-end;
     border-radius: 1rem 1rem 0 1rem;
+    padding: 0.2em 0 0.3em;
 
-    > button {
-      height: auto;
-      margin: 0;
-      padding: $input-padding-v $input-padding-h/2;
-
-      &:hover > :global(.ic) {
-        @extend .ic-blue;
-      }
-    }
-
-    &:after {
+    &:before {
       content: "";
       position: absolute;
       bottom: 0;
@@ -43,22 +31,47 @@
       box-shadow: -14px 0 0 #fff;
     }
 
-    .messageInput {
-      line-height: 1.2;
-      max-height: 10rem;
-      overflow-y: auto;
-      width: 100%;
-      outline: none;
-      font-size: 1rem;
-      border: none;
-      resize: none;
-      min-width: 2rem;
-      display: block;
-      padding: $input-padding-v $input-padding-h/2;
-      margin-right: 1em;
+    > div {
+      flex-grow: 1;
+      padding: 0 $input-padding-h/2;
+      display: flex;
+      align-items: flex-end;
 
-      p {
+      > button {
         margin: 0;
+        padding: 0;
+        width: 2.8em;
+        height: 2.8em;
+
+        &:hover > :global(.ic) {
+          @extend .ic-blue;
+        }
+      }
+
+      &.quoteRow {
+        align-items: center;
+      }
+
+      &.inputRow {
+        .messageInput {
+          line-height: 1.2;
+          max-height: 10rem;
+          overflow-y: auto;
+          width: 100%;
+          outline: none;
+          font-size: 1rem;
+          border: none;
+          resize: none;
+          min-width: 2rem;
+          display: block;
+          padding: $input-padding-v $input-padding-h/2;
+          margin-right: 1em;
+          flex: 1;
+
+          p {
+            margin: 0;
+          }
+        }
       }
     }
   }

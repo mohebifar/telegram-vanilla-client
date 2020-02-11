@@ -51,8 +51,7 @@ export default class EmojiPanel implements Component<Options> {
     });
 
     element.addEventListener("mouseleave", () => {
-      this.clearTimeout();
-      this.setVisibility(false);
+      this.deferHide();
     });
 
     this.element = element;
@@ -67,11 +66,11 @@ export default class EmojiPanel implements Component<Options> {
     }
   }
 
-  public deferHide() {
+  public deferHide(timeout = 600) {
     this.clearTimeout();
     this.timeout = setTimeout(() => {
       this.setVisibility(false);
-    }, 600);
+    }, timeout);
   }
 
   private clearTimeout() {

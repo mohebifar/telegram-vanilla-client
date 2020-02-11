@@ -23,4 +23,9 @@
     filter: invert(54%) sepia(57%) saturate(444%) hue-rotate(71deg)
       brightness(96%) contrast(90%);
   }
+
+  &-red {
+    filter: invert(64%) sepia(87%) saturate(6174%) hue-rotate(339deg)
+      brightness(90%) contrast(100%);
+  }
 }

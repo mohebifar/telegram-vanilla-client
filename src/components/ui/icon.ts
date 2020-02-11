@@ -33,12 +33,15 @@ export enum Icons {
   Forward = "forward",
   Info = "info",
   Username = "username",
-  Phone = "phone"
+  Phone = "phone",
+  Reply = "reply",
+  Copy = "copy",
+  Pin = "pin"
 }
 
 export interface Options {
   icon: Icons;
-  color?: "white" | "blue" | "black" | "grey" | "grey-light" | "green";
+  color?: "white" | "blue" | "black" | "grey" | "grey-light" | "green" | "red";
   [s: string]: any;
 }
 

@@ -34,6 +34,8 @@ interface ExtraMethods {
   getDialog(): Promise<IDialog | undefined>;
   loadFull(): Promise<void>;
   isChannel(): boolean;
+  canSendMessage(): boolean;
+  isGroupChat(): boolean;
 }
 
 export type IPeer = ModelWithProxy<"peers"> & ExtraMethods;
@@ -238,5 +240,21 @@ export class Peer extends Model<"peers"> implements ExtraMethods {
 
   public isChannel() {
     return this._proxy.$t === "Channel";
+  }
+
+  public canSendMessage() {
+    return (
+      this._proxy.$t !== "Channel" ||
+      !this._proxy.broadcast ||
+      this._proxy.creator ||
+      (this._proxy.adminRights && this._proxy.adminRights.postMessages)
+    );
+  }
+
+  public isGroupChat() {
+    return (
+      this._proxy.$t === "Chat" ||
+      (this._proxy.$t === "Channel" && !this._proxy.broadcast)
+    );
   }
 }

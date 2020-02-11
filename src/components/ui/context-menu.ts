@@ -2,10 +2,11 @@ import { createElement, Component } from "../../utils/dom";
 import * as styles from "./context-menu.scss";
 import Icon, { Icons } from "./icon";
 
-type MenuItem = {
+export type MenuItem = {
   icon: Icons;
   title: string;
-  onClick?(): void;
+  onClick?(close: () => void): void;
+  variant?: "red" | "grey";
   tag?: "button" | "label";
   [k: string]: any;
 };
@@ -21,19 +22,23 @@ export class ContextMenu implements Component<Options> {
 
   constructor({ items, clickActivator = true, ...rest }: Options) {
     const itemElements = items.map(
-      ({ tag = "button", icon, title, onClick, ...rest }) => {
+      ({ tag = "button", icon, title, onClick, variant = "grey", ...rest }) => {
         const element = createElement(
           tag,
           {
-            class: styles.item,
+            class: styles.item + " " + (variant ? styles[variant] : ""),
             ...(tag === "button" ? { type: "button" } : {}),
             ...rest
           },
-          createElement(Icon, { icon: icon, color: "grey" }),
+          createElement(Icon, { icon: icon, color: variant }),
           createElement("div", { class: styles.title }, title)
         );
 
-        element.addEventListener("click", onClick);
+        element.addEventListener("click", () => {
+          if (onClick) {
+            onClick(() => this.element.remove());
+          }
+        });
 
         return element;
       }
@@ -51,14 +56,14 @@ export class ContextMenu implements Component<Options> {
         if (!target.closest("." + styles.container)) {
           this.element.remove();
         } else {
-          document.body.addEventListener("click", listener, {
+          document.body.addEventListener("mousedown", listener, {
             once: true,
             capture: true
           });
         }
       };
 
-      document.body.addEventListener("click", listener, {
+      document.body.addEventListener("mousedown", listener, {
         once: true,
         capture: true
       });

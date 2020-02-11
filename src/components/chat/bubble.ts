@@ -5,8 +5,7 @@ import {
 } from "../../core/tl/TLObjects";
 import { IDialog } from "../../models/dialog";
 import { IMessage, Message } from "../../models/message";
-import { IPeer, Peer } from "../../models/peer";
-import { getMessageMediaType } from "../../utils/chat";
+import { IPeer } from "../../models/peer";
 import {
   Component,
   createElement,
@@ -21,18 +20,20 @@ import FileAttachment from "../attachments/file";
 import PhotoAttachment from "../attachments/photo";
 import VideoAttachment from "../attachments/video";
 import WebAttachment from "../attachments/web";
+import { makeContextMenu } from "../ui/context-menu";
 import Icon, { Icons } from "../ui/icon";
+import { mediaLightBox } from "../ui/media-lightbox";
 import { messageToHTML } from "./chat";
 import * as styles from "./chat.scss";
+import QuoteBox from "./quote-box";
 import ServiceBubble from "./service-bubble";
-import { mediaLightBox } from "../ui/media-lightbox";
-import { makeContextMenu } from "../ui/context-menu";
 
 interface Options {
   message: IMessage;
   dialog: IDialog;
   peer: IPeer;
   onReplyClick(messageId?: number): void;
+  onReply(replyMessage?: IMessage): void;
   isTransient?: boolean;
 }
 
@@ -44,15 +45,17 @@ export default class Bubble implements Component<Options> {
   private time: HTMLElement;
   private sentIndicator?: Element<Icon>;
   private onReplyClick: Options["onReplyClick"];
+  private onReply: Options["onReply"];
   public message: IMessage;
   public dialog: IDialog;
   public peer: IPeer;
 
-  constructor({ message, dialog, peer, onReplyClick }: Options) {
+  constructor({ message, dialog, onReply, peer, onReplyClick }: Options) {
     this.message = message;
     this.dialog = dialog;
     this.peer = peer;
     this.onReplyClick = onReplyClick;
+    this.onReply = onReply;
 
     if (message.$t === "MessageService") {
       this.element = createElement(ServiceBubble, { message });
@@ -79,10 +82,46 @@ export default class Bubble implements Component<Options> {
 
     this.element.addEventListener("contextmenu", e => {
       e.preventDefault();
+
       makeContextMenu({ x: e.clientX, y: e.clientY }, [
+        ...(this.peer.canSendMessage()
+          ? [
+              {
+                icon: Icons.Reply,
+                title: "Reply",
+                onClick: close => {
+                  close();
+                  this.onReply(this.message);
+                }
+              }
+            ]
+          : []),
+        ...(this.isSticker()
+          ? []
+          : [
+              {
+                icon: Icons.Copy,
+                title: "Copy",
+                onClick: close => {
+                  close();
+                  if (this.message.$t === "Message") {
+                    navigator.clipboard.writeText(this.message.message);
+                  }
+                }
+              }
+            ]),
         {
-          icon: Icons.Animals,
-          title: "Delete"
+          icon: Icons.Forward,
+          title: "Forward"
+        },
+        {
+          icon: Icons.Pin,
+          title: "Pin"
+        },
+        {
+          icon: Icons.Delete,
+          title: "Delete",
+          variant: "red"
         }
       ]);
     });
@@ -154,8 +193,6 @@ export default class Bubble implements Component<Options> {
     if (!time) {
       time = this.getInfo().time;
     }
-    const isSticker = this.element.classList.contains(styles.sticker);
-
     removeChildren(this.inner);
 
     if (this.time) {
@@ -178,12 +215,16 @@ export default class Bubble implements Component<Options> {
         : Icons.Checks;
       this.sentIndicator = createElement(Icon, {
         icon,
-        color: isSticker ? "white" : "green",
+        color: this.isSticker() ? "white" : "green",
         class: styles.sentIndicator
       });
 
       this.inner.append(this.sentIndicator);
     }
+  }
+
+  private isSticker() {
+    return this.element.classList.contains(styles.sticker);
   }
 
   private getAttachments(): [HTMLElement | undefined, string | undefined] {
@@ -350,59 +391,19 @@ export default class Bubble implements Component<Options> {
   }
 
   private getReplyElement(replyMsgId: number) {
-    const title = createElement("div", { class: styles.replyContentTitle }, "");
-    const tile = createElement("div");
-    const text = createElement("div", { class: styles.replyContentText }, "");
-    const element = createElement(
-      "div",
-      { class: styles.reply },
-      createElement(
-        "div",
-        { class: styles.replyWrapper },
-        createElement("div", { class: styles.replyBorder }),
-        tile,
-        createElement("div", { class: styles.replyContent }, title, text)
-      )
-    );
+    const element = createElement("div");
 
     Message.get({
       id: replyMsgId,
       isChannel: Number(this.dialog.peerType === "Channel")
     }).then(message => {
       if (message && message.$t === "Message") {
-        element.addEventListener("click", () => {
-          this.onReplyClick(replyMsgId);
-        });
-
-        let content = message.message;
-
-        if (message.media) {
-          const [alt, type, srcPromise] = getMessageMediaType(
-            message.media,
-            true,
-            this.message.tg
-          );
-
-          if (content === "") {
-            content = type;
-          }
-
-          if (type === "Sticker") {
-            content = alt + content;
-          }
-
-          if (srcPromise) {
-            srcPromise.then(src => {
-              tile.className = styles.replyTile;
-              tile.append(createElement("img", { src }));
-            });
-          }
-        }
-
-        text.innerHTML = content;
-        Peer.get({ type: "User", id: message.fromId }).then(peer => {
-          title.innerHTML = peer.displayName;
-        });
+        element.append(
+          createElement(QuoteBox, {
+            message,
+            onClick: () => this.onReplyClick(message.id)
+          })
+        );
       } else {
         element.remove();
       }

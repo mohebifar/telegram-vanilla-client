@@ -20,6 +20,7 @@ interface ExtraMethods {
   getPeer(): Promise<IPeer | undefined>;
   bulkFetch(ids: number[]): Promise<IMessage[]>;
   markAsRead(numberOfRead?: number): Promise<boolean>;
+  getSender(): Promise<IPeer | undefined>;
 }
 
 export type IMessage = ModelWithProxy<"messages"> & ExtraMethods;
@@ -208,5 +209,34 @@ export class Message extends Model<"messages"> {
     }
 
     return dayjs.unix(this.fields.date);
+  }
+
+  public async getSender() {
+    let peer: IPeer = undefined;
+
+    if (this._proxy.$t === "Message") {
+      if (this._proxy.fromId) {
+        peer = await Peer.get({
+          id: this._proxy.fromId,
+          type: "User"
+        });
+      } else if (this._proxy.toId.$t === "PeerChannel") {
+        peer = await Peer.get({
+          id: this._proxy.toId.channelId,
+          type: "Channel"
+        });
+      } else if (!this._proxy.fwdFrom) {
+        const fwdType = this._proxy.fwdFrom.fromId ? "User" : "Channel";
+        peer = await Peer.get({
+          id:
+            fwdType === "User"
+              ? this._proxy.fwdFrom.fromId
+              : this._proxy.fwdFrom.channelId,
+          type: fwdType
+        });
+      }
+    }
+
+    return peer;
   }
 }

@@ -2,7 +2,7 @@ import { Message as TLMessage } from "../../core/tl/TLObjects";
 import { extractIdFromPeer } from "../../core/tl/utils";
 import { Dialog, IDialog } from "../../models/dialog";
 import { IMessage, Message } from "../../models/message";
-import { IPeer, Peer, SimplifiedMessageRequest } from "../../models/peer";
+import { IPeer, SimplifiedMessageRequest } from "../../models/peer";
 import {
   Component,
   createElement,
@@ -11,10 +11,10 @@ import {
   removeChildren
 } from "../../utils/dom";
 import { debounce, throttle } from "../../utils/utils";
+import RightSidebar from "../right-sidebar/right-sidebar";
 import Avatar from "../ui/avatar";
 import Bubble from "./bubble";
 import * as styles from "./chat.scss";
-import RightSidebar from "../right-sidebar/right-sidebar";
 import SendMessageForm from "./send-message";
 import TopBar from "./top-bar";
 
@@ -113,16 +113,15 @@ export default class Chat implements Component<Options> {
 
       this.dialog = dialog;
 
-      const shouldSeeSendMessageForm =
-        this.peer.$t !== "Channel" || !this.peer.broadcast || this.peer.creator;
+      const canSendMessage = this.peer.canSendMessage();
 
-      if (shouldSeeSendMessageForm) {
+      if (canSendMessage) {
         requestAnimationFrame(() => {
           this.sendMessageForm.instance.focus();
         });
       }
 
-      const whatToDoWithInvisibilityOfSendFormHidden = shouldSeeSendMessageForm
+      const whatToDoWithInvisibilityOfSendFormHidden = canSendMessage
         ? "remove"
         : "add";
 
@@ -148,7 +147,7 @@ export default class Chat implements Component<Options> {
             entries
               .filter(entry => entry.isIntersecting)
               .map(entry => [
-                parseInt(entry.target.getAttribute("data-id")),
+                (entry.target as Element<Bubble>).instance.message.id,
                 entry.target as Element<Bubble>
               ])
           );
@@ -168,6 +167,10 @@ export default class Chat implements Component<Options> {
 
   handleReplyClick = (messageId: number) => {
     this.setActiveDialog(this.dialog, messageId);
+  };
+
+  handleReply = (messageId: IMessage) => {
+    this.sendMessageForm.instance.setReply(messageId);
   };
 
   private getFirstOrLastBubble(childPosToLookAt: "first" | "last") {
@@ -244,10 +247,6 @@ export default class Chat implements Component<Options> {
         prevMaxId: number;
       }) => {
         if (dialog === this.dialog) {
-          console.log({
-            maxId,
-            prevMaxId
-          });
           // Mark messages as seen
           for (
             let bubbleWrapper = this.chatContainer.lastChild as Node;
@@ -515,28 +514,10 @@ export default class Chat implements Component<Options> {
     let lastBubbleHolder: HTMLElement;
 
     let peer: IPeer;
-    const isGroupChat =
-      this.peer.$t === "Chat" ||
-      (this.peer.$t === "Channel" && !this.peer.broadcast);
+    const isGroupChat = this.peer.isGroupChat();
 
     if (isGroupChat && message.$t === "Message" && !message.out) {
-      peer = await Peer.get({
-        id: message.fromId,
-        type: "User"
-      });
-
-      // Messages can be forwarded by nobody!
-      if (!peer) {
-        const fwdType = message.fwdFrom.fromId ? "User" : "Channel";
-
-        peer = await Peer.get({
-          id:
-            fwdType === "User"
-              ? message.fwdFrom.fromId
-              : message.fwdFrom.channelId,
-          type: fwdType
-        });
-      }
+      peer = await message.getSender();
     } else {
       peer = this.peer;
     }
@@ -592,6 +573,7 @@ export default class Chat implements Component<Options> {
     try {
       const messageElement = createElement(Bubble, {
         onReplyClick: this.handleReplyClick,
+        onReply: this.handleReply,
         message,
         peer,
         dialog: this.dialog

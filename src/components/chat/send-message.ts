@@ -1,22 +1,23 @@
 import autosize from "autosize";
+import {
+  InputMediaUploadedDocument,
+  InputMediaUploadedPhoto
+} from "../../core/tl/TLObjects";
 import { IMessage } from "../../models/message";
 import { Peer, SimplifiedMessageRequest } from "../../models/peer";
-import { Component, createElement } from "../../utils/dom";
+import { Component, createElement, removeChildren } from "../../utils/dom";
 import {
+  getVideoMeta,
   makeFileDialog,
   readFile,
-  resizeImage,
-  getVideoMeta
+  resizeImage
 } from "../../utils/upload-file";
 import { ContextMenu } from "../ui/context-menu";
 import EmojiPanel from "../ui/emoji-panel";
 import { Icons } from "../ui/icon";
 import IconButton from "../ui/icon-button";
+import QuoteBox from "./quote-box";
 import * as styles from "./send-message.scss";
-import {
-  InputMediaUploadedPhoto,
-  InputMediaUploadedDocument
-} from "../../core/tl/TLObjects";
 
 interface Options {
   callback(message: SimplifiedMessageRequest): Promise<IMessage>;
@@ -27,7 +28,8 @@ export default class SendMessageForm implements Component<Options> {
   public readonly element: HTMLElement;
   private callback: Options["callback"];
   private inputNode: HTMLTextAreaElement;
-  // private attachmentButton: HTMLButtonElement;
+  private quoteBox: HTMLElement;
+  private replyMessage?: IMessage;
 
   constructor({ callback, startTyping }: Options) {
     this.callback = callback;
@@ -42,17 +44,25 @@ export default class SendMessageForm implements Component<Options> {
     const [attachmentDropdown, attachmentActivator] = this.createAttachment();
     const [emojiPicker, emojiActivator] = this.createEmojiPanel();
 
+    this.quoteBox = createElement("div", { class: styles.quoteRow });
+    const inputRow = createElement(
+      "div",
+      { class: styles.inputRow },
+      emojiActivator,
+      this.inputNode,
+      attachmentActivator,
+      attachmentDropdown,
+      emojiPicker
+    );
+
     this.element = createElement(
       "form",
       { class: `hidden ${styles.container}`, action: "#" },
       createElement(
         "div",
-        { class: styles.inputWrapper },
-        emojiActivator,
-        this.inputNode,
-        attachmentActivator,
-        attachmentDropdown,
-        emojiPicker
+        { class: styles.inputArea },
+        this.quoteBox,
+        inputRow
       ),
       createElement(IconButton, { icon: Icons.Send, color: "white" })
     );
@@ -73,6 +83,34 @@ export default class SendMessageForm implements Component<Options> {
     this.element.addEventListener("submit", this.handleSubmit);
   }
 
+  public focus() {
+    this.inputNode.focus();
+  }
+
+  public async setReply(message: IMessage) {
+    this.replyMessage = message;
+    removeChildren(this.quoteBox);
+
+    this.quoteBox.append(
+      createElement(IconButton, {
+        icon: Icons.Close,
+        color: "grey",
+        onClick: () => {
+          this.clearReply();
+        }
+      }),
+      createElement(QuoteBox, {
+        message
+      })
+    );
+    this.focus();
+  }
+
+  private async clearReply() {
+    this.replyMessage = undefined;
+    removeChildren(this.quoteBox);
+  }
+
   private handleSubmit = (event?: Event) => {
     const value = this.inputNode.value.trim();
     if (event) {
@@ -83,10 +121,13 @@ export default class SendMessageForm implements Component<Options> {
     }
     this.inputNode.value = "";
     autosize.update(this.inputNode);
+
     this.callback({
       $t: "messages_SendMessageRequest",
-      message: value
+      message: value,
+      ...(this.replyMessage ? { replyToMsgId: this.replyMessage.id } : {})
     });
+    this.clearReply();
   };
 
   private createAttachment() {
@@ -242,10 +283,6 @@ export default class SendMessageForm implements Component<Options> {
     });
 
     return [attachmentDropdown, attachmentActivator];
-  }
-
-  public focus() {
-    this.inputNode.focus();
   }
 
   private createEmojiPanel() {

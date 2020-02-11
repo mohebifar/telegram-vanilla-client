@@ -23,7 +23,6 @@ const observer = new IntersectionObserver(
         instance.isVisible = false;
 
         if (instance.animation) {
-          console.log("destroying");
           instance.animation.stop();
           instance.animation.destroy();
           delete instance.animation;
