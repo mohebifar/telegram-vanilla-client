@@ -74,10 +74,13 @@ export default class SendMessageForm implements Component<Options> {
   }
 
   private handleSubmit = (event?: Event) => {
+    const value = this.inputNode.value.trim();
     if (event) {
       event.preventDefault();
     }
-    const value = this.inputNode.value;
+    if (value === "") {
+      return;
+    }
     this.inputNode.value = "";
     autosize.update(this.inputNode);
     this.callback({
@@ -250,12 +253,34 @@ export default class SendMessageForm implements Component<Options> {
       onEmojiSelect: emoji => {
         const target = this.inputNode;
         if (target.setRangeText) {
+          const start = target.selectionStart;
           target.setRangeText(emoji);
           target.focus();
+          target.selectionStart = target.selectionEnd = start + emoji.length;
         } else {
           target.focus();
           document.execCommand("insertText", false, emoji);
         }
+      },
+      onStickerSelect: document => {
+        console.log(document);
+        this.callback({
+          $t: "messages_SendMediaRequest",
+          media: {
+            $t: "InputMediaDocument",
+            id: {
+              $t: "InputDocument",
+              accessHash: document.accessHash,
+              fileReference: document.fileReference,
+              id: document.id
+            }
+          },
+          actualMedia: {
+            $t: "MessageMediaDocument",
+            document
+          },
+          message: ""
+        });
       }
     });
 

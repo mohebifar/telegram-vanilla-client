@@ -1,41 +1,50 @@
-import { Component, createElement } from "../../utils/dom";
+import { Document } from "../../core/tl/TLObjects";
+import { Component, createElement, Element } from "../../utils/dom";
 import * as styles from "./emoji-panel.scss";
 import EmojiPicker from "./emoji-picker";
+import StickerPicker from "./sticker-picker";
+import Tabs, { Tab } from "./tabs";
 
 interface Options {
   onEmojiSelect(emoji: string): any;
+  onStickerSelect(document: Document): any;
 }
 
 export default class EmojiPanel implements Component<Options> {
   public readonly element: HTMLElement;
+
   private visible = false;
-  private panels: HTMLElement[];
-
   private timeout: number;
+  private tabsContainer: Element<Tabs>;
 
-  constructor({ onEmojiSelect }: Options) {
+  private tabs: Tab[];
+
+  constructor({ onEmojiSelect, onStickerSelect }: Options) {
     const emojiPicker = createElement(EmojiPicker, { onEmojiSelect });
+    const stickerPicker = createElement(StickerPicker, { onStickerSelect });
 
-    this.panels = [
-      createElement("button", { class: styles.tab, type: "button" }, "Emojis"),
-      createElement(
-        "button",
-        { class: styles.tab, type: "button" },
-        "Stickers"
-      ),
-      createElement("button", { class: styles.tab, type: "button" }, "GIFs")
+    this.tabs = [
+      { title: "Emojis", content: emojiPicker },
+      { title: "Stickers", content: stickerPicker },
+      { title: "GIFs" }
     ];
 
-    const tabs = createElement("div", { class: styles.tabs }, ...this.panels);
+    this.tabsContainer = createElement(Tabs, {
+      tabs: this.tabs,
+      onTabChange: index => {
+        if (index === 1) {
+          stickerPicker.instance.panelOpen();
+        } else {
+          stickerPicker.instance.panelClose();
+        }
+      }
+    });
 
     const element = createElement(
       "div",
       { class: styles.container },
-      tabs,
-      emojiPicker
+      this.tabsContainer
     );
-
-    this.setCurrentPanel(0);
 
     element.addEventListener("mouseenter", () => {
       this.clearTimeout();
@@ -53,6 +62,9 @@ export default class EmojiPanel implements Component<Options> {
     this.clearTimeout();
     this.element.classList[visible ? "add" : "remove"](styles.visible);
     this.visible = visible;
+    if (!this.visible) {
+      this.tabsContainer.instance.setTab(0);
+    }
   }
 
   public deferHide() {
@@ -60,11 +72,6 @@ export default class EmojiPanel implements Component<Options> {
     this.timeout = setTimeout(() => {
       this.setVisibility(false);
     }, 600);
-  }
-
-  private setCurrentPanel(index: number) {
-    this.panels.forEach(panel => panel.classList.remove(styles.active));
-    this.panels[index].classList.add(styles.active);
   }
 
   private clearTimeout() {

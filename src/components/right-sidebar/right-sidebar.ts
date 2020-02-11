@@ -1,7 +1,7 @@
 import { IPeer } from "../../models/peer";
 import { Component, createElement, removeChildren } from "../../utils/dom";
 import { startAnimation } from "../../utils/easing";
-import SharedMediaPanel from "../righ-sidebar/shared-media";
+import SharedMediaPanel from "./shared-media";
 import Avatar from "../ui/avatar";
 import Icon, { Icons } from "../ui/icon";
 import IconButton from "../ui/icon-button";

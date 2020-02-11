@@ -9,9 +9,12 @@
   box-shadow: 0 0 10px #00000030;
   transform-origin: bottom left;
   display: none;
+  width: 21em;
+  height: 23em;
 
   &.visible {
-    display: block;
+    display: flex;
+    flex-direction: column;
     animation: popoverAnimateIn 0.4s cubic-bezier(0.5, 0.65, 0.25, 0.9) forwards;
   }
 

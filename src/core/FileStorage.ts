@@ -340,7 +340,7 @@ export class FileStorage {
 
   public async downloadDocument(
     document: Document,
-    thumb: PhotoSizesTypes | number,
+    thumb?: PhotoSizesTypes | number,
     dcId?: number,
     onProgress?: ProgressCallback
   ) {

@@ -1,16 +1,17 @@
 import Dexie from "dexie";
 import {
+  ChannelFull,
+  ChatFull,
+  Dialog as TLDialog,
+  Message as TLMessage,
+  messages_StickerSet,
+  UserFull
+} from "../core/tl/TLObjects";
+import {
   AllDialogPeerTypes,
   DialogMessageTypes,
   MediaWithTransient
 } from "./useful-types";
-import {
-  Dialog as TLDialog,
-  ChatFull,
-  ChannelFull,
-  UserFull,
-  Message as TLMessage
-} from "../core/tl/TLObjects";
 
 export interface DBConfig {
   key: string;
@@ -57,6 +58,12 @@ export interface DBPeerUser {
   full?: UserFull;
 }
 
+export interface DBStickerSet
+  extends Omit<messages_StickerSet, "documents" | "packs"> {
+  documents?: messages_StickerSet["documents"];
+  packs?: messages_StickerSet["packs"];
+}
+
 export type DBPeer = AllDialogPeerTypes &
   (DBPeerChat | DBPeerChannel | DBPeerUser);
 
@@ -92,6 +99,7 @@ export interface TelegramDatabaseTables {
       id: number;
     }
   >;
+  stickerSet: Dexie.Table<DBStickerSet, number>;
 }
 
 export class TelegramDatabase extends Dexie implements TelegramDatabaseTables {
@@ -102,6 +110,7 @@ export class TelegramDatabase extends Dexie implements TelegramDatabaseTables {
   public messages: TelegramDatabaseTables["messages"];
   public sharedMedia: TelegramDatabaseTables["sharedMedia"];
   public peers: TelegramDatabaseTables["peers"];
+  public stickerSet: TelegramDatabaseTables["stickerSet"];
 
   static get singleton() {
     TelegramDatabase._singleton =
@@ -117,7 +126,12 @@ export class TelegramDatabase extends Dexie implements TelegramDatabaseTables {
       messages: "[id+isChannel], date, $t",
       sharedMedia: "[id+peerType+peerId]",
       peers: "[id+type]",
-      dialogs: "[peerType+peerId], lastMessageDate"
+      dialogs: "[peerType+peerId], lastMessageDate",
+      stickerSet: "id"
+    });
+
+    this.version(3).stores({
+      stickerSet: "set.id, set.installedDate"
     });
 
     this.sessions = this.table("sessions");
@@ -126,6 +140,7 @@ export class TelegramDatabase extends Dexie implements TelegramDatabaseTables {
     this.sharedMedia = this.table("sharedMedia");
     this.dialogs = this.table("dialogs");
     this.peers = this.table("peers");
+    this.stickerSet = this.table("stickerSet");
   }
 }
 

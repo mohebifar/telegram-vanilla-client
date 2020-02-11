@@ -5,7 +5,9 @@ import {
   messages_GetFullChatRequest,
   messages_SendMediaRequest,
   messages_SendMessageRequest,
-  users_GetFullUserRequest
+  users_GetFullUserRequest,
+  UserFull,
+  Message as TLMessage
 } from "../core/tl/TLObjects";
 import { getInputPeer, getPeer, simplifyPeerType } from "../core/tl/utils";
 import { handleUpdate } from "../update-handler";
@@ -54,6 +56,7 @@ export type SimplifiedMessageRequest = (
 ) & {
   peer?: messages_SendMessageRequest["peer"];
   randomId?: messages_SendMessageRequest["randomId"];
+  actualMedia?: TLMessage["media"];
 };
 
 let transientIds = new Set<number>();
@@ -143,17 +146,22 @@ export class Peer extends Model<"peers"> implements ExtraMethods {
     });
   }
 
-  public sendMessage(
-    message: SimplifiedMessageRequest
-  ): [IMessage, Promise<any> | undefined] {
+  public sendMessage({
+    actualMedia,
+    ...message
+  }: SimplifiedMessageRequest): [IMessage, Promise<any> | undefined] {
     const randomId = generateTransientId() as any;
+    const media =
+      actualMedia || ("media" in message ? message.media : undefined);
+
     const messageModel = Message.fromObject({
       ...message,
       $t: "Message",
       date: Date.now() / 1000,
       id: randomId,
       toId: getPeer(this.fields),
-      out: true
+      out: true,
+      ...(media ? { media } : {})
     });
     messageModel.justSent = true;
     messageModel.saveInMemory();
@@ -214,11 +222,15 @@ export class Peer extends Model<"peers"> implements ExtraMethods {
         break;
     }
 
-    const chatFull = (await this.tg.invoke(input)) as messages_ChatFull;
-    this._proxy.full = chatFull.fullChat;
+    const full = (await this.tg.invoke(input)) as messages_ChatFull | UserFull;
+    if (full.$t === "UserFull") {
+      this._proxy.full = full;
+    } else {
+      this._proxy.full = full.fullChat;
+    }
 
     // TODO: Load all entities
-    // for (const user of chatFull.users) {
+    // for (const user of full.users) {
     // }
 
     this.save();

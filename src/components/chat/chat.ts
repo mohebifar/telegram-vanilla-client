@@ -14,7 +14,7 @@ import { debounce, throttle } from "../../utils/utils";
 import Avatar from "../ui/avatar";
 import Bubble from "./bubble";
 import * as styles from "./chat.scss";
-import RightSidebar from "./right-sidebar";
+import RightSidebar from "../right-sidebar/right-sidebar";
 import SendMessageForm from "./send-message";
 import TopBar from "./top-bar";
 
@@ -114,7 +114,7 @@ export default class Chat implements Component<Options> {
       this.dialog = dialog;
 
       const shouldSeeSendMessageForm =
-        this.peer.$t !== "Channel" || this.peer.broadcast || this.peer.creator;
+        this.peer.$t !== "Channel" || !this.peer.broadcast || this.peer.creator;
 
       if (shouldSeeSendMessageForm) {
         requestAnimationFrame(() => {

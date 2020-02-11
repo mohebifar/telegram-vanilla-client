@@ -2,13 +2,14 @@ import { Component, createElement } from "../../utils/dom";
 import * as styles from "./tabs.scss";
 import { startAnimation } from "../../utils/easing";
 
-interface Tab {
+export interface Tab {
   title: string;
   content?: HTMLElement;
 }
 
 interface Options {
   tabs: Tab[];
+  onTabChange?(index: number): void;
 }
 
 export default class EmojiPanel implements Component<Options> {
@@ -16,10 +17,12 @@ export default class EmojiPanel implements Component<Options> {
   private panels: HTMLElement[];
   private contentWrapper: HTMLElement;
   private tabs: Options["tabs"];
+  private onTabChange?: Options["onTabChange"];
   private currentTab: number;
 
-  constructor({ tabs }: Options) {
+  constructor({ tabs, onTabChange }: Options) {
     this.tabs = tabs;
+    this.onTabChange = onTabChange;
 
     this.panels = tabs.map((tab, i) => {
       const element = createElement(
@@ -48,7 +51,7 @@ export default class EmojiPanel implements Component<Options> {
     this.element = element;
   }
 
-  private setTab(index: number) {
+  public setTab(index: number) {
     const tab = this.tabs[index];
 
     this.panels.forEach(panel => panel.classList.remove(styles.active));
@@ -83,5 +86,8 @@ export default class EmojiPanel implements Component<Options> {
     }
 
     this.currentTab = index;
+    if (this.onTabChange) {
+      this.onTabChange(index);
+    }
   }
 }

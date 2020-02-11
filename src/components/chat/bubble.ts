@@ -26,6 +26,7 @@ import { messageToHTML } from "./chat";
 import * as styles from "./chat.scss";
 import ServiceBubble from "./service-bubble";
 import { mediaLightBox } from "../ui/media-lightbox";
+import { makeContextMenu } from "../ui/context-menu";
 
 interface Options {
   message: IMessage;
@@ -75,6 +76,16 @@ export default class Bubble implements Component<Options> {
       this.attachment,
       messageWrapper
     );
+
+    this.element.addEventListener("contextmenu", e => {
+      e.preventDefault();
+      makeContextMenu({ x: e.clientX, y: e.clientY }, [
+        {
+          icon: Icons.Animals,
+          title: "Delete"
+        }
+      ]);
+    });
 
     if (message.$t === "Message" && message.replyToMsgId) {
       this.element.prepend(this.getReplyElement(message.replyToMsgId));

@@ -369,7 +369,7 @@ $time-size: 0.75rem;
           display: none;
         }
 
-        :global(.lottie):empty + img {
+        :global(.lottieWrapper):empty + img {
           display: block;
         }
       }

@@ -1,8 +1,8 @@
 import {
-  AnimationItem,
-  AnimationConfigWithPath
+  AnimationConfigWithPath,
+  AnimationItem
 } from "lottie-web/build/player/lottie_light";
-import { createElement, Component } from "../../utils/dom";
+import { Component, createElement, Element } from "../../utils/dom";
 
 type AnimationConfig = Omit<AnimationConfigWithPath, "container">;
 
@@ -12,67 +12,83 @@ interface Options {
   onReady?(animation: AnimationItem): void;
 }
 
+const observer = new IntersectionObserver(
+  entries => {
+    for (const entry of entries) {
+      const { instance } = entry.target as Element<Lottie>;
+
+      if (entry.isIntersecting) {
+        instance.loadAnimation();
+      } else {
+        instance.isVisible = false;
+
+        if (instance.animation) {
+          console.log("destroying");
+          instance.animation.stop();
+          instance.animation.destroy();
+          delete instance.animation;
+        }
+      }
+    }
+  },
+  {
+    threshold: [0, 0.25, 0.5, 0.75, 1]
+  }
+);
+
 export default class Lottie implements Component<Options> {
   public readonly element: HTMLElement;
   public animation: AnimationItem;
   private onReady?: Options["onReady"];
-  private isVisible = true;
+  public isVisible = false;
+  private config: AnimationConfig;
 
   constructor({ config, onReady, ...rest }: Options) {
     this.element = createElement("div", {
       ...rest,
-      class: `lottie ${rest.class}`,
+      class: `lottieWrapper ${rest.class}`,
       "data-bm-renderer": "svg"
     });
 
     this.onReady = onReady;
 
     if (config) {
-      this.loadAnimation({
-        ...config,
-        renderer: "svg",
-        container: this.element
-      });
+      this.updateConfig(config);
     }
   }
 
-  private loadAnimation(config: AnimationConfigWithPath) {
+  public loadAnimation() {
+    if (this.isVisible || !this.config) {
+      return;
+    }
+    this.isVisible = true;
+
     import(
       /* webpackChunkName: "lottie" */ "lottie-web/build/player/lottie_light"
-    ).then(({ default: lottie }) => {
-      this.animation = lottie.loadAnimation(config);
-      let options = {
-        root: document.body,
-        rootMargin: "0px",
-        threshold: 0
-      };
+    )
+      .then(({ default: lottie }) => {
+        this.animation = lottie.loadAnimation({
+          ...this.config,
+          renderer: "svg",
+          container: this.element
+        });
 
-      let observer = new IntersectionObserver(entries => {
-        const entry = entries[0];
-        if (entry) {
-          if (entry.isIntersecting) {
-            if (!this.isVisible) {
-              this.loadAnimation(config);
-              this.isVisible = true;
-            }
-          } else {
-            this.isVisible = false;
-            this.animation.destroy();
-          }
+        observer.observe(this.element);
+
+        if (this.onReady) {
+          this.onReady(this.animation);
         }
-      }, options);
-      observer.observe(this.element);
-
-      if (this.onReady) {
-        this.onReady(this.animation);
-      }
-    });
+      })
+      .catch(() => {
+        this.isVisible = false;
+      });
   }
 
-  public updateConfig(config: AnimationConfig) {
-    return this.loadAnimation({
-      ...config,
-      container: this.element
-    });
+  public updateConfig(config: AnimationConfig, play = true) {
+    this.config = config;
+
+    if (play) {
+      return this.loadAnimation();
+    }
   }
 }

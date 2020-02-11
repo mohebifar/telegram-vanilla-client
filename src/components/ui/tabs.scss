@@ -53,6 +53,7 @@
 .contentWrapper {
   flex: 1;
   position: relative;
+  overflow: hidden;
 
   > .content {
     position: absolute;

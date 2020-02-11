@@ -1,9 +1,9 @@
 import { IPeer } from "../../models/peer";
 import { ISharedMedia, SharedMedia } from "../../models/shared-media";
 import { Component, createElement } from "../../utils/dom";
-import * as styles from "./shared-media.scss";
-import { mediaLightBox } from "../ui/media-lightbox";
 import { EMPTY_IMG } from "../../utils/images";
+import { mediaLightBox } from "../ui/media-lightbox";
+import * as styles from "./shared-media.scss";
 
 interface Options {
   peer: IPeer;

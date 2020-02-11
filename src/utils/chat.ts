@@ -11,7 +11,7 @@ import {
   PhotoStrippedSize,
   User
 } from "../core/tl/TLObjects";
-import { Peer } from "../models/peer";
+import { Peer, IPeer } from "../models/peer";
 import { TelegramClientProxy } from "../telegram-worker-proxy";
 import { DBPeer } from "./db";
 import {
@@ -107,10 +107,13 @@ export async function getMessageSummary(message: DialogMessageTypes) {
 
 export async function getServiceMessage(message: MessageService) {
   const id = message.fromId;
-  const peer = await Peer.get({
-    id,
-    type: "User"
-  });
+  let peer: IPeer = {} as any;
+  if (id) {
+    peer = await Peer.get({
+      id,
+      type: "User"
+    });
+  }
   switch (message.action.$t) {
     case "MessageActionChatEditTitle":
       return `${peer.displayName} renamed the group to ${message.action.title}`;
