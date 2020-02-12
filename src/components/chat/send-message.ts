@@ -259,7 +259,6 @@ export default class SendMessageForm implements Component<Options> {
     const show = () => {
       clear();
       attachmentDropdown.classList.remove("hidden");
-      hideWithTimeout();
     };
     const hideWithTimeout = () => {
       clear();
@@ -276,6 +275,9 @@ export default class SendMessageForm implements Component<Options> {
       type: "button",
       onHover() {
         show();
+      },
+      onHoverOut() {
+        hideWithTimeout();
       }
     });
 

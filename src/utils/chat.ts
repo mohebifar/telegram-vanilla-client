@@ -95,7 +95,9 @@ export async function getMessageSummary(message: DialogMessageTypes) {
       }
 
       if (message.message) {
-        return text + message.message.replace(/[\r\n]/, " ").slice(0, 70);
+        return (
+          text + escapeHTML(message.message.replace(/[\r\n]/, " ").slice(0, 70))
+        );
       }
 
       return text + (mediaType || "");
@@ -325,18 +327,20 @@ function messageToParagraphs(message: string) {
   return message;
 }
 
+export function escapeHTML(string: string) {
+  return string.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
 export function messageToHTML(message: Message) {
   let currentOffset = 0;
   let rawMessage = message.message;
   let html = "";
 
   if (message.entities) {
-    console.log(message.entities, rawMessage);
     message.entities.forEach(entity => {
-      const entityText = rawMessage
-        .substr(entity.offset, entity.length)
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;");
+      const entityText = escapeHTML(
+        rawMessage.substr(entity.offset, entity.length)
+      );
       const textToHere = rawMessage.substring(currentOffset, entity.offset);
       html += textToHere;
       switch (entity.$t) {

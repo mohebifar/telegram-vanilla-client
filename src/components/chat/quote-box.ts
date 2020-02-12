@@ -1,7 +1,7 @@
 import { createElement, Component } from "../../utils/dom";
 import * as styles from "./chat.scss";
 import { IMessage } from "../../models/message";
-import { getMessageMediaType } from "../../utils/chat";
+import { getMessageMediaType, escapeHTML } from "../../utils/chat";
 
 interface Options {
   message: IMessage;
@@ -28,7 +28,7 @@ export default class QuoteBox implements Component<Options> {
     );
 
     if (message.$t === "Message") {
-      let content = message.message;
+      let content = escapeHTML(message.message);
 
       if (message.media) {
         const [alt, type, srcPromise] = getMessageMediaType(

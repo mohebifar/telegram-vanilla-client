@@ -82,7 +82,7 @@
 
   .attachmentMenu {
     right: 0;
-    bottom: 60px;
+    bottom: calc(100% + 10px);
     animation: popoverAnimateIn 0.4s cubic-bezier(0.5, 0.65, 0.25, 0.9) forwards;
     transform-origin: bottom right;
   }

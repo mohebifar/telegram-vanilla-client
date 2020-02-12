@@ -4,7 +4,7 @@
   border-radius: 10px;
   position: absolute;
   left: 0;
-  bottom: 60px;
+  bottom: calc(100% + 10px);
   background-color: #fff;
   box-shadow: 0 0 10px #00000030;
   transform-origin: bottom left;
