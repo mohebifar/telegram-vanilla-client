@@ -238,16 +238,20 @@ export class Peer extends Model<"peers"> implements ExtraMethods {
     this.save();
   }
 
+  public isChat() {
+    return this._proxy.$t === "Chat";
+  }
+
   public isChannel() {
     return this._proxy.$t === "Channel";
   }
 
   public canSendMessage() {
     return (
-      this._proxy.$t !== "Channel" ||
-      !this._proxy.broadcast ||
-      this._proxy.creator ||
-      (this._proxy.adminRights && this._proxy.adminRights.postMessages)
+      this.hasAllRights() ||
+      (this._proxy.$t === "Channel" && !this._proxy.broadcast) ||
+      !this._proxy.adminRights ||
+      this._proxy.adminRights.postMessages
     );
   }
 
@@ -256,5 +260,13 @@ export class Peer extends Model<"peers"> implements ExtraMethods {
       this._proxy.$t === "Chat" ||
       (this._proxy.$t === "Channel" && !this._proxy.broadcast)
     );
+  }
+
+  private hasAllRights() {
+    if (this.isChannel() || this.isChat()) {
+      return this._proxy.creator;
+    }
+
+    return true;
   }
 }

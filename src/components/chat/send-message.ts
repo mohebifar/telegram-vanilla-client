@@ -121,13 +121,10 @@ export default class SendMessageForm implements Component<Options> {
     }
     this.inputNode.value = "";
     autosize.update(this.inputNode);
-
-    this.callback({
+    this.sendMessage({
       $t: "messages_SendMessageRequest",
-      message: value,
-      ...(this.replyMessage ? { replyToMsgId: this.replyMessage.id } : {})
+      message: value
     });
-    this.clearReply();
   };
 
   private createAttachment() {
@@ -161,7 +158,7 @@ export default class SendMessageForm implements Component<Options> {
           } catch {}
         }
 
-        const transient = await this.callback({
+        const transient = await this.sendMessage({
           $t: "messages_SendMediaRequest",
           media: {
             $t: "TransientMedia",
@@ -211,7 +208,7 @@ export default class SendMessageForm implements Component<Options> {
                 ]
               };
 
-        await this.callback({
+        await this.sendMessage({
           $t: "messages_SendMediaRequest",
           media,
           message
@@ -300,8 +297,7 @@ export default class SendMessageForm implements Component<Options> {
         }
       },
       onStickerSelect: document => {
-        console.log(document);
-        this.callback({
+        this.sendMessage({
           $t: "messages_SendMediaRequest",
           media: {
             $t: "InputMediaDocument",
@@ -334,5 +330,14 @@ export default class SendMessageForm implements Component<Options> {
     });
 
     return [emojiPicker, emojiActivator];
+  }
+
+  private sendMessage(message: SimplifiedMessageRequest) {
+    const result = this.callback({
+      ...message,
+      ...(this.replyMessage ? { replyToMsgId: this.replyMessage.id } : {})
+    });
+    this.clearReply();
+    return result;
   }
 }
