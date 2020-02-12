@@ -77,7 +77,6 @@ export class StickerSet extends Model<"stickerSet"> implements ExtraMethods {
     const result: IStickerSet[] = [];
     const all = await this.table
       .orderBy("set.installedDate")
-      .limit(10)
       .reverse()
       .toArray();
 
