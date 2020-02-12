@@ -9,7 +9,8 @@ import {
   PhotoSize,
   PhotoSizeEmpty,
   PhotoStrippedSize,
-  User
+  User,
+  Message
 } from "../core/tl/TLObjects";
 import { Peer, IPeer } from "../models/peer";
 import { TelegramClientProxy } from "../telegram-worker-proxy";
@@ -312,4 +313,70 @@ export function formatDuration(seconds: number) {
   return [h, m > 9 ? m : h ? "0" + m : m || "0", s > 9 ? s : "0" + s]
     .filter(Boolean)
     .join(":");
+}
+
+function messageToParagraphs(message: string) {
+  const newLine = /[\n\r]/g;
+  const chunks = message.split(newLine);
+  if (chunks.length > 1) {
+    return chunks.map(line => `<p dir="auto">${line}</p>`).join("");
+  }
+
+  return message;
+}
+
+export function messageToHTML(message: Message) {
+  let currentOffset = 0;
+  let rawMessage = message.message;
+  let html = "";
+
+  if (message.entities) {
+    message.entities.forEach(entity => {
+      const entityText = rawMessage
+        .substr(entity.offset, entity.length)
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+      const textToHere = rawMessage.substring(currentOffset, entity.offset);
+      html += textToHere;
+      switch (entity.$t) {
+        case "MessageEntityTextUrl":
+          html += `<a href="${entity.url}" target="_blank">${entityText}</a>`;
+          break;
+        case "MessageEntityBlockquote":
+          html += `<blockquote">${entityText}</blockquote>`;
+          break;
+        case "MessageEntityBold":
+          html += `<strong>${entityText}</strong>`;
+          break;
+        case "MessageEntityItalic":
+          html += `<em>${entityText}</em>`;
+          break;
+        case "MessageEntityMention":
+          html += `<a href="#mention">${entityText}</a>`;
+          break;
+        case "MessageEntityMentionName":
+          html += `<a href="#">${entityText}</a>`;
+          break;
+        case "MessageEntityUrl":
+          html += `<a href="${entityText}" target="_blank">${entityText}</a>`;
+          break;
+        case "MessageEntityUnderline":
+          html += `<u>${entityText}</u>`;
+          break;
+        case "MessageEntityCode":
+          html += `<pre>${entityText}</pre>`;
+          break;
+        default:
+          html += entityText;
+      }
+
+      currentOffset = entity.offset + entity.length;
+    });
+  } else {
+    rawMessage = rawMessage.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  html += rawMessage.substring(currentOffset);
+
+  return messageToParagraphs(html);
 }

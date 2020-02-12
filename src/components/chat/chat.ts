@@ -1,4 +1,3 @@
-import { Message as TLMessage } from "../../core/tl/TLObjects";
 import { extractIdFromPeer } from "../../core/tl/utils";
 import { Dialog, IDialog } from "../../models/dialog";
 import { IMessage, Message } from "../../models/message";
@@ -43,7 +42,9 @@ export default class Chat implements Component<Options> {
   private intersectionObserver: IntersectionObserver;
 
   constructor({}: Options) {
-    this.chatContainer = createElement("div", { class: styles.chatContainer });
+    this.chatContainer = createElement("div", {
+      class: styles.chatContainer
+    });
     this.scrollView = createElement(
       "div",
       { class: styles.wrapper },
@@ -220,7 +221,9 @@ export default class Chat implements Component<Options> {
                 }
               }
 
-              return this.addMessages(messages, { prepend: isAtTop });
+              return this.addMessages(messages, {
+                prepend: isAtTop
+              });
             })
             .catch(() => {
               this.lockLoad = false;
@@ -550,7 +553,9 @@ export default class Chat implements Component<Options> {
     ) {
       // If sender of the message has changed create a new bubble holder
       lastBubbleHolder = createElement("div");
-      lastBubbleWrapper = createElement("div", { class: styles[type] });
+      lastBubbleWrapper = createElement("div", {
+        class: styles[type]
+      });
       this.chatContainer[insertFn](lastBubbleWrapper);
 
       // Show avatar as well if it is a group chat and the message is incoming
@@ -604,62 +609,4 @@ export default class Chat implements Component<Options> {
       }
     }
   };
-}
-
-function messageToParagraphs(message: string) {
-  const newLine = /[\n\r]/g;
-  const chunks = message.split(newLine);
-  if (chunks.length > 1) {
-    return chunks.map(line => `<p dir="auto">${line}</p>`).join("");
-  }
-
-  return message;
-}
-
-export function messageToHTML(message: TLMessage) {
-  let currentOffset = 0;
-  const rawMessage = message.message;
-  let html = "";
-
-  if (message.entities) {
-    message.entities.forEach(entity => {
-      const entityText = rawMessage.substr(entity.offset, entity.length);
-      const textToHere = rawMessage.substring(currentOffset, entity.offset);
-      html += textToHere;
-      switch (entity.$t) {
-        case "MessageEntityTextUrl":
-          html += `<a href="${entity.url}" target="_blank">${entityText}</a>`;
-          break;
-        case "MessageEntityBlockquote":
-          html += `<blockquote">${entityText}</blockquote>`;
-          break;
-        case "MessageEntityBold":
-          html += `<strong>${entityText}</strong>`;
-          break;
-        case "MessageEntityItalic":
-          html += `<em>${entityText}</em>`;
-          break;
-        case "MessageEntityMention":
-          html += `<a href="#mention">${entityText}</a>`;
-          break;
-        case "MessageEntityMentionName":
-          html += `<a href="#">${entityText}</a>`;
-          break;
-        case "MessageEntityUrl":
-          html += `<a href="${entityText}" target="_blank">${entityText}</a>`;
-          break;
-        case "MessageEntityUnderline":
-          html += `<u>${entityText}</u>`;
-          break;
-        default:
-          html += entityText;
-      }
-
-      currentOffset = entity.offset + entity.length;
-    });
-  }
-
-  html += rawMessage.substring(currentOffset);
-
-  return messageToParagraphs(html);
 }

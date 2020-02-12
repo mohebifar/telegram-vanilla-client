@@ -6,6 +6,7 @@ import {
 import { IDialog } from "../../models/dialog";
 import { IMessage, Message } from "../../models/message";
 import { IPeer } from "../../models/peer";
+import { messageToHTML } from "../../utils/chat";
 import {
   Component,
   createElement,
@@ -23,7 +24,6 @@ import WebAttachment from "../attachments/web";
 import { makeContextMenu } from "../ui/context-menu";
 import Icon, { Icons } from "../ui/icon";
 import { mediaLightBox } from "../ui/media-lightbox";
-import { messageToHTML } from "./chat";
 import * as styles from "./chat.scss";
 import QuoteBox from "./quote-box";
 import ServiceBubble from "./service-bubble";
@@ -82,6 +82,10 @@ export default class Bubble implements Component<Options> {
 
     this.element.addEventListener("contextmenu", e => {
       e.preventDefault();
+
+      if (window.getSelection) {
+        window.getSelection().removeAllRanges();
+      }
 
       makeContextMenu({ x: e.clientX, y: e.clientY }, [
         ...(this.peer.canSendMessage()
