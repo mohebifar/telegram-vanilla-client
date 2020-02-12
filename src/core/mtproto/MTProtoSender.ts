@@ -131,6 +131,8 @@ export class MTProtoSender {
 
     let resolved = false;
     let timeout = 0;
+    const state = new RequestState(request);
+    this.sendQueue.append(state);
 
     setTimeout(() => {
       if (!resolved) {
@@ -138,8 +140,6 @@ export class MTProtoSender {
       }
     }, 5000);
 
-    const state = new RequestState(request);
-    this.sendQueue.append(state);
     const result = await state.promise;
     clearInterval(timeout);
     resolved = true;

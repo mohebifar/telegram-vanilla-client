@@ -116,17 +116,21 @@ async function connect(apiId: number, apiHash: string) {
           result = await (tg.fileStorage[data.method] as any)(...newArgs);
         }
       } catch (error) {
-        result = error;
+        const code = (error as any).code;
+        result =
+          error instanceof Error
+            ? { message: error.message, code }
+            : String(error);
         hasError = true;
-      } finally {
-        callbackIds.forEach(id => callbacks.delete(id));
-        postMessage({
-          type: "method",
-          requestId: data.requestId,
-          result,
-          error: hasError
-        } as MethodResponseEvent);
       }
+
+      callbackIds.forEach(id => callbacks.delete(id));
+      postMessage({
+        type: "method",
+        requestId: data.requestId,
+        result,
+        error: hasError
+      } as MethodResponseEvent);
     } else if (data.type === "callback_return") {
       const resolve = callbacks.get(data.r);
       if (resolve) {

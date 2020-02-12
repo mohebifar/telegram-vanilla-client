@@ -49,7 +49,13 @@ export async function makeProxy(
       const { resolve, reject } = handlers.get(data.requestId);
 
       if (data.error) {
-        reject(data.result);
+        if (data.result.message) {
+          const error = new Error(data.result.message);
+          (error as any).code = data.result.code;
+          reject(error);
+        } else {
+          reject(data.result);
+        }
       } else {
         resolve(data.result);
       }
