@@ -10,7 +10,8 @@ import {
   getVideoMeta,
   makeFileDialog,
   readFile,
-  resizeImage
+  resizeImage,
+  readDataURL
 } from "../../utils/upload-file";
 import { ContextMenu } from "../ui/context-menu";
 import EmojiPanel from "../ui/emoji-panel";
@@ -18,6 +19,11 @@ import { Icons } from "../ui/icon";
 import IconButton from "../ui/icon-button";
 import QuoteBox from "./quote-box";
 import * as styles from "./send-message.scss";
+import { makeModal } from "../ui/modal";
+import Input from "../ui/input";
+import FileIcon from "../ui/file-icon";
+import { TransientMedia } from "../../utils/useful-types";
+import { parseFileSize } from "../../utils/chat";
 
 interface Options {
   callback(message: SimplifiedMessageRequest): Promise<IMessage>;
@@ -119,7 +125,6 @@ export default class SendMessageForm implements Component<Options> {
     if (value === "") {
       return;
     }
-    this.inputNode.value = "";
     autosize.update(this.inputNode);
     this.sendMessage({
       $t: "messages_SendMessageRequest",
@@ -127,17 +132,114 @@ export default class SendMessageForm implements Component<Options> {
     });
   };
 
+  private showFilesModal(
+    type: "media" | "document",
+    requests: SimplifiedMessageRequest[]
+  ): Promise<SimplifiedMessageRequest[]> {
+    return new Promise(async (resolve, reject) => {
+      const element = createElement("div");
+      for (const index in requests) {
+        const request = requests[index];
+
+        const media: TransientMedia = (request as any).media;
+
+        if (type === "media") {
+          let src = media.thumbnail;
+          if (!src) {
+            src = await readDataURL(media.file);
+          }
+
+          element.append(
+            createElement(
+              "div",
+              { class: styles.mediaItem },
+              createElement("img", { src })
+            )
+          );
+        } else {
+          const fileName = media.file.name;
+          const extensionMatch = fileName.match(/\.([\w\d]+)$/);
+          const extension = extensionMatch
+            ? extensionMatch[1]
+            : fileName.substr(fileName.length - 3);
+
+          const fileIcon = createElement(FileIcon, { extension });
+          fileIcon.instance.showDocument();
+          element.append(
+            createElement(
+              "div",
+              { class: styles.fileItem },
+              fileIcon,
+              createElement(
+                "div",
+                createElement("div", fileName),
+                createElement("div", parseFileSize(media.file.size))
+              )
+            )
+          );
+        }
+      }
+
+      const captionInput = createElement(Input, {
+        tag: "textarea",
+        wrapperClass: styles.captionInput,
+        placeholder: "Add a caption..."
+      });
+      captionInput.addEventListener("keypress", e => {
+        if (e.keyCode === 13 && !e.shiftKey) {
+          e.preventDefault();
+          submit();
+        }
+      });
+      captionInput.instance.value = this.inputNode.value;
+      this.inputNode.value = "";
+
+      const submit = () => {
+        const caption = captionInput.instance.value.trim();
+        if (requests.length === 1) {
+          requests[0].message = caption;
+        } else if (caption) {
+          this.sendMessage({
+            $t: "messages_SendMessageRequest",
+            message: caption
+          });
+        }
+
+        resolve(requests);
+        modal.close();
+      };
+
+      const modal = makeModal(
+        `Send ${requests.length} files`,
+        createElement("div", element, captionInput),
+        {
+          caption: "Send",
+          onClick: submit
+        },
+        () => {
+          reject();
+          this.inputNode.value = captionInput.instance.value;
+          this.inputNode.focus();
+        }
+      );
+
+      requestAnimationFrame(() => captionInput.instance.focus());
+    });
+  }
+
   private createAttachment() {
     let timeout: number;
 
     const uploadFactory = (type: "media" | "document") => async (
       files: File[]
     ) => {
-      const transientModels: IMessage[] = [];
+      if (files.length === 0) {
+        return;
+      }
+
+      const requests: SimplifiedMessageRequest[] = [];
       const buffers: ArrayBuffer[] = [];
-      const message = this.inputNode.value;
       const subscriptions = new Map<File, (progress: number) => any>();
-      this.inputNode.value = "";
 
       for (const file of files) {
         const isPhoto = type === "media" && file.type.startsWith("image/");
@@ -154,11 +256,12 @@ export default class SendMessageForm implements Component<Options> {
         if (isVideo) {
           try {
             [thumbnail, width, height] = await getVideoMeta(buffer);
-            console.log("tt", thumbnail);
           } catch {}
         }
 
-        const transient = await this.sendMessage({
+        buffers.push(buffer);
+
+        requests.push({
           $t: "messages_SendMediaRequest",
           media: {
             $t: "TransientMedia",
@@ -169,16 +272,29 @@ export default class SendMessageForm implements Component<Options> {
             thumbnail,
             subscribe: fn => subscriptions.set(file, fn)
           },
-          message
+          message: ""
         });
-        buffers.push(buffer);
-        transientModels.push(transient);
+      }
+
+      let normalizedRequests: SimplifiedMessageRequest[];
+
+      try {
+        normalizedRequests = await this.showFilesModal(type, requests);
+      } catch {
+        return;
+      }
+
+      const transientModels: IMessage[] = [];
+
+      for (const request of normalizedRequests) {
+        const transientModel = await this.sendMessage(request);
+        transientModels.push(transientModel);
       }
 
       for (const index in files) {
         const file = files[index];
-        const transientModel = transientModels[index];
         const buffer = buffers[index];
+        const transientModel = transientModels[index];
 
         const uploadedFile = await Peer.tg.fileStorage.upload(
           buffer,
@@ -211,7 +327,11 @@ export default class SendMessageForm implements Component<Options> {
         await this.sendMessage({
           $t: "messages_SendMediaRequest",
           media,
-          message
+          replyToMsgId:
+            transientModel.$t === "Message"
+              ? transientModel.replyToMsgId
+              : undefined,
+          message: transientModel.$t === "Message" ? transientModel.message : ""
         });
 
         transientModel.destroy();
@@ -340,6 +460,7 @@ export default class SendMessageForm implements Component<Options> {
       ...(this.replyMessage ? { replyToMsgId: this.replyMessage.id } : {})
     });
     this.clearReply();
+    this.inputNode.value = "";
     return result;
   }
 }

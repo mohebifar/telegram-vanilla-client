@@ -4,6 +4,7 @@ import {
   Element,
   removeChildren
 } from "../../utils/dom";
+import autosize from "autosize";
 import * as styles from "./input.scss";
 
 enum EventMap {
@@ -25,6 +26,8 @@ interface Options
   placeholder: string;
   type?: "tel" | "text" | "password";
   autocomplete?: HTMLInputElement["autocomplete"];
+  tag?: "input" | "textarea";
+  wrapperClass?: string;
 }
 
 export default class Input implements Component<Options> {
@@ -34,13 +37,21 @@ export default class Input implements Component<Options> {
   private prefix: Element<unknown>;
   private suffix: Element<unknown>;
 
-  constructor({ placeholder, ...rest }: Options) {
-    this.inputNode = createElement("input", {
+  constructor({
+    placeholder,
+    tag = "input",
+    wrapperClass = "",
+    ...rest
+  }: Options) {
+    this.inputNode = createElement(tag, {
       placeholder,
       ...Object.keys(rest)
         .filter(key => !(key in EventMap))
         .reduce((a, b) => ({ ...a, [b]: rest[b] }), {})
     }) as HTMLInputElement;
+    if (tag === "textarea") {
+      autosize(this.inputNode);
+    }
     this.placeholder = createElement(
       "div",
       { class: styles.placeholder },
@@ -52,7 +63,7 @@ export default class Input implements Component<Options> {
     this.element = createElement(
       "div",
       {
-        class: styles.inputWrapper
+        class: styles.inputWrapper + " " + wrapperClass
       },
       this.inputNode,
       this.placeholder,

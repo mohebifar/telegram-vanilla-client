@@ -87,3 +87,49 @@
     transform-origin: bottom right;
   }
 }
+
+.captionInput {
+  margin: 1.5rem 0 1rem;
+}
+
+.fileItem {
+  display: flex;
+  margin-bottom: 0.75rem;
+
+  > :first-child {
+    width: 3rem;
+  }
+
+  > :last-child {
+    display: flex;
+    flex-direction: column;
+    margin-left: 1rem;
+    justify-content: space-evenly;
+
+    > * {
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+
+    > :last-child {
+      color: $grey;
+    }
+  }
+}
+
+.mediaItem {
+  width: 100%;
+  max-width: 25em;
+  max-height: 20em;
+  border-radius: 10px;
+  overflow: hidden;
+
+  &:not(:first-child) {
+    margin-top: 1em;
+  }
+
+  img {
+    width: 100%;
+  }
+}

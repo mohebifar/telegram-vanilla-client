@@ -28,6 +28,7 @@ export function makeFileDialog(
     () => {
       const files = Array.from(input.files);
       callback(multiple ? files : files[0]);
+      input.value = "";
     },
     { once: false }
   );

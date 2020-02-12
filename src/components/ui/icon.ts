@@ -36,7 +36,8 @@ export enum Icons {
   Phone = "phone",
   Reply = "reply",
   Copy = "copy",
-  Pin = "pin"
+  Pin = "pin",
+  Recent = "recent"
 }
 
 export interface Options {

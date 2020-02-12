@@ -27,8 +27,10 @@ export default class FileIcon implements Component<Options> {
   private progressElement: Element<Progress>;
 
   constructor({ extension }: Options) {
-    if (["doc"].includes(extension)) {
+    if (["doc", "docx", "mp4", "mov"].includes(extension)) {
       this.color = "#50A2E9";
+    } else if (["pdf"].includes(extension)) {
+      this.color = "#e53934";
     } else {
       this.color = "#43A047";
     }

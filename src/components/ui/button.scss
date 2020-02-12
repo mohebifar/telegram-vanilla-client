@@ -13,6 +13,11 @@
   font-size: 1rem;
   font-weight: 400;
 
+  &.s {
+    font-size: 0.8rem;
+    padding: $input-padding-v*0.75 $input-padding-h;
+  }
+
   &:not(:disabled) {
     cursor: pointer;
 

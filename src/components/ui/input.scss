@@ -44,7 +44,8 @@ $prefix-width: 2.5rem;
   }
 
   &.hasPrefix {
-    input {
+    input,
+    textarea {
       padding-left: $input-padding-h + $prefix-width;
     }
 
@@ -53,7 +54,8 @@ $prefix-width: 2.5rem;
     }
   }
 
-  input {
+  input,
+  textarea {
     border: $input-border-width solid $grey-light;
     padding: $input-padding-v $input-padding-h;
     border-radius: $input-radius;
@@ -76,7 +78,7 @@ $prefix-width: 2.5rem;
     &:focus {
       &,
       .placeholder {
-        transition: all 0.3s ease;
+        transition: border-color 0.3s ease;
       }
     }
 
@@ -90,6 +92,13 @@ $prefix-width: 2.5rem;
     }
   }
 
+  textarea {
+    line-height: 1.2;
+    max-height: 10rem;
+    height: 3rem;
+    resize: none;
+  }
+
   .placeholder {
     position: absolute;
     pointer-events: none;
@@ -101,7 +110,8 @@ $prefix-width: 2.5rem;
   }
 
   &.error {
-    input {
+    input,
+    textarea {
       border-color: $red;
       &:not(:placeholder-shown) ~ .placeholder::before {
         content: "Invalid ‌";

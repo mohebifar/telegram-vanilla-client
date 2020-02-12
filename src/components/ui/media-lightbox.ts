@@ -110,12 +110,13 @@ export class LightBox implements Component<Options> {
 
   public close() {
     this.closed = true;
-    startAnimation({ o: { from: 1, to: 0 } }, v => {
-      this.element.style.opacity = v.o + "";
-      if (v.o === 0) {
-        this.element.remove();
-      }
-    });
+    startAnimation(
+      { o: { from: 1, to: 0 } },
+      v => {
+        this.element.style.opacity = v.o + "";
+      },
+      () => this.element.remove()
+    );
   }
 
   public setMedia(sharedMedia: ISharedMedia, flip: 1 | 0 | -1) {

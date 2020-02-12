@@ -213,7 +213,7 @@ export default class Bubble implements Component<Options> {
 
     if (this.message.$t === "Message" && this.message.out) {
       const icon = this.message.justSent
-        ? Icons.Spinner
+        ? Icons.Recent
         : this.message.id > this.dialog.readOutboxMaxId
         ? Icons.Check
         : Icons.Checks;

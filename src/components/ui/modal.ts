@@ -1,29 +1,66 @@
 import { createElement, Component } from "../../utils/dom";
 import * as styles from "./modal.scss";
+import { startAnimation } from "../../utils/easing";
+import IconButton from "./icon-button";
+import { Icons } from "./icon";
+import Button from "./button";
 
 interface Options {
   title?: string;
-  text: string;
+  content: string | HTMLElement;
   id?: string;
+  action?: {
+    caption: string;
+    onClick: Function;
+  };
+  onClose: Function;
 }
 
 export default class Modal implements Component<Options> {
   public readonly element: HTMLElement;
+  private onClose: Options["onClose"];
 
-  constructor({ title, text, id }: Options) {
+  constructor({ title, content, id, action, onClose }: Options) {
+    this.onClose = onClose;
     const titleElement = createElement("h3", title);
-    const textElement = createElement("span", text);
+    const contentElement = createElement(
+      "div",
+      { class: styles.content },
+      content
+    );
+    const closeElement = createElement(IconButton, {
+      icon: Icons.Close,
+      onClick: () => {
+        this.close(true);
+      }
+    });
+    const headingElement = createElement(
+      "div",
+      { class: styles.heading },
+      closeElement,
+      titleElement,
+      createElement(
+        "div",
+        action
+          ? createElement(Button, {
+              caption: action.caption,
+              size: "s",
+              onClick: action.onClick
+            })
+          : ""
+      )
+    );
     const modal = createElement(
       "div",
       { class: styles.modal },
-      titleElement,
-      textElement
+      headingElement,
+      contentElement
     );
 
-    this.element = createElement("div", { class: styles.overlay, id }, modal);
+    this.element = createElement("div", { class: styles.container, id }, modal);
 
     this.element.addEventListener("click", () => {
-      this.element.remove();
+      this.close(true);
     });
 
     modal.addEventListener("click", e => {
@@ -31,14 +68,35 @@ export default class Modal implements Component<Options> {
       e.stopPropagation();
     });
   }
+
+  public close(callOnClose = false) {
+    startAnimation(
+      { o: { from: 1, to: 0 } },
+      v => {
+        this.element.style.opacity = v.o + "";
+      },
+      () => {
+        this.element.remove();
+        if (callOnClose && this.onClose) {
+          this.onClose();
+        }
+      }
+    );
+  }
 }
 
-export function makeModal(title: string, text: string) {
+export function makeModal(
+  title: string,
+  content: string | HTMLElement,
+  action?: Options["action"],
+  onClose?: Function
+) {
   const id = "singleModal";
   const currentModal = document.getElementById(id);
   if (currentModal) {
     currentModal.remove();
   }
-  const modal = new Modal({ title, text, id });
+  const modal = new Modal({ title, content, id, action, onClose });
   document.body.append(modal.element);
+  return modal;
 }

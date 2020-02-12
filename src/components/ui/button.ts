@@ -5,7 +5,8 @@ import Spinner from "./spinner";
 
 interface Options {
   caption: string;
-  onClick?(): void;
+  size?: "md" | "s";
+  onClick?: Function;
 }
 
 enum EventMap {
@@ -16,10 +17,14 @@ export default class Button implements Component<Options> {
   public readonly element: HTMLElement;
   private spinner?: HTMLElement;
 
-  constructor({ caption, ...rest }: Options) {
+  constructor({ caption, size = "md", ...rest }: Options) {
     preload(`/assets/icons/${Icons.Spinner}.svg`);
 
-    this.element = createElement("button", { class: styles.btn }, caption);
+    this.element = createElement(
+      "button",
+      { class: styles.btn + " " + styles[size] },
+      caption
+    );
 
     Object.entries(EventMap).forEach(([attrName, eventName]) => {
       if (attrName in rest) {

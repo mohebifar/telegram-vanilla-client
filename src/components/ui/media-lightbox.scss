@@ -1,7 +1,8 @@
 .container {
   display: flex;
   flex-direction: column;
-  animation: animateContainer 0.3s ease 0s forwards;
+  animation: animateContainer 0.3s ease;
+  background: rgba(0, 0, 0, 0.85);
   position: fixed;
   top: 0;
   left: 0;

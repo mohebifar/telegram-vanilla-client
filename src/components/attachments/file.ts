@@ -62,6 +62,9 @@ export default class FileAttachment implements Component<Options> {
           fileIcon.instance.showProgress(progress || 0);
         });
       }
+      iconWrapper.addEventListener("click", () => {
+        alert("Stopping upload is not supported yet");
+      });
     }
 
     let shouldContinue = true;
