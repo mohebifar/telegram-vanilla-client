@@ -331,6 +331,7 @@ export function messageToHTML(message: Message) {
   let html = "";
 
   if (message.entities) {
+    console.log(message.entities, rawMessage);
     message.entities.forEach(entity => {
       const entityText = rawMessage
         .substr(entity.offset, entity.length)
@@ -363,8 +364,11 @@ export function messageToHTML(message: Message) {
         case "MessageEntityUnderline":
           html += `<u>${entityText}</u>`;
           break;
-        case "MessageEntityCode":
+        case "MessageEntityPre":
           html += `<pre>${entityText}</pre>`;
+          break;
+        case "MessageEntityCode":
+          html += `<span style="font-family: monospace; background: #00000014;">${entityText}</span>`;
           break;
         default:
           html += entityText;
