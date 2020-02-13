@@ -250,8 +250,8 @@ export class Peer extends Model<"peers"> implements ExtraMethods {
     return (
       this.hasAllRights() ||
       (this._proxy.$t === "Channel" && !this._proxy.broadcast) ||
-      !this._proxy.adminRights ||
-      this._proxy.adminRights.postMessages
+      this._proxy.$t === "Chat" ||
+      (this._proxy.adminRights && this._proxy.adminRights.postMessages)
     );
   }
 

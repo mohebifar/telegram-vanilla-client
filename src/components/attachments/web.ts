@@ -1,8 +1,7 @@
+import { MessageMediaWebPage } from "../../core/tl/TLObjects";
 import { TelegramClientProxy } from "../../telegram-worker-proxy";
 import { Component, createElement } from "../../utils/dom";
-import { EMPTY_IMG } from "../../utils/images";
 import * as styles from "../chat/chat.scss";
-import { MessageMediaWebPage } from "../../core/tl/TLObjects";
 
 export interface Options {
   media: MessageMediaWebPage;
@@ -17,25 +16,11 @@ export default class WebAttachment implements Component<Options> {
       return;
     }
 
-    const img = createElement("img", { src: EMPTY_IMG });
-
-    const fs = tg.fileStorage;
-    fs.downloadMedia(media).then(src => {
-      if (!src) {
-        return img.remove();
-      }
-      img.setAttribute("src", src);
+    const element = createElement("a", {
+      class: styles.webPageWrapper,
+      href: media.webpage.url,
+      target: "_blank"
     });
-
-    const element = createElement(
-      "a",
-      {
-        class: styles.webPageWrapper,
-        href: media.webpage.url,
-        target: "_blank"
-      },
-      createElement("div", { class: styles.photo }, img)
-    );
 
     if (media.webpage.siteName) {
       element.append(
@@ -48,6 +33,20 @@ export default class WebAttachment implements Component<Options> {
         createElement("div", { class: styles.text }, media.webpage.description)
       );
     }
+
+    tg.fileStorage.downloadMedia(media).then(src => {
+      if (!src) {
+        return;
+      }
+
+      element.prepend(
+        createElement(
+          "div",
+          { class: styles.photo },
+          createElement("img", { src })
+        )
+      );
+    });
 
     this.element = element;
   }

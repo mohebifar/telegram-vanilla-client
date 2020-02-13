@@ -1,9 +1,9 @@
-import { createElement, Component } from "../../utils/dom";
+import { createElement, Component, Element } from "../../utils/dom";
 import * as styles from "./icon-button.scss";
-import Icon, { Icons, Options as IconOptions } from "./icon";
+import Icon, { Icons, Options as IconOptions, IconSprite } from "./icon";
 
 interface Options {
-  icon: Icons;
+  icon: Icons | IconSprite;
   color?: IconOptions["color"];
   variant?: "light" | "dark" | "none";
   onClick?(event: Event): void;
@@ -20,6 +20,7 @@ enum EventMap {
 
 export default class IconButton implements Component<Options> {
   public readonly element: HTMLElement;
+  private icon: Element<Icon>;
 
   constructor({ icon, color, variant = "light", ...rest }: Options) {
     const props = {};
@@ -38,13 +39,15 @@ export default class IconButton implements Component<Options> {
       finalColor = finalColor || "white";
     }
 
+    this.icon = createElement(Icon, {
+      icon,
+      color: finalColor || "grey"
+    });
+
     this.element = createElement(
       "button",
       { class: styles.btn + extraClass, ...props },
-      createElement(Icon, {
-        icon,
-        color: finalColor || "grey"
-      })
+      this.icon
     );
 
     Object.entries(EventMap).forEach(([attrName, eventName]) => {
@@ -52,5 +55,9 @@ export default class IconButton implements Component<Options> {
         this.element.addEventListener(eventName, rest[attrName]);
       }
     });
+  }
+
+  public setSprite(state: "start" | "end") {
+    this.icon.instance.setSprite(state);
   }
 }

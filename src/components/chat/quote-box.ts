@@ -23,7 +23,12 @@ export default class QuoteBox implements Component<Options> {
         { class: styles.replyWrapper },
         createElement("div", { class: styles.replyBorder }),
         tile,
-        createElement("div", { class: styles.replyContent }, title, text)
+        createElement(
+          "div",
+          { dir: "auto", class: styles.replyContent },
+          title,
+          text
+        )
       )
     );
 

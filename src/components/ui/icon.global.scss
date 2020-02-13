@@ -28,4 +28,26 @@
     filter: invert(64%) sepia(87%) saturate(6174%) hue-rotate(339deg)
       brightness(90%) contrast(100%);
   }
+
+  &-sprite {
+    width: 24px;
+    height: 24px;
+    background-repeat: no-repeat;
+  }
+
+  &-menu_close_sprite {
+    background-image: url("/assets/icons/menu_close_sprite.svg");
+  }
+
+  &-sprite-start {
+    background-position: 0px 0px;
+  }
+
+  &-sprite-end {
+    background-position: -432px 0px;
+  }
+
+  &-sprite-start, &-sprite-end {
+    transition: background-position .3s steps(18);
+  }
 }

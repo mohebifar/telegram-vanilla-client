@@ -1,6 +1,6 @@
 import { createElement, Component, Element } from "../../utils/dom";
 import * as styles from "./root.scss";
-import SideBar from "./side-bar";
+import LeftSideBar from "../left-sidebar/left-sidebar";
 import Chat from "./chat";
 import { TelegramClientProxy } from "../../telegram-worker-proxy";
 import { IDialog } from "../../models/dialog";
@@ -14,13 +14,13 @@ export default class Root implements Component<Options> {
   public readonly element: HTMLElement;
   public tgProxy: TelegramClientProxy;
   private chat: Element<Chat>;
-  private sideBar: Element<SideBar>;
+  private sideBar: Element<LeftSideBar>;
 
   constructor({ tgProxy }: Options) {
     this.tgProxy = tgProxy;
 
     this.chat = createElement(Chat, {});
-    this.sideBar = createElement(SideBar, {
+    this.sideBar = createElement(LeftSideBar, {
       onChatSelect: this.onChatSelect
     });
     this.element = createElement(

@@ -61,6 +61,7 @@ $time-size: 0.75rem;
         white-space: nowrap;
         text-overflow: ellipsis;
         color: $blue;
+        font-weight: 500;
       }
 
       .replyContentText {
@@ -342,6 +343,16 @@ $time-size: 0.75rem;
         .webPageWrapper {
           border-color: $green-dark;
           .name {
+            color: $green-dark;
+          }
+        }
+
+        .replyWrapper {
+          .replyBorder {
+            background: $green-dark;
+          }
+
+          .replyContentTitle {
             color: $green-dark;
           }
         }

@@ -9,13 +9,15 @@ import {
 } from "../../utils/dom";
 import DialogItem from "../ui/dialog-item";
 import * as dialogItemStyles from "../ui/dialog-item.scss";
-import * as styles from "./side-bar.scss";
+import { FadeTransition } from "../ui/router";
+import * as styles from "./left-sidebar.scss";
 
 interface Options {
   onChatSelect(dialog: IDialog, message: IMessage): any;
 }
 
-export default class DialogList implements Component<Options> {
+export default class DialogList extends FadeTransition
+  implements Component<Options> {
   public readonly element: HTMLElement;
 
   private readonly dialogsContainer: HTMLElement;
@@ -27,6 +29,7 @@ export default class DialogList implements Component<Options> {
   private onChatSelect: Options["onChatSelect"];
 
   constructor({ onChatSelect }: Options) {
+    super();
     this.onChatSelect = onChatSelect;
     this.dialogsContainer = createElement("div", { class: styles.dialogsList });
     this.pinnedDialogsContainer = createElement("div", {

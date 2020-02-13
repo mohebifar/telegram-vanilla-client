@@ -9,21 +9,22 @@
 
   .dialogsWrapper {
     flex-grow: 1;
-    height: calc(100vh - #{$top-bar-height});
     overflow-y: scroll;
+    height: 100%;
 
     &::-webkit-scrollbar {
       width: 2px;
     }
 
-    &::-webkit-scrollbar-track , &::-webkit-scrollbar-thumb {
+    &::-webkit-scrollbar-track,
+    &::-webkit-scrollbar-thumb {
       background-color: transparent;
     }
 
     &:hover {
       &::-webkit-scrollbar-thumb {
         background-color: $blue;
-        transition: background-color .3s ease;
+        transition: background-color 0.3s ease;
       }
     }
   }
@@ -60,4 +61,8 @@
       right: 0;
     }
   }
+}
+
+.routeWrapper {
+  height: calc(100vh - #{$top-bar-height});
 }

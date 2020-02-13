@@ -1,22 +1,25 @@
+import { getInputPeer } from "../../core/tl/utils";
 import { Dialog, IDialog } from "../../models/dialog";
 import { IMessage, Message } from "../../models/message";
 import { IPeer } from "../../models/peer";
 import { Component, createElement, removeChildren } from "../../utils/dom";
 import { debounce } from "../../utils/utils";
 import DialogItem from "../ui/dialog-item";
+import { DefaultTransition } from "../ui/router";
 import * as styles from "./global-search.scss";
-import { getInputPeer } from "../../core/tl/utils";
 
 interface Options {
   onChatSelect(dialog: IDialog, message: IMessage): any;
 }
 
-export default class GlobalSearch implements Component<Options> {
+export default class GlobalSearch extends DefaultTransition
+  implements Component<Options> {
   public readonly element: HTMLElement;
   private readonly dialogsContainer: HTMLElement;
   private onChatSelect: Options["onChatSelect"];
 
   constructor({ onChatSelect }: Options) {
+    super();
     this.onChatSelect = onChatSelect;
 
     this.dialogsContainer = createElement("div");
@@ -27,10 +30,6 @@ export default class GlobalSearch implements Component<Options> {
     );
 
     this.element = element;
-  }
-
-  public setVisibility(visible = true) {
-    this.element.classList[visible ? "add" : "remove"](styles.visible);
   }
 
   public search = debounce(async (q: string) => {
