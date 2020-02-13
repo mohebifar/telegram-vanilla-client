@@ -62,10 +62,10 @@ export function handleUpdate(update: AllUpdateTypes, extras: Extras = {}) {
       handleUpdateUserStatus(update);
       break;
     case "UpdateDeleteMessages":
-      handleUpdateDeleteMessages(update, false);
+      handleUpdateDeleteMessages(update, 0);
       break;
     case "UpdateDeleteChannelMessages":
-      handleUpdateDeleteMessages(update, true);
+      handleUpdateDeleteMessages(update, update.channelId);
       break;
     case "UpdateUserTyping":
     case "UpdateChatUserTyping":
@@ -192,10 +192,10 @@ async function handleUpdateUserStatus(update: UpdateUserStatus) {
 
 async function handleUpdateDeleteMessages(
   update: UpdateDeleteMessages | UpdateDeleteChannelMessages,
-  isChannel: boolean
+  channelId: number
 ) {
   for (const id of update.messages) {
-    const model = await Message.get({ id, isChannel: Number(isChannel) });
+    const model = await Message.get({ id, channelId });
     if (model) {
       model.destroy();
     }

@@ -31,13 +31,6 @@ export default class LeftSideBar implements Component<Options> {
           this.updateIcon();
         }
       },
-      onBlur: event => {
-        const searchValue = event.target.value.trim();
-        if (searchValue === "") {
-          this.router.back();
-          this.updateIcon(false);
-        }
-      },
       onInput: event => {
         const searchValue = event.target.value.trim();
         if (searchValue !== "") {

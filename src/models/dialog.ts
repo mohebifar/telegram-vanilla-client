@@ -129,7 +129,7 @@ export class Dialog extends Model<"dialogs"> implements ExtraMethods {
       if (dialog.$t === "Dialog") {
         const message = Message.getFromMemory({
           id: dialog.topMessage,
-          isChannel: Number(dialog.peer.$t === "PeerChannel")
+          channelId: Number(dialog.peer.$t === "PeerChannel" && dialog.peer.channelId)
         }) as IMessage;
         if (!message) {
           continue;
@@ -173,7 +173,7 @@ export class Dialog extends Model<"dialogs"> implements ExtraMethods {
       if (dialog.$t === "Dialog") {
         const message = Message.getFromMemory({
           id: dialog.topMessage,
-          isChannel: Number(dialog.peer.$t === "PeerChannel")
+          channelId: Number(dialog.peer.$t === "PeerChannel" && dialog.peer.channelId)
         }) as IMessage;
         if (!message) {
           continue;
@@ -193,7 +193,7 @@ export class Dialog extends Model<"dialogs"> implements ExtraMethods {
   public async loadMessage() {
     return Message.get({
       id: this._proxy.topMessage,
-      isChannel: Number(this._proxy.peerType === "Channel")
+      channelId: Number(this._proxy.peerType === "Channel" && this._proxy.peerId)
     });
   }
 

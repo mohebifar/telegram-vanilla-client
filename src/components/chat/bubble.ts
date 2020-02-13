@@ -399,7 +399,9 @@ export default class Bubble implements Component<Options> {
 
     Message.get({
       id: replyMsgId,
-      isChannel: Number(this.dialog.peerType === "Channel")
+      channelId: Number(
+        this.dialog.peerType === "Channel" && this.dialog.peerId
+      )
     }).then(message => {
       if (message && message.$t === "Message") {
         element.append(

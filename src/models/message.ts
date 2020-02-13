@@ -27,7 +27,7 @@ export type IMessage = ModelWithProxy<"messages"> & ExtraMethods;
 
 @ModelDecorator({
   tableName: "messages",
-  primaryKey: ["id", "isChannel"]
+  primaryKey: ["id", "channelId"]
 })
 export class Message extends Model<"messages"> {
   static get: (id: ModelKey<"messages">) => Promise<undefined | IMessage>;
@@ -80,9 +80,12 @@ export class Message extends Model<"messages"> {
       normalizedMessage = message as any;
     }
 
-    normalizedMessage.isChannel =
+    normalizedMessage.channelId =
       "toId" in normalizedMessage
-        ? Number(normalizedMessage.toId.$t === "PeerChannel")
+        ? Number(
+            normalizedMessage.toId.$t === "PeerChannel" &&
+              normalizedMessage.toId.channelId
+          )
         : 0;
 
     return normalizedMessage;

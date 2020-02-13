@@ -28,7 +28,7 @@ export type DBMessage = (
   | DialogMessageTypes
   | (Omit<TLMessage, "media"> & { media?: MediaWithTransient })
 ) & {
-  isChannel: number;
+  channelId: number;
 };
 
 export type DBSharedMedia = TLMessage & {
@@ -73,7 +73,7 @@ export interface TelegramDatabaseTables {
   messages: Dexie.Table<
     DBMessage,
     {
-      isChannel: DBMessage["isChannel"];
+      channelId: DBMessage["channelId"];
       id: number;
     }
   >;
@@ -123,14 +123,10 @@ export class TelegramDatabase extends Dexie implements TelegramDatabaseTables {
     this.version(1).stores({
       sessions: "&dcId",
       configs: "&key, value",
-      messages: "[id+isChannel], date, $t",
+      messages: "[id+channelId], date, $t",
       sharedMedia: "[id+peerType+peerId]",
       peers: "[id+type]",
       dialogs: "[peerType+peerId], lastMessageDate",
-      stickerSet: "id"
-    });
-
-    this.version(3).stores({
       stickerSet: "set.id, set.installedDate"
     });
 
