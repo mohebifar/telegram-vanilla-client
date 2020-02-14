@@ -72,8 +72,8 @@ export default class DialogList extends FadeTransition
         if (this.dialogsToElement.has(object)) {
           const element = this.dialogsToElement.get(object);
           element.instance.update();
-          this.rearrangeItems(object);
         }
+        this.rearrangeItems(object);
       }
     );
 
@@ -132,6 +132,10 @@ export default class DialogList extends FadeTransition
     });
     await element.instance.register();
 
+    if (this.dialogsToElement.has(dialog)) {
+      return;
+    }
+
     this.dialogsToElement.set(dialog, element);
 
     if (dialog.pinned) {
@@ -150,10 +154,18 @@ export default class DialogList extends FadeTransition
     return lastDialogElement.instance.dialog;
   }
 
-  private rearrangeItems(updatedDialog: IDialog) {
+  private async rearrangeItems(updatedDialog: IDialog) {
     if (updatedDialog.pinned) {
       return;
     }
+    let updatedElement: Element<DialogItem>;
+
+    if (!this.dialogsToElement.has(updatedDialog)) {
+      const peer = await updatedDialog.getPeer();
+      await this.addDialog(updatedDialog, peer);
+    }
+
+    updatedElement = this.dialogsToElement.get(updatedDialog);
 
     let element: Element<DialogItem>;
     for (
@@ -164,7 +176,6 @@ export default class DialogList extends FadeTransition
     );
 
     if (element) {
-      const updatedElement = this.dialogsToElement.get(updatedDialog);
       this.dialogsContainer.insertBefore(updatedElement, element);
     }
   }
