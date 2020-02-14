@@ -28,6 +28,9 @@ export function ModelDecorator({
     modelClass.memoryCache = new Map<string, ModelWithProxy>();
     modelClass.table = db[tableName];
     modelClass.primaryKey = primaryKey;
+    const fallbackGet = modelClass.get && modelClass.get.bind(modelClass);
+    const fallbackBulkGet =
+      modelClass.bulkGet && modelClass.bulkGet.bind(modelClass);
 
     modelClass.get = async function(id: PrimaryKey) {
       try {
@@ -36,20 +39,25 @@ export function ModelDecorator({
         }
 
         const data = await modelClass.table.get(id as any);
-        if (!data) {
-          return undefined;
+        if (data) {
+          const model = modelClass.makeProxy();
+          model.assignValues(data);
+          model.saveInMemory();
+          return model;
         }
 
-        const model = modelClass.makeProxy();
-        model.assignValues(data);
-        model.saveInMemory();
-        return model;
+        if (fallbackGet) {
+          return fallbackGet(id);
+        }
+
+        return undefined;
       } catch (e) {
         return undefined;
       }
     };
 
     modelClass.bulkGet = async function(ids: PrimaryKey[]) {
+      const notFounds: PrimaryKey[] = [];
       const promise = ids.map(id => {
         if (modelClass.isInMemory(id)) {
           return modelClass.getFromMemory(id);
@@ -57,18 +65,30 @@ export function ModelDecorator({
           return (async () => {
             try {
               const data = await modelClass.table.get(id as any);
-              const model = modelClass.makeProxy();
-              model.assignValues(data);
-              model.saveInMemory();
-              return model;
-            } catch {
-              return undefined;
-            }
+              if (data) {
+                const model = modelClass.makeProxy();
+                model.assignValues(data);
+                model.saveInMemory();
+                return model;
+              }
+            } catch {}
+
+            notFounds.push(id);
+            return undefined;
           })();
         }
       });
 
-      return Promise.all(promise);
+      const resultsPreFallback = (await Promise.all(promise)).filter(
+        v => v !== undefined
+      );
+
+      if (notFounds.length > 0 && fallbackBulkGet) {
+        const restResult = (await fallbackBulkGet(notFounds)) || [];
+        return [...resultsPreFallback, ...restResult];
+      }
+
+      return resultsPreFallback;
     };
 
     modelClass.fromObject =

@@ -16,16 +16,19 @@ interface Route {
 
 interface Options {
   routes: Route[];
+  onRouteChange?: (route: string) => void;
 }
 
 export default class Router implements Component<Options> {
   public readonly element: HTMLElement;
   private routes: Route[];
+  private onRouteChange: Options["onRouteChange"];
   private nameMap = new Map<ElementWithRouteTransition, string>();
   private stack: ElementWithRouteTransition[] = [];
 
-  constructor({ routes }: Options) {
+  constructor({ routes, onRouteChange }: Options) {
     this.routes = routes;
+    this.onRouteChange = onRouteChange;
     this.element = createElement("div", { class: "router" });
   }
 
@@ -36,26 +39,37 @@ export default class Router implements Component<Options> {
   public async push(routeName: string, params?: any) {
     const route = this.findRoute(routeName);
     const rendered = route.render(params);
-    // const fromCache = this.renderCache.get(routeName);
     const wrapped = this.wrap(rendered);
 
+    const previous = this.top;
+
     this.element.append(wrapped);
-
-    if (this.top) {
-      await this.transition(this.top, rendered);
-      this.top.parentElement.remove();
-    }
-
     this.nameMap.set(rendered, routeName);
     this.stack.push(rendered);
+
+    if (this.onRouteChange) {
+      this.onRouteChange(this.currentRouteName);
+    }
+
+    if (previous) {
+      await this.transition(previous, rendered);
+      previous.parentElement.remove();
+    }
   }
 
   public async back() {
+    if (this.stack.length === 1) {
+      return;
+    }
     const toRemove = this.stack.pop();
     const toView = this.top;
     const wrapped = this.wrap(toView);
 
     this.element.prepend(wrapped);
+
+    if (this.onRouteChange) {
+      this.onRouteChange(this.currentRouteName);
+    }
 
     await this.transition(toRemove, toView);
     toRemove.parentElement.remove();
@@ -65,13 +79,14 @@ export default class Router implements Component<Options> {
     from: ElementWithRouteTransition,
     to: ElementWithRouteTransition
   ) {
-    const promise1 = new Promise(resolve => {
-      from.instance.out(from.parentElement, resolve);
-    });
-    const promise2 = new Promise(resolve => {
-      to.instance.in(to.parentElement, resolve);
-    });
-    return Promise.all([promise2, promise1]);
+    return Promise.all([
+      new Promise(resolve => {
+        to.instance.in(to.parentElement, resolve);
+      }),
+      new Promise(resolve => {
+        from.instance.out(from.parentElement, resolve);
+      })
+    ]);
   }
 
   private wrap(node: ElementWithRouteTransition) {

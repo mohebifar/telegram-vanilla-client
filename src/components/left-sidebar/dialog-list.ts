@@ -119,11 +119,16 @@ export default class DialogList extends FadeTransition
     }
   }
 
+  private onPeerSelect = async (peer: IPeer, message?: IMessage) => {
+    const dialog = await peer.getDialog();
+    this.onChatSelect(dialog, message);
+  };
+
   private async addDialog(dialog: IDialog, peer: IPeer) {
     const element = createElement(DialogItem, {
       dialog,
       peer,
-      onClick: this.onChatSelect
+      onClick: this.onPeerSelect
     });
     await element.instance.register();
 

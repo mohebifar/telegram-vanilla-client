@@ -4,4 +4,81 @@
   height: 100%;
   background-color: #fff;
   overflow: auto;
+
+  .section {
+    display: flex;
+    flex-direction: column-reverse;
+
+    &:not(:first-child) h3 {
+      border-top: 1px solid $grey-light;
+    }
+
+    h3 {
+      color: $grey;
+      margin: 0;
+      padding: 1rem;
+      font-size: 1rem;
+      font-weight: 500;
+    }
+
+    > div:empty + h3 {
+      display: none;
+    }
+  }
+
+  .topPeersScroll {
+    height: 6.5em;
+    position: relative;
+    overflow-x: auto;
+  }
+
+  .topPeers {
+    display: flex;
+    position: absolute;
+    left: 0;
+    top: 0;
+    padding: 0.2rem;
+
+    .topPeer {
+      padding: 0.5em 0.2em;
+      text-align: center;
+      margin-right: 0.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-radius: 5px;
+      cursor: pointer;
+      border: none;
+      outline: none;
+      background: none;
+
+      &:hover {
+        background-color: $light-hover;
+      }
+
+      &,
+      &:hover {
+        transition: background-color 0.3s ease;
+      }
+
+      > :first-child {
+        margin: 0 auto 0.5rem;
+      }
+
+      &,
+      > :last-child {
+        width: 4.5em;
+      }
+
+      > :last-child {
+        text-align: center;
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 0.8rem;
+      }
+    }
+  }
 }

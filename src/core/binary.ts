@@ -35,14 +35,14 @@ export function unpack(
 
 export function unpack(
   bytes: Uint8Array,
-  type: "I" | "i" | "B" | "h" | "H",
+  type: "I" | "i" | "B" | "h" | "H" | "f" | "F",
   little?: boolean,
   offset?: number
 ): number;
 
 export function unpack(
   bytes: Uint8Array,
-  type: "I" | "i" | "B" | "q" | "Q" | "h" | "H",
+  type: "I" | "i" | "B" | "q" | "Q" | "h" | "H" | "f" | "F",
   little: boolean = true,
   offset = 0
 ): JBigInt | number {
@@ -58,6 +58,10 @@ export function unpack(
       return dataView.getInt16(offset, little);
     case "B":
       return dataView.getUint8(offset);
+    case "f":
+      return dataView.getFloat32(offset, little);
+    case "F":
+      return dataView.getFloat64(offset, little);
     case "q":
       // Safari does not support bigint in DataView
       // return dataView.getBigInt64(0, little);

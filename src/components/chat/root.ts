@@ -35,7 +35,7 @@ export default class Root implements Component<Options> {
 
   private async register() {}
 
-  private onChatSelect = async (dialog: IDialog, message: IMessage) => {
+  private onChatSelect = async (dialog: IDialog, message?: IMessage) => {
     this.chat.instance.setActiveDialog(dialog, message && message.id);
     this.sideBar.instance.setActiveDialog(dialog);
   };

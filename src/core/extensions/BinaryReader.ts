@@ -42,11 +42,11 @@ export class BinaryReader {
   }
 
   readFloat() {
-    // return unpack("<f", this.read(4))[0];
+    return unpack(this.read(4), "f");
   }
 
   readDouble() {
-    // return unpack("<f", this.read(8))[0];
+    return unpack(this.read(8), "F");
   }
 
   readLargeInt(bits: number, signed = true) {

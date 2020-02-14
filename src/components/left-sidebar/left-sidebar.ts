@@ -1,17 +1,17 @@
 import { IDialog } from "../../models/dialog";
 import { IMessage } from "../../models/message";
 import { Component, createElement, Element } from "../../utils/dom";
-import { IconSprite, Icons } from "../ui/icon";
+import { makeContextMenu } from "../ui/context-menu";
+import { Icons, IconSprite } from "../ui/icon";
 import IconButton from "../ui/icon-button";
+import Router from "../ui/router";
 import SearchInput from "../ui/search-input";
 import DialogList from "./dialog-list";
 import GlobalSearch from "./global-search";
 import * as styles from "./left-sidebar.scss";
-import Router from "../ui/router";
-import { makeContextMenu } from "../ui/context-menu";
 
 interface Options {
-  onChatSelect(dialog: IDialog, message: IMessage): any;
+  onChatSelect(dialog: IDialog, message?: IMessage): any;
 }
 
 export default class LeftSideBar implements Component<Options> {
@@ -28,14 +28,11 @@ export default class LeftSideBar implements Component<Options> {
       onFocus: () => {
         if (this.router.currentRouteName !== "global-search") {
           this.router.push("global-search");
-          this.updateIcon();
         }
       },
       onInput: event => {
         const searchValue = event.target.value.trim();
-        if (searchValue !== "") {
-          this.globalSearch.instance.search(event.target.value);
-        }
+        this.globalSearch.instance.search(searchValue);
       }
     });
     this.iconButton = createElement(IconButton, {
@@ -44,7 +41,6 @@ export default class LeftSideBar implements Component<Options> {
         const { currentRouteName } = this.router;
         if (currentRouteName !== "dialog-list") {
           this.router.back();
-          this.updateIcon(false);
         } else {
           makeContextMenu({ x: 16, y: 70 }, [
             {
@@ -81,8 +77,6 @@ export default class LeftSideBar implements Component<Options> {
       this.iconButton,
       this.search
     );
-    this.dialogList = createElement(DialogList, { onChatSelect });
-    this.globalSearch = createElement(GlobalSearch, { onChatSelect });
 
     const routerElement = createElement(Router, {
       routes: [
@@ -94,9 +88,21 @@ export default class LeftSideBar implements Component<Options> {
           name: "global-search",
           render: () => this.globalSearch
         }
-      ]
+      ],
+      onRouteChange: (routeName: string) => {
+        this.iconButton.instance.setSprite(
+          routeName === "dialog-list" ? "start" : "end"
+        );
+      }
     });
     this.router = routerElement.instance;
+
+    this.dialogList = createElement(DialogList, { onChatSelect });
+    this.globalSearch = createElement(GlobalSearch, {
+      onChatSelect,
+      router: this.router
+    });
+
     this.router.push("dialog-list");
 
     this.element = createElement(
@@ -105,10 +111,6 @@ export default class LeftSideBar implements Component<Options> {
       topMenu,
       routerElement
     );
-  }
-
-  private updateIcon(back = true) {
-    this.iconButton.instance.setSprite(back ? "end" : "start");
   }
 
   public setActiveDialog(dialog: IDialog) {

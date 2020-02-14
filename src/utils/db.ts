@@ -10,7 +10,8 @@ import {
 import {
   AllDialogPeerTypes,
   DialogMessageTypes,
-  MediaWithTransient
+  MediaWithTransient,
+  TopPeerCategory
 } from "./useful-types";
 
 export interface DBConfig {
@@ -67,6 +68,13 @@ export interface DBStickerSet
 export type DBPeer = AllDialogPeerTypes &
   (DBPeerChat | DBPeerChannel | DBPeerUser);
 
+export interface DBTopPeer {
+  peerType: DBPeer["type"];
+  peerId: number;
+  rating: number;
+  category: TopPeerCategory;
+}
+
 export interface TelegramDatabaseTables {
   configs: Dexie.Table<DBConfig, string>;
   sessions: Dexie.Table<DBSession, number>;
@@ -100,6 +108,13 @@ export interface TelegramDatabaseTables {
     }
   >;
   stickerSet: Dexie.Table<DBStickerSet, number>;
+  topPeers: Dexie.Table<
+    DBTopPeer,
+    {
+      peerType: DBTopPeer["peerType"];
+      peerId: DBTopPeer["peerId"];
+    }
+  >;
 }
 
 export class TelegramDatabase extends Dexie implements TelegramDatabaseTables {
@@ -111,6 +126,7 @@ export class TelegramDatabase extends Dexie implements TelegramDatabaseTables {
   public sharedMedia: TelegramDatabaseTables["sharedMedia"];
   public peers: TelegramDatabaseTables["peers"];
   public stickerSet: TelegramDatabaseTables["stickerSet"];
+  public topPeers: TelegramDatabaseTables["topPeers"];
 
   static get singleton() {
     TelegramDatabase._singleton =
@@ -127,7 +143,8 @@ export class TelegramDatabase extends Dexie implements TelegramDatabaseTables {
       sharedMedia: "[id+peerType+peerId]",
       peers: "[id+type]",
       dialogs: "[peerType+peerId], lastMessageDate",
-      stickerSet: "set.id, set.installedDate"
+      stickerSet: "set.id, set.installedDate",
+      topPeers: "[peerType+peerId], rating, category"
     });
 
     this.sessions = this.table("sessions");

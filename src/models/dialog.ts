@@ -8,11 +8,7 @@ import {
 import { extractIdFromPeer, getInputPeer } from "../core/tl/utils";
 import { getDialogDisplayDate, getMessageSummary } from "../utils/chat";
 import { DBDialog, TelegramDatabase } from "../utils/db";
-import {
-  InputPeerTypes,
-  IsTypingAction,
-  TypingState
-} from "../utils/useful-types";
+import { IsTypingAction, TypingState } from "../utils/useful-types";
 import { IMessage, Message } from "./message";
 import { Model, ModelDecorator, ModelKey, ModelWithProxy } from "./model";
 import { IPeer, Peer } from "./peer";
@@ -36,10 +32,6 @@ export type IDialog = ModelWithProxy<"dialogs"> & ExtraMethods;
   primaryKey: ["peerId", "type"]
 })
 export class Dialog extends Model<"dialogs"> implements ExtraMethods {
-  static get: (id: ModelKey<"dialogs">) => Promise<undefined | IDialog>;
-  static bulkGet: (
-    id: ModelKey<"dialogs">[]
-  ) => Promise<(undefined | IDialog)[]>;
   static table: TelegramDatabase["dialogs"];
   private isTypingTimeouts = new Map<number, number>();
   private isTyping: TypingState[] = [];
@@ -61,6 +53,61 @@ export class Dialog extends Model<"dialogs"> implements ExtraMethods {
     }
 
     return object;
+  }
+
+  static async get(id: ModelKey<"dialogs">) {
+    const result = await this.bulkGet([id]);
+    return result[0];
+  }
+
+  static async bulkGet(ids: ModelKey<"dialogs">[]) {
+    const dialogs: IDialog[] = [];
+    const inputs = [];
+    for (const id of ids) {
+      const input = await getInputPeerFromPrimaryKey(id);
+      inputs.push(input);
+    }
+
+    const response = (await this.tg.invoke({
+      $t: "messages_GetPeerDialogsRequest",
+      peers: inputs.map(peer => ({
+        $t: "InputDialogPeer",
+        peer
+      }))
+    })) as messages_PeerDialogs;
+
+    for (const chat of response.chats) {
+      Peer.fromObject(chat).save();
+    }
+
+    for (const user of response.users) {
+      if (user.$t === "User" || user.$t === "UserEmpty") {
+        Peer.fromObject(user).save();
+      }
+    }
+
+    for (const message of response.messages) {
+      Message.fromObject(message).save();
+    }
+
+    for (const dialog of response.dialogs) {
+      if (dialog.$t === "Dialog") {
+        const message = Message.getFromMemory({
+          id: dialog.topMessage,
+          channelId: Number(
+            dialog.peer.$t === "PeerChannel" && dialog.peer.channelId
+          )
+        }) as IMessage;
+        const object = Dialog.fromObject({
+          dialog,
+          lastMessageDate: (message && message.date.unix()) || 0
+        });
+        object.save();
+        dialogs.push(object);
+      }
+    }
+
+    return dialogs;
   }
 
   static async fetch(offsetDialog?: IDialog): Promise<IDialog[]> {
@@ -129,51 +176,9 @@ export class Dialog extends Model<"dialogs"> implements ExtraMethods {
       if (dialog.$t === "Dialog") {
         const message = Message.getFromMemory({
           id: dialog.topMessage,
-          channelId: Number(dialog.peer.$t === "PeerChannel" && dialog.peer.channelId)
-        }) as IMessage;
-        if (!message) {
-          continue;
-        }
-        const object = Dialog.fromObject({
-          dialog,
-          lastMessageDate: message.date.unix()
-        });
-        object.save();
-        dialogs.push(object);
-      }
-    }
-
-    return dialogs;
-  }
-
-  static async fetchByPeer(inputPeers: InputPeerTypes[]) {
-    const peers = inputPeers.filter(({ $t }) => $t !== "InputPeerEmpty") as any;
-    const response = (await this.tg.invoke({
-      $t: "messages_GetPeerDialogsRequest",
-      peers
-    })) as messages_PeerDialogs;
-
-    for (const chat of response.chats) {
-      Peer.fromObject(chat).save();
-    }
-
-    for (const user of response.users) {
-      if (user.$t === "User" || user.$t === "UserEmpty") {
-        Peer.fromObject(user).save();
-      }
-    }
-
-    for (const message of response.messages) {
-      Message.fromObject(message).save();
-    }
-
-    const dialogs: IDialog[] = [];
-
-    for (const dialog of response.dialogs) {
-      if (dialog.$t === "Dialog") {
-        const message = Message.getFromMemory({
-          id: dialog.topMessage,
-          channelId: Number(dialog.peer.$t === "PeerChannel" && dialog.peer.channelId)
+          channelId: Number(
+            dialog.peer.$t === "PeerChannel" && dialog.peer.channelId
+          )
         }) as IMessage;
         if (!message) {
           continue;
@@ -193,7 +198,9 @@ export class Dialog extends Model<"dialogs"> implements ExtraMethods {
   public async loadMessage() {
     return Message.get({
       id: this._proxy.topMessage,
-      channelId: Number(this._proxy.peerType === "Channel" && this._proxy.peerId)
+      channelId: Number(
+        this._proxy.peerType === "Channel" && this._proxy.peerId
+      )
     });
   }
 
@@ -276,4 +283,15 @@ export class Dialog extends Model<"dialogs"> implements ExtraMethods {
       dialog: this._proxy
     });
   }
+}
+
+async function getInputPeerFromPrimaryKey({
+  peerId,
+  peerType
+}: ModelKey<"dialogs">) {
+  const peer = await Peer.get({
+    id: peerId,
+    type: peerType
+  });
+  return getInputPeer(peer);
 }

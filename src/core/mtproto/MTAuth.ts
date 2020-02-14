@@ -85,16 +85,6 @@ export async function performAuthentication(sender: MTProtoPlainSender) {
     encryptedData: cipherText
   });
 
-  console.log("a", {
-    $t: "ReqDHParamsRequest",
-    nonce: resPQ.nonce,
-    serverNonce: resPQ.serverNonce,
-    p,
-    q,
-    publicKeyFingerprint: targetFingerprint,
-    encryptedData: cipherText
-  });
-
   const serverDhParams = (await sender.send(reqDHParams)) as TLObjectTypes;
 
   if (serverDhParams.$t === "ServerDHParamsFail") {

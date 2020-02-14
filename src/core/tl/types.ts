@@ -194,6 +194,8 @@ function deserializePrimitive(type: PrimitiveTypes, reader: BinaryReader) {
     return reader.tgReadBytes();
   } else if (type === "string") {
     return reader.tgReadString();
+  } else if (type === "double") {
+    return reader.readDouble();
   } else if (type === "int") {
     return reader.readInt();
   } else if (type === "Bool") {

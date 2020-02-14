@@ -15,7 +15,7 @@ interface Options {
   dialog?: IDialog;
   message?: IMessage;
   peer: IPeer;
-  onClick: (dialog: IDialog, message: IMessage, peer: IPeer) => any;
+  onClick: (peer: IPeer, message: IMessage) => any;
 }
 
 export default class DialogItem implements Component<Options> {
@@ -74,7 +74,7 @@ export default class DialogItem implements Component<Options> {
     );
 
     this.element.addEventListener("click", () =>
-      this.onClick(this.dialog, this.message, this.peer)
+      this.onClick(this.peer, this.message)
     );
     this.element.appendChild(this.avatar);
     this.element.appendChild(textWrapper);

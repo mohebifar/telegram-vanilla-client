@@ -22,7 +22,8 @@ import {
   InputPeerChat,
   InputPeerChannelFromMessage,
   messages_GetMessagesRequest,
-  UpdateUserTyping
+  UpdateUserTyping,
+  TopPeerCategoryPeers
 } from "../core/tl/TLObjects";
 
 export type AllChatTypes =
@@ -75,3 +76,5 @@ export type InputMessageIdTypes = messages_GetMessagesRequest["id"][0];
 export type IsTypingAction = UpdateUserTyping["action"];
 
 export type TypingState = { userId: number; action: IsTypingAction };
+
+export type TopPeerCategory = TopPeerCategoryPeers['category']['$t']

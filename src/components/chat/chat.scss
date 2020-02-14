@@ -56,18 +56,19 @@ $time-size: 0.75rem;
       flex-shrink: 1;
       overflow: hidden;
 
-      .replyContentTitle {
+      .replyContentTitle,
+      .replyContentText {
         overflow: hidden;
         white-space: nowrap;
         text-overflow: ellipsis;
+      }
+
+      .replyContentTitle {
         color: $blue;
         font-weight: 500;
       }
 
       .replyContentText {
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
         font-size: 0.8rem;
       }
     }

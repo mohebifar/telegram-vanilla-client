@@ -7,9 +7,15 @@ import {
   messages_SendMessageRequest,
   users_GetFullUserRequest,
   UserFull,
-  Message as TLMessage
+  Message as TLMessage,
+  contacts_Found
 } from "../core/tl/TLObjects";
-import { getInputPeer, getPeer, simplifyPeerType } from "../core/tl/utils";
+import {
+  getInputPeer,
+  getPeer,
+  simplifyPeerType,
+  extractIdFromPeer
+} from "../core/tl/utils";
 import { handleUpdate } from "../update-handler";
 import { getDialogDisplayName } from "../utils/chat";
 import { DBPeer, TelegramDatabase } from "../utils/db";
@@ -89,8 +95,29 @@ export class Peer extends Model<"peers"> implements ExtraMethods {
     };
   }
 
-  get displayName() {
-    return getDialogDisplayName(this.fields);
+  static async search(q: string) {
+    const response = (await this.tg.invoke({
+      $t: "contacts_SearchRequest",
+      limit: 4,
+      q
+    })) as contacts_Found;
+
+    for (const peer of [...response.chats, ...response.users]) {
+      Peer.fromObject(peer).save();
+    }
+
+    const myResults: IPeer[] = [];
+    const result: IPeer[] = [];
+    for (const contact of response.myResults) {
+      const model = await Peer.get(extractIdFromPeer(contact));
+      myResults.push(model);
+    }
+    for (const contact of response.results) {
+      const model = await Peer.get(extractIdFromPeer(contact));
+      result.push(model);
+    }
+
+    return [myResults, result];
   }
 
   public async fetchHistory({
@@ -260,6 +287,10 @@ export class Peer extends Model<"peers"> implements ExtraMethods {
       this._proxy.$t === "Chat" ||
       (this._proxy.$t === "Channel" && !this._proxy.broadcast)
     );
+  }
+
+  get displayName() {
+    return getDialogDisplayName(this.fields);
   }
 
   private hasAllRights() {
