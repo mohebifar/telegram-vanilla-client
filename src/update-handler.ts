@@ -119,6 +119,11 @@ async function handleNewMessageUpdate(
     } = messageObject as any;
 
     message.assignValues(fieldsToUpdate);
+    if (message.$t === "Message") {
+      const self = await Peer.getSelf();
+      message.fromId = self.user && (self.user as any).id;
+    }
+
     message.justSent = false;
     message.save();
     requestAnimationFrame(() => {

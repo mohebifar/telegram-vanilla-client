@@ -102,7 +102,6 @@ export class Dialog extends Model<"dialogs"> implements ExtraMethods {
           dialog,
           lastMessageDate: (message && message.date.unix()) || 0
         });
-        object.save();
         dialogs.push(object);
       }
     }

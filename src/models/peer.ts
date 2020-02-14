@@ -87,6 +87,7 @@ export class Peer extends Model<"peers"> implements ExtraMethods {
   static bulkGet: (id: ModelKey<"peers">[]) => Promise<(undefined | IPeer)[]>;
   static fromObject: (object: any) => IPeer;
   static table: TelegramDatabase["peers"];
+  static self: UserFull;
 
   protected prepareValues(object: DBPeer) {
     return {
@@ -118,6 +119,19 @@ export class Peer extends Model<"peers"> implements ExtraMethods {
     }
 
     return [myResults, result];
+  }
+
+  static async getSelf() {
+    if (!Peer.self) {
+      Peer.self = (await this.tg.invoke({
+        $t: "users_GetFullUserRequest",
+        id: {
+          $t: "InputUserSelf"
+        }
+      })) as UserFull;
+    }
+
+    return Peer.self;
   }
 
   public async fetchHistory({

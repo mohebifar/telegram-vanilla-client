@@ -170,8 +170,8 @@ export default class Chat implements Component<Options> {
     this.setActiveDialog(this.dialog, messageId);
   };
 
-  handleReply = (messageId: IMessage) => {
-    this.sendMessageForm.instance.setReply(messageId);
+  handleReply = (message: IMessage) => {
+    this.sendMessageForm.instance.setReply(message);
   };
 
   private getFirstOrLastBubble(childPosToLookAt: "first" | "last") {
@@ -392,7 +392,7 @@ export default class Chat implements Component<Options> {
       return;
     }
 
-    if (unreadCount === 0) {
+    if (!offsetMessage && unreadCount === 0) {
       this.noMoreBottom = true;
     }
 
@@ -422,6 +422,7 @@ export default class Chat implements Component<Options> {
     } = {}
   ) {
     const currentScroll = this.scrollView.scrollHeight;
+    const currentScrollTop = this.scrollView.scrollTop;
 
     const sortedMessages = prepend ? messages : messages.reverse();
     for (const message of sortedMessages) {
@@ -443,7 +444,7 @@ export default class Chat implements Component<Options> {
         this.idToElementMap.get(messageToScrollTo).scrollIntoView();
       } else if (prepend) {
         const endScroll = this.scrollView.scrollHeight;
-        this.scrollView.scrollTop = endScroll - currentScroll;
+        this.scrollView.scrollTop = endScroll - currentScroll + currentScrollTop;
       }
 
       let numberOfSeen = 0;

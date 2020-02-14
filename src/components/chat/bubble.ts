@@ -151,7 +151,21 @@ export default class Bubble implements Component<Options> {
   public update() {
     const [attachment, attachmentType] = this.getAttachments();
     const { text, time } = this.getInfo();
+    const forward = this.message.$t === "Message" && this.message.fwdFrom;
     this.messageText.innerHTML = text;
+
+    if (forward) {
+      const originalSender = this.message.getPeerForwardedFrom();
+      if (originalSender) {
+        originalSender.then(displayName => {
+          if (displayName) {
+            this.messageText.prepend(
+              createElement("div", { class: styles.fromName }, displayName)
+            );
+          }
+        });
+      }
+    }
 
     const isAnimatedSticker = attachmentType == "animated-sticker";
     const isSticker = attachmentType === "sticker" || isAnimatedSticker;
@@ -165,6 +179,10 @@ export default class Bubble implements Component<Options> {
       if (["photo", "video"].includes(attachmentType)) {
         bubbleClassName += " " + styles.imageOnly;
       }
+    }
+
+    if (forward) {
+      bubbleClassName += " " + styles.isForward;
     }
 
     if (this.message.$t === "Message" && this.message.replyToMsgId) {

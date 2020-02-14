@@ -142,6 +142,8 @@ export async function getServiceMessage(message: MessageService) {
       return `${peer.displayName} joined Telegram!`;
     case "MessageActionPhoneCall":
       return "Phone call";
+    case "MessageActionChatJoinedByLink":
+      return `${peer.displayName} joined by link`;
   }
   console.log("Unsupported service messsage", message);
 

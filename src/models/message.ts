@@ -21,6 +21,7 @@ interface ExtraMethods {
   bulkFetch(ids: number[]): Promise<IMessage[]>;
   markAsRead(numberOfRead?: number): Promise<boolean>;
   getSender(): Promise<IPeer | undefined>;
+  getPeerForwardedFrom(): Promise<string | undefined>;
 }
 
 export type IMessage = ModelWithProxy<"messages"> & ExtraMethods;
@@ -214,23 +215,21 @@ export class Message extends Model<"messages"> {
     return dayjs.unix(this.fields.date);
   }
 
-  public async getSender() {
-    let peer: IPeer = undefined;
-
+  public getSender() {
     if (this._proxy.$t === "Message") {
       if (this._proxy.fromId) {
-        peer = await Peer.get({
+        return Peer.get({
           id: this._proxy.fromId,
           type: "User"
         });
       } else if (this._proxy.toId.$t === "PeerChannel") {
-        peer = await Peer.get({
+        return Peer.get({
           id: this._proxy.toId.channelId,
           type: "Channel"
         });
       } else if (!this._proxy.fwdFrom) {
         const fwdType = this._proxy.fwdFrom.fromId ? "User" : "Channel";
-        peer = await Peer.get({
+        return Peer.get({
           id:
             fwdType === "User"
               ? this._proxy.fwdFrom.fromId
@@ -240,6 +239,25 @@ export class Message extends Model<"messages"> {
       }
     }
 
-    return peer;
+    return undefined;
+  }
+
+  public async getPeerForwardedFrom() {
+    if (this.fields.$t === "Message" && this.fields.fwdFrom) {
+      const forward = this.fields.fwdFrom;
+
+      if (forward.fromId) {
+        return (await Peer.get({ type: "User", id: forward.fromId }))
+          .displayName;
+      }
+
+      if (forward.channelId) {
+        return (await Peer.get({ type: "Channel", id: forward.channelId }))
+          .displayName;
+      }
+      return forward.fromName;
+    }
+
+    return undefined;
   }
 }

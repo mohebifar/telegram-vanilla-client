@@ -44,27 +44,27 @@ export default class LeftSideBar implements Component<Options> {
         } else {
           makeContextMenu({ x: 16, y: 70 }, [
             {
-              icon: Icons.Animals,
+              icon: Icons.NewGroup,
               title: "New Group"
             },
             {
-              icon: Icons.Animals,
+              icon: Icons.NewPrivate,
               title: "Contacts"
             },
             {
-              icon: Icons.Animals,
+              icon: Icons.Archive,
               title: "Archived"
             },
             {
-              icon: Icons.Animals,
+              icon: Icons.SavedMessages,
               title: "Saved"
             },
             {
-              icon: Icons.Animals,
+              icon: Icons.Settings,
               title: "Settings"
             },
             {
-              icon: Icons.Animals,
+              icon: Icons.Help,
               title: "Help"
             }
           ]);

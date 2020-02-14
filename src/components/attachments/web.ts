@@ -13,6 +13,7 @@ export default class WebAttachment implements Component<Options> {
 
   constructor({ media, tg }: Options) {
     if (media.webpage.$t !== "WebPage") {
+      this.element = createElement("div");
       return;
     }
 

@@ -87,7 +87,7 @@ export default class DialogList extends FadeTransition
     this.element.addEventListener("scroll", () => {
       const isAtBottom =
         this.element.scrollTop + this.element.clientHeight >=
-        this.element.scrollHeight - 100;
+        this.element.scrollHeight - 200;
 
       if (!this.paginating && isAtBottom) {
         this.paginating = true;

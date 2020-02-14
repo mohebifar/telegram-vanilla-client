@@ -21,12 +21,31 @@
   }
 
   > div:first-child {
+    position: relative;
+    height: 100%;
     flex: 1;
 
-    .senderInfo {
-      margin-left: 0.5em;
+    > div {
+      position: absolute;
+      top: 0;
+      left: 0;
       display: flex;
-      flex-direction: column;
+
+      .senderInfo {
+        margin-left: 0.5em;
+        display: flex;
+        flex-direction: column;
+        color: #ffffff;
+        opacity: 0.6;
+        justify-content: space-evenly;
+
+        > :first-child {
+          font-weight: 500;
+        }
+        > :last-child {
+          font-size: 0.8em;
+        }
+      }
     }
   }
 }
@@ -70,6 +89,8 @@
 .mediaWrapper {
   max-width: 90vw;
   max-height: 80vh;
+  min-width: 10em;
+  min-height: 5em;
   position: relative;
   overflow: hidden;
 

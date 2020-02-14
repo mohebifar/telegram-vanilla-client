@@ -37,7 +37,13 @@ export enum Icons {
   Reply = "reply",
   Copy = "copy",
   Pin = "pin",
-  Recent = "recent"
+  Recent = "recent",
+  NewGroup = "newgroup",
+  NewPrivate = "newprivate",
+  Archive = "archive",
+  SavedMessages = "savedmessages",
+  Settings = "settings",
+  Help = "help",
 }
 
 export enum IconSprite {

@@ -1,31 +1,32 @@
 import dayjs from "dayjs";
 import {
+  Document,
+  DocumentAttributeVideo,
+  Message as TLMessage,
+  MessageMediaDocument,
   MessageMediaPhoto,
   Photo,
-  PhotoSize,
-  DocumentAttributeVideo,
-  Document,
-  MessageMediaDocument,
-  Message
+  PhotoSize
 } from "../../core/tl/TLObjects";
-import { IMessage } from "../../models/message";
-import { SharedMedia, ISharedMedia } from "../../models/shared-media";
+import { Message, IMessage } from "../../models/message";
+import { IPeer } from "../../models/peer";
+import { ISharedMedia, SharedMedia } from "../../models/shared-media";
 import { TelegramClientProxy } from "../../telegram-worker-proxy";
 import { sortPhotoSizes } from "../../utils/chat";
 import {
   Component,
   createElement,
-  getNthChild,
-  Element
+  Element,
+  getNthChild
 } from "../../utils/dom";
 import { startAnimation } from "../../utils/easing";
 import { EMPTY_IMG } from "../../utils/images";
+import { fitImageSize, saveData } from "../../utils/upload-file";
+import Avatar from "./avatar";
 import Icon, { Icons } from "./icon";
 import IconButton from "./icon-button";
 import * as styles from "./media-lightbox.scss";
-import { saveData, fitImageSize } from "../../utils/upload-file";
 import Progress from "./progress";
-import { IPeer } from "../../models/peer";
 
 const sortRef = ["x", "y", "m", "s"];
 
@@ -40,9 +41,11 @@ export class LightBox implements Component<Options> {
 
   private image: HTMLImageElement;
   private media: ISharedMedia;
+  private peer: IPeer;
   private mediaContainer: HTMLElement;
   private nextButton: HTMLElement;
   private prevButton: HTMLElement;
+  private sender: HTMLElement;
   private footer: HTMLElement;
   private tg: TelegramClientProxy;
   private closed = false;
@@ -52,7 +55,7 @@ export class LightBox implements Component<Options> {
   constructor({ tg }: Options) {
     this.tg = tg;
 
-    const sender = createElement("div");
+    this.sender = createElement("div");
     const buttons = createElement(
       "div",
       createElement(IconButton, { icon: Icons.Delete, variant: "dark" }),
@@ -77,7 +80,7 @@ export class LightBox implements Component<Options> {
     const header = createElement(
       "div",
       { class: styles.header },
-      sender,
+      this.sender,
       buttons
     );
 
@@ -173,6 +176,13 @@ export class LightBox implements Component<Options> {
         () => oldImmediate.remove()
       );
     }
+    Message.fromObject(sharedMedia)
+      .getSender()
+      .then(sender => {
+        if (sender !== this.peer) {
+          this.setPeer(sender, flip);
+        }
+      });
 
     this.tg.fileStorage
       .downloadMedia(media, undefined, t => {
@@ -269,6 +279,46 @@ export class LightBox implements Component<Options> {
       });
     }
   }
+
+  private setPeer(peer: IPeer, flip = 1 | -1 | 0) {
+    this.peer = peer;
+    const currentElement = this.sender.firstChild as HTMLElement;
+    const date = dayjs(this.media.date);
+    const newElement = createElement(
+      "div",
+      createElement(Avatar, { peer }),
+      createElement(
+        "div",
+        { class: styles.senderInfo },
+        createElement("div", peer.displayName),
+        createElement(
+          "div",
+          date.format("MMM D") + " at " + date.format("hh:mm")
+        )
+      )
+    );
+
+    this.sender.append(newElement);
+
+    if (currentElement) {
+      startAnimation(
+        {
+          o: { from: 1, to: 0 },
+          xOld: { from: 0, to: flip * -30 },
+          xNew: { from: flip * 30, to: 0 }
+        },
+        v => {
+          currentElement.style.opacity = v.o + "";
+          newElement.style.opacity = 1 - v.o + "";
+          currentElement.style.transform = `translateX(${v.xOld}px)`;
+          newElement.style.transform = `translateX(${v.xNew}px)`;
+        },
+        () => {
+          currentElement.remove();
+        }
+      );
+    }
+  }
 }
 
 function getSize(
@@ -308,7 +358,7 @@ export function mediaLightBox({
   });
   const mediaWrapper = container.instance.mediaWrapper;
 
-  const media = (message as Message).media;
+  const media = (message as TLMessage).media;
   const size = getSize(media as any);
   container.style.opacity = "0";
   const [w, h] = getImageSize(size.w, size.h);

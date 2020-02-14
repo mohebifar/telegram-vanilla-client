@@ -11,7 +11,7 @@ $time-size: 0.75rem;
 .reply {
   background: transparent;
   cursor: pointer;
-  padding: 9px 9px 0;
+  padding: $message-spacing $message-spacing 0;
 
   .replyWrapper {
     pointer-events: none;
@@ -170,7 +170,7 @@ $time-size: 0.75rem;
     }
 
     .message {
-      padding: 9px;
+      padding: $message-spacing;
     }
 
     &:not(.imageOnly) {
@@ -223,6 +223,18 @@ $time-size: 0.75rem;
       .documentWrapper {
         margin-bottom: -1.3em;
       }
+    }
+
+    &.isForward {
+      .message {
+        border-left: 2px solid $blue;
+        margin: $message-spacing 0 $message-spacing $message-spacing;
+      }
+    }
+
+    .fromName {
+      margin: -$message-spacing 0 $message-spacing;
+      font-weight: 500;
     }
   }
 
@@ -283,6 +295,10 @@ $time-size: 0.75rem;
           .text {
             color: $black;
           }
+        }
+
+        .fromName {
+          color: $blue;
         }
       }
       .bubble:first-child {
@@ -348,6 +364,10 @@ $time-size: 0.75rem;
           }
         }
 
+        .fromName {
+          color: $green-dark;
+        }
+
         .replyWrapper {
           .replyBorder {
             background: $green-dark;
@@ -397,7 +417,7 @@ $time-size: 0.75rem;
       background: #00000029;
       color: white;
       border-radius: 3px;
-      padding: 5px 9px;
+      padding: 5px $message-spacing;
       z-index: 9999;
       right: 0.5rem;
       bottom: 0.5rem;
@@ -459,6 +479,10 @@ $time-size: 0.75rem;
     .message {
       right: 1em;
       bottom: 1em;
+    }
+
+    .reply {
+      margin-bottom: 0.5em;
     }
   }
 
