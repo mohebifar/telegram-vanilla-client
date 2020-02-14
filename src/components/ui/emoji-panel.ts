@@ -21,7 +21,12 @@ export default class EmojiPanel implements Component<Options> {
 
   constructor({ onEmojiSelect, onStickerSelect }: Options) {
     const emojiPicker = createElement(EmojiPicker, { onEmojiSelect });
-    const stickerPicker = createElement(StickerPicker, { onStickerSelect });
+    const stickerPicker = createElement(StickerPicker, {
+      onStickerSelect: sticker => {
+        onStickerSelect(sticker);
+        this.setVisibility(false);
+      }
+    });
 
     this.tabs = [
       { title: "Emojis", content: emojiPicker },

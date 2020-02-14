@@ -419,23 +419,26 @@ export default class SendMessageForm implements Component<Options> {
         }
       },
       onStickerSelect: document => {
-        this.sendMessage({
-          $t: "messages_SendMediaRequest",
-          media: {
-            $t: "InputMediaDocument",
-            id: {
-              $t: "InputDocument",
-              accessHash: document.accessHash,
-              fileReference: document.fileReference,
-              id: document.id
-            }
+        this.sendMessage(
+          {
+            $t: "messages_SendMediaRequest",
+            media: {
+              $t: "InputMediaDocument",
+              id: {
+                $t: "InputDocument",
+                accessHash: document.accessHash,
+                fileReference: document.fileReference,
+                id: document.id
+              }
+            },
+            actualMedia: {
+              $t: "MessageMediaDocument",
+              document
+            },
+            message: ""
           },
-          actualMedia: {
-            $t: "MessageMediaDocument",
-            document
-          },
-          message: ""
-        });
+          false
+        );
       }
     });
 
@@ -454,13 +457,16 @@ export default class SendMessageForm implements Component<Options> {
     return [emojiPicker, emojiActivator];
   }
 
-  private sendMessage(message: SimplifiedMessageRequest) {
+  private sendMessage(message: SimplifiedMessageRequest, clear = true) {
     const result = this.callback({
       ...message,
       ...(this.replyMessage ? { replyToMsgId: this.replyMessage.id } : {})
     });
     this.clearReply();
-    this.inputNode.value = "";
+    if (clear) {
+      this.inputNode.value = "";
+    }
+    this.focus();
     return result;
   }
 }
