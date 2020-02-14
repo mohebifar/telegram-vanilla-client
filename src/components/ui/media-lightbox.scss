@@ -31,6 +31,25 @@
   }
 }
 
+.footer {
+  color: #ffffffb3;
+  font-weight: 400;
+  max-width: 45rem;
+  max-height: 10vh;
+  margin: 1rem auto;
+  overflow-y: auto;
+  width: 100%;
+  text-align: center;
+
+  p {
+    margin: 0;
+  }
+
+  &:empty {
+    display: none;
+  }
+}
+
 .mediaContainer {
   flex: 1;
   padding-top: 1em;
@@ -43,14 +62,14 @@
   top: 0;
   bottom: 0;
   right: 0;
-  align-items: center;
   justify-items: center;
+  align-content: center;
   display: grid;
 }
 
 .mediaWrapper {
   max-width: 90vw;
-  max-height: 90vh;
+  max-height: 80vh;
   position: relative;
   overflow: hidden;
 

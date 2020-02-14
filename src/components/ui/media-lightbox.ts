@@ -23,7 +23,7 @@ import { EMPTY_IMG } from "../../utils/images";
 import Icon, { Icons } from "./icon";
 import IconButton from "./icon-button";
 import * as styles from "./media-lightbox.scss";
-import { saveData } from "../../utils/upload-file";
+import { saveData, fitImageSize } from "../../utils/upload-file";
 import Progress from "./progress";
 import { IPeer } from "../../models/peer";
 
@@ -43,6 +43,7 @@ export class LightBox implements Component<Options> {
   private mediaContainer: HTMLElement;
   private nextButton: HTMLElement;
   private prevButton: HTMLElement;
+  private footer: HTMLElement;
   private tg: TelegramClientProxy;
   private closed = false;
 
@@ -132,8 +133,10 @@ export class LightBox implements Component<Options> {
       const oldWrapper = this.mediaWrapper;
       const oldImmediate = getNthChild(this.mediaContainer, "first");
       const [newImmediate, newWrapper] = this.createMediaWrapper();
-      newWrapper.style.width = size.w + "px";
-      newWrapper.style.height = size.h + "px";
+
+      const [w, h] = getImageSize(size.w, size.h);
+      newWrapper.style.width = w + "px";
+      newWrapper.style.height = h + "px";
       newWrapper.append(
         (downloadIndicator = createElement(
           "div",
@@ -141,6 +144,8 @@ export class LightBox implements Component<Options> {
           progress
         ))
       );
+
+      this.setMessage((sharedMedia as any).message);
 
       this.mediaWrapper = newWrapper;
       this.mediaContainer.append(newImmediate);
@@ -204,8 +209,13 @@ export class LightBox implements Component<Options> {
     this.updateButtons();
   }
 
+  public setMessage(message?: string) {
+    this.footer.innerHTML = message;
+  }
+
   private createMediaWrapper() {
     this.image = createElement("img", { src: EMPTY_IMG }) as HTMLImageElement;
+    this.footer = createElement("div", { class: styles.footer });
     this.nextButton = createElement(
       "button",
       { class: styles.navButton + " " + styles.next + " hidden" },
@@ -229,7 +239,8 @@ export class LightBox implements Component<Options> {
       createElement(
         "div",
         { class: styles.mediaAbsoluteContainer },
-        mediaWrapper
+        mediaWrapper,
+        this.footer
       ),
       mediaWrapper
     ];
@@ -273,6 +284,10 @@ function getSize(
   }
 }
 
+function getImageSize(w: number, h: number) {
+  return fitImageSize(w, h, window.innerWidth * 0.9, window.innerHeight * 0.8);
+}
+
 export function mediaLightBox({
   source,
   peer,
@@ -296,9 +311,11 @@ export function mediaLightBox({
   const media = (message as Message).media;
   const size = getSize(media as any);
   container.style.opacity = "0";
-  mediaWrapper.style.width = size.w + "px";
-  mediaWrapper.style.height = size.h + "px";
+  const [w, h] = getImageSize(size.w, size.h);
+  mediaWrapper.style.width = w + "px";
+  mediaWrapper.style.height = h + "px";
   container.instance.setSrc(initialPhoto);
+  container.instance.setMessage((message as any).message);
 
   requestAnimationFrame(() => {
     const rectDest = mediaWrapper.getBoundingClientRect() as DOMRect;
