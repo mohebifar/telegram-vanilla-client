@@ -1,7 +1,8 @@
 import { IPeer } from "../../models/peer";
-import { Component, createElement } from "../../utils/dom";
+import { Component, createElement, removeChildren } from "../../utils/dom";
 import Avatar from "./avatar";
 import * as styles from "./dialog-item.scss";
+import { getChatSubdueText } from "../../utils/chat";
 
 interface Options {
   peer: IPeer;
@@ -27,16 +28,20 @@ export default class ContactItem implements Component<Options> {
     this.peer = options.peer;
     this.onClick = options.onClick;
 
-    this.register();
+    this.update();
+
+    this.peer.loadFull().then(() => {
+      this.update();
+    });
   }
 
-  public async register() {
+  public async update() {
+    removeChildren(this.element);
     this.avatar = createElement(Avatar, {
       peer: this.peer
     });
-
     const title = this.peer.displayName;
-    const text = this.peer.type;
+    const text = getChatSubdueText(this.peer);
     this.title = createElement("div", { dir: "auto" }, title);
     this.text = createElement("span", { dir: "auto" }, text);
 
@@ -48,7 +53,6 @@ export default class ContactItem implements Component<Options> {
     );
 
     this.element.addEventListener("click", () => this.onClick(this.peer));
-    this.element.appendChild(this.avatar);
-    this.element.appendChild(textWrapper);
+    this.element.append(this.avatar, textWrapper);
   }
 }

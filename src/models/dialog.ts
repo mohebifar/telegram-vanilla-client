@@ -134,7 +134,7 @@ export class Dialog extends Model<"dialogs"> implements ExtraMethods {
       offsetId,
       offsetPeer,
       hash: 0,
-      limit: 50
+      limit: 40
     })) as messages_DialogsSlice;
 
     for (const chat of response.chats) {

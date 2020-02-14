@@ -7,6 +7,7 @@ import Icon, { Icons } from "../ui/icon";
 import IconButton from "../ui/icon-button";
 import Tabs from "../ui/tabs";
 import * as styles from "./right-sidebar.scss";
+import { getChatSubdueText } from "../../utils/chat";
 
 interface Options {}
 
@@ -39,7 +40,11 @@ export default class RightSideBar implements Component<Options> {
       { class: styles.profile },
       createElement(Avatar, { peer: this.peer, size: "l" }),
       createElement("div", { class: styles.name }, this.peer.displayName),
-      createElement("div", { class: styles.subdue }, "online")
+      createElement(
+        "div",
+        { class: styles.subdue },
+        getChatSubdueText(this.peer)
+      )
     );
 
     const profileDetails = createElement("div");

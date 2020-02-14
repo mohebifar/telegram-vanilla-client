@@ -388,3 +388,36 @@ export function messageToHTML(message: Message) {
 
   return messageToParagraphs(html);
 }
+
+export function getChatSubdueText(peer: IPeer) {
+  if (peer.full && peer.full.$t === "ChannelFull") {
+    return `${Intl.NumberFormat("en-US").format(
+      peer.full.participantsCount
+    )} members`;
+  }
+
+  switch (peer.$t) {
+    case "User":
+      if (peer.status) {
+        return getLastSeenTime(peer.status);
+      }
+      return peer.firstName;
+    case "UserEmpty":
+      return "Last seen a long time ago";
+    case "Channel":
+    case "ChannelForbidden":
+      if (peer.megagroup) {
+        return "&nbsp;";
+      }
+
+      return "Channel";
+    case "Chat":
+      return `${peer.participantsCount} members`;
+    case "ChatForbidden":
+      return "Deleted group";
+    case "ChatEmpty":
+      return "Deleted Group";
+    default:
+      return "Channel";
+  }
+}

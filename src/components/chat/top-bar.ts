@@ -1,6 +1,6 @@
 import { IDialog } from "../../models/dialog";
 import { IPeer, Peer } from "../../models/peer";
-import { getLastSeenTime } from "../../utils/chat";
+import { getChatSubdueText } from "../../utils/chat";
 import { Component, createElement } from "../../utils/dom";
 import Avatar from "../ui/avatar";
 import * as styles from "./top-bar.scss";
@@ -57,41 +57,10 @@ export default class TopBar implements Component<Options> {
 
   public update() {
     this.displayNameContainer.innerHTML = this.peer.displayName;
-    let subdue = this.getSubdueText();
+    let subdue = getChatSubdueText(this.peer);
     if (subdue === "online") {
       subdue = `<span class="${styles.online}">${subdue}</span>`;
     }
     this.subdueText.innerHTML = subdue;
-  }
-
-  private getSubdueText() {
-    if (this.peer.full && this.peer.full.$t === "ChannelFull") {
-      return `${this.peer.full.participantsCount} members`;
-    }
-
-    switch (this.peer.$t) {
-      case "User":
-        if (this.peer.status) {
-          return getLastSeenTime(this.peer.status);
-        }
-        return this.peer.firstName;
-      case "UserEmpty":
-        return "Last seen a long time ago";
-      case "Channel":
-      case "ChannelForbidden":
-        if (this.peer.megagroup) {
-          return "&nbsp;";
-        }
-
-        return "Channel";
-      case "Chat":
-        return `${this.peer.participantsCount} members`;
-      case "ChatForbidden":
-        return "Deleted group";
-      case "ChatEmpty":
-        return "Deleted Group";
-      default:
-        return "Channe";
-    }
   }
 }
