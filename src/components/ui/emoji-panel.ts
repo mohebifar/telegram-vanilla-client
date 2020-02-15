@@ -4,10 +4,12 @@ import * as styles from "./emoji-panel.scss";
 import EmojiPicker from "./emoji-picker";
 import StickerPicker from "./sticker-picker";
 import Tabs, { Tab } from "./tabs";
+import GifPicker from "./gif-picker";
 
 interface Options {
   onEmojiSelect(emoji: string): any;
   onStickerSelect(document: Document): any;
+  onGifSelect(document: Document): any;
 }
 
 export default class EmojiPanel implements Component<Options> {
@@ -19,8 +21,14 @@ export default class EmojiPanel implements Component<Options> {
 
   private tabs: Tab[];
 
-  constructor({ onEmojiSelect, onStickerSelect }: Options) {
+  constructor({ onEmojiSelect, onStickerSelect, onGifSelect }: Options) {
     const emojiPicker = createElement(EmojiPicker, { onEmojiSelect });
+    const gifPicker = createElement(GifPicker, {
+      onGifSelect: gif => {
+        onGifSelect(gif);
+        this.setVisibility(false);
+      }
+    });
     const stickerPicker = createElement(StickerPicker, {
       onStickerSelect: sticker => {
         onStickerSelect(sticker);
@@ -31,7 +39,7 @@ export default class EmojiPanel implements Component<Options> {
     this.tabs = [
       { title: "Emojis", content: emojiPicker },
       { title: "Stickers", content: stickerPicker },
-      { title: "GIFs" }
+      { title: "GIFs", content: gifPicker }
     ];
 
     this.tabsContainer = createElement(Tabs, {
@@ -42,8 +50,15 @@ export default class EmojiPanel implements Component<Options> {
         } else {
           stickerPicker.instance.panelClose();
         }
+        if (index === 2) {
+          gifPicker.instance.panelOpen();
+        } else {
+          gifPicker.instance.panelClose();
+        }
       }
     });
+
+    this.tabsContainer.instance.setTab(2);
 
     const element = createElement(
       "div",

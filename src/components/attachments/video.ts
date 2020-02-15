@@ -1,4 +1,5 @@
 import {
+  Document,
   DocumentAttributeVideo,
   MessageMediaDocument
 } from "../../core/tl/TLObjects";
@@ -11,20 +12,36 @@ import Icon, { Icons } from "../ui/icon";
 import Progress from "../ui/progress";
 
 export interface Options {
-  media: MessageMediaDocument;
+  media?: MessageMediaDocument;
+  document?: Document;
   tg: TelegramClientProxy;
+  autoDownload?: boolean;
   onClick?: (photo: string) => any;
+  measureSize?: (w: number, h: number) => [number, number];
 }
+
+const globalDocument = document;
 
 export default class VideoAttachment implements Component<Options> {
   public readonly element: HTMLElement;
 
-  constructor({ media, onClick, tg }: Options) {
-    if (media.document.$t !== "Document") {
+  constructor({
+    media,
+    document,
+    onClick,
+    tg,
+    autoDownload = false,
+    measureSize = (w, h) => fitImageSize(w, h, 320, 320)
+  }: Options) {
+    if (!document && media.document.$t === "Document") {
+      document = media.document;
+    }
+
+    if (document.$t !== "Document") {
       return;
     }
 
-    const isGIF = media.document.attributes.some(
+    const isGIF = document.attributes.some(
       ({ $t }) => $t === "DocumentAttributeAnimated"
     );
 
@@ -50,7 +67,7 @@ export default class VideoAttachment implements Component<Options> {
       downloadIndicator.append(progress);
 
       tg.fileStorage
-        .downloadMedia(media, undefined, t => {
+        .downloadDocument(document, undefined, document.dcId, t => {
           progress.instance.progress(t);
         })
         .then(src => {
@@ -76,7 +93,7 @@ export default class VideoAttachment implements Component<Options> {
               }
             },
             {
-              root: document.body,
+              root: globalDocument.body,
               rootMargin: "0px",
               threshold: 0
             }
@@ -88,7 +105,7 @@ export default class VideoAttachment implements Component<Options> {
             element.classList.remove("pointer");
           } else {
             element.addEventListener("click", () => {
-              const canvas = document.createElement("canvas");
+              const canvas = globalDocument.createElement("canvas");
               canvas.width = video.videoWidth;
               canvas.height = video.videoHeight;
               canvas
@@ -104,27 +121,33 @@ export default class VideoAttachment implements Component<Options> {
 
     element.addEventListener("click", downloadListener);
 
-    const videoAttributes = media.document.attributes.find(
+    const videoAttributes = document.attributes.find(
       ({ $t }) => $t === "DocumentAttributeVideo"
     ) as DocumentAttributeVideo;
 
     if (videoAttributes) {
-      const [width, height] = fitImageSize(
-        videoAttributes.w,
-        videoAttributes.h,
-        320,
-        320
-      );
+      const [width, height] = measureSize(videoAttributes.w, videoAttributes.h);
 
-      element.style.width = `${width}px`;
-      element.style.height = `${height}px`;
+      if (width && height) {
+        element.style.width = `${width}px`;
+        element.style.height = `${height}px`;
+      }
     }
 
-    tg.fileStorage.downloadMedia(media, 0).then(url => {
-      if (!downloaded) {
-        img.setAttribute("src", url);
-      }
-    });
+    tg.fileStorage
+      .downloadDocument(document, 0, document.dcId)
+      .then(url => {
+        if (!downloaded) {
+          img.setAttribute("src", url);
+        }
+      })
+      .catch(err => {
+        console.log(err, document);
+      });
+
+    if (autoDownload) {
+      downloadListener();
+    }
 
     this.element = element;
   }

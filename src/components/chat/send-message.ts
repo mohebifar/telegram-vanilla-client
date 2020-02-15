@@ -1,7 +1,8 @@
 import autosize from "autosize";
 import {
   InputMediaUploadedDocument,
-  InputMediaUploadedPhoto
+  InputMediaUploadedPhoto,
+  Document
 } from "../../core/tl/TLObjects";
 import { IMessage } from "../../models/message";
 import { Peer, SimplifiedMessageRequest } from "../../models/peer";
@@ -405,6 +406,29 @@ export default class SendMessageForm implements Component<Options> {
   }
 
   private createEmojiPanel() {
+    const onDocumentSelect = (document: Document) => {
+      this.sendMessage(
+        {
+          $t: "messages_SendMediaRequest",
+          media: {
+            $t: "InputMediaDocument",
+            id: {
+              $t: "InputDocument",
+              accessHash: document.accessHash,
+              fileReference: document.fileReference,
+              id: document.id
+            }
+          },
+          actualMedia: {
+            $t: "MessageMediaDocument",
+            document
+          },
+          message: ""
+        },
+        false
+      );
+    };
+
     const emojiPicker = createElement(EmojiPanel, {
       onEmojiSelect: emoji => {
         const target = this.inputNode;
@@ -418,28 +442,8 @@ export default class SendMessageForm implements Component<Options> {
           document.execCommand("insertText", false, emoji);
         }
       },
-      onStickerSelect: document => {
-        this.sendMessage(
-          {
-            $t: "messages_SendMediaRequest",
-            media: {
-              $t: "InputMediaDocument",
-              id: {
-                $t: "InputDocument",
-                accessHash: document.accessHash,
-                fileReference: document.fileReference,
-                id: document.id
-              }
-            },
-            actualMedia: {
-              $t: "MessageMediaDocument",
-              document
-            },
-            message: ""
-          },
-          false
-        );
-      }
+      onStickerSelect: onDocumentSelect,
+      onGifSelect: onDocumentSelect
     });
 
     const emojiActivator = createElement(IconButton, {

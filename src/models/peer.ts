@@ -358,6 +358,15 @@ export class Peer extends Model<"peers"> implements ExtraMethods {
     );
   }
 
+  public canDeleteMessage() {
+    return (
+      this.hasAllRights() ||
+      (this._proxy.$t === "Channel" && !this._proxy.broadcast) ||
+      this._proxy.$t === "Chat" ||
+      (this._proxy.adminRights && this._proxy.adminRights.deleteMessages)
+    );
+  }
+
   public isGroupChat() {
     return (
       this._proxy.$t === "Chat" ||
