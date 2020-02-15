@@ -148,6 +148,9 @@ export default class VideoAttachment implements Component<Options> {
     if (autoDownload) {
       downloadListener();
     }
+    tg.fileStorage.documentIsCached(document).then(isCached => {
+      isCached && downloadListener();
+    });
 
     this.element = element;
   }

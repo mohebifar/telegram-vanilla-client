@@ -17,7 +17,8 @@ const fileStorageProxiedMethods = <const>[
   "downloadProfilePhoto",
   "downloadMedia",
   "downloadDocument",
-  "upload"
+  "upload",
+  "documentIsCached"
 ];
 
 export type ClientProxiedMethods = typeof clientProxiedMethods[number];

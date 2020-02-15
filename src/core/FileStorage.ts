@@ -11,6 +11,7 @@ import {
   ChatPhotoEmpty,
   Document,
   FileLocationToBeDeprecated,
+  InputDocumentFileLocation,
   InputFile,
   InputPeerPhotoFileLocation,
   Message,
@@ -186,6 +187,7 @@ export class FileStorage {
           offset,
           location
         });
+
         console.error(err);
         if (++retries > MAX_RETRIES_PER_FILE) {
           console.debug(`Retried downloading ${retries} times.`);
@@ -355,23 +357,41 @@ export class FileStorage {
       }
     }
     const shouldInflate = document.mimeType === "application/x-tgsticker";
-    const result = await this.download(
-      {
-        $t: "InputDocumentFileLocation",
-        id: document.id,
-        accessHash: document.accessHash,
-        fileReference: document.fileReference,
-        thumbSize: size ? size.type : ""
-      },
-      {
-        fileSize: size && "size" in size ? size.size : document.size,
-        cacheKey: CACHE_KEY_DOCUMENT,
-        dcId,
-        shouldInflate,
-        onProgress
-      }
-    );
+    const result = await this.download(this.documentLocation(document, size), {
+      fileSize: size && "size" in size ? size.size : document.size,
+      cacheKey: CACHE_KEY_DOCUMENT,
+      dcId,
+      shouldInflate,
+      onProgress
+    });
     return result;
+  }
+
+  public documentLocation(
+    document: Document,
+    size?: PhotoSizesTypes
+  ): InputDocumentFileLocation {
+    return {
+      $t: "InputDocumentFileLocation",
+      id: document.id,
+      accessHash: document.accessHash,
+      fileReference: document.fileReference,
+      thumbSize: size ? size.type : ""
+    };
+  }
+
+  public async documentIsCached(document: Document, size?: PhotoSizesTypes) {
+    const location = this.documentLocation(document, size);
+    const key = this.generateKey(location);
+    const cache = this.cache && this.cache[CACHE_KEY_DOCUMENT];
+
+    console.log("checking", location, key);
+
+    if (cache && (await cache.match(key))) {
+      return true;
+    }
+
+    return false;
   }
 
   private downloadPhoto(
