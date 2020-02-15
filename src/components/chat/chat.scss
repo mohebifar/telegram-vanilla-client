@@ -245,6 +245,18 @@ $time-size: 0.75rem;
 
   .in,
   .out {
+    position: relative;
+
+    &:after {
+      position: absolute;
+      -webkit-mask: url(/assets/bubble-tail-left.svg);
+      mask: url(/assets/bubble-tail-left.svg);
+      display: block;
+      width: 11px;
+      height: 20px;
+      content: "";
+    }
+
     > :last-child {
       flex-direction: column;
       display: flex;
@@ -253,6 +265,12 @@ $time-size: 0.75rem;
   }
 
   .in {
+    &:after {
+      background: $white;
+      left: -9px;
+      bottom: 4px;
+    }
+
     > :last-child {
       align-items: flex-start;
 
@@ -315,6 +333,13 @@ $time-size: 0.75rem;
   }
 
   .out {
+    &:after {
+      background: $green-lighter;
+      transform: scaleX(-1);
+      right: -9px;
+      bottom: 4px;
+    }
+
     > :last-child {
       align-items: flex-end;
       .box:hover {
