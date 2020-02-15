@@ -64,7 +64,11 @@ export default class Chat implements Component<Options> {
       this.sendMessageForm
     );
 
-    this.rightSidebar = createElement(RightSidebar);
+    this.rightSidebar = createElement(RightSidebar, {
+      onMessageSelect: (_, message) => {
+        this.setActiveDialog(this.dialog, message.id);
+      }
+    });
 
     this.element = createElement(
       "div",
@@ -102,6 +106,10 @@ export default class Chat implements Component<Options> {
           peer: this.peer,
           onProfileClick: () => {
             this.rightSidebar.instance.setPeer(this.peer);
+            this.rightSidebar.instance.show();
+          },
+          onSearchClick: () => {
+            this.rightSidebar.instance.search(this.peer);
             this.rightSidebar.instance.show();
           }
         });
@@ -444,7 +452,8 @@ export default class Chat implements Component<Options> {
         this.idToElementMap.get(messageToScrollTo).scrollIntoView();
       } else if (prepend) {
         const endScroll = this.scrollView.scrollHeight;
-        this.scrollView.scrollTop = endScroll - currentScroll + currentScrollTop;
+        this.scrollView.scrollTop =
+          endScroll - currentScroll + currentScrollTop;
       }
 
       let numberOfSeen = 0;

@@ -28,7 +28,7 @@ export default class SearchInput implements Component<Options> {
 
   constructor({ ...rest }: Options) {
     this.inputNode = createElement("input", {
-      placeholder: 'Search',
+      placeholder: "Search",
       ...Object.keys(rest)
         .filter(key => !(key in EventMap))
         .reduce((a, b) => ({ ...a, [b]: rest[b] }), {})
@@ -50,6 +50,10 @@ export default class SearchInput implements Component<Options> {
         this.inputNode.addEventListener(eventName, rest[attrName]);
       }
     });
+  }
+
+  public focus() {
+    this.inputNode.focus();
   }
 
   get value() {

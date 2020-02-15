@@ -4,11 +4,14 @@ import { getChatSubdueText } from "../../utils/chat";
 import { Component, createElement } from "../../utils/dom";
 import Avatar from "../ui/avatar";
 import * as styles from "./top-bar.scss";
+import IconButton from "../ui/icon-button";
+import { Icons } from "../ui/icon";
 
 interface Options {
   dialog: IDialog;
   peer: IPeer;
   onProfileClick: () => any;
+  onSearchClick: () => any;
 }
 
 export default class TopBar implements Component<Options> {
@@ -18,7 +21,7 @@ export default class TopBar implements Component<Options> {
   // private dialog: IDialog;
   private peer: IPeer;
 
-  constructor({ peer, onProfileClick }: Options) {
+  constructor({ peer, onProfileClick, onSearchClick }: Options) {
     // this.dialog = dialog;
     this.peer = peer;
 
@@ -38,9 +41,25 @@ export default class TopBar implements Component<Options> {
       )
     );
 
+    const buttonsHolder = createElement(
+      "div",
+      { class: styles.buttons },
+      createElement(IconButton, {
+        icon: Icons.Search,
+        onClick: () => {
+          onSearchClick();
+        }
+      })
+    );
+
     profile.addEventListener("click", onProfileClick);
 
-    this.element = createElement("div", { class: styles.container }, profile);
+    this.element = createElement(
+      "div",
+      { class: styles.container },
+      profile,
+      buttonsHolder
+    );
 
     this.peer.loadFull().then(() => {
       this.update();

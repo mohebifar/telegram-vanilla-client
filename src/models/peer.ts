@@ -8,7 +8,8 @@ import {
   users_GetFullUserRequest,
   UserFull,
   Message as TLMessage,
-  contacts_Found
+  contacts_Found,
+  messages_MessagesSlice
 } from "../core/tl/TLObjects";
 import {
   getInputPeer,
@@ -42,6 +43,16 @@ interface ExtraMethods {
   isChannel(): boolean;
   canSendMessage(): boolean;
   isGroupChat(): boolean;
+  searchMessage(
+    q: string,
+    options?: {
+      offsetId: number;
+      addOffset?: number;
+      limit?: number;
+      minId?: number;
+      maxId?: number;
+    }
+  ): Promise<IMessage[]>;
 }
 
 export type IPeer = ModelWithProxy<"peers"> & ExtraMethods;
@@ -119,6 +130,57 @@ export class Peer extends Model<"peers"> implements ExtraMethods {
     }
 
     return [myResults, result];
+  }
+
+  public async searchMessage(
+    q: string,
+    {
+      offsetId = 0,
+      addOffset = 0,
+      limit = 20,
+      maxId = 0,
+      minId = 0
+    }: {
+      offsetId: number;
+      addOffset?: number;
+      limit?: number;
+      minId?: number;
+      maxId?: number;
+    } = {} as any
+  ) {
+    const response = (await this.tg.invoke({
+      $t: "messages_SearchRequest",
+      addOffset,
+      filter: {
+        $t: "InputMessagesFilterEmpty"
+      },
+      peer: getInputPeer(this._proxy),
+      maxId,
+      minId,
+      hash: 0,
+      maxDate: 0,
+      minDate: 0,
+      offsetId,
+      limit,
+      q
+    })) as messages_MessagesSlice;
+
+    for (const peer of [...response.users, ...response.chats]) {
+      Peer.fromObject(peer).save();
+    }
+
+    const result: IMessage[] = [];
+    for (const message of response.messages) {
+      if (message.$t !== "Message") {
+        continue;
+      }
+
+      const model = Message.fromObject(message);
+      model.save();
+      result.push(model);
+    }
+
+    return result;
   }
 
   static async getSelf() {

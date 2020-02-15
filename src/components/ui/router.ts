@@ -1,9 +1,14 @@
-import { Component, createElement, Element } from "../../utils/dom";
+import {
+  Component,
+  createElement,
+  Element,
+  removeChildren
+} from "../../utils/dom";
 import { startAnimation } from "../../utils/easing";
 
 interface Transition {
-  in(node: HTMLElement, cb: () => any): void;
-  out(node: HTMLElement, cb: () => any): void;
+  in(node: HTMLElement, cb: () => any, direction?: 1 | -1): void;
+  out(node: HTMLElement, cb: () => any, direction?: 1 | -1): void;
 }
 
 type ElementWithRouteTransition = Element<Transition>;
@@ -52,14 +57,24 @@ export default class Router implements Component<Options> {
     }
 
     if (previous) {
-      await this.transition(previous, rendered);
+      await this.transition(previous, rendered, 1);
       previous.parentElement.remove();
     }
   }
 
+  public replace(routeName: string, params?: any) {
+    const route = this.findRoute(routeName);
+    const rendered = route.render(params);
+    const wrapped = this.wrap(rendered);
+    this.stack = [rendered];
+
+    removeChildren(this.element);
+    this.element.append(wrapped);
+  }
+
   public async back() {
     if (this.stack.length === 1) {
-      return;
+      return false;
     }
     const toRemove = this.stack.pop();
     const toView = this.top;
@@ -71,20 +86,28 @@ export default class Router implements Component<Options> {
       this.onRouteChange(this.currentRouteName);
     }
 
-    await this.transition(toRemove, toView);
+    await this.transition(toRemove, toView, -1);
     toRemove.parentElement.remove();
+
+    return true;
+  }
+
+  public flush() {
+    this.stack = [];
+    removeChildren(this.element);
   }
 
   private transition(
     from: ElementWithRouteTransition,
-    to: ElementWithRouteTransition
+    to: ElementWithRouteTransition,
+    direction: 1 | -1
   ) {
     return Promise.all([
       new Promise(resolve => {
-        to.instance.in(to.parentElement, resolve);
+        to.instance.in(to.parentElement, resolve, direction);
       }),
       new Promise(resolve => {
-        from.instance.out(from.parentElement, resolve);
+        from.instance.out(from.parentElement, resolve, direction);
       })
     ]);
   }
@@ -99,6 +122,43 @@ export default class Router implements Component<Options> {
 
   private get top() {
     return this.stack[this.stack.length - 1];
+  }
+}
+
+export abstract class SlideTransition implements Transition {
+  public readonly element: HTMLElement;
+
+  private transition(node: HTMLElement, v: { x: number; a: number }) {
+    node.style.transform = `translateX(${v.x}%)`;
+    node.style.boxShadow = `0 -25em 0 25em rgba(0,0,0,${v.a})`;
+  }
+
+  in(node: HTMLElement, cb: () => any, direction: 1 | -1) {
+    startAnimation(
+      {
+        x: { from: direction === 1 ? 100 : -30, to: 0 },
+        a: { from: 0, to: direction === 1 ? 0.4 : 0 }
+      },
+      v => this.transition(node, v),
+      () => {
+        node.style.boxShadow = "";
+        cb();
+      }
+    );
+  }
+
+  out(node: HTMLElement, cb: () => any, direction: 1 | -1) {
+    startAnimation(
+      {
+        x: { from: 0, to: direction === 1 ? -30 : 100 },
+        a: { from: direction === 1 ? 0 : 0.4, to: 0 }
+      },
+      v => this.transition(node, v),
+      () => {
+        node.style.boxShadow = "";
+        cb();
+      }
+    );
   }
 }
 

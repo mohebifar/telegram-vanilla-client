@@ -3,15 +3,20 @@
 .root {
   animation: animateIn 0.3s ease;
   overflow-x: hidden;
+  border-left: 1px solid $grey-light;
+
+  &,
+  :global(.route) {
+    width: 25em;
+    overflow-x: hidden;
+  }
 }
 
 .container {
   background-color: #fff;
-  border-left: 1px solid $grey-light;
   display: flex;
   flex-direction: column;
-  width: 25em;
-  height: 100vh;
+  height: 100%;
 }
 
 @keyframes animateIn {

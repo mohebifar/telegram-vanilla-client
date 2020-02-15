@@ -1,119 +1,77 @@
+import { IMessage } from "../../models/message";
 import { IPeer } from "../../models/peer";
-import { Component, createElement, removeChildren } from "../../utils/dom";
+import { Component, createElement } from "../../utils/dom";
 import { startAnimation } from "../../utils/easing";
-import SharedMediaPanel from "./shared-media";
-import Avatar from "../ui/avatar";
-import Icon, { Icons } from "../ui/icon";
-import IconButton from "../ui/icon-button";
-import Tabs from "../ui/tabs";
+import Router from "../ui/router";
+import MessageSearch from "./message-search";
+import ProfileDetails from "./profile-details";
 import * as styles from "./right-sidebar.scss";
-import { getChatSubdueText } from "../../utils/chat";
 
-interface Options {}
+interface Options {
+  onMessageSelect(peer: IPeer, message: IMessage): any;
+}
 
 export default class RightSideBar implements Component<Options> {
   public readonly element: HTMLElement;
   private peer: IPeer;
+  private router: Router;
 
-  constructor(_: Options) {
-    this.element = createElement("div", {
-      class: styles.root + " hidden"
-    });
-  }
-
-  public async update() {
-    removeChildren(this.element);
-
-    const heading = createElement(
-      "div",
-      { class: styles.heading },
-      createElement(IconButton, {
-        icon: Icons.Close,
-        onClick: () => this.close()
-      }),
-      createElement("div", { class: styles.title }, "Info"),
-      createElement(IconButton, { icon: Icons.Menu })
-    );
-
-    const profile = createElement(
-      "div",
-      { class: styles.profile },
-      createElement(Avatar, { peer: this.peer, size: "l" }),
-      createElement("div", { class: styles.name }, this.peer.displayName),
-      createElement(
-        "div",
-        { class: styles.subdue },
-        getChatSubdueText(this.peer)
-      )
-    );
-
-    const profileDetails = createElement("div");
-
-    this.peer.loadFull().then(() => {
-      const profileItems = [
+  constructor({ onMessageSelect }: Options) {
+    const routerElement = createElement(Router, {
+      routes: [
         {
-          icon: Icons.Info,
-          content: this.peer.full ? this.peer.full.about : null,
-          title: this.peer.$t === "User" ? "Bio" : "About"
+          name: "profile-details",
+          render: ({ peer }: { peer: IPeer }) =>
+            createElement(ProfileDetails, {
+              peer,
+              router: this.router,
+              back: () => this.back()
+            })
         },
         {
-          icon: Icons.Username,
-          content: "username" in this.peer ? this.peer.username : null,
-          title: "Username"
-        },
-        {
-          icon: Icons.Phone,
-          content: this.peer.$t === "User" ? this.peer.phone : null,
-          title: "Phone"
+          name: "message-search",
+          render: ({ peer }: { peer: IPeer }) =>
+            createElement(MessageSearch, {
+              onMessageSelect: (_, message) => {
+                onMessageSelect(peer, message);
+              },
+              peer,
+              back: () => this.back()
+            })
         }
-      ].filter(({ content }) => content);
-
-      profileItems.forEach(item => {
-        profileDetails.append(
-          createElement(
-            "div",
-            { class: styles.profileDetail },
-            createElement(Icon, { icon: item.icon, color: "grey" }),
-            createElement(
-              "div",
-              createElement("div", item.content),
-              createElement("div", item.title)
-            )
-          )
-        );
-      });
-    });
-
-    const sharedMedia = createElement(SharedMediaPanel, { peer: this.peer });
-
-    const tabs = createElement(Tabs, {
-      tabs: [
-        { title: "Media", content: sharedMedia },
-        { title: "Docs" },
-        { title: "Link" },
-        { title: "Audio" }
       ]
     });
 
-    this.element.classList.remove("hidden");
-    this.element.append(
-      createElement(
-        "div",
-        { class: styles.container },
-        heading,
-        profile,
-        profileDetails,
-        tabs
-      )
+    this.router = routerElement.instance;
+
+    this.element = createElement(
+      "div",
+      { class: styles.root + " hidden" },
+      routerElement
     );
   }
 
+  public async back() {
+    if (!(await this.router.back())) {
+      this.close();
+    }
+  }
+
   public setPeer(peer: IPeer) {
-    this.peer = peer;
+    if (this.peer !== peer) {
+      this.peer = peer;
+      this.router.replace("profile-details", { peer });
+    }
+  }
+
+  public search(peer: IPeer) {
+    this.router[this.peer === peer ? "push" : "replace"]("message-search", {
+      peer
+    });
   }
 
   public show() {
-    this.update();
+    this.element.classList.remove("hidden");
   }
 
   public close() {
@@ -123,9 +81,10 @@ export default class RightSideBar implements Component<Options> {
         this.element.style.width = v.w + "em";
       },
       () => {
+        this.peer = null;
         this.element.style.width = "";
         this.element.classList.add("hidden");
-        removeChildren(this.element);
+        this.router.flush();
       }
     );
   }
