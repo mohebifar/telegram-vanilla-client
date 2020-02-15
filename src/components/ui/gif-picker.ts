@@ -23,6 +23,20 @@ export default class GifPicker implements Component<Options> {
   constructor({ onGifSelect }: Options) {
     this.onGifSelect = onGifSelect;
     this.element = createElement("div", { class: styles.container });
+
+    this.element.addEventListener("scroll", () => {
+      if (this.isAtBottom()) {
+        this.renderPreviews();
+      }
+    });
+  }
+
+  private isAtBottom(threshold = 50) {
+    const obj = this.element;
+    return (
+      Math.abs(obj.scrollTop - (obj.scrollHeight - obj.offsetHeight)) <
+      threshold
+    );
   }
 
   private renderPreviews() {

@@ -13,7 +13,7 @@ $spacing-half: $spacing / 2;
 
   .preview {
     overflow: hidden;
-    background-color: red;
+    background-color: $grey-lighter;
     position: relative;
     height: 100px;
     margin-bottom: $spacing;
