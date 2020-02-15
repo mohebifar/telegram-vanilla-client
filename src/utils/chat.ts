@@ -175,6 +175,14 @@ export function getMessageMediaType(
       ) as DocumentAttributeSticker;
 
       if (video) {
+        const isGIF = media.document.attributes.some(
+          ({ $t }) => $t === "DocumentAttributeAnimated"
+        );
+
+        if (isGIF) {
+          return ["📹 ", "GIF", null];
+        }
+
         return ["📹 ", "Video", null];
       }
 
