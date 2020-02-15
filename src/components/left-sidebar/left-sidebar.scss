@@ -11,6 +11,20 @@
     flex-grow: 1;
     overflow-y: scroll;
     height: 100%;
+    position: relative;
+
+    :global(.spinner) {
+      position: absolute;
+      top: calc(50% - 40px);
+      left: calc(50% - 20px);
+      display: none;
+    }
+
+    &.loading {
+      :global(.spinner) {
+        display: block;
+      }
+    }
 
     &::-webkit-scrollbar {
       width: 2px;

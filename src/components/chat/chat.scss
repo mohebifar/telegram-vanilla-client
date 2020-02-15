@@ -85,6 +85,7 @@ $time-size: 0.75rem;
   flex-direction: column;
   background-image: url("/assets/bg.jpg");
   background-size: cover;
+  position: relative;
 
   a {
     &,
@@ -114,6 +115,25 @@ $time-size: 0.75rem;
     overflow-y: scroll;
     mask-image: linear-gradient(bottom, transparent, #000 15px);
     -webkit-mask-image: -webkit-linear-gradient(bottom, transparent, #000 15px);
+
+    .spinner {
+      position: absolute;
+      border-radius: 50%;
+      background-color: #0007;
+      top: calc(50% - 25px);
+      left: calc(50% - 25px);
+      width: 46px;
+      height: 46px;
+      align-items: center;
+      justify-content: center;
+      display: none;
+    }
+
+    &.initialLoading {
+      .spinner {
+        display: flex;
+      }
+    }
 
     .chatContainer {
       max-width: 45rem;
@@ -243,10 +263,8 @@ $time-size: 0.75rem;
     margin-top: 5px;
   }
 
-  .in,
-  .out {
-    position: relative;
-
+  .bubble:last-child:not(.imageOnly):not(.sticker) {
+    overflow: visible;
     &:after {
       position: absolute;
       -webkit-mask: url(/assets/bubble-tail-left.svg);
@@ -254,8 +272,14 @@ $time-size: 0.75rem;
       display: block;
       width: 11px;
       height: 20px;
+      bottom: -1px;
       content: "";
     }
+  }
+
+  .in,
+  .out {
+    position: relative;
 
     > :last-child {
       flex-direction: column;
@@ -265,10 +289,9 @@ $time-size: 0.75rem;
   }
 
   .in {
-    &:after {
+    .bubble:last-child:after {
       background: $white;
       left: -9px;
-      bottom: 4px;
     }
 
     > :last-child {
@@ -333,11 +356,10 @@ $time-size: 0.75rem;
   }
 
   .out {
-    &:after {
+    .bubble:last-child:after {
       background: $green-lighter;
       transform: scaleX(-1);
       right: -9px;
-      bottom: 4px;
     }
 
     > :last-child {

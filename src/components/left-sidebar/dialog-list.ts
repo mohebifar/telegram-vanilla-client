@@ -11,6 +11,7 @@ import DialogItem from "../ui/dialog-item";
 import * as dialogItemStyles from "../ui/dialog-item.scss";
 import { FadeTransition } from "../ui/router";
 import * as styles from "./left-sidebar.scss";
+import Spinner from "../ui/spinner";
 
 interface Options {
   onChatSelect(dialog: IDialog, message: IMessage): any;
@@ -38,10 +39,11 @@ export default class DialogList extends FadeTransition
     this.element = createElement(
       "div",
       {
-        class: styles.dialogsWrapper
+        class: styles.dialogsWrapper + " " + styles.loading
       },
       this.pinnedDialogsContainer,
-      this.dialogsContainer
+      this.dialogsContainer,
+      createElement(Spinner, { size: "40px", color: "blue" })
     );
 
     this.register();
@@ -65,6 +67,7 @@ export default class DialogList extends FadeTransition
   private async register() {
     const dialogs = await Dialog.fetch();
     await this.addDialogs(dialogs);
+    this.element.classList.remove(styles.loading);
 
     Dialog.events.on(
       "saved",

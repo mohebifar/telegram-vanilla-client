@@ -16,6 +16,7 @@ import Bubble from "./bubble";
 import * as styles from "./chat.scss";
 import SendMessageForm from "./send-message";
 import TopBar from "./top-bar";
+import Spinner from "../ui/spinner";
 
 interface Options {}
 
@@ -48,7 +49,12 @@ export default class Chat implements Component<Options> {
     this.scrollView = createElement(
       "div",
       { class: styles.wrapper },
-      this.chatContainer
+      this.chatContainer,
+      createElement(
+        "div",
+        { class: styles.spinner },
+        createElement(Spinner, { size: "40px", color: "white" })
+      )
     );
     this.topBarContainer = createElement("div");
     this.sendMessageForm = createElement(SendMessageForm, {
@@ -118,6 +124,7 @@ export default class Chat implements Component<Options> {
       }
 
       this.idToElementMap.clear();
+      this.scrollView.classList.add(styles.initialLoading);
       removeChildren(this.chatContainer);
 
       this.dialog = dialog;
@@ -145,6 +152,7 @@ export default class Chat implements Component<Options> {
         );
       } finally {
         this.lockLoad = false;
+        this.scrollView.classList.remove(styles.initialLoading);
       }
 
       if (this.intersectionObserver) {
@@ -332,12 +340,7 @@ export default class Chat implements Component<Options> {
           return;
         }
 
-        const lastBubbleWrapper = getNthChild(this.chatContainer, "last");
-        const lastBubbleHolder = getNthChild(lastBubbleWrapper, "last");
-        const lastBubble = getNthChild(lastBubbleHolder, "last") as Element<
-          Bubble
-        >;
-
+        const lastBubble = this.getFirstOrLastBubble("last");
         const lastRenderedMessage = lastBubble.instance.message;
         const wasAtBottom = this.isAtBottom();
 
