@@ -6,6 +6,7 @@ import Avatar from "../ui/avatar";
 import * as styles from "./top-bar.scss";
 import IconButton from "../ui/icon-button";
 import { Icons } from "../ui/icon";
+import { makeContextMenu } from "../ui/context-menu";
 
 interface Options {
   dialog: IDialog;
@@ -48,6 +49,22 @@ export default class TopBar implements Component<Options> {
         icon: Icons.Search,
         onClick: () => {
           onSearchClick();
+        }
+      }),
+      createElement(IconButton, {
+        icon: Icons.More,
+        onClick: event => {
+          const rect = (event.target as HTMLElement).getBoundingClientRect();
+          makeContextMenu(
+            { x: rect.left + rect.width, y: rect.top + rect.height },
+            [
+              {
+                icon: Icons.Delete,
+                variant: "red",
+                title: "Delete"
+              }
+            ]
+          );
         }
       })
     );

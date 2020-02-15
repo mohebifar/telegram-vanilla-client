@@ -44,6 +44,7 @@ export enum Icons {
   SavedMessages = "savedmessages",
   Settings = "settings",
   Help = "help",
+  More = "more"
 }
 
 export enum IconSprite {
