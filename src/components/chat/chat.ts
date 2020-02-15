@@ -87,11 +87,21 @@ export default class Chat implements Component<Options> {
   }
 
   public async setActiveDialog(dialog: IDialog, offsetMessage?: number) {
-    if (
-      (dialog === this.dialog && !offsetMessage) ||
-      typeof dialog === "undefined"
-    ) {
+    if (typeof dialog === "undefined") {
       return;
+    }
+
+    const isSameDialog = dialog === this.dialog && !offsetMessage;
+
+    if (isSameDialog && !offsetMessage) {
+      const lastBubble = this.getFirstOrLastBubble("last");
+      if (lastBubble) {
+        const lastMessage = lastBubble.instance.message;
+        if (lastMessage.id === dialog.topMessage) {
+          lastBubble.scrollIntoView();
+          return;
+        }
+      }
     }
 
     let unreadCount: number;
@@ -344,7 +354,7 @@ export default class Chat implements Component<Options> {
         const lastRenderedMessage = lastBubble.instance.message;
         const wasAtBottom = this.isAtBottom();
 
-        if (message.id > lastRenderedMessage.id) {
+        if (message.id > lastRenderedMessage.id && this.noMoreBottom) {
           const element = await this.addMessage(message);
 
           if (wasAtBottom) {

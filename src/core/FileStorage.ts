@@ -385,8 +385,6 @@ export class FileStorage {
     const key = this.generateKey(location);
     const cache = this.cache && this.cache[CACHE_KEY_DOCUMENT];
 
-    console.log("checking", location, key);
-
     if (cache && (await cache.match(key))) {
       return true;
     }
