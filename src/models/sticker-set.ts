@@ -34,7 +34,6 @@ export class StickerSet extends Model<"stickerSet"> implements ExtraMethods {
 
   static async fetchAll() {
     const hashRecord = await db.configs.get(STICKER_HASH_CONFIG_KEY);
-    // const hash = 0;
     const hash = (hashRecord && hashRecord.value) || 0;
 
     const response = (await this.tg.invoke({
@@ -45,7 +44,10 @@ export class StickerSet extends Model<"stickerSet"> implements ExtraMethods {
     if (response.$t === "messages_AllStickersNotModified") {
       return this.getAll();
     }
-    await this.table.clear();
+
+    try {
+      await this.table.clear();
+    } catch {}
 
     const result: IStickerSet[] = [];
 

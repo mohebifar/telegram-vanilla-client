@@ -58,8 +58,6 @@ export default class EmojiPanel implements Component<Options> {
       }
     });
 
-    this.tabsContainer.instance.setTab(2);
-
     const element = createElement(
       "div",
       { class: styles.container },
@@ -86,7 +84,7 @@ export default class EmojiPanel implements Component<Options> {
     }
   }
 
-  public deferHide(timeout = 600) {
+  public deferHide(timeout = 300) {
     this.clearTimeout();
     this.timeout = setTimeout(() => {
       this.setVisibility(false);

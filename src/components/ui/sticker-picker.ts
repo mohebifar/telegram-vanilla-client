@@ -17,20 +17,19 @@ export default class StickerPicker implements Component<Options> {
   private currentOffset = 0;
   private limit = 2;
   private lockLoadMore = true;
+  private loadPromise = StickerSet.fetchAll().then(stickerSets => {
+    this.stickerSets = stickerSets;
+    this.element.addEventListener("scroll", () => {
+      if (!this.lockLoadMore && this.isAtBottom()) {
+        this.renderStickers();
+      }
+    });
+  });
 
   constructor({ onStickerSelect }: Options) {
     this.onStickerSelect = onStickerSelect;
 
     const element = createElement("div", { class: styles.container });
-
-    StickerSet.fetchAll().then(stickerSets => {
-      this.stickerSets = stickerSets;
-      this.element.addEventListener("scroll", () => {
-        if (!this.lockLoadMore && this.isAtBottom()) {
-          this.renderStickers();
-        }
-      });
-    });
 
     this.element = element;
   }
@@ -144,8 +143,9 @@ export default class StickerPicker implements Component<Options> {
     removeChildren(this.element);
   }
 
-  public panelOpen() {
+  public async panelOpen() {
     this.currentOffset = 0;
+    await this.loadPromise;
     this.renderStickers();
     requestAnimationFrame(() => {
       this.element.scrollTop = 0;
