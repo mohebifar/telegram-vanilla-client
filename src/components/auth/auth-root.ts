@@ -8,6 +8,7 @@ import { TelegramClientProxy } from "../../telegram-worker-proxy";
 
 interface Options {
   tgProxy: TelegramClientProxy;
+  connectionPromise: Promise<void>;
   finishCallback(auth: Authorization): any;
 }
 
@@ -18,10 +19,12 @@ export default class AuthRoot implements Component<Options> {
   private authCode: Element<AuthCode>;
   private authSignUp: Element<AuthSignUp>;
   private tgProxy: TelegramClientProxy;
+  private connectionPromise: Options["connectionPromise"];
   private finishCallback: Options["finishCallback"];
 
-  constructor({ tgProxy, finishCallback }) {
+  constructor({ tgProxy, finishCallback, connectionPromise }) {
     this.finishCallback = finishCallback;
+    this.connectionPromise = connectionPromise;
     this.tgProxy = tgProxy;
     this.element = createElement("div");
 
@@ -33,6 +36,7 @@ export default class AuthRoot implements Component<Options> {
   }
 
   private handleSendCode = async (countryCode: string, phoneNumber: string) => {
+    await this.connectionPromise;
     await this.tgProxy.sendCodeRequest(countryCode + phoneNumber);
 
     this.authCode = createElement(AuthCode, {

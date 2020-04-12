@@ -8,16 +8,27 @@ import { handleUpdate } from "./update-handler";
 import { createElement } from "./utils/dom";
 
 async function start() {
-  const tgProxy = await makeProxy(TG_API_ID, TG_API_HASH, handleUpdate);
+  const [tgProxy, deferred, connectionPromise] = await makeProxy(
+    TG_API_ID,
+    TG_API_HASH,
+    handleUpdate
+  );
+
+  let isUserAuthorized = false;
+  if (!deferred) {
+    await connectionPromise;
+    isUserAuthorized = await tgProxy.isUserAuthorized();
+  }
+  document.getElementById("initial-loading").remove();
+
   // @ts-ignore
   window.tgProxy = tgProxy;
-  const isUserAuthorized = await tgProxy.isUserAuthorized();
   Model.tg = tgProxy;
 
   if (isUserAuthorized) {
     setupRoot(tgProxy);
   } else {
-    setupSignInForm(tgProxy);
+    setupSignInForm(tgProxy, connectionPromise);
   }
 }
 
@@ -26,9 +37,10 @@ function setupRoot(tgProxy: any) {
   document.body.append(element);
 }
 
-function setupSignInForm(tgProxy: any) {
+function setupSignInForm(tgProxy: any, connectionPromise: Promise<void>) {
   const element = createElement(AuthRoot, {
     tgProxy,
+    connectionPromise,
     finishCallback: (_authorization: Authorization) => {
       // TODO: idk why this crashes. It's not needed atm
       // store.me = authorization;

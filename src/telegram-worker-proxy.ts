@@ -32,13 +32,11 @@ export interface TelegramClientProxy
   fileStorage: FileStorageProxy;
 }
 
-export interface DBMethodProxy {}
-
 export async function makeProxy(
   apiId: number,
   apiHash: string,
   updateCallback: (update: AllUpdateTypes) => void
-): Promise<TelegramClientProxy> {
+): Promise<[TelegramClientProxy, boolean, Promise<void>]> {
   const tgWorker = new Worker("./telegram.worker.ts", {
     type: "module"
   });
@@ -134,23 +132,25 @@ export async function makeProxy(
       });
   }
 
-  return new Promise(resolve => {
+  const result: TelegramClientProxy = {
+    ...makeMethodProxy<TelegramClient, ClientProxiedMethods>(
+      clientProxiedMethods as any,
+      proxyMethod,
+      "client"
+    ),
+    fileStorage: makeMethodProxy<FileStorage, FileStorageProxiedMethods>(
+      fileStorageProxiedMethods as any,
+      proxyMethod,
+      "fileStorage"
+    )
+  };
+
+  const count = await db.sessions.count();
+
+  const connectPromise = new Promise<void>(resolve => {
     tgWorker.addEventListener("message", ({ data }) => {
       if (data.type === "connected") {
-        document.getElementById("initial-loading").remove();
-
-        resolve({
-          ...makeMethodProxy<TelegramClient, ClientProxiedMethods>(
-            clientProxiedMethods as any,
-            proxyMethod,
-            "client"
-          ),
-          fileStorage: makeMethodProxy<FileStorage, FileStorageProxiedMethods>(
-            fileStorageProxiedMethods as any,
-            proxyMethod,
-            "fileStorage"
-          )
-        });
+        resolve();
       } else if (data.type === "update") {
         updateCallback(data.update);
       }
@@ -162,6 +162,8 @@ export async function makeProxy(
       apiHash
     });
   });
+
+  return [result, count === 0, connectPromise];
 }
 
 function makeMethodProxy<O extends Object, K extends keyof O>(
