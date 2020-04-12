@@ -10,6 +10,7 @@ interface Options {
   [s: string]: any;
   config?: AnimationConfig;
   onReady?(animation: AnimationItem): void;
+  autoClean?: boolean;
 }
 
 const observer = new IntersectionObserver(
@@ -39,17 +40,19 @@ export default class Lottie implements Component<Options> {
   public readonly element: HTMLElement;
   public animation: AnimationItem;
   private onReady?: Options["onReady"];
+  private autoClean?: Options["autoClean"];
   public isVisible = false;
   private config: AnimationConfig;
 
-  constructor({ config, onReady, ...rest }: Options) {
+  constructor({ config, onReady, autoClean = true, ...rest }: Options) {
     this.element = createElement("div", {
       ...rest,
-      class: `lottieWrapper ${rest.class}`,
+      class: `lottieWrapper ${rest.class || ""}`,
       "data-bm-renderer": "svg"
     });
 
     this.onReady = onReady;
+    this.autoClean = autoClean;
 
     if (config) {
       this.updateConfig(config);
@@ -72,7 +75,9 @@ export default class Lottie implements Component<Options> {
           container: this.element
         });
 
-        observer.observe(this.element);
+        if (this.autoClean) {
+          observer.observe(this.element);
+        }
 
         if (this.onReady) {
           this.onReady(this.animation);

@@ -21,7 +21,7 @@ export default class Monkey {
   protected files: MonkeyId[];
   protected currentFile: MonkeyId;
   private animationFrame: number;
-  private currentPromiseReject?: Function;
+  private lastAnimationRequest?: number;
 
   constructor(files: MonkeyId[]) {
     this.files = files;
@@ -34,7 +34,8 @@ export default class Monkey {
             renderer: "svg",
             autoplay: file === "idle",
             loop: file === "idle"
-          }
+          },
+          autoClean: false
         })
       ])
       .reduce(
@@ -72,7 +73,9 @@ export default class Monkey {
   }
 
   protected goToFrame(endFrame: number, duration = 600) {
-    return new Promise((resolve, reject) => {
+    const currentAnimationStart = Date.now();
+    this.lastAnimationRequest = currentAnimationStart;
+    return new Promise(resolve => {
       let startTime = Date.now();
       let endTime = startTime + duration;
       const animation = this.getAnimation();
@@ -95,12 +98,13 @@ export default class Monkey {
           resolve();
         }
       };
-      if (this.currentPromiseReject) {
-        this.currentPromiseReject();
+
+      if (currentAnimationStart === this.lastAnimationRequest) {
+        cancelAnimationFrame(this.animationFrame);
+        this.animationFrame = requestAnimationFrame(doTransition);
+      } else {
+        resolve();
       }
-      cancelAnimationFrame(this.animationFrame);
-      this.currentPromiseReject = reject;
-      this.animationFrame = requestAnimationFrame(doTransition);
     });
   }
 }
