@@ -104,7 +104,9 @@ export default class AudioAttachment implements Component<Options> {
     };
 
     const waveform = createElement(Waveform as any, {
-      waveform: audioAttribute.waveform || Array(50).fill(200),
+      waveform:
+        audioAttribute.waveform ||
+        Array.from({ length: 50 }, () => Math.floor(Math.random() * 200)),
       onSeek
     }) as Element<Waveform>;
     waveform.instance.progress(0);
