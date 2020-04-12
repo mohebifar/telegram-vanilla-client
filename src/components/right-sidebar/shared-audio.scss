@@ -1,0 +1,30 @@
+@import "../../variables.scss";
+
+.container {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  max-height: 100%;
+
+  circle:global(.audioCircle) {
+    fill: $blue;
+  }
+
+  svg:global(.waveform .gradient) {
+    --color1: #{$blue};
+    --color2: #{$grey-light};
+  }
+
+  svg:global(.waveform) {
+    height: 26px;
+  }
+
+  :global(.spinner) {
+    margin: 1rem auto;
+    display: none;
+  }
+
+  :global(.spinner):only-child {
+    display: block;
+  }
+}

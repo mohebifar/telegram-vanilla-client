@@ -1,0 +1,64 @@
+@import "../../variables.scss";
+
+.container {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  max-height: 100%;
+
+  .item {
+    display: flex;
+    align-items: flex-start;
+    border: none;
+    outline: none;
+    background: none;
+    padding: 0.5em;
+    margin: 0 0 0.5em;
+    text-align: left;
+    text-decoration: none;
+
+    h2 {
+      font-size: 1em;
+      font-weight: 500;
+      margin: 0;
+      color: #000;
+    }
+
+    .imgWrapper {
+      width: 2.5em;
+      height: 2.5em;
+      background-color: $grey-lighter;
+
+      &,
+      > img {
+        border-radius: 5px;
+      }
+
+      > img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+
+    > :last-child {
+      flex: 1;
+      padding-left: 1em;
+      font-size: 0.8rem;
+
+      .description {
+        color: $grey;
+        text-overflow: ellipsis;
+        overflow: hidden;
+      }
+
+      .link {
+        display: block;
+        color: $blue;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        max-width: 20em;
+      }
+    }
+  }
+}

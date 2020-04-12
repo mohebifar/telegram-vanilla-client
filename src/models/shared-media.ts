@@ -1,4 +1,8 @@
-import { Message, messages_MessagesSlice } from "../core/tl/TLObjects";
+import {
+  Message,
+  messages_MessagesSlice,
+  messages_SearchRequest
+} from "../core/tl/TLObjects";
 import { TelegramDatabase } from "../utils/db";
 import { Model, ModelDecorator, ModelKey, ModelWithProxy } from "./model";
 import { IPeer, Peer } from "./peer";
@@ -42,20 +46,22 @@ export class SharedMedia extends Model<"sharedMedia"> implements ExtraMethods {
       addOffset = -10,
       limit = 20,
       maxId = 0,
-      minId = 0
+      minId = 0,
+      type = "InputMessagesFilterPhotoVideo"
     }: {
       offsetId: number;
       addOffset?: number;
       limit?: number;
       minId?: number;
       maxId?: number;
+      type?: messages_SearchRequest["filter"]["$t"];
     }
   ) {
     const response = (await this.tg.invoke({
       $t: "messages_SearchRequest",
       addOffset,
       filter: {
-        $t: "InputMessagesFilterPhotoVideo"
+        $t: type
       },
       peer: getInputPeer(peer),
       maxId,

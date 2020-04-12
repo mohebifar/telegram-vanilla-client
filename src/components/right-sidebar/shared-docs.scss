@@ -1,0 +1,17 @@
+@import "../../variables.scss";
+
+.container {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  max-height: 100%;
+
+  :global(.spinner) {
+    margin: 1rem auto;
+    display: none;
+  }
+
+  :global(.spinner):only-child {
+    display: block;
+  }
+}

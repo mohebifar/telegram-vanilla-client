@@ -8,6 +8,9 @@ import Router, { SlideTransition } from "../ui/router";
 import Tabs from "../ui/tabs";
 import * as styles from "./right-sidebar.scss";
 import SharedMediaPanel from "./shared-media";
+import SharedLinks from "./shared-links";
+import SharedDocs from "./shared-docs";
+import SharedAudio from "./shared-audio";
 
 interface Options {
   router: Router;
@@ -81,13 +84,16 @@ export default class ProfileDetails extends SlideTransition
     });
 
     const sharedMedia = createElement(SharedMediaPanel, { peer });
+    const sharedLinks = createElement(SharedLinks, { peer });
+    const sharedDocs = createElement(SharedDocs, { peer });
+    const sharedAudio = createElement(SharedAudio, { peer });
 
     const tabs = createElement(Tabs, {
       tabs: [
         { title: "Media", content: sharedMedia },
-        { title: "Docs" },
-        { title: "Link" },
-        { title: "Audio" }
+        { title: "Docs", content: sharedDocs },
+        { title: "Link", content: sharedLinks },
+        { title: "Audio", content: sharedAudio }
       ]
     });
 
