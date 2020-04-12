@@ -6,7 +6,8 @@ import {
   MessageMediaDocument,
   MessageMediaPhoto,
   Photo,
-  PhotoSize
+  PhotoSize,
+  DocumentAttributeFilename
 } from "../../core/tl/TLObjects";
 import { Message, IMessage } from "../../models/message";
 import { IPeer } from "../../models/peer";
@@ -67,7 +68,20 @@ export class LightBox implements Component<Options> {
           tg.fileStorage.downloadMedia(this.media.media).then(file => {
             const date = dayjs.unix(this.media.date);
             const formattedDate = date.format("YYYY-MM-DD-HHmmss");
-            saveData(file, `photo-${formattedDate}.jpg`);
+
+            let fileName = `photo-${formattedDate}.jpg`;
+
+            if (this.media.media.$t === "MessageMediaDocument") {
+              const fileNameAttribute = (this.media.media
+                .document as Document).attributes.find(
+                t => t.$t === "DocumentAttributeFilename"
+              ) as DocumentAttributeFilename;
+              if (fileNameAttribute) {
+                fileName = fileNameAttribute.fileName;
+              }
+            }
+
+            saveData(file, fileName);
           });
         }
       }),
