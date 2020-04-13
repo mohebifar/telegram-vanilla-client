@@ -15,8 +15,8 @@
   }
 
   &-grey-light {
-    filter: invert(98%) sepia(2%) saturate(373%) hue-rotate(185deg)
-      brightness(94%) contrast(86%);
+    filter: invert(92%) sepia(0%) saturate(417%) hue-rotate(251deg)
+      brightness(77%) contrast(93%);
   }
 
   &-green {
@@ -47,7 +47,8 @@
     background-position: -432px 0px;
   }
 
-  &-sprite-start, &-sprite-end {
-    transition: background-position .3s steps(18);
+  &-sprite-start,
+  &-sprite-end {
+    transition: background-position 0.3s steps(18);
   }
 }

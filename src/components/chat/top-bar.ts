@@ -33,7 +33,7 @@ export default class TopBar implements Component<Options> {
     const profile = createElement(
       "div",
       { class: "pointer" },
-      createElement(Avatar, { peer }),
+      createElement(Avatar, { peer, size: 'sm' }),
       createElement(
         "div",
         { class: styles.meta },

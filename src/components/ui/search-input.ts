@@ -41,7 +41,7 @@ export default class SearchInput implements Component<Options> {
       this.inputNode,
       createElement(Icon, {
         icon: Icons.Search,
-        color: "grey"
+        color: "grey-light"
       })
     );
 

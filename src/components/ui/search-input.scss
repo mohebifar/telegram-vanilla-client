@@ -15,6 +15,10 @@
     border-radius: 2em;
 
     &::placeholder {
+      color: $placeholder-text-color;
+    }
+
+    &::placeholder {
       color: $grey;
     }
 
