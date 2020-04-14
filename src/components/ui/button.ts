@@ -22,7 +22,7 @@ export default class Button implements Component<Options> {
 
     this.element = createElement(
       "button",
-      { class: styles.btn + " " + styles[size] },
+      { class: styles.btn + " ripple " + styles[size] },
       caption
     );
 

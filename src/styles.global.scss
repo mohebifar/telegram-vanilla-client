@@ -93,48 +93,33 @@ h4 {
   visibility: hidden !important;
 }
 
-.ripple {
-  position: relative;
+.ripple-container {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 0;
+  width: 0;
+  pointer-events: none;
   overflow: hidden;
-  transform: translate3d(0, 0, 0);
-
-  &:after {
-    cursor: pointer;
-    content: "";
-    display: block;
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    pointer-events: none;
-    background-image: radial-gradient(
-      circle,
-      rgba($light-hover-base, 0.4) 10%,
-      transparent 10.01%
-    );
-    background-repeat: no-repeat;
-    background-position: 50%;
-    transform: scale(10, 10);
-    opacity: 0;
-    transition: transform 0.5s, opacity 1s;
-  }
-
-  &:active:after {
-    transform: scale(0, 0);
-    opacity: 0.2;
-    transition: 0s;
-  }
 }
 
-.ripple-dark {
-  &:after {
-    background-image: radial-gradient(
-      circle,
-      rgba($light-hover-base, 0.4) 10%,
-      transparent 10.01%
-    );
-  }
+.ripple-effect {
+  margin-top: 0px;
+  margin-left: 0px;
+  width: 1px;
+  height: 1px;
+  background-color: rgba(0, 0, 0, 0.033);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.ripple-effect.light {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.ripple-effect.dark {
+  background-color: rgba(0, 0, 0, 0.075);
 }
 
 :global(.spinner) {

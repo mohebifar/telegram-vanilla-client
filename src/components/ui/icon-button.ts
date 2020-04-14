@@ -46,7 +46,7 @@ export default class IconButton implements Component<Options> {
 
     this.element = createElement(
       "button",
-      { class: styles.btn + extraClass, ...props },
+      { class: styles.btn + ' ripple ' + extraClass, ...props },
       this.icon
     );
 

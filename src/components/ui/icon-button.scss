@@ -2,7 +2,6 @@
 @import "../../variables.scss";
 
 .btn {
-  @extend .ripple;
   border-radius: 50%;
   border: none;
   outline: none;

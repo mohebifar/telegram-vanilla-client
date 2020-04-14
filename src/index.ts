@@ -6,6 +6,7 @@ import "./styles.global.scss";
 import { makeProxy } from "./telegram-worker-proxy";
 import { handleUpdate } from "./update-handler";
 import { createElement } from "./utils/dom";
+import "./utils/ripple";
 
 async function start() {
   const [tgProxy, deferred, connectionPromise] = await makeProxy(
