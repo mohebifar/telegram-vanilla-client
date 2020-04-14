@@ -42,7 +42,7 @@ export default class LeftSideBar implements Component<Options> {
         if (currentRouteName !== "dialog-list") {
           this.router.back();
         } else {
-          makeContextMenu({ x: 16, y: 70 }, [
+          makeContextMenu({ x: 16, y: 60 }, [
             {
               icon: Icons.NewGroup,
               title: "New Group"

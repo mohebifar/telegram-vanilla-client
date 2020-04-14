@@ -4,13 +4,16 @@
 .container {
   display: flex;
   flex-direction: row;
-  margin: 0.25rem 0.5rem;
   justify-content: center;
-  padding: 0.5rem 0;
+  padding: 0.5625rem 0;
   border-radius: 11px;
   user-select: none;
   cursor: pointer;
   @extend .noselect;
+
+  & + .container {
+    margin-top: 0.25rem;
+  }
 
   .acitve,
   &:hover,
@@ -63,7 +66,7 @@
 
   .meta {
     white-space: nowrap;
-    padding-right: 1rem;
+    padding-right: 0.5rem;
     align-items: flex-end;
 
     :first-child {
@@ -71,7 +74,7 @@
       font-size: 0.9rem;
       margin-bottom: 0.3rem;
       color: $grey;
-      font-size: 0.6rem;
+      font-size: 0.75rem;
       font-weight: 200;
       margin-bottom: 0;
       height: 1.3rem;

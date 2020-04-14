@@ -57,8 +57,12 @@
 }
 
 .dialogsList {
-  padding: 0.25rem 0;
+  padding: 0.5rem;
   position: relative;
+
+  &:first-of-type {
+    padding-top: 0;
+  }
 
   &:empty {
     padding: 0;
