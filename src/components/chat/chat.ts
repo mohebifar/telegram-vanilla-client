@@ -7,7 +7,7 @@ import {
   createElement,
   Element,
   getNthChild,
-  removeChildren
+  removeChildren,
 } from "../../utils/dom";
 import { debounce, throttle } from "../../utils/utils";
 import RightSidebar from "../right-sidebar/right-sidebar";
@@ -41,10 +41,11 @@ export default class Chat implements Component<Options> {
   private noMoreBottom = false;
   private idToElementMap = new Map<number, Element<Bubble>>();
   private intersectionObserver: IntersectionObserver;
+  private stayAtTheEnd = false;
 
   constructor({}: Options) {
     this.chatContainer = createElement("div", {
-      class: styles.chatContainer
+      class: styles.chatContainer,
     });
     this.scrollView = createElement(
       "div",
@@ -59,7 +60,7 @@ export default class Chat implements Component<Options> {
     this.topBarContainer = createElement("div");
     this.sendMessageForm = createElement(SendMessageForm, {
       callback: this.handleSendMessage,
-      startTyping: this.startTyping
+      startTyping: this.startTyping,
     });
 
     const chatSection = createElement(
@@ -73,7 +74,7 @@ export default class Chat implements Component<Options> {
     this.rightSidebar = createElement(RightSidebar, {
       onMessageSelect: (_, message) => {
         this.setActiveDialog(this.dialog, message.id);
-      }
+      },
     });
 
     this.element = createElement(
@@ -111,7 +112,7 @@ export default class Chat implements Component<Options> {
 
     if (dialog === this.dialog && this.idToElementMap.has(offsetMessage)) {
       this.idToElementMap.get(offsetMessage).scrollIntoView({
-        behavior: "smooth"
+        behavior: "smooth",
       });
     } else {
       this.lockLoad = true;
@@ -127,7 +128,7 @@ export default class Chat implements Component<Options> {
           onSearchClick: () => {
             this.rightSidebar.instance.search(this.peer);
             this.rightSidebar.instance.show();
-          }
+          },
         });
         removeChildren(this.topBarContainer);
         this.topBarContainer.append(this.topBar);
@@ -169,13 +170,13 @@ export default class Chat implements Component<Options> {
         this.intersectionObserver.disconnect();
       }
       this.intersectionObserver = new IntersectionObserver(
-        debounce(entries => {
+        debounce((entries) => {
           const elements = new Map(
             entries
-              .filter(entry => entry.isIntersecting)
-              .map(entry => [
+              .filter((entry) => entry.isIntersecting)
+              .map((entry) => [
                 (entry.target as Element<Bubble>).instance.message.id,
-                entry.target as Element<Bubble>
+                entry.target as Element<Bubble>,
               ])
           );
           const maxId = Math.max(...elements.keys());
@@ -228,16 +229,16 @@ export default class Chat implements Component<Options> {
                 ? {
                     offsetId: message.id,
                     limit: LIMIT,
-                    maxId: message.id
+                    maxId: message.id,
                   }
                 : {
                     offsetId: message.id,
                     limit: LIMIT,
                     addOffset: -LIMIT,
-                    minId: message.id
+                    minId: message.id,
                   }
             )
-            .then(messages => {
+            .then((messages) => {
               if (messages.length < LIMIT) {
                 this[isAtTop ? "noMoreTop" : "noMoreBottom"] = true;
 
@@ -248,7 +249,7 @@ export default class Chat implements Component<Options> {
               }
 
               return this.addMessages(messages, {
-                prepend: isAtTop
+                prepend: isAtTop,
               });
             })
             .catch(() => {
@@ -256,6 +257,8 @@ export default class Chat implements Component<Options> {
             });
         }
       }
+
+      this.stayAtTheEnd = this.isAtBottom(5);
     });
 
     setInterval(() => {
@@ -264,12 +267,18 @@ export default class Chat implements Component<Options> {
       }
     }, 60000);
 
+    setInterval(() => {
+      if (this.stayAtTheEnd) {
+        this.scrollToEnd(false);
+      }
+    }, 500);
+
     Dialog.events.on(
       "seen",
       async ({
         dialog,
         maxId,
-        prevMaxId
+        prevMaxId,
       }: {
         dialog: IDialog;
         maxId: number;
@@ -393,7 +402,7 @@ export default class Chat implements Component<Options> {
 
   private async loadChat({
     offsetMessage,
-    unreadCount = 0
+    unreadCount = 0,
   }: { offsetMessage?: number; unreadCount?: number } = {}) {
     const peer = this.peer;
     const jumpCount = unreadCount ? unreadCount - LIMIT + BACK_LIMIT : 0;
@@ -401,12 +410,12 @@ export default class Chat implements Component<Options> {
       unreadCount
         ? {
             addOffset: Math.max(0, jumpCount),
-            limit: LIMIT
+            limit: LIMIT,
           }
         : {
             offsetId: offsetMessage,
             limit: offsetMessage ? LIMIT * 2 : LIMIT,
-            addOffset: offsetMessage ? -LIMIT : 0
+            addOffset: offsetMessage ? -LIMIT : 0,
           }
     );
     if (peer !== this.peer) {
@@ -416,6 +425,7 @@ export default class Chat implements Component<Options> {
     if (!offsetMessage && unreadCount === 0) {
       this.noMoreBottom = true;
     }
+    this.stayAtTheEnd = false;
 
     await this.addMessages(messages, {
       messageToScrollTo: offsetMessage,
@@ -424,7 +434,7 @@ export default class Chat implements Component<Options> {
           ? BACK_LIMIT - jumpCount
           : BACK_LIMIT
         : 0,
-      unreadCount
+      unreadCount,
     });
   }
 
@@ -434,7 +444,7 @@ export default class Chat implements Component<Options> {
       messageToScrollTo,
       jumpToBackLimit,
       unreadCount,
-      prepend = true
+      prepend = true,
     }: {
       messageToScrollTo?: number;
       jumpToBackLimit?: number;
@@ -471,7 +481,7 @@ export default class Chat implements Component<Options> {
 
       let numberOfSeen = 0;
       let recentMessage: IMessage;
-      (prepend ? messages.reverse() : messages).forEach(message => {
+      (prepend ? messages.reverse() : messages).forEach((message) => {
         if (!(message as any).out && message.id > this.dialog.readInboxMaxId) {
           numberOfSeen++;
           recentMessage = message;
@@ -482,7 +492,13 @@ export default class Chat implements Component<Options> {
         recentMessage.markAsRead(numberOfSeen);
       }
 
+      const stayAtTheEnd = this.isAtBottom(20);
+
       requestAnimationFrame(() => {
+        if (stayAtTheEnd) {
+          this.stayAtTheEnd = true;
+          this.scrollToEnd(false);
+        }
         this.lockLoad = false;
       });
     });
@@ -500,11 +516,13 @@ export default class Chat implements Component<Options> {
     return this.scrollView.scrollTop < threshold;
   }
 
-  private scrollToEnd() {
+  private scrollToEnd(animated = true) {
     this.scrollView.scrollTo({
-      behavior: 'smooth',
-      top: this.scrollView.scrollHeight
+      behavior: animated ? "smooth" : "auto",
+      top: this.scrollView.scrollHeight,
     });
+
+    this.stayAtTheEnd = true;
   }
 
   private handleSendMessage = (message: SimplifiedMessageRequest) => {
@@ -580,7 +598,7 @@ export default class Chat implements Component<Options> {
       // If sender of the message has changed create a new bubble holder
       lastBubbleHolder = createElement("div");
       lastBubbleWrapper = createElement("div", {
-        class: styles[type]
+        class: styles[type],
       });
       this.chatContainer[insertFn](lastBubbleWrapper);
 
@@ -589,7 +607,7 @@ export default class Chat implements Component<Options> {
         const avatar = createElement(Avatar, {
           peer,
           size: "sm",
-          class: styles.avatar
+          class: styles.avatar,
         });
 
         lastBubbleWrapper.append(avatar, lastBubbleHolder);
@@ -607,7 +625,7 @@ export default class Chat implements Component<Options> {
         onReply: this.handleReply,
         message,
         peer,
-        dialog: this.dialog
+        dialog: this.dialog,
       });
       this.idToElementMap.set(message.id, messageElement);
       lastBubbleHolder[insertFn](messageElement);
