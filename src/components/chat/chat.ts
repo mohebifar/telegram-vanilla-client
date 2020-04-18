@@ -501,7 +501,10 @@ export default class Chat implements Component<Options> {
   }
 
   private scrollToEnd() {
-    this.scrollView.scrollTop = this.scrollView.scrollHeight;
+    this.scrollView.scrollTo({
+      behavior: 'smooth',
+      top: this.scrollView.scrollHeight
+    });
   }
 
   private handleSendMessage = (message: SimplifiedMessageRequest) => {
