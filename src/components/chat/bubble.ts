@@ -86,6 +86,7 @@ export default class Bubble implements Component<Options> {
       if (window.getSelection) {
         window.getSelection().removeAllRanges();
       }
+      this.element.classList.add(styles.active);
 
       makeContextMenu({ x: e.clientX, y: e.clientY }, [
         ...(this.peer.canSendMessage()
@@ -127,7 +128,11 @@ export default class Bubble implements Component<Options> {
           title: "Delete",
           variant: "red"
         }
-      ]);
+      ], {
+        onClose: () => {
+          this.element.classList.remove(styles.active);
+        }
+      });
     });
 
     if (message.$t === "Message" && message.replyToMsgId) {

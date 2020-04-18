@@ -14,13 +14,16 @@ export type MenuItem = {
 export interface Options {
   items: MenuItem[];
   clickActivator?: boolean;
+  onClose?: Function;
   [s: string]: any;
 }
 
 export class ContextMenu implements Component<Options> {
   public readonly element: HTMLElement;
+  private onClose: Options["onClose"];
 
-  constructor({ items, clickActivator = true, ...rest }: Options) {
+  constructor({ items, clickActivator = true, onClose, ...rest }: Options) {
+    this.onClose = onClose;
     const itemElements = items.map(
       ({ tag = "button", icon, title, onClick, variant = "grey", ...rest }) => {
         const element = createElement(
@@ -28,7 +31,7 @@ export class ContextMenu implements Component<Options> {
           {
             class: styles.item + " " + (variant ? styles[variant] : ""),
             ...(tag === "button" ? { type: "button" } : {}),
-            ...rest
+            ...rest,
           },
           createElement(Icon, { icon: icon, color: variant }),
           createElement("div", { class: styles.title }, title)
@@ -36,7 +39,7 @@ export class ContextMenu implements Component<Options> {
 
         element.addEventListener("click", () => {
           if (onClick) {
-            onClick(() => this.element.remove());
+            onClick(() => this.close());
           }
         });
 
@@ -54,28 +57,37 @@ export class ContextMenu implements Component<Options> {
       const listener = (event: Event) => {
         const target = event.target as HTMLElement;
         if (!target.closest("." + styles.container)) {
-          this.element.remove();
+          this.close();
         } else {
           document.body.addEventListener("mousedown", listener, {
             once: true,
-            capture: true
+            capture: true,
           });
         }
       };
 
       document.body.addEventListener("mousedown", listener, {
         once: true,
-        capture: true
+        capture: true,
       });
+    }
+  }
+
+  private close() {
+    this.element.remove();
+    if (this.onClose) {
+      console.log('calling this.onClose', this.onClose)
+      this.onClose();
     }
   }
 }
 
 export function makeContextMenu(
   { x, y }: { x: number; y: number },
-  items: Options["items"]
+  items: Options["items"],
+  options: Pick<Options, "onClose" | "clickActivator"> = {}
 ) {
-  const menu = createElement(ContextMenu, { items });
+  const menu = createElement(ContextMenu, { items, ...options });
   menu.style.top = y + "px";
   menu.style.left = x + "px";
   requestAnimationFrame(() => {
