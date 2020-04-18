@@ -103,23 +103,9 @@ h4 {
   overflow: hidden;
 }
 
-.ripple-effect {
-  margin-top: 0px;
-  margin-left: 0px;
-  width: 1px;
-  height: 1px;
-  background-color: rgba(0, 0, 0, 0.033);
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  border-radius: 50%;
-  pointer-events: none;
-}
-
-.ripple-effect.light {
-  background-color: rgba(255, 255, 255, 0.15);
-}
-
-.ripple-effect.dark {
-  background-color: rgba(0, 0, 0, 0.075);
+.ripple {
+  position: relative;
+  overflow: hidden;
 }
 
 :global(.spinner) {

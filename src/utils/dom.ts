@@ -109,7 +109,13 @@ function createElementFromTag(
   const element: Element<undefined> = document.createElement(tag);
 
   Object.entries(attrs).forEach(([key, value]) => {
-    element.setAttribute(key, value);
+    if (key === "style") {
+      Object.entries(value).forEach(([styleKey, styleValue]) => {
+        element.style[styleKey] = styleValue;
+      });
+    } else {
+      element.setAttribute(key, value);
+    }
   });
   element.append(...children);
 
