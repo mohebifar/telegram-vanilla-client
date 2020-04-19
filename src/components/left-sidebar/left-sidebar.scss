@@ -1,4 +1,5 @@
 @import "../../variables.scss";
+@import "../../mixins.scss";
 
 .container {
   background-color: #fff;
@@ -26,21 +27,7 @@
       }
     }
 
-    &::-webkit-scrollbar {
-      width: 2px;
-    }
-
-    &::-webkit-scrollbar-track,
-    &::-webkit-scrollbar-thumb {
-      background-color: transparent;
-    }
-
-    &:hover {
-      &::-webkit-scrollbar-thumb {
-        background-color: $blue;
-        transition: background-color 0.3s ease;
-      }
-    }
+    @include nice-scroll;
   }
 }
 

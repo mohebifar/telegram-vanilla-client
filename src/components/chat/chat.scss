@@ -1,5 +1,6 @@
 @import "../../variables.scss";
 @import "../ui/icon.global.scss";
+@import "../../mixins.scss";
 
 $time-size: 0.75rem;
 
@@ -143,8 +144,10 @@ $time-size: 0.75rem;
     padding: 0.5rem;
     box-sizing: border-box;
     overflow-y: scroll;
+    overflow-x: hidden;
     mask-image: linear-gradient(bottom, transparent, #000 15px);
     -webkit-mask-image: -webkit-linear-gradient(bottom, transparent, #000 15px);
+    @include hide-scrollbar;
 
     .spinner {
       position: absolute;
@@ -201,7 +204,7 @@ $time-size: 0.75rem;
     overflow-wrap: break-word;
 
     &.active {
-      box-shadow: 0 0 0 4000px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 0 0 4000px rgba(0, 0, 0, 0.15);
       z-index: 99999;
     }
 
