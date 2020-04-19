@@ -1,4 +1,5 @@
 import aesWasm from "./aes.wasm";
+import { concatBuffers } from "../binary";
 
 type Key = Uint8Array | number[];
 
@@ -14,7 +15,7 @@ export async function encryptIGE(rawInput: Uint8Array, key: Key, iv: Key) {
   let iv1 = iv.slice(0, Math.floor(iv.length / 2));
   let iv2 = iv.slice(Math.floor(iv.length / 2));
 
-  let cipherText = [];
+  const cipherText: Uint8Array[] = [];
   const blocksCount = Math.floor(input.length / 16);
   for (let blockIndex = 0; blockIndex < blocksCount; blockIndex++) {
     const block = input
@@ -24,10 +25,10 @@ export async function encryptIGE(rawInput: Uint8Array, key: Key, iv: Key) {
     const cipherBlock = cipher(block).map((v, i) => (v ^= iv2[i]));
     iv1 = cipherBlock;
     iv2 = input.slice(blockIndex * 16, blockIndex * 16 + 16);
-    cipherText = cipherText.concat(Array.from(cipherBlock));
+    cipherText.push(cipherBlock);
   }
 
-  return new Uint8Array(cipherText);
+  return concatBuffers(cipherText);
 }
 
 export async function decryptIGE(cipherText: Uint8Array, key: Key, iv: Key) {
@@ -36,7 +37,7 @@ export async function decryptIGE(cipherText: Uint8Array, key: Key, iv: Key) {
   let iv1 = iv.slice(0, Math.floor(iv.length / 2));
   let iv2 = iv.slice(Math.floor(iv.length / 2));
 
-  let plainText: number[] = [];
+  const plainText: Uint8Array[] = [];
   const cipherTextBlock = new Uint8Array(16);
   const blocksCount = Math.floor(cipherText.length / 16);
 
@@ -49,10 +50,10 @@ export async function decryptIGE(cipherText: Uint8Array, key: Key, iv: Key) {
     iv1 = cipherText.slice(blockIndex * 16, blockIndex * 16 + 16);
     iv2 = plainTextBlock;
 
-    plainText = plainText.concat(Array.from(plainTextBlock));
+    plainText.push(plainTextBlock);
   }
 
-  return new Uint8Array(plainText);
+  return concatBuffers(plainText);
 }
 
 export const decryptorCTR = encryptorCTR;
@@ -101,8 +102,8 @@ async function initAES(
       memory,
       consoleLog: () => {
         // console.log("done");
-      }
-    }
+      },
+    },
   });
 
   const inputBuffer = new Uint8Array(memory.buffer, 0, 16);
@@ -110,10 +111,9 @@ async function initAES(
   const keyBuffer = new Uint8Array(memory.buffer, 32, 32);
   keyBuffer.set(key);
 
-  const fn =
-    type === "encrypt"
-      ? instance.exports.AES_ECB_encrypt
-      : instance.exports.AES_ECB_decrypt;
+  const fn = (type === "encrypt"
+    ? instance.exports.AES_ECB_encrypt
+    : instance.exports.AES_ECB_decrypt) as Function;
 
   return (input: Uint8Array) => {
     inputBuffer.set(input);

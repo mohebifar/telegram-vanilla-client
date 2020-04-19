@@ -521,13 +521,25 @@ function getContentType(type: upload_File["type"]) {
 }
 
 function getPartSize(fileSize: number) {
-  if (fileSize <= 104857600) {
-    // 100MB
+  if (fileSize <= 64000) {
+    // 64KB
     return 32;
+  }
+  if (fileSize <= 128000) {
+    // 128KB
+    return 64;
+  }
+  if (fileSize <= 512000) {
+    // 512KB
+    return 128;
+  }
+  if (fileSize <= 1e6) {
+    // 1MB
+    return 256;
   }
   if (fileSize <= 1572864000) {
     // 1500MB
-    return 64;
+    return 512;
   }
 
   throw new Error("File size too large");
