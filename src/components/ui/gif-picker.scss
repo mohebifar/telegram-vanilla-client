@@ -1,4 +1,6 @@
 @import "../../variables.scss";
+@import "../../mixins.scss";
+
 $spacing: 8px;
 $spacing-half: $spacing / 2;
 
@@ -10,6 +12,7 @@ $spacing-half: $spacing / 2;
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
+  @include hide-scrollbar;
 
   .preview {
     overflow: hidden;

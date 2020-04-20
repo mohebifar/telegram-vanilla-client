@@ -1,9 +1,11 @@
 @import "../../variables.scss";
+@import "../../mixins.scss";
 
 .container {
   position: relative;
   height: 100%;
   overflow-y: scroll;
+  @include hide-scrollbar;
 
   .title {
     top: 0;
