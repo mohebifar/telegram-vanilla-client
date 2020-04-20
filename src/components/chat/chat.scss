@@ -116,6 +116,9 @@ $time-size: 0.75rem;
   background-image: url("/assets/bg.jpg");
   background-size: cover;
   position: relative;
+  padding-right: 0;
+  overflow-x: hidden;
+  transition: padding-right 0.15s ease-in-out;
 
   a {
     &,
@@ -504,7 +507,7 @@ $time-size: 0.75rem;
       right: 0;
       bottom: 0;
       height: fit-content;
-      font-size: 0.7rem;
+      font-size: 0.75rem;
       background: #00000029;
       border-radius: 0.9rem;
       padding: 0;
@@ -576,6 +579,11 @@ $time-size: 0.75rem;
       }
     }
   }
+}
+
+
+:global(.visible) + .container {
+  padding-right: $right-sidebar-width;
 }
 
 .avatar {

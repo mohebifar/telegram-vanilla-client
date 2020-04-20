@@ -1,13 +1,24 @@
 @import "../../variables.scss";
 
 .root {
-  animation: animateIn 0.3s ease;
+  animation: animateIn 0.08s ease-in-out;
   overflow-x: hidden;
   border-left: 1px solid $grey-light;
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 999;
+  transform: translate3d(0, 0, 0);
+
+  &:not(:global(.visible)) {
+    transition: transform 0.15s ease-in-out;
+    transform: translate3d($right-sidebar-width, 0, 0);
+  }
 
   &,
   :global(.route) {
-    width: 25em;
+    width: $right-sidebar-width;
     overflow-x: hidden;
   }
 }
@@ -21,10 +32,10 @@
 
 @keyframes animateIn {
   from {
-    width: 0;
+    transform: translate3d($right-sidebar-width, 0, 0);
   }
   to {
-    width: 25em;
+    transform: translate3d(0, 0, 0);
   }
 }
 

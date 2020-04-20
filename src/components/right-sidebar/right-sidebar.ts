@@ -1,7 +1,6 @@
 import { IMessage } from "../../models/message";
 import { IPeer } from "../../models/peer";
 import { Component, createElement } from "../../utils/dom";
-import { startAnimation } from "../../utils/easing";
 import Router from "../ui/router";
 import MessageSearch from "./message-search";
 import ProfileDetails from "./profile-details";
@@ -25,8 +24,8 @@ export default class RightSideBar implements Component<Options> {
             createElement(ProfileDetails, {
               peer,
               router: this.router,
-              back: () => this.back()
-            })
+              back: () => this.back(),
+            }),
         },
         {
           name: "message-search",
@@ -36,10 +35,10 @@ export default class RightSideBar implements Component<Options> {
                 onMessageSelect(peer, message);
               },
               peer,
-              back: () => this.back()
-            })
-        }
-      ]
+              back: () => this.back(),
+            }),
+        },
+      ],
     });
 
     this.router = routerElement.instance;
@@ -66,26 +65,28 @@ export default class RightSideBar implements Component<Options> {
 
   public search(peer: IPeer) {
     this.router[this.peer === peer ? "push" : "replace"]("message-search", {
-      peer
+      peer,
     });
   }
 
   public show() {
-    this.element.classList.remove("hidden");
+    this.element.classList.replace("hidden", "visible");
   }
 
   public close() {
-    startAnimation(
-      { w: { from: 25, to: 0 } },
-      v => {
-        this.element.style.width = v.w + "em";
-      },
+    this.element.addEventListener(
+      "transitionend",
       () => {
         this.peer = null;
-        this.element.style.width = "";
+        this.element.style.transform = "";
         this.element.classList.add("hidden");
         this.router.flush();
+        console.log('transition end')
+      },
+      {
+        once: true,
       }
     );
+    this.element.classList.remove("visible");
   }
 }
