@@ -18,7 +18,8 @@ const fileStorageProxiedMethods = <const>[
   "downloadMedia",
   "downloadDocument",
   "upload",
-  "documentIsCached"
+  "documentIsCached",
+  "assignUploadedFile"
 ];
 
 export type ClientProxiedMethods = typeof clientProxiedMethods[number];

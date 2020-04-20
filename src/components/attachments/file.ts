@@ -1,12 +1,12 @@
 import {
   Document,
   DocumentAttributeFilename,
-  MessageMediaDocument
+  MessageMediaDocument,
 } from "../../core/tl/TLObjects";
 import { TelegramClientProxy } from "../../telegram-worker-proxy";
 import { parseFileSize } from "../../utils/chat";
 import { Component, createElement } from "../../utils/dom";
-import { saveData } from "../../utils/upload-file";
+import { saveData, readDataURL } from "../../utils/upload-file";
 import { TransientMedia } from "../../utils/useful-types";
 import * as styles from "../chat/chat.scss";
 import FileIcon from "../ui/file-icon";
@@ -24,7 +24,7 @@ export default class FileAttachment implements Component<Options> {
     let fileSize: number;
     if (media.$t === "MessageMediaDocument") {
       const fileNameAttribute = (media.document as Document).attributes.find(
-        t => t.$t === "DocumentAttributeFilename"
+        (t) => t.$t === "DocumentAttributeFilename"
       ) as DocumentAttributeFilename;
       if (!fileNameAttribute) {
         this.element = createElement("div", "Unsupported file");
@@ -52,22 +52,36 @@ export default class FileAttachment implements Component<Options> {
       fileIcon
     );
 
+    let shouldContinue = true;
+
     if (media.$t === "MessageMediaDocument") {
       fileIcon.instance.showEmpty();
       iconWrapper.addEventListener("click", downloadListener);
     } else {
+      // Transient media - uploading
       fileIcon.instance.showProgress(media.progress || 0);
+      const stopUploadListener = () => {
+        alert("Stopping upload is not supported yet");
+      };
+
       if (media.subscribe) {
-        media.subscribe(progress => {
-          fileIcon.instance.showProgress(progress || 0);
+        media.subscribe((progress) => {
+          if (progress === 1) {
+            iconWrapper.removeEventListener("click", stopUploadListener);
+            fileIcon.instance.showDocument();
+            iconWrapper.addEventListener("click", () => {
+              readDataURL(media.file).then((file) => {
+                saveData(file, fileName);
+              });
+            });
+          } else {
+            fileIcon.instance.showProgress(progress || 0);
+          }
+          return shouldContinue;
         });
       }
-      iconWrapper.addEventListener("click", () => {
-        alert("Stopping upload is not supported yet");
-      });
+      iconWrapper.addEventListener("click", stopUploadListener);
     }
-
-    let shouldContinue = true;
 
     function stopListener() {
       iconWrapper.removeEventListener("click", stopListener);
@@ -92,7 +106,7 @@ export default class FileAttachment implements Component<Options> {
 
       tg.fileStorage
         .downloadMedia(media as any, undefined, onProgress)
-        .then(file => {
+        .then((file) => {
           if (file && iconWrapper) {
             fileIcon.instance.showDocument();
             iconWrapper.removeEventListener("click", stopListener);

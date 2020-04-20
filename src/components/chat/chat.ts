@@ -80,8 +80,8 @@ export default class Chat implements Component<Options> {
     this.element = createElement(
       "div",
       { class: styles.root },
+      this.rightSidebar,
       chatSection,
-      this.rightSidebar
     );
 
     this.register();
@@ -526,9 +526,12 @@ export default class Chat implements Component<Options> {
   }
 
   private handleSendMessage = (message: SimplifiedMessageRequest) => {
-    const [model, promise] = this.peer.sendMessage(message);
+    const [model, promise, shouldCreateBubble] = this.peer.sendMessage(message);
 
-    this.handleNewMessage(model);
+    if (shouldCreateBubble) {
+      this.handleNewMessage(model);
+    }
+
     return promise;
   };
 

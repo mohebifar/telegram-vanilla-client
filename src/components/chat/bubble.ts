@@ -1,7 +1,7 @@
 import {
   MessageMediaDocument,
   MessageMediaPhoto,
-  MessageMediaWebPage
+  MessageMediaWebPage,
 } from "../../core/tl/TLObjects";
 import { IDialog } from "../../models/dialog";
 import { IMessage, Message } from "../../models/message";
@@ -11,7 +11,7 @@ import {
   Component,
   createElement,
   Element,
-  removeChildren
+  removeChildren,
 } from "../../utils/dom";
 import { EMPTY_IMG } from "../../utils/images";
 import { TransientMedia } from "../../utils/useful-types";
@@ -27,6 +27,16 @@ import { mediaLightBox } from "../ui/media-lightbox";
 import * as styles from "./chat.scss";
 import QuoteBox from "./quote-box";
 import ServiceBubble from "./service-bubble";
+
+type AttachmentElement = Element<
+  | AnimatedStickerAttachment
+  | HTMLImageElement
+  | PhotoAttachment
+  | VideoAttachment
+  | FileAttachment
+  | AudioAttachment
+  | WebAttachment
+>;
 
 interface Options {
   message: IMessage;
@@ -80,7 +90,7 @@ export default class Bubble implements Component<Options> {
       messageWrapper
     );
 
-    this.element.addEventListener("contextmenu", e => {
+    this.element.addEventListener("contextmenu", (e) => {
       e.preventDefault();
 
       if (window.getSelection) {
@@ -88,51 +98,55 @@ export default class Bubble implements Component<Options> {
       }
       this.element.classList.add(styles.active);
 
-      makeContextMenu({ x: e.clientX, y: e.clientY }, [
-        ...(this.peer.canSendMessage()
-          ? [
-              {
-                icon: Icons.Reply,
-                title: "Reply",
-                onClick: close => {
-                  close();
-                  this.onReply(this.message);
-                }
-              }
-            ]
-          : []),
-        ...(this.isSticker()
-          ? []
-          : [
-              {
-                icon: Icons.Copy,
-                title: "Copy",
-                onClick: close => {
-                  close();
-                  if (this.message.$t === "Message") {
-                    navigator.clipboard.writeText(this.message.message);
-                  }
-                }
-              }
-            ]),
+      makeContextMenu(
+        { x: e.clientX, y: e.clientY },
+        [
+          ...(this.peer.canSendMessage()
+            ? [
+                {
+                  icon: Icons.Reply,
+                  title: "Reply",
+                  onClick: (close) => {
+                    close();
+                    this.onReply(this.message);
+                  },
+                },
+              ]
+            : []),
+          ...(this.isSticker()
+            ? []
+            : [
+                {
+                  icon: Icons.Copy,
+                  title: "Copy",
+                  onClick: (close) => {
+                    close();
+                    if (this.message.$t === "Message") {
+                      navigator.clipboard.writeText(this.message.message);
+                    }
+                  },
+                },
+              ]),
+          {
+            icon: Icons.Forward,
+            title: "Forward",
+          },
+          {
+            icon: Icons.Pin,
+            title: "Pin",
+          },
+          {
+            icon: Icons.Delete,
+            title: "Delete",
+            variant: "red",
+          },
+        ],
         {
-          icon: Icons.Forward,
-          title: "Forward"
-        },
-        {
-          icon: Icons.Pin,
-          title: "Pin"
-        },
-        {
-          icon: Icons.Delete,
-          title: "Delete",
-          variant: "red"
+          onClose: () => {
+            this.element.classList.remove(styles.active);
+          },
         }
-      ], {
-        onClose: () => {
-          this.element.classList.remove(styles.active);
-        }
-      });
+      );
     });
 
     if (message.$t === "Message" && message.replyToMsgId) {
@@ -162,7 +176,7 @@ export default class Bubble implements Component<Options> {
     if (forward) {
       const originalSender = this.message.getPeerForwardedFrom();
       if (originalSender) {
-        originalSender.then(displayName => {
+        originalSender.then((displayName) => {
           if (displayName) {
             this.messageText.prepend(
               createElement("div", { class: styles.fromName }, displayName)
@@ -203,8 +217,18 @@ export default class Bubble implements Component<Options> {
     this.updateInner(time);
 
     if (attachment) {
-      removeChildren(this.attachment);
-      this.attachment.append(attachment);
+      const node = this.attachment.childNodes.item(0) as AttachmentElement;
+      if (
+        node &&
+        node.instance &&
+        attachment.instance &&
+        node.instance instanceof attachment.instance.constructor
+      ) {
+        console.debug("Attachment type is the same");
+      } else {
+        removeChildren(this.attachment);
+        this.attachment.append(attachment);
+      }
 
       if (attachmentType === "web") {
         this.element.append(this.attachment);
@@ -243,7 +267,7 @@ export default class Bubble implements Component<Options> {
       this.sentIndicator = createElement(Icon, {
         icon,
         color: this.isSticker() ? "white" : "green",
-        class: styles.sentIndicator
+        class: styles.sentIndicator,
       });
 
       this.inner.append(this.sentIndicator);
@@ -254,7 +278,10 @@ export default class Bubble implements Component<Options> {
     return this.element.classList.contains(styles.sticker);
   }
 
-  private getAttachments(): [HTMLElement | undefined, string | undefined] {
+  private getAttachments(): [
+    AttachmentElement | undefined,
+    string | undefined
+  ] {
     if (
       this.message.$t === "Message" &&
       this.message.media &&
@@ -267,18 +294,20 @@ export default class Bubble implements Component<Options> {
         if (media.document.$t === "Document") {
           const { attributes } = media.document;
           // Check for sticker
-          if (attributes.some(attr => attr.$t === "DocumentAttributeSticker")) {
+          if (
+            attributes.some((attr) => attr.$t === "DocumentAttributeSticker")
+          ) {
             if (media.document.mimeType === "application/x-tgsticker") {
               return this.getAnimatedSticker(media);
             } else {
               return this.getImageSticker(media);
             }
           } else if (
-            attributes.some(attr => attr.$t === "DocumentAttributeVideo")
+            attributes.some((attr) => attr.$t === "DocumentAttributeVideo")
           ) {
             return this.getVideoAttachment(media);
           } else if (
-            attributes.some(attr => attr.$t === "DocumentAttributeAudio")
+            attributes.some((attr) => attr.$t === "DocumentAttributeAudio")
           ) {
             return this.getAudioAttachment(media);
           } else {
@@ -299,7 +328,7 @@ export default class Bubble implements Component<Options> {
 
       return [
         createElement("div", { class: styles.message }, "[Unsupported media]"),
-        "unknown"
+        "unknown",
       ];
     }
 
@@ -308,36 +337,38 @@ export default class Bubble implements Component<Options> {
 
   private getAnimatedSticker(
     media: MessageMediaDocument
-  ): [HTMLElement, "animated-sticker"] {
+  ): [Element<AnimatedStickerAttachment>, "animated-sticker"] {
     return [
       createElement(AnimatedStickerAttachment, { media, tg: this.message.tg }),
-      "animated-sticker"
+      "animated-sticker",
     ];
   }
 
   private getImageSticker(
     media: MessageMediaDocument
-  ): [HTMLElement, "sticker"] {
+  ): [Element<HTMLImageElement>, "sticker"] {
     const sticker = createElement("img", {
       class: styles.attachment,
-      src: EMPTY_IMG
+      src: EMPTY_IMG,
     });
 
-    this.message.tg.fileStorage.downloadMedia(media).then(url => {
+    this.message.tg.fileStorage.downloadMedia(media).then((url) => {
       sticker.setAttribute("src", url);
     });
     return [sticker, "sticker"];
   }
 
-  private getPhotoAttachment(media: MessageMediaPhoto): [HTMLElement, "photo"] {
+  private getPhotoAttachment(
+    media: MessageMediaPhoto
+  ): [Element<PhotoAttachment>, "photo"] {
     const onClick = () => {
-      this.dialog.getPeer().then(peer => {
+      this.dialog.getPeer().then((peer) => {
         mediaLightBox({
           initialPhoto: element.instance.getSrc(),
           peer,
           message: this.message,
           source: element,
-          tg: this.message.tg
+          tg: this.message.tg,
         });
       });
     };
@@ -345,7 +376,7 @@ export default class Bubble implements Component<Options> {
     const element = createElement(PhotoAttachment, {
       tg: this.message.tg,
       media,
-      onClick
+      onClick,
     });
 
     return [element, "photo"];
@@ -353,15 +384,15 @@ export default class Bubble implements Component<Options> {
 
   private getVideoAttachment(
     media: MessageMediaDocument
-  ): [HTMLElement | undefined, "video" | undefined] {
+  ): [Element<VideoAttachment>, "video"] {
     const onClick = (initialPhoto: string) => {
-      this.dialog.getPeer().then(peer => {
+      this.dialog.getPeer().then((peer) => {
         mediaLightBox({
           initialPhoto,
           peer,
           message: this.message,
           source: element,
-          tg: this.message.tg
+          tg: this.message.tg,
         });
       });
     };
@@ -369,35 +400,35 @@ export default class Bubble implements Component<Options> {
     const element = createElement(VideoAttachment, {
       tg: this.message.tg,
       media,
-      onClick
+      onClick,
     });
     return [element, "video"];
   }
 
   private getFileAttachment(
     media: MessageMediaDocument
-  ): [HTMLElement | undefined, "file" | undefined] {
+  ): [Element<FileAttachment>, "file"] {
     return [
       createElement(FileAttachment, { media, tg: this.message.tg }),
-      "file"
+      "file",
     ];
   }
 
   private getTransientFileAttachment(
     media: TransientMedia
-  ): [HTMLElement | undefined, "file" | undefined] {
+  ): [Element<FileAttachment>, "file"] {
     return [
       createElement(FileAttachment, { media, tg: this.message.tg }),
-      "file"
+      "file",
     ];
   }
 
   private getTransientPhotoAttachment(
     media: TransientMedia
-  ): [HTMLElement | undefined, "photo" | undefined] {
+  ): [Element<PhotoAttachment>, "photo"] {
     return [
       createElement(PhotoAttachment, { media, tg: this.message.tg }),
-      "photo"
+      "photo",
     ];
   }
 
@@ -406,14 +437,16 @@ export default class Bubble implements Component<Options> {
   ): [Element<AudioAttachment>, "audio"] {
     return [
       createElement(AudioAttachment, { media, tg: this.message.tg }),
-      "audio"
+      "audio",
     ];
   }
 
-  private getWebAttachment(media: MessageMediaWebPage): [HTMLElement, "web"] {
+  private getWebAttachment(
+    media: MessageMediaWebPage
+  ): [Element<WebAttachment>, "web"] {
     return [
       createElement(WebAttachment, { media, tg: this.message.tg }),
-      "web"
+      "web",
     ];
   }
 
@@ -424,13 +457,13 @@ export default class Bubble implements Component<Options> {
       id: replyMsgId,
       channelId: Number(
         this.dialog.peerType === "Channel" && this.dialog.peerId
-      )
-    }).then(message => {
+      ),
+    }).then((message) => {
       if (message && message.$t === "Message") {
         element.append(
           createElement(QuoteBox, {
             message,
-            onClick: () => this.onReplyClick(message.id)
+            onClick: () => this.onReplyClick(message.id),
           })
         );
       } else {
@@ -446,7 +479,7 @@ export default class Bubble implements Component<Options> {
       case "Message":
         return {
           text: messageToHTML(this.message),
-          time: this.message.date.format("HH:mm")
+          time: this.message.date.format("HH:mm"),
         };
       case "MessageEmpty":
       case "MessageService":
@@ -454,7 +487,7 @@ export default class Bubble implements Component<Options> {
         // TODO: Support message service
         return {
           text: "",
-          time: ""
+          time: "",
         };
     }
   }

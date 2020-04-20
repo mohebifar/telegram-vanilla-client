@@ -13,7 +13,7 @@ import {
   UpdateChatUserTyping,
   UpdateUserTyping,
   UpdateReadChannelOutbox,
-  UpdateReadHistoryOutbox
+  UpdateReadHistoryOutbox,
 } from "./core/tl/TLObjects";
 import { extractIdFromPeer } from "./core/tl/utils";
 import { IMessage, Message } from "./models/message";
@@ -118,6 +118,17 @@ async function handleNewMessageUpdate(
       ...fieldsToUpdate
     } = messageObject as any;
 
+    if (
+      "media" in transientMessage.message &&
+      transientMessage.message.media.$t === "TransientMedia" &&
+      "media" in messageObject
+    ) {
+      message.tg.fileStorage.assignUploadedFile(
+        messageObject.media,
+        transientMessage.message.media.fileId
+      );
+    }
+
     message.assignValues(fieldsToUpdate);
     if (message.$t === "Message") {
       const self = await Peer.getSelf();
@@ -129,7 +140,7 @@ async function handleNewMessageUpdate(
     requestAnimationFrame(() => {
       Message.events.emit("synced", {
         clientId: transientMessage.randomId,
-        message
+        message,
       });
     });
   } else {
@@ -214,17 +225,17 @@ async function handleUpdateTyping(
   if (update.$t === "UpdateUserTyping") {
     dialog = await Dialog.get({
       peerId: update.userId,
-      peerType: "User"
+      peerType: "User",
     });
   } else {
     dialog = await Dialog.get({
       peerId: update.chatId,
-      peerType: "Chat"
+      peerType: "Chat",
     });
     if (!dialog) {
       dialog = await Dialog.get({
         peerId: update.chatId,
-        peerType: "Channel"
+        peerType: "Channel",
       });
     }
   }

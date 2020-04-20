@@ -2,7 +2,7 @@ import autosize from "autosize";
 import {
   InputMediaUploadedDocument,
   InputMediaUploadedPhoto,
-  Document
+  Document,
 } from "../../core/tl/TLObjects";
 import { IMessage } from "../../models/message";
 import { Peer, SimplifiedMessageRequest } from "../../models/peer";
@@ -12,7 +12,7 @@ import {
   makeFileDialog,
   readFile,
   resizeImage,
-  readDataURL
+  readDataURL,
 } from "../../utils/upload-file";
 import { ContextMenu } from "../ui/context-menu";
 import EmojiPanel from "../ui/emoji-panel";
@@ -44,7 +44,7 @@ export default class SendMessageForm implements Component<Options> {
       rows: "1",
       class: styles.messageInput,
       placeholder: "Message",
-      dir: "auto"
+      dir: "auto",
     }) as HTMLTextAreaElement;
     autosize(this.inputNode);
 
@@ -80,7 +80,7 @@ export default class SendMessageForm implements Component<Options> {
       }
     });
 
-    this.inputNode.addEventListener("keypress", e => {
+    this.inputNode.addEventListener("keypress", (e) => {
       if (e.which == 13 && !e.shiftKey) {
         e.preventDefault();
         this.handleSubmit();
@@ -104,10 +104,10 @@ export default class SendMessageForm implements Component<Options> {
         color: "grey",
         onClick: () => {
           this.clearReply();
-        }
+        },
       }),
       createElement(QuoteBox, {
-        message
+        message,
       })
     );
     this.focus();
@@ -129,7 +129,7 @@ export default class SendMessageForm implements Component<Options> {
     autosize.update(this.inputNode);
     this.sendMessage({
       $t: "messages_SendMessageRequest",
-      message: value
+      message: value,
     });
   };
 
@@ -184,9 +184,9 @@ export default class SendMessageForm implements Component<Options> {
       const captionInput = createElement(Input, {
         tag: "textarea",
         wrapperClass: styles.captionInput,
-        placeholder: "Add a caption..."
+        placeholder: "Add a caption...",
       });
-      captionInput.addEventListener("keypress", e => {
+      captionInput.addEventListener("keypress", (e) => {
         if (e.keyCode === 13 && !e.shiftKey) {
           e.preventDefault();
           submit();
@@ -202,7 +202,7 @@ export default class SendMessageForm implements Component<Options> {
         } else if (caption) {
           this.sendMessage({
             $t: "messages_SendMessageRequest",
-            message: caption
+            message: caption,
           });
         }
 
@@ -215,7 +215,7 @@ export default class SendMessageForm implements Component<Options> {
         createElement("div", element, captionInput),
         {
           caption: "Send",
-          onClick: submit
+          onClick: submit,
         },
         () => {
           reject();
@@ -271,9 +271,10 @@ export default class SendMessageForm implements Component<Options> {
             width,
             height,
             thumbnail,
-            subscribe: fn => subscriptions.set(file, fn)
+            fileId: "unassigned",
+            subscribe: (fn) => subscriptions.set(file, fn),
           },
-          message: ""
+          message: "",
         });
       }
 
@@ -299,7 +300,7 @@ export default class SendMessageForm implements Component<Options> {
 
         const uploadedFile = await Peer.tg.fileStorage.upload(
           buffer,
-          progress => {
+          (progress) => {
             const subscription = subscriptions.get(file);
             if (subscription) {
               subscription(progress);
@@ -307,22 +308,35 @@ export default class SendMessageForm implements Component<Options> {
           }
         );
 
+        if (
+          transientModel.$t === "Message" &&
+          transientModel.media.$t === "TransientMedia"
+        ) {
+          transientModel.media.fileId = uploadedFile.id;
+        }
+
         const media: InputMediaUploadedPhoto | InputMediaUploadedDocument =
           type === "media" && file.type.startsWith("image/")
             ? {
                 $t: "InputMediaUploadedPhoto",
-                file: uploadedFile
+                file: {
+                  ...uploadedFile,
+                  name: file.name,
+                },
               }
             : {
                 $t: "InputMediaUploadedDocument",
-                file: uploadedFile,
+                file: {
+                  ...uploadedFile,
+                  name: file.name,
+                },
                 mimeType: file.type,
                 attributes: [
                   {
                     $t: "DocumentAttributeFilename",
-                    fileName: file.name
-                  }
-                ]
+                    fileName: file.name,
+                  },
+                ],
               };
 
         await this.sendMessage({
@@ -332,10 +346,12 @@ export default class SendMessageForm implements Component<Options> {
             transientModel.$t === "Message"
               ? transientModel.replyToMsgId
               : undefined,
-          message: transientModel.$t === "Message" ? transientModel.message : ""
+          message:
+            transientModel.$t === "Message" ? transientModel.message : "",
+          transientModel,
         });
 
-        transientModel.destroy();
+        // transientModel.destroy();
       }
     };
 
@@ -354,22 +370,22 @@ export default class SendMessageForm implements Component<Options> {
           title: "Photo or Video",
           icon: Icons.Photo,
           tag: "label",
-          for: imageDialog
+          for: imageDialog,
         },
         {
           title: "Document",
           icon: Icons.Document,
           tag: "label",
-          for: fileDialog
+          for: fileDialog,
         },
         {
           title: "Poll",
           icon: Icons.Poll,
           onClick() {
             console.log("poll");
-          }
-        }
-      ]
+          },
+        },
+      ],
     });
 
     const clear = () => clearTimeout(timeout);
@@ -399,7 +415,7 @@ export default class SendMessageForm implements Component<Options> {
       },
       onHoverOut() {
         hideWithTimeout();
-      }
+      },
     });
 
     return [attachmentDropdown, attachmentActivator];
@@ -416,21 +432,21 @@ export default class SendMessageForm implements Component<Options> {
               $t: "InputDocument",
               accessHash: document.accessHash,
               fileReference: document.fileReference,
-              id: document.id
-            }
+              id: document.id,
+            },
           },
           actualMedia: {
             $t: "MessageMediaDocument",
-            document
+            document,
           },
-          message: ""
+          message: "",
         },
         false
       );
     };
 
     const emojiPicker = createElement(EmojiPanel, {
-      onEmojiSelect: emoji => {
+      onEmojiSelect: (emoji) => {
         const target = this.inputNode;
         if (target.setRangeText) {
           const start = target.selectionStart;
@@ -443,19 +459,19 @@ export default class SendMessageForm implements Component<Options> {
         }
       },
       onStickerSelect: onDocumentSelect,
-      onGifSelect: onDocumentSelect
+      onGifSelect: onDocumentSelect,
     });
 
     const emojiActivator = createElement(IconButton, {
       icon: Icons.Smile,
       type: "button",
-      onHover: event => {
+      onHover: (event) => {
         event.stopPropagation();
         emojiPicker.instance.setVisibility(true);
       },
       onHoverOut: () => {
         emojiPicker.instance.deferHide();
-      }
+      },
     });
 
     return [emojiPicker, emojiActivator];
@@ -464,7 +480,7 @@ export default class SendMessageForm implements Component<Options> {
   private sendMessage(message: SimplifiedMessageRequest, clear = true) {
     const result = this.callback({
       ...message,
-      ...(this.replyMessage ? { replyToMsgId: this.replyMessage.id } : {})
+      ...(this.replyMessage ? { replyToMsgId: this.replyMessage.id } : {}),
     });
     this.clearReply();
     if (clear) {

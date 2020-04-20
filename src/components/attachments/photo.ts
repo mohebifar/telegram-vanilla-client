@@ -21,7 +21,7 @@ export default class PhotoAttachment implements Component<Options> {
   constructor({ media, onClick, tg }: Options) {
     const img = createElement("img", {
       class: "pointer blur",
-      src: (media.$t === "TransientMedia" && media.thumbnail) || EMPTY_IMG
+      src: (media.$t === "TransientMedia" && media.thumbnail) || EMPTY_IMG,
     }) as HTMLImageElement;
     this.img = img;
 
@@ -49,17 +49,17 @@ export default class PhotoAttachment implements Component<Options> {
 
       let downloaded = false;
 
-      tg.fileStorage.downloadMedia(media, 0).then(url => {
+      tg.fileStorage.downloadMedia(media, 0).then((url) => {
         if (!downloaded) {
           img.setAttribute("src", url);
         }
       });
 
       tg.fileStorage
-        .downloadMedia(media, size, t => {
+        .downloadMedia(media, size, (t) => {
           progress.instance.progress(t);
         })
-        .then(url => {
+        .then((url) => {
           downloaded = true;
           img.classList.remove("blur");
           img.setAttribute("src", url);
@@ -67,9 +67,16 @@ export default class PhotoAttachment implements Component<Options> {
           element.addEventListener("click", onClick);
         });
     } else {
+      // Transient Media
       if (media.subscribe) {
-        media.subscribe(t => {
-          progress.instance.progress(t || 0);
+        media.subscribe((t) => {
+          if (t === 1) {
+            downloadIndicator.remove();
+            progress.remove();
+            img.classList.remove("blur");
+          } else {
+            progress.instance.progress(t || 0);
+          }
         });
       }
 
@@ -78,7 +85,7 @@ export default class PhotoAttachment implements Component<Options> {
       element.style.height = `${h}px`;
 
       if (!media.thumbnail) {
-        readDataURL(media.file).then(url => {
+        readDataURL(media.file).then((url) => {
           img.setAttribute("src", url);
         });
       }

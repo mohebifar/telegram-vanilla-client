@@ -30,7 +30,8 @@ import {
   UserProfilePhoto,
   UserProfilePhotoEmpty,
   WebDocument,
-  WebDocumentNoProxy
+  WebDocumentNoProxy,
+  InputPhotoFileLocation,
 } from "./tl/TLObjects";
 import { getInputPeer } from "./tl/utils";
 
@@ -76,7 +77,7 @@ export class FileStorage {
     } while (this.uploadedFiles.has(fileId.toString()));
     this.uploadedFiles.set(fileId, null);
 
-    const partSize = (getPartSize(bytes.length) / 2) * 1024;
+    const partSize = (getPartSize(bytes.length) / 4) * 1024;
     const numberOfParts = Math.ceil(bytes.length / partSize);
     let filePart = 0;
     let retries = 0;
@@ -87,11 +88,11 @@ export class FileStorage {
           $t: "upload_SaveFilePartRequest",
           bytes: bytes.slice(index, index + partSize),
           fileId,
-          filePart
+          filePart,
         });
         filePart++;
         if (onProgress) {
-          onProgress((filePart * partSize) / bytes.length);
+          onProgress(Math.min((filePart * partSize) / bytes.length, 1));
         }
       } catch {
         retries++;
@@ -105,7 +106,7 @@ export class FileStorage {
       id: fileId,
       parts: numberOfParts,
       name: "test.jpg",
-      md5Checksum: MD5.process(bytes).toString()
+      md5Checksum: MD5.process(bytes).toString(),
     };
   }
 
@@ -120,7 +121,7 @@ export class FileStorage {
       fileSize,
       cacheKey = null,
       shouldInflate = false,
-      onProgress
+      onProgress,
     }: {
       dcId: number;
       fileSize?: number;
@@ -136,7 +137,7 @@ export class FileStorage {
       const match = await cache.match(key);
       if (match) {
         const url = URL.createObjectURL(await match.blob());
-        // console.debug("Cache hit", cacheKey, url);
+        console.debug("Cache hit", cacheKey, url);
         return url;
       }
     }
@@ -167,7 +168,7 @@ export class FileStorage {
           $t: "upload_GetFileRequest",
           limit: partSize,
           offset,
-          location
+          location,
         });
         bytesArray.push(file.bytes);
         offset += partSize;
@@ -185,7 +186,7 @@ export class FileStorage {
         console.error({
           limit: partSize,
           offset,
-          location
+          location,
         });
 
         console.error(err);
@@ -266,7 +267,7 @@ export class FileStorage {
       peer: await getInputPeer(entity),
       localId: which.localId,
       volumeId: which.volumeId,
-      big: downloadBig
+      big: downloadBig,
     };
 
     try {
@@ -278,7 +279,7 @@ export class FileStorage {
         if (ie.$t === "InputPeerChannel") {
           const full = (await this.client.invoke({
             $t: "channels_GetFullChannelRequest",
-            channel: ie as any
+            channel: ie as any,
           })) as messages_ChatFull;
 
           if (full.fullChat.chatPhoto.$t === "PhotoEmpty") {
@@ -357,31 +358,54 @@ export class FileStorage {
       }
     }
     const shouldInflate = document.mimeType === "application/x-tgsticker";
-    const result = await this.download(this.documentLocation(document, size), {
-      fileSize: size && "size" in size ? size.size : document.size,
-      cacheKey: CACHE_KEY_DOCUMENT,
-      dcId,
-      shouldInflate,
-      onProgress
-    });
+    const result = await this.download(
+      this.getDocumentLocation(document, size),
+      {
+        fileSize: size && "size" in size ? size.size : document.size,
+        cacheKey: CACHE_KEY_DOCUMENT,
+        dcId,
+        shouldInflate,
+        onProgress,
+      }
+    );
     return result;
   }
 
-  public documentLocation(
-    document: Document,
-    size?: PhotoSizesTypes
-  ): InputDocumentFileLocation {
-    return {
-      $t: "InputDocumentFileLocation",
-      id: document.id,
-      accessHash: document.accessHash,
-      fileReference: document.fileReference,
-      thumbSize: size ? size.type : ""
-    };
+  public assignUploadedFile(media: Message["media"], fileId: string) {
+    const blob = this.uploadedFiles.get(fileId);
+    if (media.$t === "MessageMediaPhoto" && media.photo.$t === "Photo") {
+      media.photo.sizes.forEach((size) => {
+        if (size.$t === "PhotoSize") {
+          this.cache.PHOTO.put(
+            this.generateKey(this.getPhotoLocation(media.photo as Photo, size)),
+            new Response(blob)
+          );
+        }
+      });
+    }
+    console.log("aah", media);
+
+    if (
+      media.$t === "MessageMediaDocument" &&
+      media.document.$t === "Document"
+    ) {
+      const sizes = [
+        undefined,
+        ...((media.document.thumbs &&
+          media.document.thumbs.filter((thumb) => thumb.$t === "PhotoSize")) ||
+          []),
+      ];
+      sizes.forEach((size) => {
+        this.cache.DOCUMENT.put(
+          this.generateKey(this.getDocumentLocation(media.document as Document, size)),
+          new Response(blob)
+        );
+      });
+    }
   }
 
   public async documentIsCached(document: Document, size?: PhotoSizesTypes) {
-    const location = this.documentLocation(document, size);
+    const location = this.getDocumentLocation(document, size);
     const key = this.generateKey(location);
     const cache = this.cache && this.cache[CACHE_KEY_DOCUMENT];
 
@@ -415,21 +439,12 @@ export class FileStorage {
       return this.downloadCachedPhotoSize(size);
     }
 
-    return this.download(
-      {
-        $t: "InputPhotoFileLocation",
-        id: photo.id,
-        accessHash: photo.accessHash,
-        fileReference: photo.fileReference,
-        thumbSize: size.type
-      },
-      {
-        dcId: photo.dcId,
-        fileSize: size.size,
-        cacheKey: CACHE_KEY_PHOTO,
-        onProgress
-      }
-    );
+    return this.download(this.getPhotoLocation(photo, size), {
+      dcId: photo.dcId,
+      fileSize: size.size,
+      cacheKey: CACHE_KEY_PHOTO,
+      onProgress,
+    });
   }
 
   private downloadCachedPhotoSize(size: PhotoStrippedSize | PhotoCachedSize) {
@@ -450,17 +465,17 @@ export class FileStorage {
 
     const wait = this.downloadQueue[dcId];
 
-    const promise = new Promise(resolve => {
+    const promise = new Promise((resolve) => {
       r = resolve;
     });
     wait.push(promise);
 
     return [
-      Promise.all(wait.filter(pro => pro !== promise)),
+      Promise.all(wait.filter((pro) => pro !== promise)),
       () => {
         wait.splice(wait.indexOf(promise), 1);
         r();
-      }
+      },
     ];
   }
 
@@ -490,7 +505,33 @@ export class FileStorage {
       [CACHE_KEY_FILE]: await caches.open(CACHE_KEY_FILE),
       [CACHE_KEY_PHOTO]: await caches.open(CACHE_KEY_PHOTO),
       [CACHE_KEY_PROFILE]: await caches.open(CACHE_KEY_PROFILE),
-      [CACHE_KEY_DOCUMENT]: await caches.open(CACHE_KEY_DOCUMENT)
+      [CACHE_KEY_DOCUMENT]: await caches.open(CACHE_KEY_DOCUMENT),
+    };
+  }
+
+  private getDocumentLocation(
+    document: Document,
+    size?: PhotoSizesTypes
+  ): InputDocumentFileLocation {
+    return {
+      $t: "InputDocumentFileLocation",
+      id: document.id,
+      accessHash: document.accessHash,
+      fileReference: document.fileReference,
+      thumbSize: size ? size.type : "",
+    };
+  }
+
+  private getPhotoLocation(
+    photo: Photo,
+    size: PhotoSizesTypes
+  ): InputPhotoFileLocation {
+    return {
+      $t: "InputPhotoFileLocation",
+      id: photo.id,
+      accessHash: photo.accessHash,
+      fileReference: photo.fileReference,
+      thumbSize: size.type,
     };
   }
 }

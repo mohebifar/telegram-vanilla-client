@@ -204,6 +204,6 @@ export const saveData = (function() {
     a.href = url;
     a.download = fileName;
     a.click();
-    window.URL.revokeObjectURL(url);
+    // window.URL.revokeObjectURL(url);
   };
 })();

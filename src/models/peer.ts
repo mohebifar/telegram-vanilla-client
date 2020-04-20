@@ -9,13 +9,13 @@ import {
   UserFull,
   Message as TLMessage,
   contacts_Found,
-  messages_MessagesSlice
+  messages_MessagesSlice,
 } from "../core/tl/TLObjects";
 import {
   getInputPeer,
   getPeer,
   simplifyPeerType,
-  extractIdFromPeer
+  extractIdFromPeer,
 } from "../core/tl/utils";
 import { handleUpdate } from "../update-handler";
 import { getDialogDisplayName } from "../utils/chat";
@@ -37,7 +37,9 @@ interface FetchHistoryInput {
 interface ExtraMethods {
   displayName: string;
   fetchHistory(options: FetchHistoryInput): Promise<IMessage[]>;
-  sendMessage(message: SimplifiedMessageRequest): [IMessage, Promise<any>];
+  sendMessage(
+    message: SimplifiedMessageRequest
+  ): [IMessage, Promise<any>, boolean];
   getDialog(): Promise<IDialog | undefined>;
   loadFull(): Promise<void>;
   isChannel(): boolean;
@@ -76,6 +78,7 @@ export type SimplifiedMessageRequest = (
   peer?: messages_SendMessageRequest["peer"];
   randomId?: messages_SendMessageRequest["randomId"];
   actualMedia?: TLMessage["media"];
+  transientModel?: IMessage;
 };
 
 let transientIds = new Set<number>();
@@ -91,7 +94,7 @@ function generateTransientId() {
 
 @ModelDecorator({
   tableName: "peers",
-  primaryKey: ["id", "type"]
+  primaryKey: ["id", "type"],
 })
 export class Peer extends Model<"peers"> implements ExtraMethods {
   static get: (id: ModelKey<"peers">) => Promise<undefined | IPeer>;
@@ -103,7 +106,7 @@ export class Peer extends Model<"peers"> implements ExtraMethods {
   protected prepareValues(object: DBPeer) {
     return {
       ...object,
-      type: simplifyPeerType(object.$t)
+      type: simplifyPeerType(object.$t),
     };
   }
 
@@ -111,7 +114,7 @@ export class Peer extends Model<"peers"> implements ExtraMethods {
     const response = (await this.tg.invoke({
       $t: "contacts_SearchRequest",
       limit: 4,
-      q
+      q,
     })) as contacts_Found;
 
     for (const peer of [...response.chats, ...response.users]) {
@@ -139,7 +142,7 @@ export class Peer extends Model<"peers"> implements ExtraMethods {
       addOffset = 0,
       limit = 20,
       maxId = 0,
-      minId = 0
+      minId = 0,
     }: {
       offsetId: number;
       addOffset?: number;
@@ -152,7 +155,7 @@ export class Peer extends Model<"peers"> implements ExtraMethods {
       $t: "messages_SearchRequest",
       addOffset,
       filter: {
-        $t: "InputMessagesFilterEmpty"
+        $t: "InputMessagesFilterEmpty",
       },
       peer: getInputPeer(this._proxy),
       maxId,
@@ -162,7 +165,7 @@ export class Peer extends Model<"peers"> implements ExtraMethods {
       minDate: 0,
       offsetId,
       limit,
-      q
+      q,
     })) as messages_MessagesSlice;
 
     for (const peer of [...response.users, ...response.chats]) {
@@ -188,8 +191,8 @@ export class Peer extends Model<"peers"> implements ExtraMethods {
       Peer.self = (await this.tg.invoke({
         $t: "users_GetFullUserRequest",
         id: {
-          $t: "InputUserSelf"
-        }
+          $t: "InputUserSelf",
+        },
       })) as UserFull;
     }
 
@@ -202,7 +205,7 @@ export class Peer extends Model<"peers"> implements ExtraMethods {
     addOffset = 0,
     limit = 20,
     minId = 0,
-    maxId = 0
+    maxId = 0,
   }: FetchHistoryInput = {}) {
     const history = (await this.tg.invoke({
       $t: "messages_GetHistoryRequest",
@@ -213,7 +216,7 @@ export class Peer extends Model<"peers"> implements ExtraMethods {
       peer: getInputPeer(this.fields),
       hash: 0,
       maxId,
-      minId
+      minId,
     })) as messages_DialogsSlice;
 
     for (const user of history.users) {
@@ -247,52 +250,61 @@ export class Peer extends Model<"peers"> implements ExtraMethods {
   public getDialog() {
     return Dialog.get({
       peerId: this._proxy.id,
-      peerType: this._proxy.type
+      peerType: this._proxy.type,
     });
   }
 
   public sendMessage({
     actualMedia,
+    transientModel,
     ...message
-  }: SimplifiedMessageRequest): [IMessage, Promise<any> | undefined] {
-    const randomId = generateTransientId() as any;
+  }: SimplifiedMessageRequest): [IMessage, Promise<any> | undefined, boolean] {
+    let shouldCreateBubble = true;
+    const randomId = transientModel ? transientModel.id : generateTransientId() as any;
     const media =
       actualMedia || ("media" in message ? message.media : undefined);
 
-    const messageModel = Message.fromObject({
+    const messageModel = transientModel || Message.fromObject({
       ...message,
       $t: "Message",
       date: Date.now() / 1000,
       id: randomId,
       toId: getPeer(this.fields),
       out: true,
-      ...(media ? { media } : {})
+      ...(media ? { media } : {}),
     });
     messageModel.justSent = true;
     messageModel.saveInMemory();
 
     let promise: Promise<any> | IMessage = messageModel;
 
-    if (!("media" in message) || message.media.$t !== "TransientMedia") {
+    if (
+      !("media" in message) ||
+      message.media.$t !== "TransientMedia" ||
+      transientModel
+    ) {
       promise = this.tg
         .invoke({
           ...message,
           randomId,
-          peer: getInputPeer(this.fields)
+          peer: getInputPeer(this.fields),
         } as any)
         .then((updates: AllUpdateTypes) => {
           transientIds.delete(randomId);
 
+          console.log((messageModel as any).media, 'messageModel.media');
           return handleUpdate(updates, {
             transientMessage: {
               randomId,
-              message: messageModel
-            }
+              message: messageModel,
+            },
           });
         });
+
+      shouldCreateBubble = !transientModel;
     }
 
-    return [messageModel, promise as Promise<IMessage>];
+    return [messageModel, promise as Promise<IMessage>, shouldCreateBubble];
   }
 
   public async loadFull() {
@@ -310,19 +322,19 @@ export class Peer extends Model<"peers"> implements ExtraMethods {
       case "Channel":
         input = {
           $t: "channels_GetFullChannelRequest",
-          channel: inputPeer as any
+          channel: inputPeer as any,
         };
         break;
       case "User":
         input = {
           $t: "users_GetFullUserRequest",
-          id: inputPeer as any
+          id: inputPeer as any,
         };
         break;
       case "Chat":
         input = {
           $t: "messages_GetFullChatRequest",
-          chatId: this._proxy.id
+          chatId: this._proxy.id,
         };
         break;
     }
