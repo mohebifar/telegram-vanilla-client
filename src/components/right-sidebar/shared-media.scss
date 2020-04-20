@@ -7,10 +7,26 @@
   max-height: 100%;
 
   .tile {
-    padding-bottom: 100%;
-    background-size: cover;
     border: none;
     outline: none;
     cursor: pointer;
+    position: relative;
+
+    &:after {
+      content: "";
+      padding-bottom: 100%;
+      display: block;
+    }
+
+    > img {
+      object-fit: cover;
+      height: 100%;
+      width: 100%;
+      position: absolute;
+      left: 0;
+      top: 0;
+      right: 0;
+      bottom: 0;
+    }
   }
 }

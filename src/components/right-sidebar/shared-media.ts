@@ -19,7 +19,7 @@ export default class SharedMediaPanel implements Component<Options> {
     this.peer = peer;
 
     this.element = createElement("div", {
-      class: styles.container
+      class: styles.container,
     });
 
     this.element.addEventListener("scroll", () => {
@@ -40,7 +40,7 @@ export default class SharedMediaPanel implements Component<Options> {
     const sharedMedia = await SharedMedia.fetch(this.peer, {
       offsetId: (this.last && this.last.id) || 0,
       addOffset: 0,
-      limit: 3 * 8
+      limit: 3 * 8,
     });
 
     if (sharedMedia.length > 0) {
@@ -54,30 +54,33 @@ export default class SharedMediaPanel implements Component<Options> {
   }
 
   private async addMedia(media: ISharedMedia) {
-    const element = createElement("button", { class: styles.tile });
     let initialPhoto = EMPTY_IMG;
+    const img = createElement("img", {
+      src: initialPhoto,
+    }) as HTMLImageElement;
+    const element = createElement("button", { class: styles.tile }, img);
     element.addEventListener("click", () => {
       mediaLightBox({
         source: element,
         peer: this.peer,
         initialPhoto,
         message: media,
-        tg: this.peer.tg
+        tg: this.peer.tg,
       });
     });
 
     let loaded = false;
-    this.peer.tg.fileStorage.downloadMedia(media.media, 0).then(url => {
+    this.peer.tg.fileStorage.downloadMedia(media.media, 0).then((url) => {
       if (!loaded) {
         initialPhoto = url;
-        element.style.backgroundImage = `url(${url})`;
+        img.src = url;
       }
     });
 
-    this.peer.tg.fileStorage.downloadMedia(media.media, 1).then(url => {
+    this.peer.tg.fileStorage.downloadMedia(media.media, 1).then((url) => {
       loaded = true;
       initialPhoto = url;
-      element.style.backgroundImage = `url(${url})`;
+      img.src = url;
     });
 
     this.element.append(element);
