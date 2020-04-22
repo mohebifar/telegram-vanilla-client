@@ -144,9 +144,6 @@ export class FileStorage {
 
     const [promise, finish] = this.addToQueue(dcId);
 
-    // Wait for other files to be downloaded
-    await promise;
-
     const partSizeKb = getPartSize(fileSize || 64);
     const partSize = partSizeKb * 1024;
     const bytesArray = [];
@@ -161,6 +158,8 @@ export class FileStorage {
     const send = sender.send.bind(sender);
 
     let aborted = false;
+    // Wait for other files to be downloaded
+    await promise;
 
     do {
       try {
@@ -310,7 +309,7 @@ export class FileStorage {
     }
 
     if (media.$t === "MessageMediaWebPage" && media.webpage.$t === "WebPage") {
-      media = media.webpage.document || media.webpage.photo;
+      media = media.webpage.photo || media.webpage.document;
       if (!media) {
         return undefined;
       }
@@ -383,7 +382,6 @@ export class FileStorage {
         }
       });
     }
-    console.log("aah", media);
 
     if (
       media.$t === "MessageMediaDocument" &&
