@@ -249,6 +249,30 @@ $time-size: 0.75rem;
           right: 0;
         }
       }
+
+      &.isForward {
+        min-width: 11em;
+
+        .message {
+          position: relative;
+
+          &::before {
+            content: "Forwarded message";
+            position: absolute;
+            left: 0;
+            bottom: calc(100% + 0.5em);
+            display: block;
+            color: $blue;
+            font-weight: 500;
+          }
+
+          border-left: 2px solid $blue;
+          margin: ($message-spacing * 4) 0 $message-spacing
+            ($message-spacing + 1px);
+          padding: $message-spacing $message-spacing ($message-spacing / 3)
+            $message-spacing;
+        }
+      }
     }
 
     &.emptyText {
@@ -257,15 +281,9 @@ $time-size: 0.75rem;
       }
     }
 
-    &.isForward {
-      .message {
-        border-left: 2px solid $blue;
-        margin: $message-spacing 0 $message-spacing $message-spacing;
-      }
-    }
-
     .fromName {
-      margin: -$message-spacing 0 $message-spacing;
+      text-align: left;
+      margin: -$message-spacing 0 ($message-spacing / 2);
       font-weight: 500;
     }
   }
@@ -346,7 +364,7 @@ $time-size: 0.75rem;
             color: $blue;
           }
           .text {
-            color: $black;
+            color: $black !important;
           }
         }
 
@@ -552,7 +570,10 @@ $time-size: 0.75rem;
     margin: 0 4em 0.5em 0.5em;
     padding-left: 0.5em;
     border-left: 2px solid;
-    color: black;
+
+    &, &:visited {
+      color: black;
+    }
 
     .name {
       white-space: nowrap;
@@ -580,7 +601,6 @@ $time-size: 0.75rem;
     }
   }
 }
-
 
 :global(.visible) + .container {
   padding-right: $right-sidebar-width;
