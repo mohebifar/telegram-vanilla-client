@@ -5,6 +5,9 @@ $input-radius: 11px;
 $message-spacing: 9px;
 
 $top-bar-height: 3.75rem;
+$right-sidebar-width: 25em;
+$emoji-panel-width: 25.2em;
+$emoji-panel-height: 25em;
 
 $placeholder-color: #a2acb4;
 $placeholder-text-color: #707579;
@@ -15,7 +18,6 @@ $grey: #666666;
 $white: white;
 $black: black;
 $light: rgba($grey, 0.08);
-$right-sidebar-width: 25em;
 
 $light-hover-base: #707579;
 $light-hover: rgba($light-hover-base, 0.08);
@@ -34,14 +36,3 @@ $green-dark: #50af4f;
 $red: #e53934;
 
 $download-indicator-size: 5em;
-
-@keyframes popoverAnimateIn {
-  from {
-    transform: scale(0);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
-}

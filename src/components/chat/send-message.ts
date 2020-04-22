@@ -389,18 +389,27 @@ export default class SendMessageForm implements Component<Options> {
     });
 
     const clear = () => clearTimeout(timeout);
-    const hide = () => {
-      clear();
-      attachmentDropdown.classList.add("hidden");
+    const hide = (doClear: any = true) => {
+      doClear === true && clear();
+      
+      attachmentDropdown.classList.remove("visible");
+
+      attachmentDropdown.addEventListener(
+        "transitionend",
+        () => {
+          attachmentDropdown.classList.add("hidden");
+        },
+        { once: true }
+      );
     };
     const show = () => {
       clear();
-      attachmentDropdown.classList.remove("hidden");
+      attachmentDropdown.classList.replace("hidden", "visible");
     };
     const hideWithTimeout = () => {
       clear();
       timeout = setTimeout(() => {
-        attachmentDropdown.classList.add("hidden");
+        hide(false);
       }, 1000);
     };
 

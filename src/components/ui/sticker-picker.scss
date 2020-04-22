@@ -1,40 +1,89 @@
 @import "../../variables.scss";
 @import "../../mixins.scss";
 
+$previews-height: 50px;
+$previews-item-size: 46px;
+
+
 .container {
   position: relative;
   height: 100%;
-  overflow-y: scroll;
-  @include hide-scrollbar;
 
-  .title {
-    top: 0;
-    margin: 0;
-    padding: 0.5em;
-    position: sticky;
-    font-size: 1em;
-    font-weight: 500;
-    background-color: rgba(255, 255, 255, 0.9);
-    color: $grey;
-    z-index: 9999;
+  &,
+  .stickerWrapper {
+    width: $emoji-panel-width;
   }
 
-  .holder {
-    display: grid;
-    grid-gap: 0.2em;
-    grid-template-columns: 1fr 1fr 1fr;
-    padding: 0.5em;
+  .stickerWrapper {
+    position: relative;
+    height: calc(100% - #{$previews-height});
+    overflow-y: scroll;
+    @include hide-scrollbar;
 
-    &:empty {
-      min-height: 50em;
+    .title {
+      top: 0;
+      margin: 0;
+      padding: 0.5em;
+      position: sticky;
+      font-size: 1em;
+      font-weight: 500;
+      background-color: rgba(255, 255, 255, 0.9);
+      color: $grey;
+      z-index: 9999;
+    }
+
+    .holder {
+      display: grid;
+      grid-gap: 0.2em;
+      grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+      padding: 0.5em;
+
+      &:empty {
+        min-height: 50em;
+      }
+    }
+
+    .preview {
+      height: 4.7em;
+      cursor: pointer;
+
+      &:hover {
+        background-color: $grey-lighter;
+        border-radius: 7px;
+      }
+
+      > :global(.lottieWrapper),
+      img {
+        width: 100%;
+      }
     }
   }
 
-  .preview {
-    height: 6em;
-    > :global(.lottieWrapper),
-    img {
-      width: 100%;
+  .tabs {
+    padding: 0 0.5em;
+    border-top: 1px solid $grey-light;
+    height: $previews-height;
+    overflow-x: scroll;
+    overflow-y: hidden;
+    width: $emoji-panel-width;
+    white-space: nowrap;
+    @include nice-scroll;
+
+    > button {
+      margin-right: 0.5em;
+      background: none;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      display: inline-block;
+
+      &,
+      > :global(.lottieWrapper),
+      img {
+        height: $previews-item-size;
+      }
+
+      width: $previews-item-size;
     }
   }
 }

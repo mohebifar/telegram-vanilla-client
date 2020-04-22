@@ -24,43 +24,35 @@ export default class EmojiPanel implements Component<Options> {
   constructor({ onEmojiSelect, onStickerSelect, onGifSelect }: Options) {
     const emojiPicker = createElement(EmojiPicker, { onEmojiSelect });
     const gifPicker = createElement(GifPicker, {
-      onGifSelect: gif => {
+      onGifSelect: (gif) => {
         onGifSelect(gif);
         this.setVisibility(false);
-      }
+      },
     });
     const stickerPicker = createElement(StickerPicker, {
-      onStickerSelect: sticker => {
+      onStickerSelect: (sticker) => {
         onStickerSelect(sticker);
         this.setVisibility(false);
-      }
+      },
     });
 
     this.tabs = [
       { title: "Emojis", content: emojiPicker },
       { title: "Stickers", content: stickerPicker },
-      { title: "GIFs", content: gifPicker }
+      { title: "GIFs", content: gifPicker },
     ];
 
     this.tabsContainer = createElement(Tabs, {
       tabs: this.tabs,
-      onTabChange: index => {
-        if (index === 1) {
-          stickerPicker.instance.panelOpen();
-        } else {
-          stickerPicker.instance.panelClose();
-        }
-        if (index === 2) {
-          gifPicker.instance.panelOpen();
-        } else {
-          gifPicker.instance.panelClose();
-        }
-      }
+      onTabChange: (index) => {
+        stickerPicker.instance[index === 1 ? "panelOpen" : "panelClose"]();
+        gifPicker.instance[index === 2 ? "panelOpen" : "panelClose"]();
+      },
     });
 
     const element = createElement(
       "div",
-      { class: styles.container },
+      { class: `${styles.container} hidden` },
       this.tabsContainer
     );
 
@@ -77,10 +69,19 @@ export default class EmojiPanel implements Component<Options> {
 
   public setVisibility(visible = !this.visible) {
     this.clearTimeout();
-    this.element.classList[visible ? "add" : "remove"](styles.visible);
     this.visible = visible;
-    if (!this.visible) {
-      this.tabsContainer.instance.setTab(0);
+    if (visible) {
+      this.element.classList.replace("hidden", "visible");
+    } else {
+      this.element.classList.remove("visible");
+      this.element.addEventListener(
+        "transitionend",
+        () => {
+          this.tabsContainer.instance.setTab(0);
+          this.element.classList.add("hidden");
+        },
+        { once: true }
+      );
     }
   }
 

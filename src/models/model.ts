@@ -166,7 +166,11 @@ export class Model<
         return prop in obj.fields || prop in obj;
       },
       set: function(obj, prop, value) {
-        obj[prop] = value;
+        if(prop in obj) {
+          obj[prop] = value;
+        } else {
+          obj.fields[prop] = value;
+        }
 
         return true;
       }

@@ -43,6 +43,7 @@ export type TransientMedia = {
   $t: "TransientMedia";
   file: File;
   type: "media" | "document";
+  fileId: string;
   progress?: number;
   subscribe?: (cb: (progress: number) => any) => void;
   width?: number;
