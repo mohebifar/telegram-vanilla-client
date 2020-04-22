@@ -190,6 +190,10 @@ export default class Chat implements Component<Options> {
           }
         }, 500)
       );
+
+      if (this.rightSidebar.instance.isVisible()) {
+        this.rightSidebar.instance.setPeer(this.peer);
+      }
     }
   }
 

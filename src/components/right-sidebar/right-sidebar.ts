@@ -73,6 +73,10 @@ export default class RightSideBar implements Component<Options> {
     this.element.classList.replace("hidden", "visible");
   }
 
+  public isVisible() {
+    return this.element.classList.contains("visible");
+  }
+
   public close() {
     this.element.addEventListener(
       "transitionend",
@@ -81,7 +85,6 @@ export default class RightSideBar implements Component<Options> {
         this.element.style.transform = "";
         this.element.classList.add("hidden");
         this.router.flush();
-        console.log('transition end')
       },
       {
         once: true,
