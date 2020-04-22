@@ -1,10 +1,10 @@
-import aesWasm from "./aes.wasm";
 import { concatBuffers } from "../binary";
+import { AES } from "./AES";
 
 type Key = Uint8Array | number[];
 
 export async function encryptIGE(rawInput: Uint8Array, key: Key, iv: Key) {
-  const cipher = await initAES(key, "encrypt");
+  const aes = new AES(key);
   const padding = rawInput.length % 16;
   let input = rawInput;
   if (padding) {
@@ -22,7 +22,9 @@ export async function encryptIGE(rawInput: Uint8Array, key: Key, iv: Key) {
       .slice(blockIndex * 16, blockIndex * 16 + 16)
       .map((v, i) => (v ^= iv1[i]));
 
-    const cipherBlock = cipher(block).map((v, i) => (v ^= iv2[i]));
+    const jsResult = new Uint8Array(16);
+    aes.encrypt(block, jsResult);
+    const cipherBlock = jsResult.map((v, i) => (v ^= iv2[i]));
     iv1 = cipherBlock;
     iv2 = input.slice(blockIndex * 16, blockIndex * 16 + 16);
     cipherText.push(cipherBlock);
@@ -32,8 +34,6 @@ export async function encryptIGE(rawInput: Uint8Array, key: Key, iv: Key) {
 }
 
 export async function decryptIGE(cipherText: Uint8Array, key: Key, iv: Key) {
-  const decipher = await initAES(key, "decrypt");
-
   let iv1 = iv.slice(0, Math.floor(iv.length / 2));
   let iv2 = iv.slice(Math.floor(iv.length / 2));
 
@@ -41,12 +41,16 @@ export async function decryptIGE(cipherText: Uint8Array, key: Key, iv: Key) {
   const cipherTextBlock = new Uint8Array(16);
   const blocksCount = Math.floor(cipherText.length / 16);
 
+  const aes = new AES(key);
+
   for (let blockIndex = 0; blockIndex < blocksCount; blockIndex++) {
     for (let i = 0; i < 16; i++) {
       cipherTextBlock[i] = cipherText[blockIndex * 16 + i] ^ iv2[i];
     }
 
-    const plainTextBlock = decipher(cipherTextBlock).map((v, i) => v ^ iv1[i]);
+    const jsResult = new Uint8Array(16);
+    aes.decrypt(cipherTextBlock, jsResult);
+    const plainTextBlock = jsResult.map((v, i) => v ^ iv1[i]);
     iv1 = cipherText.slice(blockIndex * 16, blockIndex * 16 + 16);
     iv2 = plainTextBlock;
 
@@ -59,9 +63,9 @@ export async function decryptIGE(cipherText: Uint8Array, key: Key, iv: Key) {
 export const decryptorCTR = encryptorCTR;
 
 export async function encryptorCTR(key: Key, iv: Uint8Array) {
-  const cipher = await initAES(key, "encrypt");
+  const aes = new AES(key);
   let counter = iv;
-  let remainingCounter = null;
+  let remainingCounter = new Uint8Array(16);
   let remainingCounterIndex = 16;
 
   const counterIncerement = () => {
@@ -79,7 +83,7 @@ export async function encryptorCTR(key: Key, iv: Uint8Array) {
     const encrypted = new Uint8Array(rawInput);
     for (var i = 0; i < encrypted.length; i++) {
       if (remainingCounterIndex === 16) {
-        remainingCounter = cipher(counter);
+        aes.encrypt(counter, remainingCounter);
         remainingCounterIndex = 0;
         counterIncerement();
       }
@@ -87,38 +91,6 @@ export async function encryptorCTR(key: Key, iv: Uint8Array) {
     }
 
     return encrypted;
-  };
-}
-
-async function initAES(
-  key: Uint8Array | number[],
-  type: "encrypt" | "decrypt"
-) {
-  const module = await WebAssembly.compile(aesWasm);
-  const memory = new WebAssembly.Memory({ initial: 2 });
-
-  const instance = await WebAssembly.instantiate(module, {
-    env: {
-      memory,
-      consoleLog: () => {
-        // console.log("done");
-      },
-    },
-  });
-
-  const inputBuffer = new Uint8Array(memory.buffer, 0, 16);
-
-  const keyBuffer = new Uint8Array(memory.buffer, 32, 32);
-  keyBuffer.set(key);
-
-  const fn = (type === "encrypt"
-    ? instance.exports.AES_ECB_encrypt
-    : instance.exports.AES_ECB_decrypt) as Function;
-
-  return (input: Uint8Array) => {
-    inputBuffer.set(input);
-    fn(0, 32);
-    return inputBuffer.slice();
   };
 }
 
