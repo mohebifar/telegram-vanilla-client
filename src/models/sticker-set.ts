@@ -2,7 +2,7 @@ import {
   messages_AllStickers,
   StickerSet as TLStickerSet,
   messages_AllStickersNotModified,
-  messages_StickerSet
+  messages_StickerSet,
 } from "../core/tl/TLObjects";
 import db, { TelegramDatabase } from "../utils/db";
 import { Model, ModelDecorator, ModelKey, ModelWithProxy } from "./model";
@@ -26,7 +26,7 @@ export class StickerSet extends Model<"stickerSet"> implements ExtraMethods {
   ) => Promise<(undefined | IStickerSet)[]>;
   static table: TelegramDatabase["stickerSet"];
   static fromObject: (object: any, forceRecreate?: boolean) => IStickerSet;
-  private isLoadingPack = false;
+  private loadingPromise: Promise<void> | null = null;
 
   protected prepareValues(stickerSet: TLStickerSet) {
     return stickerSet;
@@ -69,7 +69,7 @@ export class StickerSet extends Model<"stickerSet"> implements ExtraMethods {
 
     db.configs.put({
       value: response.hash,
-      key: STICKER_HASH_CONFIG_KEY
+      key: STICKER_HASH_CONFIG_KEY,
     });
 
     return result;
@@ -90,23 +90,30 @@ export class StickerSet extends Model<"stickerSet"> implements ExtraMethods {
   }
 
   public async loadPack() {
-    if (this.isLoadingPack) {
+    if (this._proxy.documents) {
       return;
     }
-    this.isLoadingPack = true;
+    if (this.loadingPromise) {
+      return this.loadingPromise;
+    }
     try {
-      const { documents, packs } = (await this.tg.invoke({
-        $t: "messages_GetStickerSetRequest",
-        stickerset: {
-          $t: "InputStickerSetID",
-          id: this._proxy.set.id,
-          accessHash: this._proxy.set.accessHash
-        }
-      })) as messages_StickerSet;
-      this._proxy.documents = documents;
-      this._proxy.packs = packs;
+      this.loadingPromise = (async () => {
+        const result = (await this.tg.invoke({
+          $t: "messages_GetStickerSetRequest",
+          stickerset: {
+            $t: "InputStickerSetID",
+            id: this._proxy.set.id,
+            accessHash: this._proxy.set.accessHash
+          }
+        })) as messages_StickerSet;
+  
+        this._proxy.documents = result.documents;
+        this._proxy.packs = result.packs;
+        this.save();
+      })();
+      await this.loadingPromise;
     } finally {
-      this.isLoadingPack = false;
+      this.loadingPromise = null;
     }
   }
 }
