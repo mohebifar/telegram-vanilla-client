@@ -7,7 +7,7 @@ import {
   MessageMediaPhoto,
   Photo,
   PhotoSize,
-  DocumentAttributeFilename
+  DocumentAttributeFilename,
 } from "../../core/tl/TLObjects";
 import { Message, IMessage } from "../../models/message";
 import { IPeer } from "../../models/peer";
@@ -18,7 +18,7 @@ import {
   Component,
   createElement,
   Element,
-  getNthChild
+  getNthChild,
 } from "../../utils/dom";
 import { startAnimation } from "../../utils/easing";
 import { EMPTY_IMG } from "../../utils/images";
@@ -33,8 +33,6 @@ const sortRef = ["x", "y", "m", "s"];
 
 export interface Options {
   tg: TelegramClientProxy;
-  onPrevClick: Function;
-  onNextClick: Function;
 }
 
 export class LightBox implements Component<Options> {
@@ -65,7 +63,7 @@ export class LightBox implements Component<Options> {
         icon: Icons.Download,
         variant: "dark",
         onClick: () => {
-          tg.fileStorage.downloadMedia(this.media.media).then(file => {
+          tg.fileStorage.downloadMedia(this.media.media).then((file) => {
             const date = dayjs.unix(this.media.date);
             const formattedDate = date.format("YYYY-MM-DD-HHmmss");
 
@@ -74,7 +72,7 @@ export class LightBox implements Component<Options> {
             if (this.media.media.$t === "MessageMediaDocument") {
               const fileNameAttribute = (this.media.media
                 .document as Document).attributes.find(
-                t => t.$t === "DocumentAttributeFilename"
+                (t) => t.$t === "DocumentAttributeFilename"
               ) as DocumentAttributeFilename;
               if (fileNameAttribute) {
                 fileName = fileNameAttribute.fileName;
@@ -83,12 +81,12 @@ export class LightBox implements Component<Options> {
 
             saveData(file, fileName);
           });
-        }
+        },
       }),
       createElement(IconButton, {
         icon: Icons.Close,
         variant: "dark",
-        onClick: () => this.close()
+        onClick: () => this.close(),
       })
     );
     const header = createElement(
@@ -130,7 +128,7 @@ export class LightBox implements Component<Options> {
     this.closed = true;
     startAnimation(
       { o: { from: 1, to: 0 } },
-      v => {
+      (v) => {
         this.element.style.opacity = v.o + "";
       },
       () => this.element.remove()
@@ -144,9 +142,14 @@ export class LightBox implements Component<Options> {
     const size = getSize(media as any);
     let progress: Element<Progress>;
     let downloadIndicator: HTMLElement;
+    progress = createElement(Progress);
+    downloadIndicator = createElement(
+      "div",
+      { class: "downloadIndicator" },
+      progress
+    );
 
     if (flip !== 0) {
-      progress = createElement(Progress);
       const oldWrapper = this.mediaWrapper;
       const oldImmediate = getNthChild(this.mediaContainer, "first");
       const [newImmediate, newWrapper] = this.createMediaWrapper();
@@ -154,20 +157,13 @@ export class LightBox implements Component<Options> {
       const [w, h] = getImageSize(size.w, size.h);
       newWrapper.style.width = w + "px";
       newWrapper.style.height = h + "px";
-      newWrapper.append(
-        (downloadIndicator = createElement(
-          "div",
-          { class: "downloadIndicator" },
-          progress
-        ))
-      );
 
       this.setMessage((sharedMedia as any).message);
 
       this.mediaWrapper = newWrapper;
       this.mediaContainer.append(newImmediate);
 
-      this.tg.fileStorage.downloadMedia(media, 0).then(url => {
+      this.tg.fileStorage.downloadMedia(media, 0).then((url) => {
         if (this.media === sharedMedia) {
           this.setSrc(url);
           this.image.className = "blur";
@@ -181,25 +177,28 @@ export class LightBox implements Component<Options> {
       startAnimation(
         {
           old: { from: 0, to: oldTo },
-          new: { from: newFrom, to: 0 }
+          new: { from: newFrom, to: 0 },
         },
-        v => {
+        (v) => {
           oldImmediate.style.transform = `translateX(${v.old}px)`;
           newImmediate.style.transform = `translateX(${v.new}px)`;
         },
         () => oldImmediate.remove()
       );
     }
+
+    this.mediaWrapper.append(downloadIndicator);
+
     Message.fromObject(sharedMedia)
       .getSender()
-      .then(sender => {
+      .then((sender) => {
         if (sender !== this.peer) {
           this.setPeer(sender, flip);
         }
       });
 
     this.tg.fileStorage
-      .downloadMedia(media, undefined, t => {
+      .downloadMedia(media, undefined, (t) => {
         if (this.media !== sharedMedia) {
           return false;
         }
@@ -210,7 +209,7 @@ export class LightBox implements Component<Options> {
 
         return !this.closed;
       })
-      .then(url => {
+      .then((url) => {
         if (this.media === sharedMedia) {
           if (downloadIndicator) {
             downloadIndicator.remove();
@@ -222,7 +221,7 @@ export class LightBox implements Component<Options> {
           } else {
             const video = createElement("video", {
               src: url,
-              controls: "controls"
+              controls: "controls",
             });
             this.image.remove();
             this.mediaWrapper.prepend(video);
@@ -266,13 +265,13 @@ export class LightBox implements Component<Options> {
         mediaWrapper,
         this.footer
       ),
-      mediaWrapper
+      mediaWrapper,
     ];
   }
 
   private updateButtons() {
     if (this.media) {
-      this.media.getNext().then(media => {
+      this.media.getNext().then((media) => {
         if (media) {
           this.nextButton.classList.remove("hidden");
 
@@ -282,7 +281,7 @@ export class LightBox implements Component<Options> {
         }
       });
 
-      this.media.getPrev().then(media => {
+      this.media.getPrev().then((media) => {
         if (media) {
           this.prevButton.classList.remove("hidden");
 
@@ -319,9 +318,9 @@ export class LightBox implements Component<Options> {
         {
           o: { from: 1, to: 0 },
           xOld: { from: 0, to: flip * -30 },
-          xNew: { from: flip * 30, to: 0 }
+          xNew: { from: flip * 30, to: 0 },
         },
-        v => {
+        (v) => {
           currentElement.style.opacity = v.o + "";
           newElement.style.opacity = 1 - v.o + "";
           currentElement.style.transform = `translateX(${v.xOld}px)`;
@@ -357,7 +356,7 @@ export function mediaLightBox({
   peer,
   message,
   initialPhoto,
-  tg
+  tg,
 }: {
   source: HTMLElement;
   peer: IPeer;
@@ -365,11 +364,7 @@ export function mediaLightBox({
   initialPhoto: string;
   tg: TelegramClientProxy;
 }) {
-  const container = createElement(LightBox, {
-    tg,
-    onNextClick() {},
-    onPrevClick() {}
-  });
+  const container = createElement(LightBox, { tg });
   const mediaWrapper = container.instance.mediaWrapper;
 
   const media = (message as TLMessage).media;
@@ -379,7 +374,7 @@ export function mediaLightBox({
   mediaWrapper.style.width = w + "px";
   mediaWrapper.style.height = h + "px";
   container.instance.setSrc(initialPhoto);
-  container.instance.setMessage((message as any).message);
+  container.instance.setMessage((message as TLMessage).message);
 
   requestAnimationFrame(() => {
     const rectDest = mediaWrapper.getBoundingClientRect() as DOMRect;
@@ -396,22 +391,22 @@ export function mediaLightBox({
       {
         bdrs: {
           from: 12,
-          to: 0
+          to: 0,
         },
         x: {
           from: (rect.x - startingX) / scale,
-          to: 0
+          to: 0,
         },
         y: {
           from: (rect.y - startingY) / scale,
-          to: 0
+          to: 0,
         },
         scale: {
           from: scale,
-          to: 1
-        }
+          to: 1,
+        },
       },
-      v => {
+      (v) => {
         mediaWrapper.style.opacity = "1";
         mediaWrapper.style.transform = `scale(${v.scale}) translate(${v.x}px, ${v.y}px)`;
         mediaWrapper.style.borderRadius = v.bdrs + "px";
@@ -420,7 +415,7 @@ export function mediaLightBox({
         const exists = SharedMedia.getFromMemory({
           peerType: peer.type,
           peerId: peer.id,
-          id: message.id
+          id: message.id,
         }) as ISharedMedia;
 
         if (exists) {
@@ -428,7 +423,7 @@ export function mediaLightBox({
           return;
         }
 
-        SharedMedia.fetch(peer, { offsetId: message.id }).then(media => {
+        SharedMedia.fetch(peer, { offsetId: message.id }).then((media) => {
           container.instance.setMedia(
             media.find(({ id }) => id === message.id),
             0
