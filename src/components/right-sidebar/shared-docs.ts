@@ -45,6 +45,7 @@ export default class SharedDocs implements Component<Options> {
       limit: 10,
       type: "InputMessagesFilterDocument"
     });
+    this.element.classList.add(styles.loaded);
 
     if (sharedMedia.length > 0) {
       let media: ISharedMedia;

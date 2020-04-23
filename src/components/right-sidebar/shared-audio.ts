@@ -45,6 +45,7 @@ export default class SharedAudio implements Component<Options> {
       limit: 10,
       type: "InputMessagesFilterMusic"
     });
+    this.element.classList.add(styles.loaded);
 
     if (sharedMedia.length > 0) {
       let media: ISharedMedia;

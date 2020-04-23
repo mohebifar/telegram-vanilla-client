@@ -24,7 +24,9 @@
     display: none;
   }
 
-  :global(.spinner):only-child {
-    display: block;
+  &:not(.loaded) {
+    :global(.spinner):only-child {
+      display: block;
+    }
   }
 }
