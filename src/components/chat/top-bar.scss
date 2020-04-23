@@ -18,7 +18,13 @@
 
       .title {
         font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        width: 100%;
+        max-width: 35em;
       }
+
       .subdue {
         font-weight: 400;
         color: $grey;
