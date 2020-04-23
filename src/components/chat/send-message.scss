@@ -85,6 +85,7 @@
     right: 0;
     bottom: calc(100% + 10px);
     transform-origin: bottom right;
+    animation: none;
     @include popover-animation;
   }
 }

@@ -389,8 +389,8 @@ export default class SendMessageForm implements Component<Options> {
     });
 
     const clear = () => clearTimeout(timeout);
-    const hide = (doClear: any = true) => {
-      doClear === true && clear();
+    const hide = (doClear: any) => {
+      doClear !== false && clear();
       
       attachmentDropdown.classList.remove("visible");
 
@@ -404,7 +404,8 @@ export default class SendMessageForm implements Component<Options> {
     };
     const show = () => {
       clear();
-      attachmentDropdown.classList.replace("hidden", "visible");
+      attachmentDropdown.classList.add("visible");
+      attachmentDropdown.classList.remove("hidden");
     };
     const hideWithTimeout = () => {
       clear();
