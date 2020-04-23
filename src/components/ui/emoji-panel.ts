@@ -71,7 +71,8 @@ export default class EmojiPanel implements Component<Options> {
     this.clearTimeout();
     this.visible = visible;
     if (visible) {
-      this.element.classList.replace("hidden", "visible");
+      this.element.classList.remove("hidden");
+      this.element.classList.add("visible");
     } else {
       this.element.classList.remove("visible");
       this.element.addEventListener(

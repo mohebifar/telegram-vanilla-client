@@ -70,7 +70,8 @@ export default class RightSideBar implements Component<Options> {
   }
 
   public show() {
-    this.element.classList.replace("hidden", "visible");
+    this.element.classList.remove("hidden");
+    this.element.classList.add("visible");
   }
 
   public isVisible() {
