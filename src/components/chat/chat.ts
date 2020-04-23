@@ -81,7 +81,7 @@ export default class Chat implements Component<Options> {
       "div",
       { class: styles.root },
       this.rightSidebar,
-      chatSection,
+      chatSection
     );
 
     this.register();
@@ -290,33 +290,22 @@ export default class Chat implements Component<Options> {
       }) => {
         if (dialog === this.dialog) {
           // Mark messages as seen
-          for (
-            let bubbleWrapper = this.chatContainer.lastChild as Node;
-            bubbleWrapper !== null;
-            bubbleWrapper = bubbleWrapper.previousSibling
-          ) {
-            const lastBubbleHolder = getNthChild(bubbleWrapper, "last");
+          const iterator = this.iterateBubbles();
+          for (const bubble of iterator) {
+            const message = bubble.message;
+            if (message.$t !== "Message" || !message.out) {
+              continue;
+            }
 
-            for (
-              let bubble = lastBubbleHolder.lastChild as Element<Bubble>;
-              bubble !== null;
-              bubble = bubble.previousSibling as Element<Bubble>
-            ) {
-              const message = bubble.instance.message;
+            if (message.id <= prevMaxId) {
+              break;
+            }
 
-              if (message.$t !== "Message" || !message.out) {
-                continue;
-              }
-
-              if (message.id <= prevMaxId) {
-                return;
-              }
-
-              if (message.id <= maxId) {
-                bubble.instance.updateInner();
-              }
+            if (message.id <= maxId) {
+              bubble.updateInner();
             }
           }
+          iterator.return();
         }
       }
     );
@@ -339,7 +328,7 @@ export default class Chat implements Component<Options> {
     });
 
     Message.events.on(
-      "saved",
+      "created",
       async ({ object: message }: { object: IMessage }) => {
         if (
           message.$t === "MessageEmpty" ||
@@ -363,8 +352,16 @@ export default class Chat implements Component<Options> {
           return;
         }
 
-        const lastBubble = this.getFirstOrLastBubble("last");
-        const lastRenderedMessage = lastBubble.instance.message;
+        let lastRenderedMessage: IMessage;
+        const iterator = this.iterateBubbles();
+        for (const bubble of iterator) {
+          lastRenderedMessage = bubble.message;
+          if (!lastRenderedMessage.justSent) {
+            break;
+          }
+        }
+        iterator.return();
+
         const wasAtBottom = this.isAtBottom();
 
         if (message.id > lastRenderedMessage.id && this.noMoreBottom) {
@@ -660,4 +657,22 @@ export default class Chat implements Component<Options> {
       }
     }
   };
+
+  private *iterateBubbles() {
+    for (
+      let bubbleWrapper = this.chatContainer.lastChild as Node;
+      bubbleWrapper !== null;
+      bubbleWrapper = bubbleWrapper.previousSibling
+    ) {
+      const lastBubbleHolder = getNthChild(bubbleWrapper, "last");
+
+      for (
+        let bubble = lastBubbleHolder.lastChild as Element<Bubble>;
+        bubble !== null;
+        bubble = bubble.previousSibling as Element<Bubble>
+      ) {
+        yield bubble.instance;
+      }
+    }
+  }
 }

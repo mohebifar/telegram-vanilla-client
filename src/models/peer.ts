@@ -292,7 +292,6 @@ export class Peer extends Model<"peers"> implements ExtraMethods {
         .then((updates: AllUpdateTypes) => {
           transientIds.delete(randomId);
 
-          console.log((messageModel as any).media, 'messageModel.media');
           return handleUpdate(updates, {
             transientMessage: {
               randomId,
