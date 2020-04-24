@@ -1,7 +1,7 @@
 import { MessageEntityTextUrl } from "../../core/tl/TLObjects";
 import { IPeer } from "../../models/peer";
 import { ISharedMedia, SharedMedia } from "../../models/shared-media";
-import { Component, createElement } from "../../utils/dom";
+import { Component, createElement, on } from "../../utils/dom";
 import { EMPTY_IMG } from "../../utils/images";
 import * as styles from "./shared-links.scss";
 
@@ -22,7 +22,7 @@ export default class SharedLinks implements Component<Options> {
       class: styles.container
     });
 
-    this.element.addEventListener("scroll", () => {
+    on(this.element, "scroll", () => {
       if (this.lock) {
         return;
       }

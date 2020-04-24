@@ -1,4 +1,4 @@
-import { Component, createElement, Element } from "../../utils/dom";
+import { Component, createElement, Element, on } from "../../utils/dom";
 import * as styles from "./emoji-picker.scss";
 import Icon, { Icons } from "./icon";
 import countries from "../../data/countries.json";
@@ -133,7 +133,7 @@ export default class EmojiPicker implements Component<Options> {
 
       EmojiPicker.emojis[category].forEach(emoji => {
         const button = createElement("button", { type: "button" }, emoji);
-        button.addEventListener("click", () => {
+        on(button, "click", () => {
           this.onEmojiSelect(emoji);
         });
         emojis.append(button);
@@ -175,7 +175,7 @@ export default class EmojiPicker implements Component<Options> {
       true
     );
 
-    emojiWrapper.addEventListener("scroll", updateTabColor);
+    on(emojiWrapper, "scroll", updateTabColor);
     pickers[0].instance.setColor("blue");
 
     element.append(
@@ -185,7 +185,7 @@ export default class EmojiPicker implements Component<Options> {
         { class: styles.tabs },
         ...pickers.map((icon, i) => {
           const element = createElement("div", { class: "categoryTab" }, icon);
-          element.addEventListener("click", () => {
+          on(element, "click", () => {
             categoryElements[i].scrollIntoView({ behavior: "smooth" });
           });
           return element;

@@ -1,4 +1,4 @@
-import { createElement, Component, Element } from "../../utils/dom";
+import { createElement, Component, Element, on } from "../../utils/dom";
 import { makeModal } from "../ui/modal";
 import Input from "../ui/input";
 import Button from "../ui/button";
@@ -60,7 +60,7 @@ export default class AuthSignUp implements Component<Options> {
       this.btn
     );
 
-    signUpForm.addEventListener("submit", event => {
+    on(signUpForm, "submit", event => {
       event.preventDefault();
       this.handleSubmit();
     });

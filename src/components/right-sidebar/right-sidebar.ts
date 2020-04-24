@@ -1,6 +1,6 @@
 import { IMessage } from "../../models/message";
 import { IPeer } from "../../models/peer";
-import { Component, createElement } from "../../utils/dom";
+import { Component, createElement, removeClass, addClass, on } from "../../utils/dom";
 import Router from "../ui/router";
 import MessageSearch from "./message-search";
 import ProfileDetails from "./profile-details";
@@ -70,8 +70,8 @@ export default class RightSideBar implements Component<Options> {
   }
 
   public show() {
-    this.element.classList.remove("hidden");
-    this.element.classList.add("visible");
+    removeClass(this.element, "hidden");
+    addClass(this.element, "visible");
   }
 
   public isVisible() {
@@ -79,18 +79,18 @@ export default class RightSideBar implements Component<Options> {
   }
 
   public close() {
-    this.element.addEventListener(
+    on(this.element, 
       "transitionend",
       () => {
         this.peer = null;
         this.element.style.transform = "";
-        this.element.classList.add("hidden");
+        addClass(this.element, "hidden");
         this.router.flush();
       },
       {
         once: true,
       }
     );
-    this.element.classList.remove("visible");
+    removeClass(this.element, "visible");
   }
 }

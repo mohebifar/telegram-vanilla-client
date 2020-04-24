@@ -1,4 +1,4 @@
-import { createElement, Component, Element } from "../../utils/dom";
+import { createElement, Component, Element, on } from "../../utils/dom";
 import Input from "../ui/input";
 import Button from "../ui/button";
 import CountryPicker from "../ui/country-picker";
@@ -70,7 +70,7 @@ export default class AuthPhone implements Component<Options> {
       this.btn
     );
 
-    signInForm.addEventListener("submit", event => {
+    on(signInForm, "submit", event => {
       event.preventDefault();
       this.handleSubmit();
     });

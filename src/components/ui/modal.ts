@@ -1,4 +1,4 @@
-import { createElement, Component } from "../../utils/dom";
+import { createElement, Component, on } from "../../utils/dom";
 import * as styles from "./modal.scss";
 import { startAnimation } from "../../utils/easing";
 import IconButton from "./icon-button";
@@ -59,11 +59,11 @@ export default class Modal implements Component<Options> {
 
     this.element = createElement("div", { class: styles.container, id }, modal);
 
-    this.element.addEventListener("click", () => {
+    on(this.element, "click", () => {
       this.close(true);
     });
 
-    modal.addEventListener("click", e => {
+    on(modal, "click", e => {
       e.preventDefault();
       e.stopPropagation();
     });

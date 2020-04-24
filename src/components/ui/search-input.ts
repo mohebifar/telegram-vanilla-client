@@ -1,4 +1,4 @@
-import { createElement, Component } from "../../utils/dom";
+import { createElement, Component, on } from "../../utils/dom";
 import * as styles from "./search-input.scss";
 import Icon, { Icons } from "./icon";
 
@@ -47,7 +47,7 @@ export default class SearchInput implements Component<Options> {
 
     Object.entries(EventMap).forEach(([attrName, eventName]) => {
       if (attrName in rest) {
-        this.inputNode.addEventListener(eventName, rest[attrName]);
+        on(this.inputNode, eventName, rest[attrName]);
       }
     });
   }

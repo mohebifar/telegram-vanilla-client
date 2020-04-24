@@ -1,4 +1,4 @@
-import { createElement, Component, preload } from "../../utils/dom";
+import { createElement, Component, preload, on } from "../../utils/dom";
 import * as styles from "./button.scss";
 import { Icons } from "./icon";
 import Spinner from "./spinner";
@@ -28,7 +28,7 @@ export default class Button implements Component<Options> {
 
     Object.entries(EventMap).forEach(([attrName, eventName]) => {
       if (attrName in rest) {
-        this.element.addEventListener(eventName, rest[attrName]);
+        on(this.element, eventName, rest[attrName]);
       }
     });
   }

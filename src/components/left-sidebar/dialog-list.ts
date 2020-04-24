@@ -5,7 +5,10 @@ import {
   Component,
   createElement,
   Element,
-  getNthChild
+  getNthChild,
+  removeClass,
+  addClass,
+  on
 } from "../../utils/dom";
 import DialogItem from "../ui/dialog-item";
 import * as dialogItemStyles from "../ui/dialog-item.scss";
@@ -52,13 +55,13 @@ export default class DialogList extends FadeTransition
   public setActiveDialog(newDialog: IDialog) {
     const oldElement = this.dialogsToElement.get(this.activeDialog);
     if (oldElement) {
-      oldElement.classList.remove(dialogItemStyles.active);
+      removeClass(oldElement, dialogItemStyles.active);
     }
 
     this.activeDialog = newDialog;
     const newElement = this.dialogsToElement.get(this.activeDialog);
     if (newElement) {
-      newElement.classList.add(dialogItemStyles.active);
+      addClass(newElement, dialogItemStyles.active);
     }
 
     this.activeDialog = newDialog;
@@ -67,7 +70,7 @@ export default class DialogList extends FadeTransition
   private async register() {
     const dialogs = await Dialog.fetch();
     await this.addDialogs(dialogs);
-    this.element.classList.remove(styles.loading);
+    removeClass(this.element, styles.loading);
 
     Dialog.events.on(
       "saved",
@@ -87,7 +90,7 @@ export default class DialogList extends FadeTransition
       }
     });
 
-    this.element.addEventListener("scroll", () => {
+    on(this.element, "scroll", () => {
       const isAtBottom =
         this.element.scrollTop + this.element.clientHeight >=
         this.element.scrollHeight - 200;

@@ -1,4 +1,4 @@
-import { createElement, Component } from "../../utils/dom";
+import { createElement, Component, removeClass } from "../../utils/dom";
 import { getChatLetters } from "../../utils/chat";
 import { EMPTY_IMG } from "../../utils/images";
 import * as styles from "./avatar.scss";
@@ -12,7 +12,7 @@ interface Options {
 
 export default class Avatar implements Component<Options> {
   public element: HTMLElement;
-  private avatar: Element;
+  private avatar: HTMLElement;
   private peer: Options["peer"];
   private size: Options["size"];
   private className: Options["class"];
@@ -41,7 +41,7 @@ export default class Avatar implements Component<Options> {
 
             img = url;
             if (this.avatar) {
-              this.avatar.classList.remove("hidden");
+              removeClass(this.avatar, "hidden");
               this.avatar.setAttribute("src", url);
             }
           });

@@ -1,6 +1,6 @@
 import { IPeer } from "../../models/peer";
 import { ISharedMedia, SharedMedia } from "../../models/shared-media";
-import { Component, createElement } from "../../utils/dom";
+import { Component, createElement, on } from "../../utils/dom";
 import { EMPTY_IMG } from "../../utils/images";
 import { mediaLightBox } from "../ui/media-lightbox";
 import * as styles from "./shared-media.scss";
@@ -22,7 +22,7 @@ export default class SharedMediaPanel implements Component<Options> {
       class: styles.container,
     });
 
-    this.element.addEventListener("scroll", () => {
+    on(this.element, "scroll", () => {
       if (this.lock) {
         return;
       }
@@ -59,7 +59,7 @@ export default class SharedMediaPanel implements Component<Options> {
       src: initialPhoto,
     }) as HTMLImageElement;
     const element = createElement("button", { class: styles.tile }, img);
-    element.addEventListener("click", () => {
+    on(element, "click", () => {
       mediaLightBox({
         source: element,
         peer: this.peer,

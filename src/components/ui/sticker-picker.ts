@@ -1,6 +1,6 @@
 import { Document } from "../../core/tl/TLObjects";
 import { IStickerSet, StickerSet } from "../../models/sticker-set";
-import { Component, createElement, removeChildren } from "../../utils/dom";
+import { Component, createElement, removeChildren, on } from "../../utils/dom";
 import Lottie from "./lottie";
 import * as styles from "./sticker-picker.scss";
 import { EMPTY_IMG } from "../../utils/images";
@@ -23,13 +23,13 @@ export default class StickerPicker implements Component<Options> {
   private lockLoadMore = true;
   private loadPromise = StickerSet.fetchAll().then((stickerSets) => {
     this.stickerSets = stickerSets;
-    this.wrapper.addEventListener("scroll", () => {
+    on(this.wrapper, "scroll", () => {
       if (!this.lockLoadMore && this.isAtEnd()) {
         this.renderStickers();
       }
     });
 
-    this.tabs.addEventListener("scroll", () => {
+    on(this.tabs, "scroll", () => {
       if (!this.lockLoadMore && this.isTabsAtEnd()) {
         this.renderTabs();
       }
@@ -40,7 +40,7 @@ export default class StickerPicker implements Component<Options> {
     this.onStickerSelect = onStickerSelect;
     this.tabs = createElement("div", { class: styles.tabs });
 
-    this.tabs.addEventListener("wheel", (e) => {
+    on(this.tabs, "wheel", (e) => {
       this.tabs.scrollLeft += e.deltaY;
     });
 
@@ -93,7 +93,6 @@ export default class StickerPicker implements Component<Options> {
       this.currentPreviewOffset,
       (this.currentPreviewOffset += 20)
     );
-    console.log("stickers", stickers);
 
     for (const sticker of stickers) {
       const titleElement = createElement("button", { title: sticker.set.title });
@@ -113,12 +112,12 @@ export default class StickerPicker implements Component<Options> {
                   autoplay: false,
                 });
 
-                lottie.addEventListener("mouseenter", () => {
+                on(lottie, "mouseenter", () => {
                   if ((lottie.instance.animation as any).isPaused) {
                     lottie.instance.animation.goToAndPlay(0);
                   }
                 });
-                lottie.addEventListener("mouseleave", () => {
+                on(lottie, "mouseleave", () => {
                   lottie.instance.animation.stop();
                 });
               });
@@ -141,7 +140,7 @@ export default class StickerPicker implements Component<Options> {
           }
         });
       }
-      titleElement.addEventListener("click", () => {
+      on(titleElement, "click", () => {
         const index = this.stickerSets.indexOf(sticker);
         const limit = index - this.currentOffset + 1;
         if (limit > 0) {
@@ -203,7 +202,7 @@ export default class StickerPicker implements Component<Options> {
       if (animated) {
         const preview = createElement("div", { class: styles.preview });
 
-        preview.addEventListener("mouseup", () => {
+        on(preview, "mouseup", () => {
           this.onStickerSelect(document);
         });
 
@@ -222,12 +221,12 @@ export default class StickerPicker implements Component<Options> {
                 autoplay: false,
               });
 
-              lottie.addEventListener("mouseenter", () => {
+              on(lottie, "mouseenter", () => {
                 if ((lottie.instance.animation as any).isPaused) {
                   lottie.instance.animation.goToAndPlay(0);
                 }
               });
-              lottie.addEventListener("mouseleave", () => {
+              on(lottie, "mouseleave", () => {
                 lottie.instance.animation.stop();
               });
             });
@@ -238,7 +237,7 @@ export default class StickerPicker implements Component<Options> {
         }) as HTMLImageElement;
         const preview = createElement("div", { class: styles.preview }, img);
 
-        preview.addEventListener("mouseup", () => {
+        on(preview, "mouseup", () => {
           this.onStickerSelect(document);
         });
 

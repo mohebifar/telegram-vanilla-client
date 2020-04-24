@@ -1,4 +1,4 @@
-import { Component } from "../../utils/dom";
+import { Component, on } from "../../utils/dom";
 
 const NS = "http://www.w3.org/2000/svg";
 
@@ -87,7 +87,7 @@ export default class Waveform implements Component<Options> {
 
     svg.append(defs, rect);
 
-    svg.addEventListener("mousedown", e => {
+    on(svg, "mousedown", e => {
       const rect = svg.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const position = x / rect.width;

@@ -3,7 +3,7 @@ import {
   DocumentAttributeAudio,
   MessageMediaDocument
 } from "../../core/tl/TLObjects";
-import { Component, createElement, Element } from "../../utils/dom";
+import { Component, createElement, Element, off, on } from "../../utils/dom";
 import Waveform from "../ui/waveform";
 
 import * as styles from "../chat/chat.scss";
@@ -44,23 +44,23 @@ export default class AudioAttachment implements Component<Options> {
     };
 
     const play = () => {
-      iconWrapper.removeEventListener("click", play);
-      iconWrapper.addEventListener("click", pause);
+      off(iconWrapper, "click", play);
+      on(iconWrapper, "click", pause);
       audio.play();
       animateWaveform();
       fileIcon.instance.showAudio(Icons.Pause);
     };
 
     const pause = () => {
-      iconWrapper.removeEventListener("click", pause);
-      iconWrapper.addEventListener("click", play);
+      off(iconWrapper, "click", pause);
+      on(iconWrapper, "click", play);
       audio.pause();
       fileIcon.instance.showAudio(Icons.Play);
     };
 
     const stopListener = () => {
-      iconWrapper.removeEventListener("click", stopListener);
-      iconWrapper.addEventListener("click", downloadListener);
+      off(iconWrapper, "click", stopListener);
+      on(iconWrapper, "click", downloadListener);
       fileIcon.instance.showAudio(Icons.Play);
 
       shouldContinue = false;
@@ -83,20 +83,20 @@ export default class AudioAttachment implements Component<Options> {
     };
 
     const downloadListener = () => {
-      iconWrapper.removeEventListener("click", downloadListener);
-      iconWrapper.addEventListener("click", stopListener);
+      off(iconWrapper, "click", downloadListener);
+      on(iconWrapper, "click", stopListener);
       fileIcon.instance.showProgress(0, "c");
 
       tg.fileStorage.downloadMedia(media, undefined, onProgress).then(src => {
         if (src && iconWrapper) {
           audio = new Audio(src);
-          audio.addEventListener("ended", () => {
+          on(audio, "ended", () => {
             pause();
           });
           play();
 
-          iconWrapper.removeEventListener("click", stopListener);
-          iconWrapper.removeEventListener("click", downloadListener);
+          off(iconWrapper, "click", stopListener);
+          off(iconWrapper, "click", downloadListener);
         }
 
         shouldContinue = true;
@@ -110,7 +110,7 @@ export default class AudioAttachment implements Component<Options> {
       onSeek
     }) as Element<Waveform>;
     waveform.instance.progress(0);
-    iconWrapper.addEventListener("click", downloadListener);
+    on(iconWrapper, "click", downloadListener);
     fileIcon.instance.showAudio(Icons.Play);
 
     const element = createElement(

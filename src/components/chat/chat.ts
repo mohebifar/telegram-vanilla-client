@@ -8,6 +8,9 @@ import {
   Element,
   getNthChild,
   removeChildren,
+  addClass,
+  on,
+  removeClass,
 } from "../../utils/dom";
 import { debounce, throttle } from "../../utils/utils";
 import RightSidebar from "../right-sidebar/right-sidebar";
@@ -135,7 +138,7 @@ export default class Chat implements Component<Options> {
       }
 
       this.idToElementMap.clear();
-      this.scrollView.classList.add(styles.initialLoading);
+      addClass(this.scrollView, styles.initialLoading);
       removeChildren(this.chatContainer);
 
       this.dialog = dialog;
@@ -163,7 +166,7 @@ export default class Chat implements Component<Options> {
         );
       } finally {
         this.lockLoad = false;
-        this.scrollView.classList.remove(styles.initialLoading);
+        removeClass(this.scrollView, styles.initialLoading);
       }
 
       if (this.intersectionObserver) {
@@ -214,7 +217,7 @@ export default class Chat implements Component<Options> {
   }
 
   private register() {
-    this.scrollView.addEventListener("scroll", () => {
+    on(this.scrollView, "scroll", () => {
       if (this.lockLoad || this.chatContainer.childNodes.length === 0) {
         return;
       }

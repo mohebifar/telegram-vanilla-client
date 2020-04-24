@@ -6,7 +6,7 @@ import {
 } from "../../core/tl/TLObjects";
 import { IMessage } from "../../models/message";
 import { Peer, SimplifiedMessageRequest } from "../../models/peer";
-import { Component, createElement, removeChildren } from "../../utils/dom";
+import { Component, createElement, removeChildren, removeClass, on, addClass } from "../../utils/dom";
 import {
   getVideoMeta,
   makeFileDialog,
@@ -74,20 +74,20 @@ export default class SendMessageForm implements Component<Options> {
       createElement(IconButton, { icon: Icons.Send, color: "white" })
     );
 
-    this.inputNode.addEventListener("input", () => {
+    on(this.inputNode, "input", () => {
       if (this.inputNode.value !== "") {
         startTyping();
       }
     });
 
-    this.inputNode.addEventListener("keypress", (e) => {
+    on(this.inputNode, "keypress", (e) => {
       if (e.which == 13 && !e.shiftKey) {
         e.preventDefault();
         this.handleSubmit();
       }
     });
 
-    this.element.addEventListener("submit", this.handleSubmit);
+    on(this.element, "submit", this.handleSubmit);
   }
 
   public focus() {
@@ -186,7 +186,7 @@ export default class SendMessageForm implements Component<Options> {
         wrapperClass: styles.captionInput,
         placeholder: "Add a caption...",
       });
-      captionInput.addEventListener("keypress", (e) => {
+      on(captionInput, "keypress", (e) => {
         if (e.keyCode === 13 && !e.shiftKey) {
           e.preventDefault();
           submit();
@@ -392,20 +392,20 @@ export default class SendMessageForm implements Component<Options> {
     const hide = (doClear: any) => {
       doClear !== false && clear();
       
-      attachmentDropdown.classList.remove("visible");
+      removeClass(attachmentDropdown, "visible");
 
-      attachmentDropdown.addEventListener(
+      on(attachmentDropdown, 
         "transitionend",
         () => {
-          attachmentDropdown.classList.add("hidden");
+          addClass(attachmentDropdown, "hidden");
         },
         { once: true }
       );
     };
     const show = () => {
       clear();
-      attachmentDropdown.classList.add("visible");
-      attachmentDropdown.classList.remove("hidden");
+      addClass(attachmentDropdown, "visible");
+      removeClass(attachmentDropdown, "hidden");
     };
     const hideWithTimeout = () => {
       clear();
@@ -414,8 +414,8 @@ export default class SendMessageForm implements Component<Options> {
       }, 1000);
     };
 
-    attachmentDropdown.addEventListener("mouseenter", clear);
-    attachmentDropdown.addEventListener("mouseleave", hide);
+    on(attachmentDropdown, "mouseenter", clear);
+    on(attachmentDropdown, "mouseleave", hide);
 
     const attachmentActivator = createElement(IconButton, {
       icon: Icons.Attach,

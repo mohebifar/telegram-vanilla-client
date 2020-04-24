@@ -2,7 +2,8 @@ import {
   createElement,
   Component,
   Element,
-  removeChildren
+  removeChildren,
+  on
 } from "../../utils/dom";
 import autosize from "autosize";
 import * as styles from "./input.scss";
@@ -72,11 +73,11 @@ export default class Input implements Component<Options> {
 
     Object.entries(EventMap).forEach(([attrName, eventName]) => {
       if (attrName in rest) {
-        this.inputNode.addEventListener(eventName, rest[attrName]);
+        on(this.inputNode, eventName, rest[attrName]);
       }
     });
 
-    this.inputNode.addEventListener("input", () => {
+    on(this.inputNode, "input", () => {
       this.setError(false);
     });
   }

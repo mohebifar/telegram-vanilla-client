@@ -1,7 +1,7 @@
 import { MessageMediaPhoto, Photo, PhotoSize } from "../../core/tl/TLObjects";
 import { TelegramClientProxy } from "../../telegram-worker-proxy";
 import { sortPhotoSizes } from "../../utils/chat";
-import { Component, createElement } from "../../utils/dom";
+import { Component, createElement, removeClass, on } from "../../utils/dom";
 import { EMPTY_IMG } from "../../utils/images";
 import { fitImageSize, readDataURL } from "../../utils/upload-file";
 import { TransientMedia } from "../../utils/useful-types";
@@ -61,10 +61,10 @@ export default class PhotoAttachment implements Component<Options> {
         })
         .then((url) => {
           downloaded = true;
-          img.classList.remove("blur");
+          removeClass(img, "blur");
           img.setAttribute("src", url);
           downloadIndicator.remove();
-          element.addEventListener("click", onClick);
+          on(element, "click", onClick);
         });
     } else {
       // Transient Media
@@ -73,7 +73,7 @@ export default class PhotoAttachment implements Component<Options> {
           if (t === 1) {
             downloadIndicator.remove();
             progress.remove();
-            img.classList.remove("blur");
+            removeClass(img, "blur");
           } else {
             progress.instance.progress(t || 0);
           }

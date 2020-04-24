@@ -1,4 +1,4 @@
-import { createElement, Component, Element } from "../../utils/dom";
+import { createElement, Component, Element, on } from "../../utils/dom";
 import * as styles from "./icon-button.scss";
 import Icon, { Icons, Options as IconOptions, IconSprite } from "./icon";
 
@@ -52,7 +52,7 @@ export default class IconButton implements Component<Options> {
 
     Object.entries(EventMap).forEach(([attrName, eventName]) => {
       if (attrName in rest) {
-        this.element.addEventListener(eventName, rest[attrName]);
+        on(this.element, eventName, rest[attrName]);
       }
     });
   }

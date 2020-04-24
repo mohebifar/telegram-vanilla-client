@@ -12,6 +12,9 @@ import {
   createElement,
   Element,
   removeChildren,
+  on,
+  addClass,
+  removeClass,
 } from "../../utils/dom";
 import { EMPTY_IMG } from "../../utils/images";
 import { TransientMedia } from "../../utils/useful-types";
@@ -59,6 +62,7 @@ export default class Bubble implements Component<Options> {
   public message: IMessage;
   public dialog: IDialog;
   public peer: IPeer;
+  private isForwarded: boolean;
 
   constructor({ message, dialog, onReply, peer, onReplyClick }: Options) {
     this.message = message;
@@ -90,13 +94,13 @@ export default class Bubble implements Component<Options> {
       messageWrapper
     );
 
-    this.element.addEventListener("contextmenu", (e) => {
+    on(this.element, "contextmenu", (e) => {
       e.preventDefault();
 
       if (window.getSelection) {
         window.getSelection().removeAllRanges();
       }
-      this.element.classList.add(styles.active);
+      addClass(this.element, styles.active);
 
       makeContextMenu(
         { x: e.clientX, y: e.clientY },
@@ -143,7 +147,7 @@ export default class Bubble implements Component<Options> {
         ],
         {
           onClose: () => {
-            this.element.classList.remove(styles.active);
+            removeClass(this.element, styles.active);
           },
         }
       );
@@ -151,6 +155,21 @@ export default class Bubble implements Component<Options> {
 
     if (message.$t === "Message" && message.replyToMsgId) {
       this.element.prepend(this.getReplyElement(message.replyToMsgId));
+    }
+
+    this.isForwarded = Boolean(this.message.$t === "Message" && this.message.fwdFrom);
+
+    if (this.isForwarded) {
+      const originalSender = this.message.getPeerForwardedFrom();
+      if (originalSender) {
+        originalSender.then((displayName) => {
+          if (displayName) {
+            this.element.prepend(
+              createElement("div", { class: styles.fromName }, displayName)
+            );
+          }
+        });
+      }
     }
 
     if (message.justSent) {
@@ -170,21 +189,7 @@ export default class Bubble implements Component<Options> {
   public update() {
     const [attachment, attachmentType] = this.getAttachments();
     const { text, time } = this.getInfo();
-    const forward = this.message.$t === "Message" && this.message.fwdFrom;
     this.messageText.innerHTML = text;
-
-    if (forward) {
-      const originalSender = this.message.getPeerForwardedFrom();
-      if (originalSender) {
-        originalSender.then((displayName) => {
-          if (displayName) {
-            this.messageText.prepend(
-              createElement("div", { class: styles.fromName }, displayName)
-            );
-          }
-        });
-      }
-    }
 
     const isAnimatedSticker = attachmentType == "animated-sticker";
     const isSticker = attachmentType === "sticker" || isAnimatedSticker;
@@ -200,7 +205,7 @@ export default class Bubble implements Component<Options> {
       }
     }
 
-    if (forward) {
+    if (this.isForwarded) {
       bubbleClassName += " " + styles.isForward;
     }
 
@@ -234,7 +239,8 @@ export default class Bubble implements Component<Options> {
         this.element.append(this.attachment);
       }
 
-      if (attachment.style.width) {
+      // If forwarded, because of the extra line on the left, there is no need to fix the width
+      if (attachment.style.width && !this.isForwarded) {
         this.element.style.width = attachment.style.width;
       }
     }

@@ -2,7 +2,8 @@ import {
   createElement,
   Component,
   Element,
-  removeChildren
+  removeChildren,
+  on
 } from "../../utils/dom";
 import Input from "../ui/input";
 import Button from "../ui/button";
@@ -49,7 +50,7 @@ export default class AuthPassword implements Component<Options> {
     });
 
     this.peekButton = createElement("button", { type: "button" });
-    this.peekButton.addEventListener("click", () => {
+    on(this.peekButton, "click", () => {
       const instance = this.passwordInput.instance;
       this.isPeeking = !this.isPeeking;
       this.renderPeekButton();
@@ -79,7 +80,7 @@ export default class AuthPassword implements Component<Options> {
       this.btn
     );
 
-    signInForm.addEventListener("submit", event => {
+    on(signInForm, "submit", event => {
       event.preventDefault();
       this.handleSubmit();
     });

@@ -5,7 +5,7 @@ import {
 } from "../../core/tl/TLObjects";
 import { TelegramClientProxy } from "../../telegram-worker-proxy";
 import { parseFileSize } from "../../utils/chat";
-import { Component, createElement } from "../../utils/dom";
+import { Component, createElement, on, off } from "../../utils/dom";
 import { saveData, readDataURL } from "../../utils/upload-file";
 import { TransientMedia } from "../../utils/useful-types";
 import * as styles from "../chat/chat.scss";
@@ -56,7 +56,7 @@ export default class FileAttachment implements Component<Options> {
 
     if (media.$t === "MessageMediaDocument") {
       fileIcon.instance.showEmpty();
-      iconWrapper.addEventListener("click", downloadListener);
+      on(iconWrapper, "click", downloadListener);
     } else {
       // Transient media - uploading
       fileIcon.instance.showProgress(media.progress || 0);
@@ -67,9 +67,9 @@ export default class FileAttachment implements Component<Options> {
       if (media.subscribe) {
         media.subscribe((progress) => {
           if (progress === 1) {
-            iconWrapper.removeEventListener("click", stopUploadListener);
+            off(iconWrapper, "click", stopUploadListener);
             fileIcon.instance.showDocument();
-            iconWrapper.addEventListener("click", () => {
+            on(iconWrapper, "click", () => {
               readDataURL(media.file).then((file) => {
                 saveData(file, fileName);
               });
@@ -80,12 +80,12 @@ export default class FileAttachment implements Component<Options> {
           return shouldContinue;
         });
       }
-      iconWrapper.addEventListener("click", stopUploadListener);
+      on(iconWrapper, "click", stopUploadListener);
     }
 
     function stopListener() {
-      iconWrapper.removeEventListener("click", stopListener);
-      iconWrapper.addEventListener("click", downloadListener);
+      off(iconWrapper, "click", stopListener);
+      on(iconWrapper, "click", downloadListener);
       fileIcon.instance.showEmpty();
 
       shouldContinue = false;
@@ -100,8 +100,8 @@ export default class FileAttachment implements Component<Options> {
     }
 
     function downloadListener() {
-      iconWrapper.removeEventListener("click", downloadListener);
-      iconWrapper.addEventListener("click", stopListener);
+      off(iconWrapper, "click", downloadListener);
+      on(iconWrapper, "click", stopListener);
       fileIcon.instance.showProgress(0);
 
       tg.fileStorage
@@ -109,9 +109,9 @@ export default class FileAttachment implements Component<Options> {
         .then((file) => {
           if (file && iconWrapper) {
             fileIcon.instance.showDocument();
-            iconWrapper.removeEventListener("click", stopListener);
-            iconWrapper.removeEventListener("click", downloadListener);
-            iconWrapper.addEventListener("click", () => {
+            off(iconWrapper, "click", stopListener);
+            off(iconWrapper, "click", downloadListener);
+            on(iconWrapper, "click", () => {
               saveData(file, fileName);
             });
           }

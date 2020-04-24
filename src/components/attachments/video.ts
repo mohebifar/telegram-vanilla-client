@@ -4,7 +4,7 @@ import {
   MessageMediaDocument
 } from "../../core/tl/TLObjects";
 import { TelegramClientProxy } from "../../telegram-worker-proxy";
-import { Component, createElement, removeChildren } from "../../utils/dom";
+import { Component, createElement, removeChildren, off, removeClass, on } from "../../utils/dom";
 import { EMPTY_IMG } from "../../utils/images";
 import { fitImageSize } from "../../utils/upload-file";
 import * as styles from "../chat/chat.scss";
@@ -61,7 +61,7 @@ export default class VideoAttachment implements Component<Options> {
     let downloaded = false;
 
     const downloadListener = () => {
-      element.removeEventListener("click", downloadListener);
+      off(element, "click", downloadListener);
       removeChildren(downloadIndicator);
       const progress = createElement(Progress);
       downloadIndicator.append(progress);
@@ -102,9 +102,9 @@ export default class VideoAttachment implements Component<Options> {
           observer.observe(video);
 
           if (isGIF) {
-            element.classList.remove("pointer");
+            removeClass(element, "pointer");
           } else {
-            element.addEventListener("click", () => {
+            on(element, "click", () => {
               const canvas = globalDocument.createElement("canvas");
               canvas.width = video.videoWidth;
               canvas.height = video.videoHeight;
@@ -119,7 +119,7 @@ export default class VideoAttachment implements Component<Options> {
         });
     };
 
-    element.addEventListener("click", downloadListener);
+    on(element, "click", downloadListener);
 
     const videoAttributes = document.attributes.find(
       ({ $t }) => $t === "DocumentAttributeVideo"

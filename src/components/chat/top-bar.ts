@@ -1,7 +1,7 @@
 import { IDialog } from "../../models/dialog";
 import { IPeer, Peer } from "../../models/peer";
 import { getChatSubdueText } from "../../utils/chat";
-import { Component, createElement } from "../../utils/dom";
+import { Component, createElement, on } from "../../utils/dom";
 import Avatar from "../ui/avatar";
 import * as styles from "./top-bar.scss";
 import IconButton from "../ui/icon-button";
@@ -69,7 +69,7 @@ export default class TopBar implements Component<Options> {
       })
     );
 
-    profile.addEventListener("click", onProfileClick);
+    on(profile, "click", onProfileClick);
 
     this.element = createElement(
       "div",

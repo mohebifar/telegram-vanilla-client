@@ -1,6 +1,6 @@
 import { Document } from "../../core/tl/TLObjects";
 import { Gif } from "../../models/gifs";
-import { Component, createElement, removeChildren } from "../../utils/dom";
+import { Component, createElement, removeChildren, on } from "../../utils/dom";
 import VideoAttachment from "../attachments/video";
 import * as styles from "./gif-picker.scss";
 
@@ -24,7 +24,7 @@ export default class GifPicker implements Component<Options> {
     this.onGifSelect = onGifSelect;
     this.element = createElement("div", { class: styles.container });
 
-    this.element.addEventListener("scroll", () => {
+    on(this.element, "scroll", () => {
       if (this.isAtBottom()) {
         this.renderPreviews();
       }
@@ -61,7 +61,7 @@ export default class GifPicker implements Component<Options> {
       });
       const preview = createElement("div", { class: styles.preview }, video);
 
-      preview.addEventListener("mouseup", () => {
+      on(preview, "mouseup", () => {
         this.onGifSelect(document);
       });
 

@@ -6,7 +6,7 @@ import {
   getIsTypingText,
   shortenCount
 } from "../../utils/chat";
-import { Component, createElement, removeChildren } from "../../utils/dom";
+import { Component, createElement, removeChildren, on } from "../../utils/dom";
 import Avatar from "./avatar";
 import * as styles from "./dialog-item.scss";
 import Icon, { Icons } from "./icon";
@@ -73,7 +73,7 @@ export default class DialogItem implements Component<Options> {
       this.unreadCount
     );
 
-    this.element.addEventListener("click", () =>
+    on(this.element, "click", () =>
       this.onClick(this.peer, this.message)
     );
     this.element.appendChild(this.avatar);

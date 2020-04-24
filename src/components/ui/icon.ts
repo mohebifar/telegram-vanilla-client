@@ -1,4 +1,4 @@
-import { createElement, Component } from "../../utils/dom";
+import { createElement, Component, removeClass, addClass } from "../../utils/dom";
 import "./icon.global.scss";
 
 export enum Icons {
@@ -85,7 +85,7 @@ export default class Icon implements Component<Options> {
 
   public setSprite(state: "start" | "end") {
     const opposite = state === "start" ? "end" : "start";
-    this.element.classList.remove(`ic-sprite-${opposite}`);
-    this.element.classList.add(`ic-sprite-${state}`);
+    removeClass(this.element, `ic-sprite-${opposite}`);
+    addClass(this.element, `ic-sprite-${state}`);
   }
 }

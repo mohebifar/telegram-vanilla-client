@@ -1,4 +1,4 @@
-import { createElement, Component } from "../../utils/dom";
+import { createElement, Component, on } from "../../utils/dom";
 import * as styles from "./chat.scss";
 import { IMessage } from "../../models/message";
 import { getMessageMediaType, escapeHTML } from "../../utils/chat";
@@ -59,7 +59,7 @@ export default class QuoteBox implements Component<Options> {
       }
 
       if (onClick) {
-        element.addEventListener("click", () => {
+        on(element, "click", () => {
           onClick();
         });
       }

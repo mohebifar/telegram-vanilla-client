@@ -1,4 +1,4 @@
-import { createElement, Component, Element } from "../../utils/dom";
+import { createElement, Component, Element, addClass, on, removeClass } from "../../utils/dom";
 import * as styles from "./country-picker.scss";
 import Input from "./input";
 import countries from "../../data/countries.json";
@@ -48,7 +48,7 @@ export default class CountryPicker implements Component<Options> {
           }, 100);
         },
         onFocus: () => {
-          this.dropdown.classList.add(styles.visible);
+          addClass(this.dropdown, styles.visible);
 
           this.textInput.instance.setSuffix(
             createElement(Icon, {
@@ -98,9 +98,9 @@ export default class CountryPicker implements Component<Options> {
           dialCode
         ) as HTMLDivElement;
 
-        item.addEventListener("click", () => {
+        on(item, "click", () => {
           this.select(country);
-          this.dropdown.classList.remove(styles.visible);
+          removeClass(this.dropdown, styles.visible);
         });
 
         this.dropdown.append(item);
@@ -120,7 +120,7 @@ export default class CountryPicker implements Component<Options> {
   }
 
   private hideDropdown = () => {
-    this.dropdown.classList.remove(styles.visible);
+    removeClass(this.dropdown, styles.visible);
 
     this.textInput.instance.setSuffix(
       createElement(Icon, {
@@ -137,10 +137,10 @@ export default class CountryPicker implements Component<Options> {
     let totalVisible = 0;
     this.countryElements.forEach(element => {
       if (searchRegex.test(element.dataset.countryName)) {
-        element.classList.remove("hidden");
+        removeClass(element, "hidden");
         totalVisible++;
       } else {
-        element.classList.add("hidden");
+        addClass(element, "hidden");
       }
     });
 

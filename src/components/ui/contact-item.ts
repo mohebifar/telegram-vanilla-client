@@ -1,5 +1,5 @@
 import { IPeer } from "../../models/peer";
-import { Component, createElement, removeChildren } from "../../utils/dom";
+import { Component, createElement, removeChildren, on } from "../../utils/dom";
 import Avatar from "./avatar";
 import * as styles from "./dialog-item.scss";
 import { getChatSubdueText } from "../../utils/chat";
@@ -52,7 +52,7 @@ export default class ContactItem implements Component<Options> {
       createElement("div", this.text)
     );
 
-    this.element.addEventListener("click", () => this.onClick(this.peer));
+    on(this.element, "click", () => this.onClick(this.peer));
     this.element.append(this.avatar, textWrapper);
   }
 }

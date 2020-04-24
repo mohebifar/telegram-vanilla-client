@@ -1,4 +1,4 @@
-import { Component, createElement } from "../../utils/dom";
+import { Component, createElement, on, removeClass } from "../../utils/dom";
 import * as styles from "./tabs.scss";
 import { startAnimation } from "../../utils/easing";
 
@@ -30,7 +30,7 @@ export default class EmojiPanel implements Component<Options> {
         { class: styles.tab, type: "button" },
         tab.title
       );
-      element.addEventListener("click", () => {
+      on(element, "click", () => {
         this.setTab(i);
       });
       return element;
@@ -54,7 +54,7 @@ export default class EmojiPanel implements Component<Options> {
   public setTab(index: number) {
     const tab = this.tabs[index];
 
-    this.panels.forEach(panel => panel.classList.remove(styles.active));
+    this.panels.forEach(panel => removeClass(panel, styles.active));
     this.panels[index].classList.add(styles.active);
 
     const content = createElement(

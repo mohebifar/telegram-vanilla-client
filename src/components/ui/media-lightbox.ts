@@ -19,6 +19,9 @@ import {
   createElement,
   Element,
   getNthChild,
+  off,
+  on,
+  removeClass,
 } from "../../utils/dom";
 import { startAnimation } from "../../utils/easing";
 import { EMPTY_IMG } from "../../utils/images";
@@ -112,12 +115,12 @@ export class LightBox implements Component<Options> {
 
     const hotkeys = (e: KeyboardEvent) => {
       if (e.keyCode === 27) {
-        this.element.removeEventListener("keydown", hotkeys);
+        off(this.element, "keydown", hotkeys);
         this.close();
       }
     };
 
-    this.element.addEventListener("keydown", hotkeys);
+    on(this.element, "keydown", hotkeys);
   }
 
   public setSrc(src: string) {
@@ -273,7 +276,7 @@ export class LightBox implements Component<Options> {
     if (this.media) {
       this.media.getNext().then((media) => {
         if (media) {
-          this.nextButton.classList.remove("hidden");
+          removeClass(this.nextButton, "hidden");
 
           this.nextButton.onclick = async () => {
             this.setMedia(media, -1);
@@ -283,7 +286,7 @@ export class LightBox implements Component<Options> {
 
       this.media.getPrev().then((media) => {
         if (media) {
-          this.prevButton.classList.remove("hidden");
+          removeClass(this.prevButton, "hidden");
 
           this.prevButton.onclick = async () => {
             this.setMedia(media, 1);

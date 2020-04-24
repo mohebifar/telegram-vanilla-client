@@ -146,3 +146,41 @@ export function removeChildren<T extends HTMLElement | Element<any>>(
     parent.firstChild.remove();
   }
 }
+
+export function addClass<T extends HTMLElement | Element<any>>(
+  element: T,
+  ...tokens: string[]
+) {
+  element.classList.add(...tokens);
+}
+
+export function removeClass<T extends HTMLElement | Element<any>>(
+  element: T,
+  ...tokens: string[]
+) {
+  element.classList.remove(...tokens);
+}
+
+export function on<
+  K extends keyof HTMLElementEventMap,
+  T extends HTMLElement | SVGElement | Element<any>
+>(
+  element: T,
+  eventType: K,
+  listener: (this: HTMLFormElement, ev: HTMLElementEventMap[K]) => any,
+  options?: boolean | AddEventListenerOptions
+) {
+  element.addEventListener(eventType, listener, options);
+}
+
+export function off<
+  K extends keyof HTMLElementEventMap,
+  T extends HTMLElement | SVGElement | Element<any>
+>(
+  element: T,
+  eventType: K,
+  listener: (this: HTMLFormElement, ev: HTMLElementEventMap[K]) => any,
+  options?: boolean | AddEventListenerOptions
+) {
+  element.removeEventListener(eventType, listener, options);
+}

@@ -1,5 +1,5 @@
 import { Document } from "../../core/tl/TLObjects";
-import { Component, createElement, Element } from "../../utils/dom";
+import { Component, createElement, Element, on, removeClass, addClass } from "../../utils/dom";
 import * as styles from "./emoji-panel.scss";
 import EmojiPicker from "./emoji-picker";
 import StickerPicker from "./sticker-picker";
@@ -16,6 +16,7 @@ export default class EmojiPanel implements Component<Options> {
   public readonly element: HTMLElement;
 
   private visible = false;
+  private lockVisibility = false;
   private timeout: number;
   private tabsContainer: Element<Tabs>;
 
@@ -56,11 +57,11 @@ export default class EmojiPanel implements Component<Options> {
       this.tabsContainer
     );
 
-    element.addEventListener("mouseenter", () => {
+    on(element, "mouseenter", () => {
       this.clearTimeout();
     });
 
-    element.addEventListener("mouseleave", () => {
+    on(element, "mouseleave", () => {
       this.deferHide();
     });
 
@@ -68,21 +69,28 @@ export default class EmojiPanel implements Component<Options> {
   }
 
   public setVisibility(visible = !this.visible) {
+    if (this.lockVisibility) {
+      return;
+    }
     this.clearTimeout();
     this.visible = visible;
+
     if (visible) {
-      this.element.classList.remove("hidden");
-      this.element.classList.add("visible");
+      removeClass(this.element, "hidden");
+      addClass(this.element, "visible");
     } else {
-      this.element.classList.remove("visible");
-      this.element.addEventListener(
-        "transitionend",
-        () => {
-          this.tabsContainer.instance.setTab(0);
-          this.element.classList.add("hidden");
-        },
-        { once: true }
-      );
+      removeClass(this.element, "visible");
+      addClass(this.element, "hidden");
+      // this.lockVisibility = true;
+      // on(this.element, 
+      //   "transitionend",
+      //   () => {
+      //     this.lockVisibility = false;
+      //     // this.tabsContainer.instance.setTab(0);
+      //     addClass(this.element, "hidden");
+      //   },
+      //   { once: true }
+      // );
     }
   }
 
@@ -95,5 +103,6 @@ export default class EmojiPanel implements Component<Options> {
 
   private clearTimeout() {
     clearTimeout(this.timeout);
+    this.timeout = 0;
   }
 }

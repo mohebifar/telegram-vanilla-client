@@ -1,6 +1,6 @@
 import { IPeer } from "../../models/peer";
 import { ISharedMedia, SharedMedia } from "../../models/shared-media";
-import { Component, createElement } from "../../utils/dom";
+import { Component, createElement, on, addClass } from "../../utils/dom";
 import AudioAttachment from "../attachments/audio-player";
 import Spinner from "../ui/spinner";
 import * as styles from "./shared-audio.scss";
@@ -24,7 +24,7 @@ export default class SharedAudio implements Component<Options> {
       createElement(Spinner, { size: "40px", color: "blue" })
     );
 
-    this.element.addEventListener("scroll", () => {
+    on(this.element, "scroll", () => {
       if (this.lock) {
         return;
       }
@@ -45,7 +45,7 @@ export default class SharedAudio implements Component<Options> {
       limit: 10,
       type: "InputMessagesFilterMusic"
     });
-    this.element.classList.add(styles.loaded);
+    addClass(this.element, styles.loaded);
 
     if (sharedMedia.length > 0) {
       let media: ISharedMedia;

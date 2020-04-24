@@ -1,4 +1,4 @@
-import { createElement, Component } from "../../utils/dom";
+import { createElement, Component, on } from "../../utils/dom";
 import * as styles from "./context-menu.scss";
 import Icon, { Icons } from "./icon";
 
@@ -37,7 +37,7 @@ export class ContextMenu implements Component<Options> {
           createElement("div", { class: styles.title }, title)
         );
 
-        element.addEventListener("click", () => {
+        on(element, "click", () => {
           if (onClick) {
             onClick(() => this.close());
           }
@@ -59,14 +59,14 @@ export class ContextMenu implements Component<Options> {
         if (!target.closest("." + styles.container)) {
           this.close();
         } else {
-          document.body.addEventListener("mousedown", listener, {
+          on(document.body, "mousedown", listener, {
             once: true,
             capture: true,
           });
         }
       };
 
-      document.body.addEventListener("mousedown", listener, {
+      on(document.body, "mousedown", listener, {
         once: true,
         capture: true,
       });

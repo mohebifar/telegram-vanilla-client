@@ -2,7 +2,7 @@ import { Dialog, IDialog } from "../../models/dialog";
 import { IMessage, Message } from "../../models/message";
 import { IPeer, Peer } from "../../models/peer";
 import { TopPeer } from "../../models/top-peer";
-import { Component, createElement, removeChildren } from "../../utils/dom";
+import { Component, createElement, removeChildren, on } from "../../utils/dom";
 import { debounce } from "../../utils/utils";
 import Avatar from "../ui/avatar";
 import ContactItem from "../ui/contact-item";
@@ -56,7 +56,7 @@ export default class GlobalSearch extends DefaultTransition
           createElement(Avatar, { peer, size: "md" }),
           createElement("div", (peer as any).firstName || peer.displayName)
         );
-        element.addEventListener("click", () => {
+        on(element, "click", () => {
           peer.getDialog().then(dialog => {
             this.onChatSelect(dialog);
             this.router.back();
