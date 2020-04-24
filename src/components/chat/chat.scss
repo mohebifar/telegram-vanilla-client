@@ -43,6 +43,14 @@ $time-size: 0.75rem;
   background: transparent;
   cursor: pointer;
   padding: $message-spacing $message-spacing 0;
+  padding: $message-spacing / 2;
+  margin: $message-spacing / 2;
+  border-radius: 5px;
+
+  &:hover {
+    transition: background-color 0.2s ease;
+    background-color: rgba(0, 0, 0, 0.03);
+  }
 
   .replyWrapper {
     pointer-events: none;
@@ -249,42 +257,57 @@ $time-size: 0.75rem;
           right: 0;
         }
       }
+    }
 
-      &.isForward {
-        min-width: 11em;
 
-        .message {
-          position: relative;
+    &.isForward {
+      position: relative;
+      min-width: 11em;
 
-          &::before {
-            content: "Forwarded message";
-            position: absolute;
-            left: 0;
-            bottom: calc(100% + 0.5em);
-            display: block;
-            color: $blue;
-            font-weight: 500;
-          }
+      &::before {
+        content: "Forwarded message";
+        display: block;
+        color: $blue;
+        font-weight: 500;
+        margin: $message-spacing $message-spacing $message-spacing / 3;
+      }
 
-          border-left: 2px solid $blue;
-          margin: ($message-spacing * 4) 0 $message-spacing
-            ($message-spacing + 1px);
-          padding: $message-spacing $message-spacing ($message-spacing / 3)
-            $message-spacing;
+      .fromName {
+        text-align: left;
+        margin: ($message-spacing / 2) ($message-spacing * 2);
+        font-weight: 500;
+
+        &::after {
+          content: "";
+          display: block;
+          background-color: $blue;
+          width: 2px;
+          top: 35px;
+          position: absolute;
+          bottom: $message-spacing;
+          left: $message-spacing;
+        }
+      }
+
+      .attachmentWrapper,
+      .message {
+        margin-left: $message-spacing;
+        padding-top: 0;
+      }
+
+      .attachmentWrapper:not(:empty) {
+        padding: 0 $message-spacing $message-spacing;
+
+        .documentWrapper {
+          margin: 0;
         }
       }
     }
 
     &.emptyText {
       .documentWrapper {
-        margin-bottom: -1.3em;
+        margin-bottom: -1.3em !important;
       }
-    }
-
-    .fromName {
-      text-align: left;
-      margin: -$message-spacing 0 ($message-spacing / 2);
-      font-weight: 500;
     }
   }
 
@@ -454,6 +477,18 @@ $time-size: 0.75rem;
             color: $green-dark;
           }
         }
+
+        &.isForward {
+          &::before {
+            color: $green-dark;
+          }
+
+          .fromName {
+            &::after {
+              background-color: $green-dark;
+            }
+          }
+        }
       }
       .bubble:first-child {
         border-radius: 12px 12px 6px 12px;
@@ -571,7 +606,8 @@ $time-size: 0.75rem;
     padding-left: 0.5em;
     border-left: 2px solid;
 
-    &, &:visited {
+    &,
+    &:visited {
       color: black;
     }
 
@@ -598,6 +634,12 @@ $time-size: 0.75rem;
         object-fit: cover;
         object-position: center center;
       }
+    }
+  }
+
+  .hasReply {
+    .message {
+      padding-top: 0;
     }
   }
 }
