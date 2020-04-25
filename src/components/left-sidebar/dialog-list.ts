@@ -30,6 +30,7 @@ export default class DialogList extends FadeTransition
 
   private paginating = false;
   private dialogsToElement = new Map<IDialog, Element<DialogItem>>();
+  private peerToElement = new Map<IPeer, Element<DialogItem>>();
   private onChatSelect: Options["onChatSelect"];
 
   constructor({ onChatSelect }: Options) {
@@ -80,6 +81,17 @@ export default class DialogList extends FadeTransition
           element.instance.update();
         }
         this.rearrangeItems(object);
+      }
+    );
+    Peer.events.on(
+      "saved",
+      ({ object }: { object: IPeer; gid: string }) => {
+        if (object.type === 'User') {
+          const element = this.peerToElement.get(object);
+            if (element) {
+              element.instance.update();
+            }
+        }
       }
     );
 
@@ -143,6 +155,7 @@ export default class DialogList extends FadeTransition
     }
 
     this.dialogsToElement.set(dialog, element);
+    this.peerToElement.set(peer, element);
 
     if (dialog.pinned) {
       this.pinnedDialogsContainer.append(element);

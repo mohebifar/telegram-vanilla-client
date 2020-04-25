@@ -1,6 +1,24 @@
+@import "../../variables.scss";
+
 .avatar {
   position: relative;
   margin: 0 0.5rem;
+
+  &:global(.online) {
+    &::before {
+      position: absolute;
+      content: '';
+      display: block;
+      width: 10px;
+      height: 10px;
+      background: $green;
+      z-index: 100000;
+      bottom: 0;
+      right: 0;
+      border-radius: 50%;
+      border: 2px solid $white;
+    }
+  }
 
   img {
     position: absolute;

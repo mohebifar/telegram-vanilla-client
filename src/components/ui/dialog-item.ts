@@ -90,6 +90,8 @@ export default class DialogItem implements Component<Options> {
     this.date.innerHTML = date;
     removeChildren(this.unreadCount);
     this.unreadCount.append(unread);
+    const isOnline = 'status' in this.peer && this.peer.status.$t === 'UserStatusOnline';
+    this.avatar.classList[isOnline ? 'add' : 'remove']('online');
 
     const classList = [];
     if (!unread) {
