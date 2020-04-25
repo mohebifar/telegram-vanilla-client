@@ -560,10 +560,6 @@ function getContentType(type: upload_File["type"]) {
 }
 
 function getPartSize(fileSize: number) {
-  if (fileSize <= 64000) {
-    // 64KB
-    return 32;
-  }
   if (fileSize <= 128000) {
     // 128KB
     return 64;
