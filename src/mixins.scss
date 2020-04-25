@@ -33,11 +33,12 @@
   &:global(.visible) {
     opacity: 1;
     transform: scale(1);
-    animation: popoverAnimateIn .4s cubic-bezier(0.5, 0.65, 0.25, 0.9);
+    animation: popoverAnimateIn 0.4s cubic-bezier(0.5, 0.65, 0.25, 0.9);
   }
 
-  &, &:global(.visible) {
-    transition: all .4s cubic-bezier(0.5, 0.65, 0.25, 0.9);
+  &,
+  &:global(.visible) {
+    transition: all 0.4s cubic-bezier(0.5, 0.65, 0.25, 0.9);
   }
 }
 
@@ -49,5 +50,125 @@
   to {
     transform: scale(1);
     opacity: 1;
+  }
+}
+
+$thumb-radius: 5px !default;
+$thumb-height: 10px !default;
+$thumb-width: 10px !default;
+
+$track-width: 100% !default;
+$track-height: 2px !default;
+
+$track-radius: 1px !default;
+$contrast: 5% !default;
+
+@mixin track {
+  cursor: default;
+  height: $track-height;
+  transition: all 0.2s ease;
+  width: $track-width;
+}
+
+@mixin thumb {
+  background: var(--lower);
+  border-radius: $thumb-radius;
+  box-sizing: border-box;
+  cursor: default;
+  height: $thumb-height;
+  width: $thumb-width;
+}
+
+@mixin seekbar {
+  -webkit-appearance: none;
+  background: var(--upper);
+  margin: $thumb-height / 2 0;
+  width: $track-width;
+
+  &::-moz-focus-outer {
+    border: 0;
+  }
+
+  &:focus {
+    outline: 0;
+  }
+
+  &::-webkit-slider-runnable-track {
+    @include track;
+    border-radius: $track-radius;
+  }
+
+  &::-webkit-slider-thumb {
+    @include thumb;
+    -webkit-appearance: none;
+    margin-top: $track-height / 2 - $thumb-height / 2;
+    cursor: pointer;
+
+    &:hover {
+      transform: scale(1.2);
+    }
+
+    &,
+    &:hover {
+      transition: transform 0.3s ease;
+    }
+  }
+
+  &::-moz-range-track {
+    @include track;
+    border-radius: $track-radius;
+    height: $track-height / 2;
+  }
+
+  &::-moz-range-thumb {
+    @include thumb;
+  }
+
+  &::-ms-track {
+    @include track;
+    background: transparent;
+    border-color: transparent;
+    border-width: ($thumb-height / 2) 0;
+    color: transparent;
+  }
+
+  &::-ms-fill-lower {
+    border-radius: ($track-radius * 2);
+  }
+
+  &::-ms-fill-upper {
+    border-radius: ($track-radius * 2);
+  }
+
+  &::-ms-thumb {
+    @include thumb;
+    margin-top: $track-height / 4;
+  }
+}
+
+@mixin seekbar-variant($lower, $upper) {
+  --lower: #{$lower};
+  --upper: #{$upper};
+
+  &::-ms-fill-lower {
+    background: darken($lower, $contrast);
+  }
+  
+  &:focus {
+    &::-ms-fill-lower {
+      background: $lower;
+    }
+
+    &::-ms-fill-upper {
+      background: lighten($upper, $contrast);
+    }
+  }
+
+  &::-moz-range-track {
+    background: $lower;
+  }
+  
+  &::-ms-fill-upper {
+    background: $lower;
   }
 }

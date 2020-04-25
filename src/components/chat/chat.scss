@@ -259,7 +259,6 @@ $time-size: 0.75rem;
       }
     }
 
-
     &.isForward {
       position: relative;
       min-width: 11em;
@@ -391,6 +390,10 @@ $time-size: 0.75rem;
           }
         }
 
+        .seekbar {
+          @include seekbar-variant($blue-dark, $blue-lighter);
+        }
+
         .fromName {
           color: $blue;
         }
@@ -476,6 +479,10 @@ $time-size: 0.75rem;
           .replyContentTitle {
             color: $green-dark;
           }
+        }
+
+        .seekbar {
+          @include seekbar-variant($green-dark, $green-light);
         }
 
         &.isForward {

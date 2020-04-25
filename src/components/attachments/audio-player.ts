@@ -1,9 +1,9 @@
 import {
   Document,
   DocumentAttributeAudio,
-  MessageMediaDocument
+  MessageMediaDocument,
 } from "../../core/tl/TLObjects";
-import { Component, createElement, Element, off, on } from "../../utils/dom";
+import { Component, createElement, off, on, Element } from "../../utils/dom";
 import Waveform from "../ui/waveform";
 
 import * as styles from "../chat/chat.scss";
@@ -22,7 +22,7 @@ export default class AudioAttachment implements Component<Options> {
 
   constructor({ media, tg }: Options) {
     const audioAttribute = (media.document as Document).attributes.find(
-      t => t.$t === "DocumentAttributeAudio"
+      (t) => t.$t === "DocumentAttributeAudio"
     ) as DocumentAttributeAudio;
 
     const fileIcon = createElement(FileIcon, { extension: "ogg" });
@@ -34,11 +34,41 @@ export default class AudioAttachment implements Component<Options> {
 
     let audio: HTMLAudioElement;
     let shouldContinue = true;
+    let waveform: Element<Waveform>;
+    let seekbar: HTMLInputElement;
+
+    const useWaveform = audioAttribute.voice && audioAttribute.waveform;
+
+    const updateSeekbarColor = (value: number) => {
+      const computedStyles = getComputedStyle(seekbar);
+      const lower = computedStyles.getPropertyValue('--lower');
+      const upper = computedStyles.getPropertyValue('--upper');
+      seekbar.style.background = `linear-gradient(to right, ${lower} 0%, ${lower} ${value}%, ${upper} ${value}%, ${upper} 100%)`;
+    };
+
+    const updateDuration = (value: number) => {
+      duration.innerText = `${formatDuration(value * audio.duration || 0.1)} / ${formatDuration(audio.duration || 0)}`
+    };
+
+    const moveSeekbar = () => {
+      const progress = (audio.currentTime / audio.duration) || 0;
+      if (useWaveform) {
+        waveform.instance.progress(progress);
+      } else {
+        const value = Math.round(progress * 100);
+        updateSeekbarColor(value);
+        seekbar.value = '' + value;
+      }
+      updateDuration(progress);
+      if (!audio.paused) {
+        requestAnimationFrame(moveSeekbar);
+      }
+    };
 
     const onSeek = (time: number) => {
       if (audio) {
         audio.currentTime = time * audio.duration;
-      } else {
+      } else if (useWaveform) {
         waveform.instance.progress(0);
       }
     };
@@ -47,7 +77,7 @@ export default class AudioAttachment implements Component<Options> {
       off(iconWrapper, "click", play);
       on(iconWrapper, "click", pause);
       audio.play();
-      animateWaveform();
+      moveSeekbar();
       fileIcon.instance.showAudio(Icons.Pause);
     };
 
@@ -69,17 +99,10 @@ export default class AudioAttachment implements Component<Options> {
     const onProgress = (progress: number) => {
       if (shouldContinue && fileIcon) {
         fileIcon.instance.showProgress(progress, "c");
+        duration.innerText = `${Math.round(progress * 100)}%`;
       }
 
       return shouldContinue;
-    };
-
-    const animateWaveform = () => {
-      const progress = audio.currentTime / audio.duration;
-      waveform.instance.progress(progress);
-      if (!audio.paused) {
-        requestAnimationFrame(animateWaveform);
-      }
     };
 
     const downloadListener = () => {
@@ -87,7 +110,7 @@ export default class AudioAttachment implements Component<Options> {
       on(iconWrapper, "click", stopListener);
       fileIcon.instance.showProgress(0, "c");
 
-      tg.fileStorage.downloadMedia(media, undefined, onProgress).then(src => {
+      tg.fileStorage.downloadMedia(media, undefined, onProgress).then((src) => {
         if (src && iconWrapper) {
           audio = new Audio(src);
           on(audio, "ended", () => {
@@ -99,17 +122,38 @@ export default class AudioAttachment implements Component<Options> {
           off(iconWrapper, "click", downloadListener);
         }
 
+        duration.innerText = formatDuration(audioAttribute.duration);
         shouldContinue = true;
       });
     };
 
-    const waveform = createElement(Waveform as any, {
-      waveform:
-        audioAttribute.waveform ||
-        Array.from({ length: 50 }, () => Math.floor(Math.random() * 200)),
-      onSeek
-    }) as Element<Waveform>;
-    waveform.instance.progress(0);
+    const title = createElement("div", { class: styles.title });
+    const duration = createElement("div", formatDuration(audioAttribute.duration));
+
+    if (audioAttribute.voice && audioAttribute.waveform) {
+      waveform = createElement(Waveform, {
+        waveform:
+          audioAttribute.waveform ||
+          Array.from({ length: 50 }, () => Math.floor(Math.random() * 200)),
+        onSeek,
+      });
+      waveform.instance.progress(0);
+      title.append(waveform);
+    } else {
+      seekbar = createElement("input", {
+        type: "range",
+        value: "0",
+        class: styles.seekbar
+      }) as HTMLInputElement;
+      on(seekbar, "input", () => {
+        const value = Number(seekbar.value);
+        updateSeekbarColor(value);
+        onSeek(value / 100);
+        updateDuration(value / 100);
+      });
+      title.append(seekbar);
+    }
+
     on(iconWrapper, "click", downloadListener);
     fileIcon.instance.showAudio(Icons.Play);
 
@@ -120,8 +164,8 @@ export default class AudioAttachment implements Component<Options> {
       createElement(
         "div",
         { class: styles.documentContent },
-        createElement("div", { class: styles.title }, waveform),
-        createElement("div", formatDuration(audioAttribute.duration))
+        title,
+        duration
       )
     );
 

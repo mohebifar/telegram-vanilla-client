@@ -7,8 +7,8 @@ const HEIGHT = 35;
 
 export interface Options {
   class?: string;
-  waveform: number[];
-  onSeek(time: number): any;
+  waveform: number[] | Uint8Array;
+  onSeek(time: number): void;
 }
 
 let i = 0;

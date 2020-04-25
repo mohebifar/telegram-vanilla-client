@@ -1,4 +1,5 @@
 @import "variables.scss";
+@import "mixins.scss";
 
 body {
   margin: 0;
@@ -207,5 +208,12 @@ svg.waveform {
     right: 0;
     bottom: 0;
     top: 0;
+  }
+}
+
+.audioPlayer {
+  input[type="range"] {
+    @include seekbar;
+    @include seekbar-variant($blue-dark, $blue-lighter);
   }
 }
