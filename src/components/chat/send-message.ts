@@ -495,6 +495,7 @@ export default class SendMessageForm implements Component<Options> {
     this.clearReply();
     if (clear) {
       this.inputNode.value = "";
+      autosize.update(this.inputNode);
     }
     this.focus();
     return result;
