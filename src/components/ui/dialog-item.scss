@@ -69,19 +69,33 @@
     padding-right: 0.5rem;
     align-items: flex-end;
 
-    :first-child {
-      font-weight: 500;
-      font-size: 0.9rem;
-      margin-bottom: 0.3rem;
-      color: $grey;
-      font-size: 0.75rem;
-      font-weight: 200;
-      margin-bottom: 0;
-      height: 1.3rem;
-      padding-right: 0.1rem;
+    .dateWrapper {
+      display: flex;
+
+      > div {
+        margin-right: 0.2em;
+        > :global(.ic) {
+          height: 14px;
+        }
+      }
+
+      > span {
+        display: block;
+        flex: 1;
+        font-weight: 500;
+        font-size: 0.9rem;
+        margin-bottom: 0.3rem;
+        color: $grey;
+        font-size: 0.75rem;
+        font-weight: 200;
+        margin-bottom: 0;
+        height: 1.3rem;
+        padding-right: 0.1rem;
+        text-align: right;
+      }
     }
 
-    :nth-child(2) {
+    > :nth-child(2) {
       background-color: $green;
       color: white;
       display: block;

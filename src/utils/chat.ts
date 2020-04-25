@@ -87,7 +87,7 @@ export function getDialogDisplayName(entity: DBPeer) {
 export async function getMessageSummary(message: DialogMessageTypes) {
   switch (message.$t) {
     case "Message":
-      let text = message.out ? "You: " : "";
+      let text = "";
       let mediaType: string;
 
       if (message.media && message.media.$t !== "MessageMediaEmpty") {

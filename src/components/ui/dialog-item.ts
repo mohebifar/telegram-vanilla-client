@@ -4,7 +4,7 @@ import { IPeer } from "../../models/peer";
 import {
   getDialogDisplayDate,
   getIsTypingText,
-  shortenCount
+  shortenCount,
 } from "../../utils/chat";
 import { Component, createElement, removeChildren, on } from "../../utils/dom";
 import Avatar from "./avatar";
@@ -26,6 +26,7 @@ export default class DialogItem implements Component<Options> {
   private text: HTMLElement;
   private title: HTMLElement;
   private date: HTMLElement;
+  private dateWrapper: HTMLElement;
   private unreadCount: HTMLElement;
   private message: Options["message"];
   private peer: Options["peer"];
@@ -33,7 +34,7 @@ export default class DialogItem implements Component<Options> {
 
   constructor(options: Options) {
     const wrapper = createElement("div", {
-      class: styles.container + " ripple"
+      class: styles.container + " ripple",
     });
 
     this.element = wrapper;
@@ -50,14 +51,22 @@ export default class DialogItem implements Component<Options> {
 
     this.avatar = createElement(Avatar, {
       // chatId: chatId
-      peer: this.peer
+      peer: this.peer,
     });
 
     this.unreadCount = createElement("div", info.unread);
 
     this.title = createElement("div", { dir: "auto" }, info.title);
     this.text = createElement("span", { dir: "auto" }, info.text);
-    this.date = createElement("div", info.date);
+    this.date = createElement("span", info.date);
+    this.dateWrapper = createElement("div");
+
+    const dateWrapper = createElement(
+      "div",
+      { class: styles.dateWrapper },
+      this.dateWrapper,
+      this.date
+    );
 
     const textWrapper = createElement(
       "div",
@@ -69,13 +78,11 @@ export default class DialogItem implements Component<Options> {
     const meta = createElement(
       "div",
       { class: styles.meta },
-      this.date,
+      dateWrapper,
       this.unreadCount
     );
 
-    on(this.element, "click", () =>
-      this.onClick(this.peer, this.message)
-    );
+    on(this.element, "click", () => this.onClick(this.peer, this.message));
     this.element.appendChild(this.avatar);
     this.element.appendChild(textWrapper);
     this.element.appendChild(meta);
@@ -90,8 +97,9 @@ export default class DialogItem implements Component<Options> {
     this.date.innerHTML = date;
     removeChildren(this.unreadCount);
     this.unreadCount.append(unread);
-    const isOnline = 'status' in this.peer && this.peer.status.$t === 'UserStatusOnline';
-    this.avatar.classList[isOnline ? 'add' : 'remove']('online');
+    const isOnline =
+      "status" in this.peer && this.peer.status.$t === "UserStatusOnline";
+    this.avatar.classList[isOnline ? "add" : "remove"]("online");
 
     const classList = [];
     if (!unread) {
@@ -103,6 +111,31 @@ export default class DialogItem implements Component<Options> {
     if (typeof unread !== "string") {
       classList.push(styles.unreadIcon);
     }
+    removeChildren(this.dateWrapper);
+    if (
+      this.dialog.readOutboxMaxId > 0 &&
+      this.dialog.readInboxMaxId !== this.dialog.readOutboxMaxId &&
+      this.dialog.readInboxMaxId !== this.dialog.topMessage &&
+      this.dialog.unreadCount === 0) {
+
+        if (
+          this.dialog.readOutboxMaxId === this.dialog.topMessage
+        ) {
+          this.dateWrapper.append(
+            createElement(Icon, {
+              icon: Icons.Checks,
+              color: "green",
+            })
+          );
+        } else if (this.dialog.readOutboxMaxId < this.dialog.topMessage) {
+          this.dateWrapper.append(
+            createElement(Icon, {
+              icon: Icons.Check,
+              color: "green",
+            })
+          );
+        }
+      }
     this.unreadCount.className = classList.join(" ");
   }
 
@@ -124,7 +157,7 @@ export default class DialogItem implements Component<Options> {
         title: this.peer.displayName,
         date,
         text: (text && text.slice(0, 50)) || "",
-        silent: this.dialog.slient
+        silent: this.dialog.slient,
       };
     } else {
       const text = (this.message as any).message || "";
@@ -134,7 +167,7 @@ export default class DialogItem implements Component<Options> {
         title: this.peer.displayName,
         date: getDialogDisplayDate(this.message.date),
         text: (text && text.slice(0, 50)) || "",
-        silent: false
+        silent: false,
       };
     }
   }
