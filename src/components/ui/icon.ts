@@ -60,19 +60,20 @@ export interface Options {
 export default class Icon implements Component<Options> {
   public readonly element: HTMLElement;
   private color: Options["color"];
+  private classes: string;
 
   constructor({ icon, color = "black", ...rest }: Options) {
     const isSprite = Object.values(IconSprite).includes(icon as any);
     this.color = color;
+    this.classes = rest["class"] || "";
+    const classes = this.getClassName(icon);
     this.element = isSprite
       ? createElement("div", {
-          class: `ic ic-sprite ic-start ic-${color} ic-${icon} ${rest[
-            "class"
-          ] || ""}`
+          class: `${classes} ic-sprite ic-start`
         })
       : createElement("img", {
-          src: `/assets/icons/${icon}.svg`,
-          class: `ic ic-${color} ic-${icon} ${rest["class"] || ""}`
+          src: this.getSource(icon),
+          class: classes
         });
   }
 
@@ -87,5 +88,18 @@ export default class Icon implements Component<Options> {
     const opposite = state === "start" ? "end" : "start";
     removeClass(this.element, `ic-sprite-${opposite}`);
     addClass(this.element, `ic-sprite-${state}`);
+  }
+
+  public setIcon(icon: Icons) {
+    this.element.className = this.getClassName(icon);
+    (this.element as HTMLImageElement).src = this.getSource(icon);
+  }
+
+  private getSource(icon: Options['icon']) {
+    return `/assets/icons/${icon}.svg`;
+  }
+
+  private getClassName(icon: Options['icon']) {
+    return `ic ic-${this.color} ic-${icon} ${this.classes}`;
   }
 }

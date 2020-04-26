@@ -4,7 +4,7 @@ import {
   MessageMediaDocument
 } from "../../core/tl/TLObjects";
 import { TelegramClientProxy } from "../../telegram-worker-proxy";
-import { Component, createElement, removeChildren, off, removeClass, on } from "../../utils/dom";
+import { Component, createElement, off, removeClass, on } from "../../utils/dom";
 import { EMPTY_IMG } from "../../utils/images";
 import { fitImageSize } from "../../utils/upload-file";
 import * as styles from "../chat/chat.scss";
@@ -44,11 +44,13 @@ export default class VideoAttachment implements Component<Options> {
     const isGIF = document.attributes.some(
       ({ $t }) => $t === "DocumentAttributeAnimated"
     );
+    const icon = createElement(Icon, { icon: Icons.Download, color: "white" });
+    let shouldContinue = true;
 
     const downloadIndicator = createElement(
       "div",
       { class: "downloadIndicator" },
-      createElement(Icon, { icon: Icons.Download, color: "white" })
+      icon
     );
     const img = createElement("img", { src: EMPTY_IMG, class: "blur" });
     const element = createElement(
@@ -60,18 +62,35 @@ export default class VideoAttachment implements Component<Options> {
 
     let downloaded = false;
 
+    function stopListener() {
+      on(element, "click", downloadListener);
+      off(element, "click", stopListener);
+      icon.instance.setIcon(Icons.Download);
+      shouldContinue = false;
+    }
+
     const downloadListener = () => {
       off(element, "click", downloadListener);
-      removeChildren(downloadIndicator);
       const progress = createElement(Progress);
       downloadIndicator.append(progress);
 
+      icon.instance.setIcon(Icons.Close);
+      on(element, "click", stopListener);
+
       tg.fileStorage
         .downloadDocument(document, undefined, document.dcId, t => {
+          if (!shouldContinue) {
+            shouldContinue = true;
+            return false;
+          }
           progress.instance.progress(t);
+          return true;
         })
         .then(src => {
           progress.remove();
+          if (!src) {
+            return;
+          }
           downloadIndicator.remove();
           downloaded = true;
           img.remove();
