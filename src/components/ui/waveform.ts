@@ -2,8 +2,8 @@ import { Component, on } from "../../utils/dom";
 
 const NS = "http://www.w3.org/2000/svg";
 
-const WIDTH = 250;
-const HEIGHT = 35;
+const WIDTH = 240;
+const HEIGHT = 25;
 
 export interface Options {
   class?: string;
@@ -61,7 +61,9 @@ export default class Waveform implements Component<Options> {
 
     gradient.append(stop1, this.stop1, this.stop2, stop4);
 
-    options.waveform.forEach((value, index) => {
+    const waveform = scale(options.waveform, 48).reverse();
+
+    waveform.forEach((value: number, index: number) => {
       const barHeight = Math.max((HEIGHT * value) / 255, 4);
       const rect = document.createElementNS(NS, "rect");
       [
@@ -104,4 +106,22 @@ export default class Waveform implements Component<Options> {
       element.setAttribute("offset", percent)
     );
   }
+}
+
+function scale(waveform: number[] | Uint8Array, length = 48) {
+  let compression = waveform.length / length;
+  let result = new Uint8Array(length);
+
+  let index = 0;
+  let inputIndex = 0;
+
+  while (index < length) {
+    const value = result[index++];
+    const nextValue = waveform[Math.round(inputIndex)];
+    result[index] =
+      value === 0 ? nextValue : (value + nextValue) / 2;
+    inputIndex += compression;
+  }
+
+  return result;
 }

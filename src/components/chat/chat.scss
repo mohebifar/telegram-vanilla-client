@@ -12,13 +12,13 @@ $time-size: 0.75rem;
 .documentWrapper {
   margin: 0.5em 0.5em 0;
   display: flex;
-  min-width: 12em;
+  min-width: 16em;
   min-height: 3em;
   align-items: center;
 
   .documentType {
-    width: 3em;
-    height: 3em;
+    width: 3.5em;
+    height: 3.5em;
   }
 
   .documentContent {
