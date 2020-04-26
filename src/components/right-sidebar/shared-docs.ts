@@ -42,7 +42,7 @@ export default class SharedDocs implements Component<Options> {
     const sharedMedia = await SharedMedia.fetch(this.peer, {
       offsetId: (this.last && this.last.id) || 0,
       addOffset: 0,
-      limit: 10,
+      limit: 15,
       type: "InputMessagesFilterDocument"
     });
     addClass(this.element, styles.loaded);

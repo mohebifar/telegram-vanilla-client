@@ -3,8 +3,8 @@
 .container {
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
-  max-height: 100%;
+  overflow-y: scroll;
+  height: 100%;
 
   :global(.audioPlayer) {
     margin: 1em 2em 0.5em 1em;

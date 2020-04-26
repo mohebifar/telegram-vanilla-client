@@ -40,7 +40,7 @@ export default class SharedLinks implements Component<Options> {
     const sharedMedia = await SharedMedia.fetch(this.peer, {
       offsetId: (this.last && this.last.id) || 0,
       addOffset: 0,
-      limit: 10,
+      limit: 15,
       type: "InputMessagesFilterUrl"
     });
 
@@ -71,7 +71,7 @@ export default class SharedLinks implements Component<Options> {
       url = media.media.webpage.url;
       displayUrl = media.media.webpage.displayUrl;
       description = media.media.webpage.description;
-      return;
+      // return;
     } else if (media.entities) {
       const urlEntity = media.entities.find(
         ({ $t }) => $t === "MessageEntityTextUrl"
