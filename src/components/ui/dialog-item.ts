@@ -54,7 +54,7 @@ export default class DialogItem implements Component<Options> {
       peer: this.peer,
     });
 
-    this.unreadCount = createElement("div", info.unread);
+    this.unreadCount = createElement("div", info.unread || "");
 
     this.title = createElement("div", { dir: "auto" }, info.title);
     this.text = createElement("span", { dir: "auto" }, info.text);
@@ -92,11 +92,11 @@ export default class DialogItem implements Component<Options> {
 
   public async update() {
     const { text, title, date, unread, silent } = await this.getInfo();
-    this.text.innerHTML = text;
-    this.title.innerHTML = title;
-    this.date.innerHTML = date;
+    this.text.innerText = text;
+    this.title.innerText = title;
+    this.date.innerText = date;
     removeChildren(this.unreadCount);
-    this.unreadCount.append(unread);
+    this.unreadCount.append(unread || "");
     const isOnline =
       "status" in this.peer && this.peer.status.$t === "UserStatusOnline";
     this.avatar.classList[isOnline ? "add" : "remove"]("online");

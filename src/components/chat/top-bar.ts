@@ -92,7 +92,7 @@ export default class TopBar implements Component<Options> {
   }
 
   public update() {
-    this.displayNameContainer.innerHTML = this.peer.displayName;
+    this.displayNameContainer.innerText = this.peer.displayName;
     let subdue = getChatSubdueText(this.peer);
     if (subdue === "online") {
       subdue = `<span class="${styles.online}">${subdue}</span>`;
