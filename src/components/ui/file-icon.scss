@@ -31,7 +31,7 @@
 :global(.audioPlayer) {
   svg.inner {
     transform: none;
-    width: 44px;
+    width: calc(100% - 4px);
     top: 2px;
     left: 2px;
   }

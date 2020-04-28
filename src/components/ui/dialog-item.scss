@@ -108,13 +108,17 @@
       font-size: 0.875rem;
       font-weight: 500;
 
+      &:empty {
+        background-color: transparent;
+      }
+
       &.unreadIcon,
       &.silent {
         background-color: $unread-count-bg;
       }
 
       &.unreadIcon {
-        padding: 0.1rem 0;
+        padding: 0.05rem 0;
       }
     }
   }
