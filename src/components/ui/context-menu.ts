@@ -76,7 +76,6 @@ export class ContextMenu implements Component<Options> {
   private close() {
     this.element.remove();
     if (this.onClose) {
-      console.log('calling this.onClose', this.onClose)
       this.onClose();
     }
   }

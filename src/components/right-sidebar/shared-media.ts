@@ -40,7 +40,7 @@ export default class SharedMediaPanel implements Component<Options> {
     const sharedMedia = await SharedMedia.fetch(this.peer, {
       offsetId: (this.last && this.last.id) || 0,
       addOffset: 0,
-      limit: 3 * 8,
+      limit: 3 * 10,
     });
 
     if (sharedMedia.length > 0) {
