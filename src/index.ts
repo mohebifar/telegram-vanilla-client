@@ -6,7 +6,7 @@ import "./styles.global.scss";
 import { makeProxy } from "./telegram-worker-proxy";
 import { handleUpdate } from "./update-handler";
 import { createElement } from "./utils/dom";
-import "./utils/ripple";
+import { startRipple } from "./utils/ripple";
 
 async function start() {
   const [tgProxy, deferred, connectionPromise] = await makeProxy(
@@ -35,6 +35,7 @@ async function start() {
 
 function setupRoot(tgProxy: any) {
   const element = createElement(Root, { tgProxy });
+  startRipple();
   document.body.append(element);
 }
 
