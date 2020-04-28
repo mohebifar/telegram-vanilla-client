@@ -1,4 +1,5 @@
 @import "../../variables.scss";
+@import "../../mixins.scss";
 
 .container {
   display: flex;
@@ -8,6 +9,11 @@
 
   :global(.audioPlayer) {
     margin: 1em 2em 0.5em 1em;
+
+    input[type="range"] {
+      @include seekbar;
+      @include seekbar-variant($blue-dark, $blue-lighter);
+    }
   }
 
   circle:global(.audioCircle) {
