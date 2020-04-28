@@ -2,6 +2,7 @@ import {
   MessageMediaDocument,
   MessageMediaPhoto,
   MessageMediaWebPage,
+  MessageMediaContact,
 } from "../../core/tl/TLObjects";
 import { IDialog } from "../../models/dialog";
 import { IMessage, Message } from "../../models/message";
@@ -30,6 +31,7 @@ import { mediaLightBox } from "../ui/media-lightbox";
 import * as styles from "./chat.scss";
 import QuoteBox from "./quote-box";
 import ServiceBubble from "./service-bubble";
+import ContactAttachment from "../attachments/contact";
 
 type AttachmentElement = Element<
   | AnimatedStickerAttachment
@@ -39,6 +41,7 @@ type AttachmentElement = Element<
   | FileAttachment
   | AudioAttachment
   | WebAttachment
+  | ContactAttachment
 >;
 
 interface Options {
@@ -322,6 +325,8 @@ export default class Bubble implements Component<Options> {
         }
       } else if (media.$t === "MessageMediaWebPage") {
         return this.getWebAttachment(media);
+      } else if (media.$t === "MessageMediaContact") {
+        return this.getContactAttachment(media);
       } else if (media.$t === "TransientMedia") {
         if (media.type === "media") {
           return this.getTransientPhotoAttachment(media);
@@ -386,6 +391,17 @@ export default class Bubble implements Component<Options> {
     });
 
     return [element, "photo"];
+  }
+
+  private getContactAttachment(
+    media: MessageMediaContact
+  ): [Element<ContactAttachment>, "contact"] {
+    const element = createElement(ContactAttachment, {
+      tg: this.message.tg,
+      media,
+    });
+
+    return [element, "contact"];
   }
 
   private getVideoAttachment(

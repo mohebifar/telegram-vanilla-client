@@ -214,6 +214,8 @@ export function getMessageMediaType(
     ];
   } else if (media.$t === "MessageMediaWebPage") {
     return ["", "", undefined];
+  } else if (media.$t === "MessageMediaContact") {
+    return ["👤 ", "Contact", null];
   }
 
   return ["Unsupported media", null, null];
