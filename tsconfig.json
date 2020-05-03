@@ -39,7 +39,7 @@
     // "emitDecoratorMetadata": true /* Enables experimental support for emitting type metadata for decorators. */,
 
     "lib": ["esnext.bigint", "es2017", "dom", "webworker"],
-    "types": [],
+    "types": ["dom-mediacapture-record"],
     "typeRoots": ["node_modules/@types", "src/types"]
   },
   "include": ["src/**/*.ts"],

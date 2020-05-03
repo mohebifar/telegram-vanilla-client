@@ -330,6 +330,8 @@ export default class Bubble implements Component<Options> {
       } else if (media.$t === "TransientMedia") {
         if (media.type === "media") {
           return this.getTransientPhotoAttachment(media);
+        } else if (media.type === "voice") {
+          return this.getAudioAttachment(media);
         } else {
           return this.getTransientFileAttachment(media);
         }
@@ -455,7 +457,7 @@ export default class Bubble implements Component<Options> {
   }
 
   private getAudioAttachment(
-    media: MessageMediaDocument
+    media: MessageMediaDocument | TransientMedia
   ): [Element<AudioAttachment>, "audio"] {
     return [
       createElement(AudioAttachment, { media, tg: this.message.tg }),

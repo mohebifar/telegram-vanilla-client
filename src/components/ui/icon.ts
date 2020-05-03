@@ -44,7 +44,9 @@ export enum Icons {
   SavedMessages = "savedmessages",
   Settings = "settings",
   Help = "help",
-  More = "more"
+  More = "more",
+  Microphone2 = "microphone2",
+  Microphone = "microphone",
 }
 
 export enum IconSprite {

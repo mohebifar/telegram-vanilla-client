@@ -238,9 +238,12 @@ export function getByteArray(integer: JBigInt, signed = false) {
   return readBufferFromBigInt(jBigInt(integer), byteLength, false, signed);
 }
 
-export async function base64ToBufferAsync(base64: string) {
+export function base64ToBufferAsync(base64: string) {
   const dataUrl = "data:application/octet-binary;base64," + base64;
+  return dataUriBufferAsync(dataUrl);
+}
 
+export async function dataUriBufferAsync(dataUrl: string) {
   const response = await fetch(dataUrl);
   const buffer = await response.arrayBuffer();
   return new Uint8Array(buffer);

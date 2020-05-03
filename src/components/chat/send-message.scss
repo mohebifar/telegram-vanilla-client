@@ -14,22 +14,24 @@
   .inputArea {
     flex-grow: 1;
     box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.08);
-    margin-right: 1rem;
+    margin-right: .75rem;
     position: relative;
     background-color: #fff;
     border-radius: 1rem 1rem 0 1rem;
     padding: 0.2em 0 0.3em;
 
-    &:before {
-      content: "";
+    &:after {
       position: absolute;
-      bottom: 0;
-      right: -23px;
-      width: 1.5rem;
-      height: 2rem;
-      background-color: transparent;
-      border-radius: 0 15px;
-      box-shadow: -14px 0 0 #fff;
+      -webkit-mask: url(/assets/bubble-tail-left.svg);
+      mask: url(/assets/bubble-tail-left.svg);
+      display: block;
+      width: 11px;
+      height: 20px;
+      bottom: -1px;
+      content: "";
+      background: #eeffde;
+      transform: scaleX(-1);
+      right: -9px;
     }
 
     > div {
@@ -38,6 +40,7 @@
       display: flex;
       align-items: flex-end;
 
+      // Attachment and emoji button
       > button {
         margin: 0;
         padding: 0;
@@ -75,10 +78,22 @@
         }
       }
     }
-  }
 
-  > button {
-    background-color: $blue;
+    .timer {
+      line-height: 3;
+      margin-right: 1rem;
+
+      &:after {
+        content: '';
+        display: inline-block;
+        margin-left: 0.5rem;
+        width: 0.5rem;
+        height: 0.5rem;
+        border-radius: 50%;
+        background-color: $red;
+        animation: smoothBlink 1s ease infinite;
+      }
+    }
   }
 
   .attachmentMenu {
@@ -87,6 +102,35 @@
     transform-origin: bottom right;
     animation: none;
     @include popover-animation;
+  }
+
+  > button {
+    border: none;
+    outline: none;
+    background-color: $white;
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 50%;
+    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.08);
+    padding-top: 0.25rem;
+    cursor: pointer;
+
+    &:hover {
+      background-color: #fff !important;
+    }
+
+    &, img {
+      user-select: none;
+      -webkit-user-drag: none;
+      -khtml-user-drag: none;
+      -moz-user-drag: none;
+      -o-user-drag: none;
+      user-drag: none;
+    }
+
+    &:not(:last-child) {
+      margin-right: 0.5rem;
+    }
   }
 }
 
@@ -133,5 +177,14 @@
 
   img {
     width: 100%;
+  }
+}
+
+@keyframes smoothBlink {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
   }
 }

@@ -2,6 +2,7 @@ import {
   Document,
   DocumentAttributeAudio,
   MessageMediaDocument,
+  InputMediaUploadedDocument,
 } from "../../core/tl/TLObjects";
 import { Component, createElement, off, on, Element } from "../../utils/dom";
 import Waveform from "../ui/waveform";
@@ -11,9 +12,11 @@ import { formatDuration } from "../../utils/chat";
 import FileIcon from "../ui/file-icon";
 import { TelegramClientProxy } from "../../telegram-worker-proxy";
 import { Icons } from "../ui/icon";
+import { TransientMedia } from "../../utils/useful-types";
+import { readDataURL } from "../../utils/upload-file";
 
 export interface Options {
-  media: MessageMediaDocument;
+  media: MessageMediaDocument | TransientMedia;
   tg: TelegramClientProxy;
 }
 
@@ -21,9 +24,13 @@ export default class AudioAttachment implements Component<Options> {
   public readonly element: HTMLElement;
 
   constructor({ media, tg }: Options) {
-    const audioAttribute = (media.document as Document).attributes.find(
+    const audioAttribute = (media.$t === "TransientMedia"
+      ? (media.inputMedia as InputMediaUploadedDocument)
+      : (media.document as Document)
+    ).attributes.find(
       (t) => t.$t === "DocumentAttributeAudio"
     ) as DocumentAttributeAudio;
+    // Just uploaded file
 
     const fileIcon = createElement(FileIcon, { extension: "ogg" });
     const iconWrapper = createElement(
@@ -105,26 +112,34 @@ export default class AudioAttachment implements Component<Options> {
       return shouldContinue;
     };
 
-    const downloadListener = () => {
-      off(iconWrapper, "click", downloadListener);
-      on(iconWrapper, "click", stopListener);
-      fileIcon.instance.showProgress(0, "c");
+    const endCallback = (src: string, autoplay = true) => {
+      if (src && iconWrapper) {
+        audio = new Audio(src);
+        on(audio, "ended", () => {
+          pause();
+        });
 
-      tg.fileStorage.downloadMedia(media, undefined, onProgress).then((src) => {
-        if (src && iconWrapper) {
-          audio = new Audio(src);
-          on(audio, "ended", () => {
-            pause();
-          });
+        if (autoplay) {
           play();
-
-          off(iconWrapper, "click", stopListener);
-          off(iconWrapper, "click", downloadListener);
+        } else {
+          pause();
         }
 
-        duration.innerText = formatDuration(audioAttribute.duration);
-        shouldContinue = true;
-      });
+        off(iconWrapper, "click", stopListener);
+        off(iconWrapper, "click", downloadListener);
+      }
+
+      duration.innerText = formatDuration(audioAttribute.duration);
+      shouldContinue = true;
+    }
+
+    const downloadListener = () => {
+      if (media.$t === 'MessageMediaDocument') {
+        off(iconWrapper, "click", downloadListener);
+        on(iconWrapper, "click", stopListener);
+        fileIcon.instance.showProgress(0, "c");
+        tg.fileStorage.downloadMedia(media, undefined, onProgress).then(endCallback);
+      }
     };
 
     const title = createElement("div", { class: styles.title });
@@ -154,8 +169,25 @@ export default class AudioAttachment implements Component<Options> {
       title.append(seekbar);
     }
 
-    on(iconWrapper, "click", downloadListener);
-    fileIcon.instance.showAudio(Icons.Play);
+    if (media.$t === 'MessageMediaDocument') {
+      on(iconWrapper, "click", downloadListener);
+      fileIcon.instance.showAudio(Icons.Play);
+    } else {
+      fileIcon.instance.showProgress(media.progress || 0, "c");
+
+      if (media.subscribe) {
+        media.subscribe((progress) => {
+          if (progress === 1) {
+            readDataURL(media.file).then(src => endCallback(src, false));
+            fileIcon.instance.showAudio(Icons.Play);
+          } else {
+            fileIcon.instance.showProgress(progress || 0, "c");
+          }
+          return shouldContinue;
+        });
+      }
+    }
+    
 
     const element = createElement(
       "div",

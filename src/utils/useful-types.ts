@@ -23,7 +23,9 @@ import {
   InputPeerChannelFromMessage,
   messages_GetMessagesRequest,
   UpdateUserTyping,
-  TopPeerCategoryPeers
+  TopPeerCategoryPeers,
+  InputMediaUploadedPhoto,
+  InputMediaUploadedDocument
 } from "../core/tl/TLObjects";
 
 export type AllChatTypes =
@@ -42,13 +44,17 @@ export type DialogMessageTypes = Message | MessageEmpty | MessageService;
 export type TransientMedia = {
   $t: "TransientMedia";
   file: File;
-  type: "media" | "document";
+  type: "media" | "document" | "voice";
   fileId: string;
   progress?: number;
   subscribe?: (cb: (progress: number) => any) => void;
   width?: number;
   height?: number;
   thumbnail?: string;
+  inputMedia: Omit<
+    InputMediaUploadedPhoto | InputMediaUploadedDocument,
+    "file"
+  >;
 };
 
 export type MediaWithTransient = Message["media"] | TransientMedia;

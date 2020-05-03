@@ -62,7 +62,8 @@ module.exports = ({ NODE_ENV }) => {
       // new webpack.EnvironmentPlugin(["API_ID", "API_HASH"]),
       new webpack.DefinePlugin({
         TG_API_ID: process.env.API_ID,
-        TG_API_HASH: JSON.stringify(process.env.API_HASH)
+        TG_API_HASH: JSON.stringify(process.env.API_HASH),
+        ENVIRONMENT: 'WEB'
       })
     ],
     resolve: {

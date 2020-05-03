@@ -163,7 +163,7 @@ export function removeClass<T extends HTMLElement | Element<any>>(
 
 export function on<
   K extends keyof HTMLElementEventMap,
-  T extends HTMLElement | SVGElement | Element<any>
+  T extends Document | HTMLElement | SVGElement | Element<any>
 >(
   element: T,
   eventType: K,
@@ -175,7 +175,7 @@ export function on<
 
 export function off<
   K extends keyof HTMLElementEventMap,
-  T extends HTMLElement | SVGElement | Element<any>
+  T extends Document | HTMLElement | SVGElement | Element<any>
 >(
   element: T,
   eventType: K,

@@ -22,6 +22,7 @@
     "@babel/preset-typescript": "^7.7.2",
     "@babel/template": "^7.7.0",
     "@types/autosize": "^3.0.7",
+    "@types/dom-mediacapture-record": "^1.0.4",
     "@types/node-rsa": "^1.0.0",
     "@types/pako": "^1.0.1",
     "arraybuffer-lite-loader": "^1.0.8",
@@ -34,6 +35,7 @@
     "css-loader": "^3.2.0",
     "css-modules-typescript-loader": "^4.0.0",
     "csv-parse": "^4.6.5",
+    "file-loader": "^6.0.0",
     "html-webpack-plugin": "^3.2.0",
     "json-loader": "^0.5.7",
     "localforage": "^1.7.3",
@@ -50,6 +52,7 @@
     "webpack": "^4.41.2",
     "webpack-cli": "^3.3.10",
     "webpack-dev-server": "^3.9.0",
+    "worker-loader": "^2.0.0",
     "worker-plugin": "^3.2.0"
   },
   "dependencies": {
@@ -61,6 +64,7 @@
     "mitt": "^1.2.0",
     "pako": "^1.0.10",
     "spu-md5": "0.0.4",
-    "virtualized-list": "^2.2.0"
+    "virtualized-list": "^2.2.0",
+    "vorbis-encoder-js": "^1.0.2"
   }
 }

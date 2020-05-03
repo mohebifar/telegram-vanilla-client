@@ -1,12 +1,17 @@
 import autosize from "autosize";
-import {
-  InputMediaUploadedDocument,
-  InputMediaUploadedPhoto,
-  Document,
-} from "../../core/tl/TLObjects";
+import { InputMediaUploadedDocument, Document } from "../../core/tl/TLObjects";
 import { IMessage } from "../../models/message";
 import { Peer, SimplifiedMessageRequest } from "../../models/peer";
-import { Component, createElement, removeChildren, removeClass, on, addClass } from "../../utils/dom";
+import {
+  Component,
+  createElement,
+  removeChildren,
+  removeClass,
+  on,
+  addClass,
+  Element,
+  off,
+} from "../../utils/dom";
 import {
   getVideoMeta,
   makeFileDialog,
@@ -24,7 +29,8 @@ import { makeModal } from "../ui/modal";
 import Input from "../ui/input";
 import FileIcon from "../ui/file-icon";
 import { TransientMedia } from "../../utils/useful-types";
-import { parseFileSize } from "../../utils/chat";
+import { parseFileSize, formatDurationWithMillis } from "../../utils/chat";
+import RecordButton from "./record-button";
 
 interface Options {
   callback(message: SimplifiedMessageRequest): Promise<IMessage>;
@@ -37,6 +43,9 @@ export default class SendMessageForm implements Component<Options> {
   private inputNode: HTMLTextAreaElement;
   private quoteBox: HTMLElement;
   private replyMessage?: IMessage;
+  private recordButton: Element<RecordButton>;
+  private deleteVoiceElement: Element<IconButton>;
+  private preventMessage = false;
 
   constructor({ callback, startTyping }: Options) {
     this.callback = callback;
@@ -48,19 +57,107 @@ export default class SendMessageForm implements Component<Options> {
     }) as HTMLTextAreaElement;
     autosize(this.inputNode);
 
+    const voiceUploader = this.uploadFactory(
+      "voice",
+      (_type, requests) => {
+        return new Promise((resolve, reject) => {
+          const end = () => {
+            addClass(this.deleteVoiceElement, "hidden");
+            addClass(timer, "hidden");
+            removeClass(attachmentActivator, "hidden");
+            this.recordButton.instance.setIcon(Icons.Microphone2);
+            this.preventMessage = false;
+          }
+          const sendMessage = () => {
+            off(this.deleteVoiceElement, "click", trashClick);
+            off(this.inputNode, "keyup", keyUp);
+            off(this.element, "submit", sendMessage);
+            requests[0].message = this.inputNode.value;
+            this.inputNode.value = "";
+            end();
+            resolve(requests);
+          };
+          const keyUp = (event: KeyboardEvent) => {
+            if (event.keyCode === 13 && !event.shiftKey) {
+              sendMessage();
+            }
+          };
+          const trashClick = () => {
+            end();
+            reject();
+          };
+          on(this.deleteVoiceElement, "click", trashClick);
+          on(this.inputNode, "keyup", keyUp);
+          on(this.element, "submit", sendMessage);
+          this.preventMessage = true;
+        });
+      }
+    );
+
     const [attachmentDropdown, attachmentActivator] = this.createAttachment();
     const [emojiPicker, emojiActivator] = this.createEmojiPanel();
+    const timer = createElement("div", { class: `${styles.timer} hidden` });
 
-    this.quoteBox = createElement("div", { class: styles.quoteRow });
     const inputRow = createElement(
       "div",
       { class: styles.inputRow },
       emojiActivator,
       this.inputNode,
+      timer,
       attachmentActivator,
       attachmentDropdown,
       emojiPicker
     );
+
+    let recording = false;
+    this.recordButton = createElement(RecordButton, {
+      onEnd: (blob, duration, waveform) => {
+        this.preventMessage = true;
+        recording = false;
+        this.deleteVoiceElement.classList.remove('hidden');
+        this.recordButton.instance.setIcon(Icons.Send);
+
+        voiceUploader([new File([blob], "voice.ogg", { type: "audio/ogg" })], {
+          attributes: [
+            {
+              $t: "DocumentAttributeAudio",
+              voice: true,
+              duration,
+              waveform,
+            },
+          ],
+          mimeType: "audio/ogg",
+        });
+      },
+      onStart: () => {
+        recording = true;
+        addClass(attachmentActivator, "hidden");
+        timer.classList.remove("hidden");
+        let startTime: number;
+
+        const updateTimer = (now: number) => {
+          const elapsed = now - startTime;
+          timer.innerText = formatDurationWithMillis(elapsed);
+
+          if (recording) {
+            requestAnimationFrame(updateTimer);
+          }
+        };
+
+        requestAnimationFrame((now: number) => {
+          startTime = now;
+          updateTimer(now);
+        });
+      },
+    });
+
+    this.deleteVoiceElement = createElement(IconButton, {
+      icon: Icons.Delete,
+      color: "red",
+    });
+    this.deleteVoiceElement.className = "hidden";
+
+    this.quoteBox = createElement("div", { class: styles.quoteRow });
 
     this.element = createElement(
       "form",
@@ -71,12 +168,16 @@ export default class SendMessageForm implements Component<Options> {
         this.quoteBox,
         inputRow
       ),
-      createElement(IconButton, { icon: Icons.Send, color: "white" })
+      this.deleteVoiceElement,
+      this.recordButton
     );
 
     on(this.inputNode, "input", () => {
       if (this.inputNode.value !== "") {
         startTyping();
+        this.recordButton.instance.setIcon(Icons.Send);
+      } else {
+        this.recordButton.instance.setIcon(Icons.Microphone2);
       }
     });
 
@@ -119,6 +220,9 @@ export default class SendMessageForm implements Component<Options> {
   }
 
   private handleSubmit = (event?: Event) => {
+    if (this.preventMessage) {
+      return;
+    }
     const value = this.inputNode.value.trim();
     if (event) {
       event.preventDefault();
@@ -133,10 +237,10 @@ export default class SendMessageForm implements Component<Options> {
     });
   };
 
-  private showFilesModal(
-    type: "media" | "document",
+  private showFilesModal = (
+    type: "media" | "document" | "voice",
     requests: SimplifiedMessageRequest[]
-  ): Promise<SimplifiedMessageRequest[]> {
+  ): Promise<SimplifiedMessageRequest[]> => {
     return new Promise(async (resolve, reject) => {
       const element = createElement("div");
       for (const index in requests) {
@@ -189,13 +293,13 @@ export default class SendMessageForm implements Component<Options> {
       on(captionInput, "keypress", (e) => {
         if (e.keyCode === 13 && !e.shiftKey) {
           e.preventDefault();
-          submit();
+          submit(() => modal.close());
         }
       });
       captionInput.instance.value = this.inputNode.value;
       this.inputNode.value = "";
 
-      const submit = () => {
+      const submit = (cb: Function) => {
         const caption = captionInput.instance.value.trim();
         if (requests.length === 1) {
           requests[0].message = caption;
@@ -207,7 +311,7 @@ export default class SendMessageForm implements Component<Options> {
         }
 
         resolve(requests);
-        modal.close();
+        cb();
       };
 
       const modal = makeModal(
@@ -215,7 +319,7 @@ export default class SendMessageForm implements Component<Options> {
         createElement("div", element, captionInput),
         {
           caption: "Send",
-          onClick: submit,
+          onClick: () => submit(() => modal.close()),
         },
         () => {
           reject();
@@ -226,13 +330,15 @@ export default class SendMessageForm implements Component<Options> {
 
       requestAnimationFrame(() => captionInput.instance.focus());
     });
-  }
+  };
 
-  private createAttachment() {
-    let timeout: number;
-
-    const uploadFactory = (type: "media" | "document") => async (
-      files: File[]
+  private uploadFactory(
+    type: "media" | "document" | "voice",
+    confirmation = this.showFilesModal
+  ) {
+    return async (
+      files: File[],
+      rest: Partial<InputMediaUploadedDocument> = {}
     ) => {
       if (files.length === 0) {
         return;
@@ -262,6 +368,7 @@ export default class SendMessageForm implements Component<Options> {
 
         buffers.push(buffer);
 
+              
         requests.push({
           $t: "messages_SendMediaRequest",
           media: {
@@ -273,6 +380,21 @@ export default class SendMessageForm implements Component<Options> {
             thumbnail,
             fileId: "unassigned",
             subscribe: (fn) => subscriptions.set(file, fn),
+            inputMedia: type === "media" && file.type.startsWith("image/")
+            ? {
+                $t: "InputMediaUploadedPhoto",
+              }
+            : {
+                $t: "InputMediaUploadedDocument",
+                mimeType: file.type,
+                attributes: [
+                  {
+                    $t: "DocumentAttributeFilename",
+                    fileName: file.name,
+                  },
+                ],
+                ...rest,
+              }
           },
           message: "",
         });
@@ -281,7 +403,7 @@ export default class SendMessageForm implements Component<Options> {
       let normalizedRequests: SimplifiedMessageRequest[];
 
       try {
-        normalizedRequests = await this.showFilesModal(type, requests);
+        normalizedRequests = await confirmation(type, requests);
       } catch {
         return;
       }
@@ -309,39 +431,23 @@ export default class SendMessageForm implements Component<Options> {
         );
 
         if (
-          transientModel.$t === "Message" &&
-          transientModel.media.$t === "TransientMedia"
+          transientModel.$t !== "Message" ||
+          transientModel.media.$t !== "TransientMedia"
         ) {
-          transientModel.media.fileId = uploadedFile.id;
+          return;
         }
 
-        const media: InputMediaUploadedPhoto | InputMediaUploadedDocument =
-          type === "media" && file.type.startsWith("image/")
-            ? {
-                $t: "InputMediaUploadedPhoto",
-                file: {
-                  ...uploadedFile,
-                  name: file.name,
-                },
-              }
-            : {
-                $t: "InputMediaUploadedDocument",
-                file: {
-                  ...uploadedFile,
-                  name: file.name,
-                },
-                mimeType: file.type,
-                attributes: [
-                  {
-                    $t: "DocumentAttributeFilename",
-                    fileName: file.name,
-                  },
-                ],
-              };
+        transientModel.media.fileId = uploadedFile.id;
 
         await this.sendMessage({
           $t: "messages_SendMediaRequest",
-          media,
+          media: {
+            ...transientModel.media.inputMedia,
+            file: {
+              ...uploadedFile,
+              name: file.name,
+            }
+          } as any,
           replyToMsgId:
             transientModel.$t === "Message"
               ? transientModel.replyToMsgId
@@ -354,13 +460,21 @@ export default class SendMessageForm implements Component<Options> {
         // transientModel.destroy();
       }
     };
+  }
+
+  private createAttachment() {
+    let timeout: number;
 
     const imageDialog = makeFileDialog(
       "image/*,video/*",
       true,
-      uploadFactory("media")
+      this.uploadFactory("media")
     );
-    const fileDialog = makeFileDialog("*", true, uploadFactory("document"));
+    const fileDialog = makeFileDialog(
+      "*",
+      true,
+      this.uploadFactory("document")
+    );
 
     const attachmentDropdown = createElement(ContextMenu, {
       class: "hidden " + styles.attachmentMenu,
@@ -391,10 +505,11 @@ export default class SendMessageForm implements Component<Options> {
     const clear = () => clearTimeout(timeout);
     const hide = (doClear: any) => {
       doClear !== false && clear();
-      
+
       removeClass(attachmentDropdown, "visible");
 
-      on(attachmentDropdown, 
+      on(
+        attachmentDropdown,
         "transitionend",
         () => {
           addClass(attachmentDropdown, "hidden");
@@ -495,6 +610,7 @@ export default class SendMessageForm implements Component<Options> {
     this.clearReply();
     if (clear) {
       this.inputNode.value = "";
+      this.recordButton.instance.setIcon(Icons.Microphone2);
       autosize.update(this.inputNode);
     }
     this.focus();

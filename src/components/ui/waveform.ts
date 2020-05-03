@@ -1,4 +1,5 @@
 import { Component, on } from "../../utils/dom";
+import { scaleWaveform } from "../../utils/audio-recorder";
 
 const NS = "http://www.w3.org/2000/svg";
 
@@ -61,7 +62,7 @@ export default class Waveform implements Component<Options> {
 
     gradient.append(stop1, this.stop1, this.stop2, stop4);
 
-    const waveform = scale(options.waveform, 48).reverse();
+    const waveform = scaleWaveform(options.waveform, 48);
 
     waveform.forEach((value: number, index: number) => {
       const barHeight = Math.max((HEIGHT * value) / 255, 4);
@@ -108,20 +109,3 @@ export default class Waveform implements Component<Options> {
   }
 }
 
-function scale(waveform: number[] | Uint8Array, length = 48) {
-  let compression = waveform.length / length;
-  let result = new Uint8Array(length);
-
-  let index = 0;
-  let inputIndex = 0;
-
-  while (index < length) {
-    const value = result[index++];
-    const nextValue = waveform[Math.round(inputIndex)];
-    result[index] =
-      value === 0 ? nextValue : (value + nextValue) / 2;
-    inputIndex += compression;
-  }
-
-  return result;
-}

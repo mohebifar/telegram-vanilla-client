@@ -329,6 +329,12 @@ export function formatDuration(seconds: number) {
     .join(":");
 }
 
+export function formatDurationWithMillis(millis: number) {
+  const seconds = millis / 1000;
+  const s = seconds % 60;
+  return formatDuration(seconds) + ',' + Math.round(100 * (Math.ceil(s) - s ))
+}
+
 function messageToParagraphs(message: string) {
   const newLine = /[\n\r]/g;
   const chunks = message.split(newLine);

@@ -8,6 +8,10 @@
 - Show a spinner in light box for the first loaded image
 - Show sticker set previews
 - Change user in the right sidebar on dialog change
+- Online user indicator on user's avatar in the dialog list
+- Last sent message read check status in the dialog list
+- Record and send voice message
+
 
 ## Changelog (Round 2)
 
