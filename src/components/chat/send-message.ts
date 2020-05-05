@@ -28,13 +28,13 @@ import * as styles from "./send-message.scss";
 import { makeModal } from "../ui/modal";
 import Input from "../ui/input";
 import FileIcon from "../ui/file-icon";
-import { TransientMedia } from "../../utils/useful-types";
+import { TransientMedia, IsTypingAction } from "../../utils/useful-types";
 import { parseFileSize, formatDurationWithMillis } from "../../utils/chat";
 import RecordButton from "./record-button";
 
 interface Options {
   callback(message: SimplifiedMessageRequest): Promise<IMessage>;
-  startTyping(): void;
+  startTyping(action?: IsTypingAction): void;
 }
 
 export default class SendMessageForm implements Component<Options> {
@@ -110,12 +110,14 @@ export default class SendMessageForm implements Component<Options> {
     );
 
     let recording = false;
+    let sendingInterval = 0;
     this.recordButton = createElement(RecordButton, {
       onEnd: (blob, duration, waveform) => {
         this.preventMessage = true;
         recording = false;
         this.deleteVoiceElement.classList.remove('hidden');
         this.recordButton.instance.setIcon(Icons.Send);
+        clearInterval(sendingInterval);
 
         voiceUploader([new File([blob], "voice.ogg", { type: "audio/ogg" })], {
           attributes: [
@@ -131,6 +133,9 @@ export default class SendMessageForm implements Component<Options> {
       },
       onStart: () => {
         recording = true;
+        const sendAudioTyping = () => startTyping({$t: 'SendMessageRecordAudioAction'});
+        sendAudioTyping();
+        sendingInterval = setInterval(sendAudioTyping, 4000);
         addClass(attachmentActivator, "hidden");
         timer.classList.remove("hidden");
         let startTime: number;

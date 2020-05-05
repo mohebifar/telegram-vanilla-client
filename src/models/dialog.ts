@@ -3,7 +3,7 @@ import {
   Dialog as TLDialog,
   messages_DialogsSlice,
   messages_GetDialogsRequest,
-  messages_PeerDialogs
+  messages_PeerDialogs,
 } from "../core/tl/TLObjects";
 import { extractIdFromPeer, getInputPeer } from "../core/tl/utils";
 import { getDialogDisplayDate, getMessageSummary } from "../utils/chat";
@@ -19,7 +19,7 @@ interface ExtraMethods {
   loadMessage(): Promise<IMessage>;
   getPeer(): Promise<IPeer | undefined>;
   setTyping(userId: number, action: IsTypingAction): void;
-  startTyping(): void;
+  startTyping(action: IsTypingAction): void;
   getIsTyping(): TypingState[];
   clearTypingTimeout(userId: number): void;
   slient: boolean;
@@ -29,7 +29,7 @@ export type IDialog = ModelWithProxy<"dialogs"> & ExtraMethods;
 
 @ModelDecorator({
   tableName: "dialogs",
-  primaryKey: ["peerId", "type"]
+  primaryKey: ["peerId", "type"],
 })
 export class Dialog extends Model<"dialogs"> implements ExtraMethods {
   static table: TelegramDatabase["dialogs"];
@@ -48,7 +48,7 @@ export class Dialog extends Model<"dialogs"> implements ExtraMethods {
         ...dialog,
         lastMessageDate: object.lastMessageDate,
         peerType: type,
-        peerId: id
+        peerId: id,
       };
     }
 
@@ -70,10 +70,10 @@ export class Dialog extends Model<"dialogs"> implements ExtraMethods {
 
     const response = (await this.tg.invoke({
       $t: "messages_GetPeerDialogsRequest",
-      peers: inputs.map(peer => ({
+      peers: inputs.map((peer) => ({
         $t: "InputDialogPeer",
-        peer
-      }))
+        peer,
+      })),
     })) as messages_PeerDialogs;
 
     for (const chat of response.chats) {
@@ -96,11 +96,11 @@ export class Dialog extends Model<"dialogs"> implements ExtraMethods {
           id: dialog.topMessage,
           channelId: Number(
             dialog.peer.$t === "PeerChannel" && dialog.peer.channelId
-          )
+          ),
         }) as IMessage;
         const object = Dialog.fromObject({
           dialog,
-          lastMessageDate: (message && message.date.unix()) || 0
+          lastMessageDate: (message && message.date.unix()) || 0,
         });
         dialogs.push(object);
       }
@@ -113,13 +113,13 @@ export class Dialog extends Model<"dialogs"> implements ExtraMethods {
     let offsetDate = 0;
     let offsetId = 0;
     let offsetPeer: messages_GetDialogsRequest["offsetPeer"] = {
-      $t: "InputPeerEmpty"
+      $t: "InputPeerEmpty",
     };
 
     if (offsetDialog) {
       const peer = await Peer.get({
         id: offsetDialog.peerId,
-        type: offsetDialog.peerType
+        type: offsetDialog.peerType,
       });
       const message = await offsetDialog.loadMessage();
       offsetPeer = getInputPeer(peer);
@@ -133,7 +133,7 @@ export class Dialog extends Model<"dialogs"> implements ExtraMethods {
       offsetId,
       offsetPeer,
       hash: 0,
-      limit: 40
+      limit: 40,
     })) as messages_DialogsSlice;
 
     for (const chat of response.chats) {
@@ -177,14 +177,14 @@ export class Dialog extends Model<"dialogs"> implements ExtraMethods {
           id: dialog.topMessage,
           channelId: Number(
             dialog.peer.$t === "PeerChannel" && dialog.peer.channelId
-          )
+          ),
         }) as IMessage;
         if (!message) {
           continue;
         }
         const object = Dialog.fromObject({
           dialog,
-          lastMessageDate: message.date.unix()
+          lastMessageDate: message.date.unix(),
         });
         object.save();
         dialogs.push(object);
@@ -199,7 +199,7 @@ export class Dialog extends Model<"dialogs"> implements ExtraMethods {
       id: this._proxy.topMessage,
       channelId: Number(
         this._proxy.peerType === "Channel" && this._proxy.peerId
-      )
+      ),
     });
   }
 
@@ -220,7 +220,7 @@ export class Dialog extends Model<"dialogs"> implements ExtraMethods {
   public getPeer() {
     return Peer.get({
       type: this._proxy.peerType,
-      id: this._proxy.peerId
+      id: this._proxy.peerId,
     });
   }
 
@@ -229,7 +229,7 @@ export class Dialog extends Model<"dialogs"> implements ExtraMethods {
 
     this.isTyping.push({
       action,
-      userId
+      userId,
     });
 
     this.broadcastTyping();
@@ -246,14 +246,16 @@ export class Dialog extends Model<"dialogs"> implements ExtraMethods {
     return this.isTyping;
   }
 
-  public async startTyping() {
+  public async startTyping(
+    action: IsTypingAction = {
+      $t: "SendMessageTypingAction",
+    }
+  ) {
     const peer = await this.getPeer();
     this.tg.invoke({
       $t: "messages_SetTypingRequest",
       peer: getInputPeer(peer),
-      action: {
-        $t: "SendMessageTypingAction"
-      }
+      action,
     });
   }
 
@@ -264,7 +266,7 @@ export class Dialog extends Model<"dialogs"> implements ExtraMethods {
       this.isTypingTimeouts.delete(userId);
     }
 
-    this.isTyping = this.isTyping.filter(typing => typing.userId !== userId);
+    this.isTyping = this.isTyping.filter((typing) => typing.userId !== userId);
   }
 
   get slient() {
@@ -279,7 +281,7 @@ export class Dialog extends Model<"dialogs"> implements ExtraMethods {
 
   private broadcastTyping() {
     Dialog.events.emit("typing", {
-      dialog: this._proxy
+      dialog: this._proxy,
     });
   }
 }

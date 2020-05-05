@@ -20,6 +20,7 @@ import * as styles from "./chat.scss";
 import SendMessageForm from "./send-message";
 import TopBar from "./top-bar";
 import Spinner from "../ui/spinner";
+import { IsTypingAction } from "../../utils/useful-types";
 
 interface Options {}
 
@@ -540,8 +541,8 @@ export default class Chat implements Component<Options> {
   };
 
   private startTyping = throttle(
-    () => {
-      this.dialog.startTyping();
+    (action: IsTypingAction) => {
+      this.dialog.startTyping(action);
     },
     4500,
     true
