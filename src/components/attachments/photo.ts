@@ -87,6 +87,7 @@ export default class PhotoAttachment implements Component<Options> {
       if (!media.thumbnail) {
         readDataURL(media.file).then((url) => {
           img.setAttribute("src", url);
+          on(element, "click", onClick);
         });
       }
     }

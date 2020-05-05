@@ -329,11 +329,11 @@ export default class Bubble implements Component<Options> {
         return this.getContactAttachment(media);
       } else if (media.$t === "TransientMedia") {
         if (media.type === "media") {
-          return this.getTransientPhotoAttachment(media);
+          return this.getPhotoAttachment(media);
         } else if (media.type === "voice") {
           return this.getAudioAttachment(media);
         } else {
-          return this.getTransientFileAttachment(media);
+          return this.getFileAttachment(media);
         }
       }
 
@@ -372,7 +372,7 @@ export default class Bubble implements Component<Options> {
   }
 
   private getPhotoAttachment(
-    media: MessageMediaPhoto
+    media: MessageMediaPhoto | TransientMedia
   ): [Element<PhotoAttachment>, "photo"] {
     const onClick = () => {
       this.dialog.getPeer().then((peer) => {
@@ -430,29 +430,11 @@ export default class Bubble implements Component<Options> {
   }
 
   private getFileAttachment(
-    media: MessageMediaDocument
+    media: MessageMediaDocument | TransientMedia
   ): [Element<FileAttachment>, "file"] {
     return [
       createElement(FileAttachment, { media, tg: this.message.tg }),
       "file",
-    ];
-  }
-
-  private getTransientFileAttachment(
-    media: TransientMedia
-  ): [Element<FileAttachment>, "file"] {
-    return [
-      createElement(FileAttachment, { media, tg: this.message.tg }),
-      "file",
-    ];
-  }
-
-  private getTransientPhotoAttachment(
-    media: TransientMedia
-  ): [Element<PhotoAttachment>, "photo"] {
-    return [
-      createElement(PhotoAttachment, { media, tg: this.message.tg }),
-      "photo",
     ];
   }
 
