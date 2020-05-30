@@ -52,4 +52,8 @@ function setupSignInForm(tgProxy: any, connectionPromise: Promise<void>) {
   document.body.append(element);
 }
 
-start();
+try {
+  start();
+} catch(err) {
+  console.error(err);
+}

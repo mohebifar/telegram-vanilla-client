@@ -3,6 +3,7 @@ import {
   MessageMediaPhoto,
   MessageMediaWebPage,
   MessageMediaContact,
+  DocumentAttributeVideo,
 } from "../../core/tl/TLObjects";
 import { IDialog } from "../../models/dialog";
 import { IMessage, Message } from "../../models/message";
@@ -92,7 +93,7 @@ export default class Bubble implements Component<Options> {
 
     this.element = createElement(
       "div",
-      { "data-id": message.id },
+      { "data-id": message.id, "data-date": message.date.format('YY-M-D') },
       this.attachment,
       messageWrapper
     );
@@ -203,8 +204,12 @@ export default class Bubble implements Component<Options> {
     } else if (text === "") {
       bubbleClassName += " " + styles.emptyText;
 
-      if (["photo", "video"].includes(attachmentType)) {
+      if (["photo", "video", "video-round"].includes(attachmentType)) {
         bubbleClassName += " " + styles.imageOnly;
+      }
+
+      if (attachmentType === "video-round") {
+        bubbleClassName += " " + styles.roundBubble;
       }
     }
 
@@ -408,7 +413,18 @@ export default class Bubble implements Component<Options> {
 
   private getVideoAttachment(
     media: MessageMediaDocument
-  ): [Element<VideoAttachment>, "video"] {
+  ): [Element<VideoAttachment>, "video" | "video-round"] {
+    let type: "video" | "video-round" = "video";
+
+    if (media.document.$t === 'Document') {
+      const videoAttribute = media.document.attributes.find(
+        (attribute) => attribute.$t === "DocumentAttributeVideo"
+      ) as DocumentAttributeVideo;
+      if (videoAttribute.roundMessage) {
+        type = "video-round";
+      }
+    }
+
     const onClick = (initialPhoto: string) => {
       this.dialog.getPeer().then((peer) => {
         mediaLightBox({
@@ -426,7 +442,7 @@ export default class Bubble implements Component<Options> {
       media,
       onClick,
     });
-    return [element, "video"];
+    return [element, type];
   }
 
   private getFileAttachment(

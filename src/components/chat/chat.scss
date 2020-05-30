@@ -214,6 +214,18 @@ $time-size: 0.75rem;
     overflow: hidden;
     overflow-wrap: break-word;
 
+    &.roundBubble {
+      overflow: visible;
+
+      &, .attachmentWrapper {
+        border-radius: 50% !important;
+      }
+
+      .attachmentWrapper {
+        overflow: hidden;
+      }
+    }
+
     &.active {
       box-shadow: 0 0 0 4000px rgba(0, 0, 0, 0.15);
       z-index: 99999;
