@@ -53,6 +53,36 @@
   }
 }
 
+@mixin slide-animation {
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+
+  &:global(.visible) {
+    opacity: 1;
+    max-height: 100%;
+    animation: slideUp 0.4s cubic-bezier(0.5, 0.65, 0.25, 0.9);
+  }
+
+  &,
+  &:global(.visible) {
+    transition: all 0.4s cubic-bezier(0.5, 0.65, 0.25, 0.9) !important;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    overflow: hidden;
+    opacity: 0;
+    max-height: 0;
+  }
+  to {
+    overflow: initial;
+    opacity: 1;
+    max-height: 100%;
+  }
+}
+
 $thumb-radius: 5px !default;
 $thumb-height: 10px !default;
 $thumb-width: 10px !default;
@@ -153,7 +183,7 @@ $contrast: 5% !default;
   &::-ms-fill-lower {
     background: darken($lower, $contrast);
   }
-  
+
   &:focus {
     &::-ms-fill-lower {
       background: $lower;
@@ -167,8 +197,58 @@ $contrast: 5% !default;
   &::-moz-range-track {
     background: $lower;
   }
-  
+
   &::-ms-fill-upper {
     background: $lower;
+  }
+}
+
+@mixin breakpoint($class) {
+  @if $class == xs {
+    @media (max-width: 767px) {
+      @content;
+    }
+  } @else if $class == sm {
+    @media (min-width: 768px) {
+      @content;
+    }
+  } @else if $class == md {
+    @media (min-width: 992px) {
+      @content;
+    }
+  } @else if $class == lg {
+    @media (min-width: 1200px) {
+      @content;
+    }
+  } @else {
+    @warn "Breakpoint mixin supports: xs, sm, md, lg";
+  }
+}
+
+@mixin route-not($route) {
+  [data-route]:not([data-route="#{$route}"]) & {
+    @content;
+  }
+}
+
+@mixin route($route) {
+  [data-route="#{$route}"] & {
+    @content;
+  }
+}
+
+@mixin route-xs($route) {
+  @include route($route) {
+    @include breakpoint(xs) {
+      @content;
+    }
+  }
+}
+
+@mixin route-not-xs($route) {
+  @include route-not($route) {
+    @include breakpoint(xs) {
+      @content;
+    }
   }
 }

@@ -8,10 +8,18 @@ $previews-item-size: 46px;
 .container {
   position: relative;
   height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  @include breakpoint(xs) {
+    flex-direction: column-reverse;
+  }
 
   &,
-  .stickerWrapper {
+  .stickerWrapper,
+  .tabs {
     width: $emoji-panel-width;
+    max-width: 100%;
   }
 
   .stickerWrapper {
@@ -65,9 +73,12 @@ $previews-item-size: 46px;
     height: $previews-height;
     overflow-x: scroll;
     overflow-y: hidden;
-    width: $emoji-panel-width;
     white-space: nowrap;
     @include nice-scroll;
+
+    @include breakpoint(xs) {
+      box-shadow: 0 2px 3px #000;
+    }
 
     > button {
       margin-right: 0.5em;

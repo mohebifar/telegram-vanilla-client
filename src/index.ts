@@ -47,13 +47,13 @@ function setupSignInForm(tgProxy: any, connectionPromise: Promise<void>) {
       // TODO: idk why this crashes. It's not needed atm
       // store.me = authorization;
       setupRoot(tgProxy);
-    }
+    },
   });
   document.body.append(element);
 }
 
 try {
   start();
-} catch(err) {
+} catch (err) {
   console.error(err);
 }

@@ -1,11 +1,16 @@
 import { Component, createElement, on, off, Element } from "../../utils/dom";
-import { AudioRecorder, scaleWaveform } from "../../utils/audio-recorder";
+import {
+  AudioRecorder,
+  AudioContext,
+  scaleWaveform,
+} from "../../utils/audio-recorder";
 import Icon, { Icons } from "../ui/icon";
 
 interface Options {
   onClick?(): any;
   onStart(): void;
   onEnd(data: Blob, duration: number, waveform: Uint8Array): void;
+  onClear(): void;
 }
 
 export default class RecordButton implements Component<Options> {
@@ -18,48 +23,71 @@ export default class RecordButton implements Component<Options> {
   private recorder: AudioRecorder;
   private onEnd: Options["onEnd"];
   private onStart: Options["onStart"];
+  private onClear: Options["onClear"];
   private icon: Element<Icon>;
-  private iconName = Icons.Microphone2;
+  private state: "send" | "mic" = "mic";
   private waveform: number[] = [];
+  private waitForRecord: Promise<void>;
 
-  constructor({ onEnd, onStart }: Options) {
+  constructor({ onEnd, onStart, onClear }: Options) {
     this.onEnd = onEnd;
     this.onStart = onStart;
+    this.onClear = onClear;
     this.icon = createElement(Icon, {
-      icon: this.iconName,
+      icon: Icons.Microphone2,
       color: "grey",
     });
     this.element = createElement("button", this.icon);
 
-    on(this.element, "mousedown", (event) => {
-      if (this.iconName !== Icons.Microphone2) {
-        event.preventDefault();
-        event.stopPropagation();
+    const handleTouchStart = () => {
+      if (this.state !== "mic") {
         return;
       }
 
-      this.record();
+      const startTime = Date.now();
 
-      const handleMouseUp = () => {
-        this.stop();
-        off(document, "mouseup", handleMouseUp);
+      const handleTouchEnd = () => {
+        this.stop(Date.now() - startTime < 400);
+        off(document, ["mouseup", "touchend"], handleTouchEnd);
       };
 
-      on(document, "mouseup", handleMouseUp);
+      on(document, ["mouseup", "touchend"], handleTouchEnd);
+
+      this.waitForRecord = this.record();
+    };
+
+    on(this.element, ["mousedown", "touchstart"], handleTouchStart);
+    on(this.element, "touchcancel", () => {
+      console.log('touch canceled');
+      this.stop(true);
+    });
+    on(this.element, "contextmenu", (event) => {
+      event.preventDefault();
     });
   }
 
-  public setIcon(icon: Icons) {
-    this.iconName = icon;
-    this.icon.instance.setColor(icon === Icons.Send ? "blue" : "grey");
-    this.icon.instance.setIcon(icon);
+  public setState(state: "send" | "mic") {
+    this.icon.instance.setColor(state === "send" ? "blue" : "grey");
+    this.icon.instance.setIcon(
+      state === "send" ? Icons.Send : Icons.Microphone2
+    );
   }
 
   private record = async () => {
-    this.stream = await navigator.mediaDevices.getUserMedia({
-      audio: true,
-      video: false,
-    });
+    try {
+      const timeAtStart = Date.now();
+      navigator.mediaDevices.enumerateDevices;
+      this.stream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+        video: false,
+      });
+
+      console.log('timeAtStart', timeAtStart, Date.now())
+    } catch (error) {
+      console.log("error", error);
+      this.onClear();
+      return;
+    }
 
     const sampleRate = 64000;
     this.audioContext = new AudioContext({
@@ -91,24 +119,31 @@ export default class RecordButton implements Component<Options> {
     this.onStart();
   };
 
-  private stop = async () => {
-    this.stream.getTracks().forEach((track) => {
-      track.stop();
-    });
-    this.processor.disconnect();
-    this.analyser.disconnect();
-    this.microphone.disconnect();
-
-    const result = await this.recorder.stop();
-    if (result) {
-      const [data, duration] = result;
-      if (duration > 200) {
-        const waveform = scaleWaveform(this.waveform, 63);
-        this.onEnd(data, Math.round(duration / 1000), waveform);
+  private stop = async (skip = false) => {
+    try {
+      await this.waitForRecord;
+      if (this.stream) {
+        this.stream.getTracks().forEach((track) => {
+          track.stop();
+        });
+        this.processor.disconnect();
+        this.analyser.disconnect();
+        this.microphone.disconnect();
+        const result = await this.recorder.stop();
+        if (result && !skip) {
+          const [data, duration] = result;
+          if (duration > 200) {
+            const waveform = scaleWaveform(this.waveform, 63);
+            this.onEnd(data, Math.round(duration / 1000), waveform);
+            return;
+          }
+        }
       }
+    } finally {
+      this.element.style.boxShadow = this.getBoxShadow(0);
     }
 
-    this.element.style.boxShadow = this.getBoxShadow(0);
+    this.onClear();
   };
 
   private getBoxShadow(decible: number) {

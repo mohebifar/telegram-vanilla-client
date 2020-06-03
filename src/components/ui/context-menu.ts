@@ -59,14 +59,14 @@ export class ContextMenu implements Component<Options> {
         if (!target.closest("." + styles.container)) {
           this.close();
         } else {
-          on(document.body, "mousedown", listener, {
+          on(document.body, ["mousedown", "touchstart"], listener, {
             once: true,
             capture: true,
           });
         }
       };
 
-      on(document.body, "mousedown", listener, {
+      on(document.body, ["mousedown", "touchstart"], listener, {
         once: true,
         capture: true,
       });

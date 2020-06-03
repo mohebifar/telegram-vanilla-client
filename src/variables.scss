@@ -8,6 +8,7 @@ $top-bar-height: 3.75rem;
 $right-sidebar-width: 25em;
 $emoji-panel-width: 25.2em;
 $emoji-panel-height: 25em;
+$emoji-panel-height-xs: 'min(45vh, #{$emoji-panel-height})';
 
 $placeholder-color: #a2acb4;
 $placeholder-text-color: #707579;

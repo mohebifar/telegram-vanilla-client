@@ -1,4 +1,11 @@
 @import "variables.scss";
+@import "mixins.scss";
+
+@include breakpoint(xs) {
+  html {
+    overflow: hidden;
+  }
+}
 
 body {
   margin: 0;
@@ -211,5 +218,12 @@ svg.waveform {
     right: 0;
     bottom: 0;
     top: 0;
+  }
+}
+
+@include breakpoint(xs) {
+  *:not(button):not(input):not(textarea) {
+    -webkit-user-select: none !important;
+    -webkit-touch-callout: none !important;
   }
 }

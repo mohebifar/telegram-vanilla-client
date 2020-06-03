@@ -44,6 +44,7 @@ export default class EmojiPanel implements Component<Options> {
     ];
 
     this.tabsContainer = createElement(Tabs, {
+      class: styles.tabsContainer,
       tabs: this.tabs,
       onTabChange: (index) => {
         stickerPicker.instance[index === 1 ? "panelOpen" : "panelClose"]();

@@ -1,3 +1,5 @@
+import { MEDIA_XS } from "./constants";
+
 export interface Element<T> extends HTMLElement {
   instance?: T;
 }
@@ -161,26 +163,105 @@ export function removeClass<T extends HTMLElement | Element<any>>(
   element.classList.remove(...tokens);
 }
 
+type HTMLElementEventNames = keyof HTMLElementEventMap;
+type AddintionalEvents = "longpress";
+type EventNames<K = HTMLElementEventNames> = K extends HTMLElementEventNames[]
+  ? K[number]
+  : K | AddintionalEvents;
+type EventType<K> = K extends HTMLElementEventNames
+  ? HTMLElementEventMap[K]
+  : K extends HTMLElementEventNames[]
+  ? HTMLElementEventMap[K[number]]
+  : Event;
+
+const longPressMap = new Map<Function, [Function, Function]>();
+
+const preventDefault = (event: Event) => event.preventDefault();
+
 export function on<
-  K extends keyof HTMLElementEventMap,
+  K extends HTMLElementEventNames,
   T extends Document | HTMLElement | SVGElement | Element<any>
 >(
   element: T,
-  eventType: K,
-  listener: (this: HTMLFormElement, ev: HTMLElementEventMap[K]) => any,
+  eventType: EventNames<K> | EventNames<K>[],
+  listener: (this: HTMLFormElement, ev: EventType<K>) => any,
   options?: boolean | AddEventListenerOptions
 ) {
-  element.addEventListener(eventType, listener, options);
+  if (eventType === "longpress") {
+    if (window.innerWidth < MEDIA_XS) {
+      let timer = 0;
+      let pos: [number, number];
+      const moveListener = (event: TouchEvent) => {
+        const { pageX, pageY } = event.touches.item(0);
+        pos = [pageX, pageY];
+      };
+      const startListener = (event: TouchEvent) => {
+        on(element, "touchmove", moveListener);
+        timer = setTimeout(() => {
+          const { pageX, pageY } = event.touches.item(0);
+          if (
+            !pos ||
+            (Math.abs(pageX - pos[0]) < 10 && Math.abs(pageY - pos[1]) < 10)
+          ) {
+            listener.bind(element, event)();
+          }
+          off(element, "touchmove", moveListener);
+        }, 700);
+      };
+      const endListener = () => {
+        clearTimeout(timer);
+        pos = undefined;
+        off(element, "touchmove", moveListener);
+      };
+
+      on(element, "touchstart", startListener, options);
+      on(element, "touchend", endListener, options);
+      on(element, "contextmenu", preventDefault, options);
+      longPressMap.set(listener, [startListener, endListener]);
+    } else {
+      on(element, "contextmenu", listener as any, options);
+    }
+  }
+
+  if (Array.isArray(eventType)) {
+    eventType.forEach((event) => {
+      on(element, event, listener, options);
+    });
+  } else {
+    element.addEventListener(eventType, listener, options);
+  }
 }
 
 export function off<
-  K extends keyof HTMLElementEventMap,
+  K extends HTMLElementEventNames,
   T extends Document | HTMLElement | SVGElement | Element<any>
 >(
   element: T,
-  eventType: K,
-  listener: (this: HTMLFormElement, ev: HTMLElementEventMap[K]) => any,
+  eventType: EventNames<K> | EventNames<K>[],
+  listener: (this: HTMLFormElement, ev: EventType<K>) => any,
   options?: boolean | AddEventListenerOptions
 ) {
-  element.removeEventListener(eventType, listener, options);
+  if (eventType === "longpress") {
+    if (window.innerWidth < MEDIA_XS) {
+      const events = longPressMap.get(listener);
+      if (!events) {
+        return;
+      }
+      const [start, end] = events;
+      off(element, "touchstart", start as any, options);
+      off(element, "touchend", end as any, options);
+      off(element, "contextmenu", preventDefault, options);
+    }
+
+    off(element, "contextmenu", listener as any, options);
+    return;
+  }
+
+  if (Array.isArray(eventType)) {
+    eventType.forEach((event) => {
+      off(element, event, listener, options);
+    });
+  } else {
+    element.removeEventListener(eventType, listener, options);
+  }
 }

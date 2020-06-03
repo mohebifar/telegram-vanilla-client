@@ -10,6 +10,12 @@ interface Options {
   tgProxy: TelegramClientProxy;
 }
 
+export enum Route {
+  DialogList = "dl",
+  Chat = "c",
+  Profile = "p",
+}
+
 export default class Root implements Component<Options> {
   public readonly element: HTMLElement;
   public tgProxy: TelegramClientProxy;
@@ -19,9 +25,11 @@ export default class Root implements Component<Options> {
   constructor({ tgProxy }: Options) {
     this.tgProxy = tgProxy;
 
-    this.chat = createElement(Chat, {});
+    this.chat = createElement(Chat, {
+      setRoute: this.setRoute,
+    });
     this.sideBar = createElement(LeftSideBar, {
-      onChatSelect: this.onChatSelect
+      onChatSelect: this.onChatSelect,
     });
     this.element = createElement(
       "div",
@@ -29,14 +37,25 @@ export default class Root implements Component<Options> {
       this.sideBar,
       this.chat
     );
-
+    const resizeCallback = () => {
+      this.element.style.height = `${window.innerHeight}px`;
+    };
+    window.addEventListener("resize", resizeCallback);
+    resizeCallback();
     this.register();
   }
 
-  private async register() {}
+  private async register() {
+    this.setRoute(Route.DialogList);
+  }
 
   private onChatSelect = async (dialog: IDialog, message?: IMessage) => {
     this.chat.instance.setActiveDialog(dialog, message && message.id);
     this.sideBar.instance.setActiveDialog(dialog);
+    this.setRoute(Route.Chat);
+  };
+
+  private setRoute = (route: Route) => {
+    this.element.setAttribute("data-route", route);
   };
 }

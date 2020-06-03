@@ -21,8 +21,11 @@ import SendMessageForm from "./send-message";
 import TopBar from "./top-bar";
 import Spinner from "../ui/spinner";
 import { IsTypingAction } from "../../utils/useful-types";
+import { Route } from "./root";
 
-interface Options {}
+interface Options {
+  setRoute(route: Route): void;
+}
 
 type BubbleType = "in" | "out" | "service";
 
@@ -37,6 +40,7 @@ export default class Chat implements Component<Options> {
   private topBarContainer: HTMLElement;
   private sendMessageForm: Element<SendMessageForm>;
   private topBar: Element<TopBar>;
+  private setRoute: Options['setRoute'];
   private rightSidebar: Element<RightSidebar>;
   private dialog?: IDialog;
   private peer?: IPeer;
@@ -47,7 +51,8 @@ export default class Chat implements Component<Options> {
   private intersectionObserver: IntersectionObserver;
   private stayAtTheEnd = false;
 
-  constructor({}: Options) {
+  constructor({setRoute}: Options) {
+    this.setRoute = setRoute;
     this.chatContainer = createElement("div", {
       class: styles.chatContainer,
     });
@@ -132,6 +137,9 @@ export default class Chat implements Component<Options> {
           onSearchClick: () => {
             this.rightSidebar.instance.search(this.peer);
             this.rightSidebar.instance.show();
+          },
+          onBackClick: () => {
+            this.setRoute(Route.DialogList);
           },
         });
         removeChildren(this.topBarContainer);

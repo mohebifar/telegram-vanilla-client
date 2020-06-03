@@ -4,7 +4,7 @@
 .container {
   border-radius: 10px;
   position: absolute;
-  left: 0;
+  left: 0.5em;
   bottom: calc(100% + 10px);
   background-color: #fff;
   box-shadow: 0 0 10px #00000030;
@@ -13,7 +13,32 @@
   height: $emoji-panel-height;
   display: flex;
   flex-direction: column;
-  @include popover-animation;
+
+  @include breakpoint(xs) {
+    .tabsContainer {
+      flex-direction: column-reverse;
+
+      > :first-child {
+        box-shadow: 0 -2px 3px rgba(0, 0, 0, 0.08);
+      }
+    }
+  }
+
+  @include breakpoint(sm) {
+    @include popover-animation;
+  }
+
+  @include breakpoint(xs) {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: #{$emoji-panel-height-xs};
+    width: 100%;
+    border-radius: 0;
+    z-index: 999999999;
+    @include slide-animation;
+  }
 
   .tabs {
     position: relative;
@@ -22,6 +47,10 @@
     display: flex;
     justify-content: center;
     align-items: center;
+
+    @include breakpoint(xs) {
+      overflow-x: scroll;
+    }
 
     &:after {
       content: "";

@@ -1,13 +1,16 @@
 @import "../../styles.global.scss";
 @import "../../variables.scss";
 
+$size: 2.75rem;
+
 .btn {
   border-radius: 50%;
   border: none;
   outline: none;
   cursor: pointer;
-  width: 2.75rem;
-  height: 2.75rem;
+  width: $size;
+  height: $size;
+  min-width: $size;
   display: flex;
   align-items: center;
   justify-content: center;

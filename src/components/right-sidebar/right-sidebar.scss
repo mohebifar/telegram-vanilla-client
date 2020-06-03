@@ -1,10 +1,12 @@
 @import "../../variables.scss";
+@import "../../mixins.scss";
 
 .root {
   animation: animateIn 0.08s ease-in-out;
   overflow-x: hidden;
   border-left: 1px solid $grey-light;
-  position: absolute;
+  position: fixed;
+  // position: absolute;
   right: 0;
   top: 0;
   bottom: 0;
@@ -20,6 +22,15 @@
   :global(.route) {
     width: $right-sidebar-width;
     overflow-x: hidden;
+  }
+
+  @include breakpoint(xs) {
+    z-index: 999999999;
+
+    &,
+    :global(.route) {
+      width: 100vw;
+    }
   }
 }
 

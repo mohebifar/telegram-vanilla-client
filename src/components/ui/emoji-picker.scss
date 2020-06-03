@@ -6,16 +6,23 @@ $previews-height: 50px;
 .container {
   position: relative;
   height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  @include breakpoint(xs) {
+    flex-direction: column-reverse;
+  }
 
   &,
   .emojiWrapper {
     width: $emoji-panel-width;
+    max-width: 100%;
   }
 
   .emojiWrapper {
     height: calc(100% - #{$previews-height});
     flex: 1;
-    overflow: scroll;
+    overflow-y: scroll;
     @include hide-scrollbar;
 
     .category {
@@ -68,6 +75,10 @@ $previews-height: 50px;
     justify-content: space-around;
     align-items: center;
     height: $previews-height;
+
+    @include breakpoint(xs) {
+      box-shadow: 0 2px 3px #000;
+    }
 
     :global(.ic) {
       width: 1.3em;

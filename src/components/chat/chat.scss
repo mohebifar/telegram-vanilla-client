@@ -1,12 +1,23 @@
 @import "../../variables.scss";
 @import "../ui/icon.global.scss";
 @import "../../mixins.scss";
+@import "../../styles.global.scss";
 
 $time-size: 0.75rem;
 
 .root {
   display: flex;
   flex-grow: 1;
+  // Route to chat
+  @include route-xs(c) {
+    width: 100vw;
+  }
+  
+  // Route to anything but chat
+  @include route-not-xs(c) {
+    width: 0;
+    overflow: hidden;
+  }
 }
 
 .documentWrapper {
@@ -253,6 +264,7 @@ $time-size: 0.75rem;
 
     .message {
       padding: $message-spacing;
+      word-break: break-word;
     }
 
     &:not(.imageOnly) {

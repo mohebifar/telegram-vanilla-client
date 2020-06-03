@@ -8,6 +8,7 @@ export interface Tab {
 }
 
 interface Options {
+  class?: string;
   tabs: Tab[];
   onTabChange?(index: number): void;
 }
@@ -20,7 +21,7 @@ export default class EmojiPanel implements Component<Options> {
   private onTabChange?: Options["onTabChange"];
   private currentTab: number;
 
-  constructor({ tabs, onTabChange }: Options) {
+  constructor({ tabs, onTabChange, class: className }: Options) {
     this.tabs = tabs;
     this.onTabChange = onTabChange;
 
@@ -42,7 +43,7 @@ export default class EmojiPanel implements Component<Options> {
     });
     const element = createElement(
       "div",
-      { class: styles.root },
+      { class: `${styles.root} ${className || ''}` },
       header,
       this.contentWrapper
     );

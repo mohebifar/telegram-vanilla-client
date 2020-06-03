@@ -1,4 +1,5 @@
 @import "../../variables.scss";
+@import "../../mixins.scss";
 
 .container {
   position: absolute;
@@ -12,6 +13,13 @@
   overflow: hidden;
   animation: fadeIn 0.3s ease;
   z-index: 9999999;
+
+  @include breakpoint(xs) {
+    &, * {
+      -webkit-user-select: none !important;
+      -webkit-touch-callout: none !important;
+    }
+  }
 
   .item {
     display: flex;

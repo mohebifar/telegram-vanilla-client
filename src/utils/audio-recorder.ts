@@ -1,3 +1,8 @@
+export const MediaRecorder: typeof window.MediaRecorder =
+  window.MediaRecorder || (window["webkitMediaRecorder"] as any);
+export const AudioContext: typeof window.AudioContext =
+  window.AudioContext || (window["webkitAudioContext"] as any);
+
 export class AudioRecorder {
   private recorder: MediaRecorder;
   private encoder: any;
@@ -24,7 +29,7 @@ export class AudioRecorder {
           processor.addEventListener("audioprocess", (event) => {
             try {
               this.encoder.encode([event.inputBuffer.getChannelData(0)]);
-            } catch(err) {
+            } catch (err) {
               console.error("Failed to encode an ogg chunk", err);
             }
           });
@@ -34,7 +39,7 @@ export class AudioRecorder {
   }
 
   private supportsNativeRecorder() {
-    return MediaRecorder.isTypeSupported("audio/ogg");
+    return MediaRecorder && MediaRecorder.isTypeSupported("audio/ogg");
   }
 
   public stop(): Promise<[Blob, number]> | undefined {

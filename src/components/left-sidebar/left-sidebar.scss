@@ -8,6 +8,17 @@
   position: relative;
   overflow: hidden;
 
+  // Route to chat
+  @include route-xs(dl) {
+    width: 100vw;
+  }
+  
+  // Route to anything but chat
+  @include route-not-xs(dl) {
+    width: 0;
+    overflow: hidden;
+  }
+
   .dialogsWrapper {
     flex-grow: 1;
     overflow-y: scroll;

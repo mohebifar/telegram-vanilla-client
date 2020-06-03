@@ -98,8 +98,10 @@ export default class Bubble implements Component<Options> {
       messageWrapper
     );
 
-    on(this.element, "contextmenu", (e) => {
+    on(this.element, "longpress", (e: TouchEvent | MouseEvent) => {
       e.preventDefault();
+      const clientInfo = 'touches' in e ? e.touches[0] : e;
+      const {clientX, clientY} = clientInfo;
 
       if (window.getSelection) {
         window.getSelection().removeAllRanges();
@@ -107,7 +109,7 @@ export default class Bubble implements Component<Options> {
       addClass(this.element, styles.active);
 
       makeContextMenu(
-        { x: e.clientX, y: e.clientY },
+        { x: clientX, y: clientY },
         [
           ...(this.peer.canSendMessage()
             ? [

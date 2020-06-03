@@ -47,6 +47,7 @@ export enum Icons {
   More = "more",
   Microphone2 = "microphone2",
   Microphone = "microphone",
+  Back = "back",
 }
 
 export enum IconSprite {

@@ -1,4 +1,5 @@
 @import "../../variables.scss";
+@import "../../mixins.scss";
 
 .container {
   display: flex;
@@ -6,8 +7,18 @@
   height: $top-bar-height;
   border-bottom: 1px solid $grey-light;
   padding: 0 1rem;
+  align-items: center;
 
-  > :first-child {
+  > button {
+    margin-left: -0.5rem;
+    display: none;
+
+    @include breakpoint(xs) {
+      display: block;
+    }
+  }
+
+  > .profileHolder {
     flex-grow: 1;
     flex-direction: row;
     align-items: center;
@@ -18,9 +29,6 @@
 
       .title {
         font-weight: 500;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
         width: 100%;
         max-width: 35em;
       }
@@ -33,6 +41,12 @@
         .online {
           color: $blue;
         }
+      }
+
+      .title, .subdue {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
     }
   }

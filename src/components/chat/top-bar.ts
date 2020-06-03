@@ -13,6 +13,7 @@ interface Options {
   peer: IPeer;
   onProfileClick: () => any;
   onSearchClick: () => any;
+  onBackClick: () => any;
 }
 
 export default class TopBar implements Component<Options> {
@@ -22,7 +23,7 @@ export default class TopBar implements Component<Options> {
   // private dialog: IDialog;
   private peer: IPeer;
 
-  constructor({ peer, onProfileClick, onSearchClick }: Options) {
+  constructor({ peer, onProfileClick, onSearchClick, onBackClick }: Options) {
     // this.dialog = dialog;
     this.peer = peer;
 
@@ -30,10 +31,12 @@ export default class TopBar implements Component<Options> {
 
     this.subdueText = createElement("div", { class: styles.subdue });
 
+    const backButton = createElement(IconButton, { icon: Icons.Back, onClick: onBackClick });
+
     const profile = createElement(
       "div",
-      { class: "pointer" },
-      createElement(Avatar, { peer, size: 'sm' }),
+      { class: "pointer " + styles.profileHolder },
+      createElement(Avatar, { peer, size: "sm" }),
       createElement(
         "div",
         { class: styles.meta },
@@ -49,11 +52,11 @@ export default class TopBar implements Component<Options> {
         icon: Icons.Search,
         onClick: () => {
           onSearchClick();
-        }
+        },
       }),
       createElement(IconButton, {
         icon: Icons.More,
-        onClick: event => {
+        onClick: (event) => {
           const rect = (event.target as HTMLElement).getBoundingClientRect();
           makeContextMenu(
             { x: rect.left + rect.width, y: rect.top + rect.height },
@@ -61,11 +64,11 @@ export default class TopBar implements Component<Options> {
               {
                 icon: Icons.Delete,
                 variant: "red",
-                title: "Delete"
-              }
+                title: "Delete",
+              },
             ]
           );
-        }
+        },
       })
     );
 
@@ -74,6 +77,7 @@ export default class TopBar implements Component<Options> {
     this.element = createElement(
       "div",
       { class: styles.container },
+      backButton,
       profile,
       buttonsHolder
     );
