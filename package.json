@@ -65,6 +65,7 @@
     "pako": "^1.0.10",
     "spu-md5": "0.0.4",
     "virtualized-list": "^2.2.0",
-    "vorbis-encoder-js": "^1.0.2"
+    "vorbis-encoder-js": "^1.0.2",
+    "webp-hero": "0.0.0-dev.24"
   }
 }

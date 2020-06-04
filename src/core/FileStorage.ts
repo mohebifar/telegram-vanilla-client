@@ -61,6 +61,9 @@ export class FileStorage {
     [dcId: number]: Array<Promise<any> | undefined>;
   } = {};
   private uploadedFiles = new Map<string, Blob | null>();
+  public decodeWebp: (data: Uint8Array) => Promise<Uint8Array> | Uint8Array = (
+    data: Uint8Array
+  ) => data;
 
   constructor(private client: TelegramClient) {
     this.setupCache();
@@ -209,9 +212,13 @@ export class FileStorage {
       return undefined;
     }
 
-    const bytes = shouldInflate
+    let bytes = shouldInflate
       ? inflate(concatBuffers(bytesArray))
       : concatBuffers(bytesArray);
+
+    if (isWebp(bytes)) {
+      bytes = await this.decodeWebp(bytes);
+    }
 
     const [blob, url] = this.generateBlobUrl(bytes, getContentType(file.type));
 
@@ -395,7 +402,9 @@ export class FileStorage {
       ];
       sizes.forEach((size) => {
         this.cache.DOCUMENT.put(
-          this.generateKey(this.getDocumentLocation(media.document as Document, size)),
+          this.generateKey(
+            this.getDocumentLocation(media.document as Document, size)
+          ),
           new Response(blob)
         );
       });
@@ -596,4 +605,17 @@ export function strippedPhotoToJpg(stripped: Uint8Array) {
   header[164] = stripped[1];
   header[166] = stripped[2];
   return concatBuffers([header, stripped.slice(3), footer]);
+}
+
+export function isWebp(buffer: Uint8Array) {
+  if (buffer.length < 12) {
+    return false;
+  }
+
+  return (
+    buffer[8] === 87 &&
+    buffer[9] === 69 &&
+    buffer[10] === 66 &&
+    buffer[11] === 80
+  );
 }

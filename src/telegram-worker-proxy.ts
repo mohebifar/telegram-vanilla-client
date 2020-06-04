@@ -2,6 +2,8 @@ import { FileStorage } from "./core/FileStorage";
 import { TelegramClient } from "./core/TelegramClient";
 import { AllUpdateTypes } from "./utils/useful-types";
 import db from "./utils/db";
+import { detectWebpSupport } from "webp-hero/dist/detect-webp-support";
+import { decodeWebp } from "./utils/polyfill";
 
 const clientProxiedMethods = <const>[
   "isUserAuthorized",
@@ -9,7 +11,7 @@ const clientProxiedMethods = <const>[
   "signInWithCode",
   "signInWithPassword",
   "signUp",
-  "invoke"
+  "invoke",
 ];
 
 const fileStorageProxiedMethods = <const>[
@@ -19,7 +21,7 @@ const fileStorageProxiedMethods = <const>[
   "downloadDocument",
   "upload",
   "documentIsCached",
-  "assignUploadedFile"
+  "assignUploadedFile",
 ];
 
 export type ClientProxiedMethods = typeof clientProxiedMethods[number];
@@ -39,7 +41,7 @@ export async function makeProxy(
   updateCallback: (update: AllUpdateTypes) => void
 ): Promise<[TelegramClientProxy, boolean, Promise<void>]> {
   const tgWorker = new Worker("./telegram.worker.ts", {
-    type: "module"
+    type: "module",
   });
   const handlers = new Map<string, { resolve: Function; reject: Function }>();
   const callbacks = new Map<string, Function>();
@@ -67,7 +69,7 @@ export async function makeProxy(
             type: "db",
             requestId: data.requestId,
             error: false,
-            result
+            result,
           });
         })
         .catch((result: any) => {
@@ -75,7 +77,7 @@ export async function makeProxy(
             type: "db",
             requestId: data.requestId,
             error: true,
-            result
+            result,
           });
         });
     } else if (data.type === "callback") {
@@ -84,7 +86,25 @@ export async function makeProxy(
         tgWorker.postMessage({
           type: "callback_return",
           r: data.r,
-          return: callback(data.result)
+          return: callback(data.result),
+        });
+      }
+    } else if (data.type === "webp_request") {
+      if (data.method === "detect") {
+        detectWebpSupport().then((result) => {
+          tgWorker.postMessage({
+            type: "webp_response",
+            requestId: data.requestId,
+            return: result,
+          });
+        });
+      } else if (data.method === "decode") {
+        decodeWebp(data.args[0]).then((result) => {
+          tgWorker.postMessage({
+            type: "webp_response",
+            requestId: data.requestId,
+            return: result,
+          });
         });
       }
     }
@@ -120,15 +140,15 @@ export async function makeProxy(
         requestId: requestId,
         args: newArgs,
         method,
-        object
+        object,
       });
     })
-      .then(result => {
-        callbackIds.forEach(id => callbacks.delete(id));
+      .then((result) => {
+        callbackIds.forEach((id) => callbacks.delete(id));
         return result;
       })
-      .catch(result => {
-        callbackIds.forEach(id => callbacks.delete(id));
+      .catch((result) => {
+        callbackIds.forEach((id) => callbacks.delete(id));
         throw result;
       });
   }
@@ -143,12 +163,12 @@ export async function makeProxy(
       fileStorageProxiedMethods as any,
       proxyMethod,
       "fileStorage"
-    )
+    ),
   };
 
   const count = await db.sessions.count();
 
-  const connectPromise = new Promise<void>(resolve => {
+  const connectPromise = new Promise<void>((resolve) => {
     tgWorker.addEventListener("message", ({ data }) => {
       if (data.type === "connected") {
         resolve();
@@ -160,7 +180,7 @@ export async function makeProxy(
     tgWorker.postMessage({
       type: "connect_request",
       apiId,
-      apiHash
+      apiHash,
     });
   });
 
