@@ -4,11 +4,15 @@ $input-padding-h: 0.9rem;
 $input-radius: 11px;
 $message-spacing: 9px;
 
-$top-bar-height: 3.75rem;
+$chat-container-width: 45em;
+$left-sidebar-width: 26.5em;
 $right-sidebar-width: 25em;
+$top-bar-height: 3.75rem;
 $emoji-panel-width: 25.2em;
 $emoji-panel-height: 25em;
 $emoji-panel-height-xs: 'min(45vh, #{$emoji-panel-height})';
+
+$right-sidebar-animation-duration: 300ms;
 
 $placeholder-color: #a2acb4;
 $placeholder-text-color: #707579;

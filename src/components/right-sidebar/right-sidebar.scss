@@ -2,7 +2,7 @@
 @import "../../mixins.scss";
 
 .root {
-  animation: animateIn 0.08s ease-in-out;
+  animation: animateIn $right-sidebar-animation-duration ease-in-out;
   overflow-x: hidden;
   border-left: 1px solid $grey-light;
   position: fixed;
@@ -14,7 +14,7 @@
   transform: translate3d(0, 0, 0);
 
   &:not(:global(.visible)) {
-    transition: transform 0.15s ease-in-out;
+    transition: transform $right-sidebar-animation-duration ease-in-out;
     transform: translate3d($right-sidebar-width, 0, 0);
   }
 

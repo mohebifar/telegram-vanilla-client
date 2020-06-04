@@ -6,7 +6,8 @@
   background-color: #fff;
   height: $top-bar-height;
   border-bottom: 1px solid $grey-light;
-  padding: 0 1rem;
+  --extra-space: 0rem;
+  padding: 0 calc(1rem + var(--extra-space)) 0 1rem;
   align-items: center;
 
   > button {

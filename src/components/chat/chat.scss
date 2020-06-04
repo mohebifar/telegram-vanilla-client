@@ -12,7 +12,7 @@ $time-size: 0.75rem;
   @include route-xs(c) {
     width: 100vw;
   }
-  
+
   // Route to anything but chat
   @include route-not-xs(c) {
     width: 0;
@@ -137,7 +137,6 @@ $time-size: 0.75rem;
   position: relative;
   padding-right: 0;
   overflow-x: hidden;
-  transition: padding-right 0.15s ease-in-out;
 
   a {
     &,
@@ -191,7 +190,7 @@ $time-size: 0.75rem;
     }
 
     .chatContainer {
-      max-width: 45rem;
+      max-width: $chat-container-width;
       width: 100%;
       margin: 0 auto;
 
@@ -228,7 +227,8 @@ $time-size: 0.75rem;
     &.roundBubble {
       overflow: visible;
 
-      &, .attachmentWrapper {
+      &,
+      .attachmentWrapper {
         border-radius: 50% !important;
       }
 
@@ -675,8 +675,32 @@ $time-size: 0.75rem;
   }
 }
 
-:global(.visible) + .container {
-  padding-right: $right-sidebar-width;
+$min-width-for-sidebar-animation: $chat-container-width + $left-sidebar-width + $right-sidebar-width;
+
+@media screen and (min-width: $min-width-for-sidebar-animation) {
+  :global(.visible) + .container {
+    > form,
+    .chatContainer {
+      transform: translate3d(-$right-sidebar-width / 2, 0, 0);
+    }
+
+    > :first-child > div {
+      --extra-space: #{$right-sidebar-width};
+    }
+  }
+
+  .container {
+    > form,
+    .chatContainer {
+      transition: transform $right-sidebar-animation-duration ease-in-out;
+    }
+  }
+}
+
+@media screen and (max-width: $min-width-for-sidebar-animation) {
+  :global(.visible) + .container {
+    padding-right: $right-sidebar-width;
+  }
 }
 
 .avatar {

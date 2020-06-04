@@ -4,7 +4,7 @@
 .container {
   background-color: #fff;
   border-right: 1px solid $grey-light;
-  width: 26.5em;
+  width: $left-sidebar-width;
   position: relative;
   overflow: hidden;
 
