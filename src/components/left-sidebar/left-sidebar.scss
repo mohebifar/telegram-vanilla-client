@@ -8,15 +8,20 @@
   position: relative;
   overflow: hidden;
 
+  @include breakpoint(xs) {
+    z-index: 1;
+  }
+
   // Route to chat
   @include route-xs(dl) {
     width: 100vw;
+    transition: transform $navigation-animation-duration ease, visibility $navigation-animation-duration step-start;
   }
   
   // Route to anything but chat
   @include route-not-xs(dl) {
-    width: 0;
-    overflow: hidden;
+    visibility: hidden;
+    transition: transform $navigation-animation-duration ease, visibility $navigation-animation-duration step-end;
   }
 
   .dialogsWrapper {

@@ -58,7 +58,6 @@ export default class RecordButton implements Component<Options> {
 
     on(this.element, ["mousedown", "touchstart"], handleTouchStart);
     on(this.element, "touchcancel", () => {
-      console.log('touch canceled');
       this.stop(true);
     });
     on(this.element, "contextmenu", (event) => {
@@ -75,14 +74,12 @@ export default class RecordButton implements Component<Options> {
 
   private record = async () => {
     try {
-      const timeAtStart = Date.now();
       navigator.mediaDevices.enumerateDevices;
       this.stream = await navigator.mediaDevices.getUserMedia({
         audio: true,
         video: false,
       });
 
-      console.log('timeAtStart', timeAtStart, Date.now())
     } catch (error) {
       console.log("error", error);
       this.onClear();

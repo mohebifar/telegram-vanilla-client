@@ -205,19 +205,19 @@ $contrast: 5% !default;
 
 @mixin breakpoint($class) {
   @if $class == xs {
-    @media (max-width: 767px) {
+    @media (max-width: $breakpoint-sm) {
       @content;
     }
   } @else if $class == sm {
-    @media (min-width: 768px) {
+    @media (min-width: $breakpoint-sm + 1px) {
       @content;
     }
   } @else if $class == md {
-    @media (min-width: 992px) {
+    @media (min-width: $breakpoint-md) {
       @content;
     }
   } @else if $class == lg {
-    @media (min-width: 1200px) {
+    @media (min-width: $breakpoint-lg) {
       @content;
     }
   } @else {

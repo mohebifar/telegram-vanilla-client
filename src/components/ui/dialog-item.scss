@@ -15,10 +15,12 @@
     margin-top: 0.25rem;
   }
 
-  .acitve,
-  &:hover,
-  &.active {
-    background-color: $light-hover;
+  @include breakpoint(sm) {
+    .acitve,
+    &:hover,
+    &.active {
+      background-color: $light-hover;
+    }
   }
 
   &,

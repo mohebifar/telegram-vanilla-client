@@ -22,6 +22,7 @@ import TopBar from "./top-bar";
 import Spinner from "../ui/spinner";
 import { IsTypingAction } from "../../utils/useful-types";
 import { Route } from "./root";
+import { isMobile } from "../../utils/mobile";
 
 interface Options {
   setRoute(route: Route): void;
@@ -40,7 +41,7 @@ export default class Chat implements Component<Options> {
   private topBarContainer: HTMLElement;
   private sendMessageForm: Element<SendMessageForm>;
   private topBar: Element<TopBar>;
-  private setRoute: Options['setRoute'];
+  private setRoute: Options["setRoute"];
   private rightSidebar: Element<RightSidebar>;
   private dialog?: IDialog;
   private peer?: IPeer;
@@ -51,7 +52,7 @@ export default class Chat implements Component<Options> {
   private intersectionObserver: IntersectionObserver;
   private stayAtTheEnd = false;
 
-  constructor({setRoute}: Options) {
+  constructor({ setRoute }: Options) {
     this.setRoute = setRoute;
     this.chatContainer = createElement("div", {
       class: styles.chatContainer,
@@ -226,12 +227,38 @@ export default class Chat implements Component<Options> {
   }
 
   private register() {
+    let clearOverflow = 0;
+    let clearOverflowAnimationFrame = 0;
+    let lockScroll = false;
+
     on(this.scrollView, "scroll", () => {
+      if (lockScroll) {
+        if (this.scrollView.scrollTop < 1) {
+          if (clearOverflow) {
+            clearTimeout(clearOverflow);
+            cancelAnimationFrame(clearOverflowAnimationFrame);
+          }
+
+          this.scrollView.style.overflowY = "hidden";
+          this.scrollView.style["WebkitOverflowScrolling"] = "auto";
+
+          clearOverflow = setTimeout(() => {
+            clearOverflowAnimationFrame = requestAnimationFrame(() => {
+              this.scrollView.style.overflowY = null;
+              this.scrollView.style["WebkitOverflowScrolling"] = null;
+            });
+          }, 200);
+        }
+      }
+
       if (this.lockLoad || this.chatContainer.childNodes.length === 0) {
         return;
       }
-      const isAtTop = this.isAtTop(200);
-      const isAtBottom = this.isAtBottom(200);
+
+      const scrollThreshold = isMobile() ? 600 : 200;
+
+      const isAtTop = this.isAtTop(scrollThreshold);
+      const isAtBottom = this.isAtBottom(scrollThreshold);
       const lastBubble = this.getFirstOrLastBubble(isAtTop ? "first" : "last");
 
       if ((isAtTop && !this.noMoreTop) || (isAtBottom && !this.noMoreBottom)) {
@@ -239,6 +266,7 @@ export default class Chat implements Component<Options> {
 
         const message = lastBubble.instance && lastBubble.instance.message;
         if (message) {
+          lockScroll = true;
           this.peer
             .fetchHistory(
               isAtTop
@@ -267,6 +295,9 @@ export default class Chat implements Component<Options> {
               return this.addMessages(messages, {
                 prepend: isAtTop,
               });
+            })
+            .then(() => {
+              lockScroll = false;
             })
             .catch(() => {
               this.lockLoad = false;
@@ -473,7 +504,7 @@ export default class Chat implements Component<Options> {
       await this.addMessage(message, prepend);
     }
 
-    requestAnimationFrame(() => {
+    const updateScroll = () => {
       if (jumpToBackLimit) {
         const id =
           sortedMessages[
@@ -488,9 +519,17 @@ export default class Chat implements Component<Options> {
         this.idToElementMap.get(messageToScrollTo).scrollIntoView();
       } else if (prepend) {
         const endScroll = this.scrollView.scrollHeight;
-        this.scrollView.scrollTop =
-          endScroll - currentScroll + currentScrollTop;
+
+        this.scrollView.scrollTo({
+          top: endScroll - currentScroll + currentScrollTop,
+        });
       }
+    };
+
+    updateScroll();
+
+    requestAnimationFrame(() => {
+      updateScroll();
 
       let numberOfSeen = 0;
       let recentMessage: IMessage;

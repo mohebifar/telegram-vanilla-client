@@ -1,4 +1,4 @@
-import { MEDIA_XS } from "./constants";
+import { isMobile } from "./mobile";
 
 export interface Element<T> extends HTMLElement {
   instance?: T;
@@ -188,7 +188,7 @@ export function on<
   options?: boolean | AddEventListenerOptions
 ) {
   if (eventType === "longpress") {
-    if (window.innerWidth < MEDIA_XS) {
+    if (isMobile()) {
       let timer = 0;
       let pos: [number, number];
       const moveListener = (event: TouchEvent) => {
@@ -242,7 +242,7 @@ export function off<
   options?: boolean | AddEventListenerOptions
 ) {
   if (eventType === "longpress") {
-    if (window.innerWidth < MEDIA_XS) {
+    if (isMobile()) {
       const events = longPressMap.get(listener);
       if (!events) {
         return;

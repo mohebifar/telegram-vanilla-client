@@ -31,6 +31,7 @@ import FileIcon from "../ui/file-icon";
 import { TransientMedia, IsTypingAction } from "../../utils/useful-types";
 import { parseFileSize, formatDurationWithMillis } from "../../utils/chat";
 import RecordButton from "./record-button";
+import { isMobile } from "../../utils/mobile";
 
 interface Options {
   callback(message: SimplifiedMessageRequest): Promise<IMessage>;
@@ -195,7 +196,7 @@ export default class SendMessageForm implements Component<Options> {
     });
 
     on(this.inputNode, "keypress", (e) => {
-      if (e.which == 13 && !e.shiftKey) {
+      if (e.which == 13 && !e.shiftKey && !isMobile()) {
         e.preventDefault();
         this.handleSubmit();
       }
@@ -233,13 +234,14 @@ export default class SendMessageForm implements Component<Options> {
   }
 
   private handleSubmit = (event?: Event) => {
-    if (this.preventMessage) {
-      return;
-    }
-    const value = this.inputNode.value.trim();
     if (event) {
       event.preventDefault();
     }
+    if (this.preventMessage) {
+      return;
+    }
+
+    const value = this.inputNode.value.trim();
     if (value === "") {
       return;
     }
@@ -338,7 +340,7 @@ export default class SendMessageForm implements Component<Options> {
         () => {
           reject();
           this.inputNode.value = captionInput.instance.value;
-          this.inputNode.focus();
+          this.focus();
         }
       );
 
@@ -590,10 +592,10 @@ export default class SendMessageForm implements Component<Options> {
         if (target.setRangeText) {
           const start = target.selectionStart;
           target.setRangeText(emoji);
-          target.focus();
+          this.focus();
           target.selectionStart = target.selectionEnd = start + emoji.length;
         } else {
-          target.focus();
+          this.focus();
           document.execCommand("insertText", false, emoji);
         }
       },

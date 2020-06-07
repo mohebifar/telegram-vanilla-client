@@ -1,4 +1,4 @@
-import { createElement, Component, on } from "../../utils/dom";
+import { createElement, Component, on, off } from "../../utils/dom";
 import * as styles from "./context-menu.scss";
 import Icon, { Icons } from "./icon";
 
@@ -18,9 +18,12 @@ export interface Options {
   [s: string]: any;
 }
 
+const events = ["mousedown", "touchstart", "click"];
+
 export class ContextMenu implements Component<Options> {
   public readonly element: HTMLElement;
   private onClose: Options["onClose"];
+  private listener: (event: Event) => void;
 
   constructor({ items, clickActivator = true, onClose, ...rest }: Options) {
     this.onClose = onClose;
@@ -54,19 +57,20 @@ export class ContextMenu implements Component<Options> {
     this.element = element;
 
     if (clickActivator) {
-      const listener = (event: Event) => {
+      this.listener = (event: Event) => {
+        event.stopPropagation();
         const target = event.target as HTMLElement;
         if (!target.closest("." + styles.container)) {
           this.close();
         } else {
-          on(document.body, ["mousedown", "touchstart"], listener, {
+          on(document.body, events as any, this.listener, {
             once: true,
             capture: true,
           });
         }
       };
 
-      on(document.body, ["mousedown", "touchstart"], listener, {
+      on(document.body, events as any, this.listener, {
         once: true,
         capture: true,
       });
@@ -75,6 +79,8 @@ export class ContextMenu implements Component<Options> {
 
   private close() {
     this.element.remove();
+    off(document.body, events as any, this.listener);
+
     if (this.onClose) {
       this.onClose();
     }

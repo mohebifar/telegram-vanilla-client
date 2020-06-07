@@ -8,15 +8,27 @@ $time-size: 0.75rem;
 .root {
   display: flex;
   flex-grow: 1;
+  transition: transform $navigation-animation-duration ease;
+
+  @include breakpoint(xs) {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    z-index: 2;
+  }
+
   // Route to chat
   @include route-xs(c) {
     width: 100vw;
-  }
+    transform: translate3d(0, 0, 0);
+}
 
   // Route to anything but chat
   @include route-not-xs(c) {
-    width: 0;
-    overflow: hidden;
+    visibility: hidden;
+    transform: translate3d(100vw, 0, 0);
   }
 }
 
@@ -57,6 +69,7 @@ $time-size: 0.75rem;
   padding: $message-spacing / 2;
   margin: $message-spacing / 2;
   border-radius: 5px;
+  max-width: calc(100vw - 6em);
 
   &:hover {
     transition: background-color 0.2s ease;
@@ -223,6 +236,10 @@ $time-size: 0.75rem;
     position: relative;
     overflow: hidden;
     overflow-wrap: break-word;
+
+    pre {
+      white-space: break-spaces;
+    }
 
     &.roundBubble {
       overflow: visible;
@@ -675,7 +692,8 @@ $time-size: 0.75rem;
   }
 }
 
-$min-width-for-sidebar-animation: $chat-container-width + $left-sidebar-width + $right-sidebar-width;
+$min-width-for-sidebar-animation: $chat-container-width + $left-sidebar-width +
+  $right-sidebar-width;
 
 @media screen and (min-width: $min-width-for-sidebar-animation) {
   :global(.visible) + .container {
@@ -692,12 +710,12 @@ $min-width-for-sidebar-animation: $chat-container-width + $left-sidebar-width + 
   .container {
     > form,
     .chatContainer {
-      transition: transform $right-sidebar-animation-duration ease-in-out;
+      transition: transform $navigation-animation-duration ease-in-out;
     }
   }
 }
 
-@media screen and (max-width: $min-width-for-sidebar-animation) {
+@media screen and (min-wdith: $breakpoint-sm) and (max-width: $min-width-for-sidebar-animation) {
   :global(.visible) + .container {
     padding-right: $right-sidebar-width;
   }
