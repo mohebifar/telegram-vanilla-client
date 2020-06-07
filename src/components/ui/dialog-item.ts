@@ -23,7 +23,7 @@ interface Options {
 
 export default class DialogItem implements Component<Options> {
   public element: HTMLElement;
-  public dialog: Options["dialog"];
+  public dialog?: Options["dialog"];
 
   private avatar: HTMLElement;
   private text: HTMLElement;
@@ -114,6 +114,7 @@ export default class DialogItem implements Component<Options> {
     }
     removeChildren(this.dateWrapper);
     if (
+      this.dialog &&
       this.dialog.readOutboxMaxId > 0 &&
       this.dialog.readInboxMaxId !== this.dialog.readOutboxMaxId &&
       this.dialog.readInboxMaxId !== this.dialog.topMessage &&
