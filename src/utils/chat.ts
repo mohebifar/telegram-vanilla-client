@@ -10,7 +10,7 @@ import {
   PhotoSizeEmpty,
   PhotoStrippedSize,
   User,
-  Message
+  Message,
 } from "../core/tl/TLObjects";
 import { Peer, IPeer } from "../models/peer";
 import { TelegramClientProxy } from "../telegram-worker-proxy";
@@ -18,9 +18,10 @@ import { DBPeer } from "./db";
 import {
   DialogMessageTypes,
   MediaWithTransient,
-  TypingState
+  TypingState,
 } from "./useful-types";
 import { toListSentence } from "./utils";
+import { replaceEmoji } from "./emojis";
 
 dayjs.extend(relativeTime);
 
@@ -114,7 +115,7 @@ export async function getServiceMessage(message: MessageService) {
   if (id) {
     peer = await Peer.get({
       id,
-      type: "User"
+      type: "User",
     });
   }
   switch (message.action.$t) {
@@ -124,7 +125,7 @@ export async function getServiceMessage(message: MessageService) {
       return `${message.action.title}`;
     case "MessageActionChatAddUser":
       const users = await Promise.all(
-        message.action.users.map(id => Peer.get({ id, type: "User" }))
+        message.action.users.map((id) => Peer.get({ id, type: "User" }))
       );
       const names = users.map(({ displayName }) => displayName).join(", ");
       return `${peer.displayName} invited ${names}`;
@@ -133,7 +134,7 @@ export async function getServiceMessage(message: MessageService) {
     case "MessageActionChatDeleteUser":
       const deletedUser = await Peer.get({
         id: message.action.userId,
-        type: "User"
+        type: "User",
       });
       return `${peer.displayName} removed "${deletedUser.displayName}"`;
     case "MessageActionPinMessage":
@@ -158,7 +159,7 @@ export function getMessageMediaType(
   if (media.$t === "MessageMediaDocument") {
     if (media.document.$t === "Document") {
       const sticker = media.document.attributes.find(
-        att => att.$t === "DocumentAttributeSticker"
+        (att) => att.$t === "DocumentAttributeSticker"
       ) as DocumentAttributeSticker;
 
       if (sticker) {
@@ -167,11 +168,11 @@ export function getMessageMediaType(
           content =
             includeContent && tgProxy.fileStorage.downloadMedia(media, 0);
         }
-        return [sticker.alt, "Sticker", content];
+        return [sticker.alt + " ", "Sticker", content];
       }
 
       const video = media.document.attributes.find(
-        att => att.$t === "DocumentAttributeVideo"
+        (att) => att.$t === "DocumentAttributeVideo"
       ) as DocumentAttributeSticker;
 
       if (video) {
@@ -187,14 +188,14 @@ export function getMessageMediaType(
       }
 
       const fileAttribute = media.document.attributes.find(
-        t => t.$t === "DocumentAttributeFilename"
+        (t) => t.$t === "DocumentAttributeFilename"
       ) as DocumentAttributeFilename;
       if (fileAttribute) {
         return ["", fileAttribute.fileName, null];
       }
 
       const audioAttribute = media.document.attributes.find(
-        t => t.$t === "DocumentAttributeAudio"
+        (t) => t.$t === "DocumentAttributeAudio"
       ) as DocumentAttributeAudio;
       if (audioAttribute) {
         return [
@@ -202,7 +203,7 @@ export function getMessageMediaType(
           (audioAttribute.voice && "Voice message") ||
             audioAttribute.title ||
             "Audio",
-          null
+          null,
         ];
       }
     }
@@ -210,7 +211,7 @@ export function getMessageMediaType(
     return [
       "🖼 ",
       "Photo",
-      includeContent && tgProxy.fileStorage.downloadMedia(media, 0)
+      includeContent && tgProxy.fileStorage.downloadMedia(media, 0),
     ];
   } else if (media.$t === "MessageMediaWebPage") {
     return ["", "", undefined];
@@ -307,7 +308,7 @@ export function sortPhotoSizes<
   let j: number;
 
   for (i = 0; i < presetOrder.length; i++) {
-    while (-1 != (j = arr.findIndex(item => item.type === presetOrder[i]))) {
+    while (-1 != (j = arr.findIndex((item) => item.type === presetOrder[i]))) {
       result.push(arr.splice(j, 1)[0]);
     }
   }
@@ -332,14 +333,14 @@ export function formatDuration(seconds: number) {
 export function formatDurationWithMillis(millis: number) {
   const seconds = millis / 1000;
   const s = seconds % 60;
-  return formatDuration(seconds) + ',' + Math.round(100 * (Math.ceil(s) - s ))
+  return formatDuration(seconds) + "," + Math.round(100 * (Math.ceil(s) - s));
 }
 
 function messageToParagraphs(message: string) {
   const newLine = /[\n\r]/g;
   const chunks = message.split(newLine);
   if (chunks.length > 1) {
-    return chunks.map(line => `<p dir="auto">${line}</p>`).join("");
+    return chunks.map((line) => `<p dir="auto">${line}</p>`).join("");
   }
 
   return message;
@@ -355,9 +356,9 @@ export function messageToHTML(message: Message) {
   let html = "";
 
   if (message.entities) {
-    message.entities.forEach(entity => {
-      const entityText = escapeHTML(
-        rawMessage.substr(entity.offset, entity.length)
+    message.entities.forEach((entity) => {
+      const entityText = replaceEmoji(
+        escapeHTML(rawMessage.substr(entity.offset, entity.length))
       );
       const textToHere = rawMessage.substring(currentOffset, entity.offset);
       html += textToHere;
@@ -399,7 +400,7 @@ export function messageToHTML(message: Message) {
       currentOffset = entity.offset + entity.length;
     });
   } else {
-    rawMessage = rawMessage.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    rawMessage = replaceEmoji(escapeHTML(rawMessage));
   }
 
   html += rawMessage.substring(currentOffset);

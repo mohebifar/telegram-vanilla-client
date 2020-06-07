@@ -3,6 +3,7 @@ import * as styles from "./country-picker.scss";
 import Input from "./input";
 import countries from "../../data/countries.json";
 import Icon, { Icons } from "./icon";
+import { getEmojiImage } from "../../utils/emojis";
 
 enum EventMap {
   onClick = "click",
@@ -87,7 +88,8 @@ export default class CountryPicker implements Component<Options> {
       .filter(country => country.e)
       .map(country => {
         const { e, n, d } = country;
-        const emoji = createElement("div", e);
+        const emoji = createElement("div");
+        emoji.innerHTML = getEmojiImage(e);
         const name = createElement("div", n);
         const dialCode = createElement("div", d);
         const item = createElement(

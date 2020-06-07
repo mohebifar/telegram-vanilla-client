@@ -5,11 +5,14 @@ import {
   getDialogDisplayDate,
   getIsTypingText,
   shortenCount,
+  escapeHTML,
 } from "../../utils/chat";
 import { Component, createElement, removeChildren, on } from "../../utils/dom";
 import Avatar from "./avatar";
-import * as styles from "./dialog-item.scss";
 import Icon, { Icons } from "./icon";
+import { replaceEmoji } from "../../utils/emojis";
+
+import * as styles from "./dialog-item.scss";
 
 interface Options {
   dialog?: IDialog;
@@ -47,18 +50,16 @@ export default class DialogItem implements Component<Options> {
   }
 
   public async register() {
-    const info = await this.getInfo();
-
     this.avatar = createElement(Avatar, {
       // chatId: chatId
       peer: this.peer,
     });
 
-    this.unreadCount = createElement("div", info.unread || "");
+    this.unreadCount = createElement("div");
 
-    this.title = createElement("div", { dir: "auto" }, info.title);
-    this.text = createElement("span", { dir: "auto" }, info.text);
-    this.date = createElement("span", info.date);
+    this.title = createElement("div", { dir: "auto" });
+    this.text = createElement("span", { dir: "auto" });
+    this.date = createElement("span");
     this.dateWrapper = createElement("div");
 
     const dateWrapper = createElement(
@@ -87,13 +88,13 @@ export default class DialogItem implements Component<Options> {
     this.element.appendChild(textWrapper);
     this.element.appendChild(meta);
 
-    this.update();
+    return this.update();
   }
 
   public async update() {
     const { text, title, date, unread, silent } = await this.getInfo();
-    this.text.innerText = text;
-    this.title.innerText = title;
+    this.text.innerHTML = replaceEmoji(escapeHTML(text));
+    this.title.innerHTML = replaceEmoji(escapeHTML(title));
     this.date.innerText = date;
     removeChildren(this.unreadCount);
     this.unreadCount.append(unread || "");

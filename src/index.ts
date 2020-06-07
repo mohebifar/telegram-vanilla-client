@@ -7,8 +7,11 @@ import { makeProxy } from "./telegram-worker-proxy";
 import { handleUpdate } from "./update-handler";
 import { createElement } from "./utils/dom";
 import { startRipple } from "./utils/ripple";
+import { prepareEmojiMap } from "./utils/emojis";
 
 async function start() {
+  await prepareEmojiMap();
+
   const [tgProxy, deferred, connectionPromise] = await makeProxy(
     TG_API_ID,
     TG_API_HASH,

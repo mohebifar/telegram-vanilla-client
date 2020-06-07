@@ -3,6 +3,7 @@ import * as styles from "./emoji-picker.scss";
 import Icon, { Icons } from "./icon";
 import countries from "../../data/countries.json";
 import { throttle } from "../../utils/utils";
+import { getEmojiImage } from "../../utils/emojis";
 
 interface Options {
   onEmojiSelect(emoji: string): any;
@@ -132,7 +133,8 @@ export default class EmojiPicker implements Component<Options> {
       const title = createElement("h3", { class: styles.title }, category);
 
       EmojiPicker.emojis[category].forEach(emoji => {
-        const button = createElement("button", { type: "button" }, emoji);
+        const button = createElement("button", { type: "button" });
+        button.innerHTML = getEmojiImage(emoji);
         on(button, "click", () => {
           this.onEmojiSelect(emoji);
         });

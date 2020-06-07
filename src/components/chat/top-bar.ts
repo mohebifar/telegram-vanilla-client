@@ -1,12 +1,13 @@
 import { IDialog } from "../../models/dialog";
 import { IPeer, Peer } from "../../models/peer";
-import { getChatSubdueText } from "../../utils/chat";
+import { getChatSubdueText, escapeHTML } from "../../utils/chat";
 import { Component, createElement, on } from "../../utils/dom";
 import Avatar from "../ui/avatar";
 import * as styles from "./top-bar.scss";
 import IconButton from "../ui/icon-button";
 import { Icons } from "../ui/icon";
 import { makeContextMenu } from "../ui/context-menu";
+import { replaceEmoji } from "../../utils/emojis";
 
 interface Options {
   dialog: IDialog;
@@ -96,7 +97,7 @@ export default class TopBar implements Component<Options> {
   }
 
   public update() {
-    this.displayNameContainer.innerText = this.peer.displayName;
+    this.displayNameContainer.innerHTML = replaceEmoji(escapeHTML(this.peer.displayName));
     let subdue = getChatSubdueText(this.peer);
     if (subdue === "online") {
       subdue = `<span class="${styles.online}">${subdue}</span>`;
