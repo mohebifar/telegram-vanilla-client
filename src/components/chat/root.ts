@@ -5,6 +5,7 @@ import Chat from "./chat";
 import { TelegramClientProxy } from "../../telegram-worker-proxy";
 import { IDialog } from "../../models/dialog";
 import { IMessage } from "../../models/message";
+import { setRouteInfo, registerRouter } from "../../utils/history";
 
 interface Options {
   tgProxy: TelegramClientProxy;
@@ -47,15 +48,35 @@ export default class Root implements Component<Options> {
 
   private async register() {
     this.setRoute(Route.DialogList);
+    registerRouter({
+      onChange: ({ dialog, rsb }) => {
+        if (rsb) {
+          this.setRoute(rsb ? Route.Profile : Route.Chat);
+        } else if (dialog) {
+          this.onChatSelect(dialog);
+        } else {
+          this.setRoute(Route.DialogList);
+        }
+      },
+    });
   }
 
   private onChatSelect = async (dialog: IDialog, message?: IMessage) => {
     this.chat.instance.setActiveDialog(dialog, message && message.id);
     this.sideBar.instance.setActiveDialog(dialog);
     this.setRoute(Route.Chat);
+    setRouteInfo({
+      dialog,
+    });
   };
 
   private setRoute = (route: Route) => {
+    if (route === Route.DialogList) {
+      setRouteInfo({ dialog: null });
+    } else if (route === Route.Profile) {
+      setRouteInfo({ rsb: false });
+    }
+
     this.element.setAttribute("data-route", route);
   };
 }
