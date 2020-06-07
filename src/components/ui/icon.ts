@@ -48,6 +48,8 @@ export enum Icons {
   Microphone2 = "microphone2",
   Microphone = "microphone",
   Back = "back",
+  Stickers = "stickers",
+  Gifs = "gifs",
 }
 
 export enum IconSprite {

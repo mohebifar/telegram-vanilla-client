@@ -1,10 +1,19 @@
 import { Document } from "../../core/tl/TLObjects";
-import { Component, createElement, Element, on, removeClass, addClass } from "../../utils/dom";
+import {
+  Component,
+  createElement,
+  Element,
+  on,
+  removeClass,
+  addClass,
+} from "../../utils/dom";
 import * as styles from "./emoji-panel.scss";
 import EmojiPicker from "./emoji-picker";
 import StickerPicker from "./sticker-picker";
 import Tabs, { Tab } from "./tabs";
 import GifPicker from "./gif-picker";
+import { isMobile } from "../../utils/mobile";
+import Icon, { Icons } from "./icon";
 
 interface Options {
   onEmojiSelect(emoji: string): any;
@@ -19,6 +28,7 @@ export default class EmojiPanel implements Component<Options> {
   private lockVisibility = false;
   private timeout: number;
   private tabsContainer: Element<Tabs>;
+  private visibleTime: number;
 
   private tabs: Tab[];
 
@@ -38,9 +48,24 @@ export default class EmojiPanel implements Component<Options> {
     });
 
     this.tabs = [
-      { title: "Emojis", content: emojiPicker },
-      { title: "Stickers", content: stickerPicker },
-      { title: "GIFs", content: gifPicker },
+      {
+        title: createElement(Icon, {
+          icon: Icons.Smile,
+        }),
+        content: emojiPicker,
+      },
+      {
+        title: createElement(Icon, {
+          icon: Icons.Stickers,
+        }),
+        content: stickerPicker,
+      },
+      {
+        title: createElement(Icon, {
+          icon: Icons.Gifs,
+        }),
+        content: gifPicker,
+      },
     ];
 
     this.tabsContainer = createElement(Tabs, {
@@ -62,8 +87,15 @@ export default class EmojiPanel implements Component<Options> {
       this.clearTimeout();
     });
 
-    on(element, "mouseleave", () => {
-      this.deferHide();
+    on(element, ["mouseleave", "blur"], () => {
+      this.deferHide(300, true);
+    });
+
+    on(document.body, ['mousedown', 'touchstart'], (event) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest("." + styles.container) && Date.now() - this.visibleTime > 300) {
+        this.deferHide(300, true);
+      }
     });
 
     this.element = element;
@@ -73,17 +105,19 @@ export default class EmojiPanel implements Component<Options> {
     if (this.lockVisibility) {
       return;
     }
+
     this.clearTimeout();
     this.visible = visible;
 
     if (visible) {
+      this.visibleTime = Date.now();
       removeClass(this.element, "hidden");
       addClass(this.element, "visible");
     } else {
       removeClass(this.element, "visible");
       addClass(this.element, "hidden");
       // this.lockVisibility = true;
-      // on(this.element, 
+      // on(this.element,
       //   "transitionend",
       //   () => {
       //     this.lockVisibility = false;
@@ -95,7 +129,10 @@ export default class EmojiPanel implements Component<Options> {
     }
   }
 
-  public deferHide(timeout = 300) {
+  public deferHide(timeout = 300, force = false) {
+    if (isMobile() && !force) {
+      return;
+    }
     this.clearTimeout();
     this.timeout = setTimeout(() => {
       this.setVisibility(false);

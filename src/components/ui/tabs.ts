@@ -1,9 +1,9 @@
-import { Component, createElement, on, removeClass } from "../../utils/dom";
+import { Component, createElement, on, removeClass, Element } from "../../utils/dom";
 import * as styles from "./tabs.scss";
 import { startAnimation } from "../../utils/easing";
 
 export interface Tab {
-  title: string;
+  title: string | Element<any>;
   content?: HTMLElement;
 }
 
@@ -28,7 +28,7 @@ export default class EmojiPanel implements Component<Options> {
     this.panels = tabs.map((tab, i) => {
       const element = createElement(
         "button",
-        { class: styles.tab, type: "button" },
+        { class: styles.tab + ' ' + (typeof tab.title === 'string' ? styles.text : ''), type: "button" },
         tab.title
       );
       on(element, "click", () => {
