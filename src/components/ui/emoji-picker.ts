@@ -1,7 +1,7 @@
 import { Component, createElement, Element, on } from "../../utils/dom";
 import * as styles from "./emoji-picker.scss";
 import Icon, { Icons } from "./icon";
-import countries from "../../data/countries.json";
+import countries from "../../data/countries";
 import { throttle } from "../../utils/utils";
 import { getEmojiImage } from "../../utils/emojis";
 

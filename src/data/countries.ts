@@ -1,4 +1,10 @@
-[
+interface Country {
+    e: string;
+    n: string;
+    d: string;
+}
+
+const countries: Country[] = [
     {
         "e": "🇦🇫",
         "n": "Afghanistan",
@@ -1199,4 +1205,6 @@
         "n": "Telegram Test",
         "d": "+99966"
     }
-]
+];
+
+export default countries;

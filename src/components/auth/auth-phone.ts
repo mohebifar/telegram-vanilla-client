@@ -2,7 +2,7 @@ import { createElement, Component, Element, on } from "../../utils/dom";
 import Input from "../ui/input";
 import Button from "../ui/button";
 import CountryPicker from "../ui/country-picker";
-import countries from "../../data/countries.json";
+import countries from "../../data/countries";
 import { makeModal } from "../ui/modal";
 
 interface Options {

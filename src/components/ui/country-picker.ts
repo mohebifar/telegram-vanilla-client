@@ -1,7 +1,7 @@
 import { createElement, Component, Element, addClass, on, removeClass } from "../../utils/dom";
 import * as styles from "./country-picker.scss";
 import Input from "./input";
-import countries from "../../data/countries.json";
+import countries from "../../data/countries";
 import Icon, { Icons } from "./icon";
 import { getEmojiImage } from "../../utils/emojis";
 
