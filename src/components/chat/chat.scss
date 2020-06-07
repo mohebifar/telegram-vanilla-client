@@ -355,7 +355,7 @@ $time-size: 0.75rem;
     margin-top: 5px;
   }
 
-  .bubble:last-child:not(.imageOnly):not(.sticker) {
+  .bubble:last-child:not(.imageOnly):not(.sticker):not(.allEmoji) {
     overflow: visible;
     &:after {
       position: absolute;
@@ -548,11 +548,21 @@ $time-size: 0.75rem;
         border-radius: 12px 12px 0px 12px;
       }
     }
+
+    .allEmoji {
+      .message {
+        > span:first-child {
+          text-align: right;
+        }
+      }
+    }
   }
 
+  .allEmoji,
   .sticker {
     margin: 1rem 0;
     width: 180px !important;
+
     &.animated {
       height: 180px !important;
 
@@ -604,25 +614,10 @@ $time-size: 0.75rem;
     position: relative;
 
     .message {
-      position: absolute;
-      right: 0;
-      bottom: 0;
-      height: fit-content;
-      font-size: 0.75rem;
-      background: #00000029;
-      border-radius: 0.9rem;
-      padding: 0;
+      @extend .grey-area;
 
       .time {
-        float: none;
-
-        .inner {
-          position: relative;
-          color: $white !important;
-          display: flex;
-          flex-direction: row;
-          padding: 0.2rem 0.5rem;
-        }
+        @extend .grey-time;
       }
     }
 
@@ -632,6 +627,26 @@ $time-size: 0.75rem;
 
     .sentIndicator {
       @extend .ic-white;
+    }
+  }
+
+  .allEmoji {
+    width: auto !important;
+    min-width: 6em;
+
+    .message {
+      position: relative;
+
+      > span:first-child {
+        font-size: 3em;
+        padding-bottom: 0.4em;
+        display: block;
+      }
+
+      > .time {
+        @extend .grey-area;
+        @extend .grey-time;
+      }
     }
   }
 
@@ -723,4 +738,30 @@ $min-width-for-sidebar-animation: $chat-container-width + $left-sidebar-width +
 
 .avatar {
   align-self: flex-end;
+}
+
+.grey-area {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  height: fit-content;
+  font-size: 0.75rem;
+  background: #00000029;
+  border-radius: 0.9rem;
+  padding: 0;
+}
+
+.grey-time {
+  .inner {
+    position: relative;
+    color: $white !important;
+    display: flex;
+    flex-direction: row;
+    padding: 0.2rem 0.5rem;
+    float: none;
+
+    :global(.ic) {
+      @extend .ic-white;
+    }
+  }
 }

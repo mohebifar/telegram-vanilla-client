@@ -33,6 +33,7 @@ import * as styles from "./chat.scss";
 import QuoteBox from "./quote-box";
 import ServiceBubble from "./service-bubble";
 import ContactAttachment from "../attachments/contact";
+import { isAllEmoji } from "../../utils/emojis";
 
 type AttachmentElement = Element<
   | AnimatedStickerAttachment
@@ -213,6 +214,8 @@ export default class Bubble implements Component<Options> {
       if (attachmentType === "video-round") {
         bubbleClassName += " " + styles.roundBubble;
       }
+    } else if (isAllEmoji(text)) {
+      bubbleClassName = styles.allEmoji;
     }
 
     if (this.isForwarded) {
