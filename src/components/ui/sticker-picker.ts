@@ -5,6 +5,7 @@ import Lottie from "./lottie";
 import * as styles from "./sticker-picker.scss";
 import { EMPTY_IMG } from "../../utils/images";
 import { debounce } from "../../utils/utils";
+import { TelegramClientProxy } from "../../telegram-worker-proxy";
 
 interface Options {
   onStickerSelect(document: Document): any;
@@ -61,10 +62,7 @@ export default class StickerPicker implements Component<Options> {
           this.observer.unobserve(entry.target);
           stickerSet.loadPack().then(() => {
             stickerSet.save();
-            this.renderTabssInHolder(
-              stickerSet,
-              entry.target as HTMLElement
-            );
+            this.renderTabsInHolder(stickerSet, entry.target as HTMLElement);
           });
         }
       }
@@ -95,51 +93,18 @@ export default class StickerPicker implements Component<Options> {
     );
 
     for (const sticker of stickers) {
-      const titleElement = createElement("button", { title: sticker.set.title });
-      if (sticker.set.animated) {
-        const lottie = createElement(Lottie, {});
-        titleElement.append(lottie);
-        sticker.loadPack().then(() => {
-          const document = sticker.documents && sticker.documents[0];
-
-          if (document && document.$t === "Document") {
-            sticker.tg.fileStorage
-              .downloadDocument(document, undefined, document.dcId)
-              .then((url) => {
-                lottie.instance.updateConfig({
-                  path: url,
-                  loop: true,
-                  autoplay: false,
-                });
-
-                on(lottie, "mouseenter", () => {
-                  if ((lottie.instance.animation as any).isPaused) {
-                    lottie.instance.animation.goToAndPlay(0);
-                  }
-                });
-                on(lottie, "mouseleave", () => {
-                  lottie.instance.animation.stop();
-                });
-              });
-          }
-        });
-      } else {
-        const img = createElement("img", {
-          src: EMPTY_IMG,
-        }) as HTMLImageElement;
-        titleElement.append(img);
-        sticker.loadPack().then(() => {
-          const document = sticker.documents && sticker.documents[0];
-
-          if (document && document.$t === "Document") {
-            sticker.tg.fileStorage
-              .downloadDocument(document, undefined, document.dcId)
-              .then((url) => {
-                img.src = url;
-              });
-          }
-        });
+      const titleElement = createElement("button", {
+        title: sticker.set.title,
+      });
+      const [document] = sticker.documents;
+      if (document.$t !== "Document") {
+        continue;
       }
+
+      const { animated } = sticker.set;
+
+      this.fillStickerPreview(sticker.tg, document, animated, titleElement);
+
       on(titleElement, "click", () => {
         const index = this.stickerSets.indexOf(sticker);
         const limit = index - this.currentOffset + 1;
@@ -150,6 +115,7 @@ export default class StickerPicker implements Component<Options> {
           .querySelector('[data-index="' + index + '"]')
           .scrollIntoView();
       });
+
       this.tabs.append(titleElement);
     }
     this.lockLoadMore = false;
@@ -187,68 +153,30 @@ export default class StickerPicker implements Component<Options> {
     this.lockLoadMore = false;
   }
 
-  private renderTabssInHolder(
-    sticker: IStickerSet,
-    stickerHolder: HTMLElement
-  ) {
+  private renderTabsInHolder(sticker: IStickerSet, stickerHolder: HTMLElement) {
     const { animated } = sticker.set;
     const callbacks: Function[] = [];
-    
+
     for (const document of sticker.documents) {
       if (document.$t !== "Document") {
         continue;
       }
 
-      if (animated) {
-        const preview = createElement("div", { class: styles.preview });
+      const preview = createElement("div", { class: styles.preview });
 
-        on(preview, "mouseup", () => {
-          this.onStickerSelect(document);
-        });
+      this.fillStickerPreview(
+        sticker.tg,
+        document,
+        animated,
+        preview,
+        callbacks
+      );
 
-        stickerHolder.append(preview);
+      stickerHolder.append(preview);
 
-        callbacks.push(() => {
-          const lottie = createElement(Lottie, {});
-          preview.append(lottie);
-
-          sticker.tg.fileStorage
-            .downloadDocument(document, undefined, document.dcId)
-            .then((url) => {
-              lottie.instance.updateConfig({
-                path: url,
-                loop: true,
-                autoplay: false,
-              });
-
-              on(lottie, "mouseenter", () => {
-                if ((lottie.instance.animation as any).isPaused) {
-                  lottie.instance.animation.goToAndPlay(0);
-                }
-              });
-              on(lottie, "mouseleave", () => {
-                lottie.instance.animation.stop();
-              });
-            });
-        });
-      } else {
-        const img = createElement("img", {
-          src: EMPTY_IMG,
-        }) as HTMLImageElement;
-        const preview = createElement("div", { class: styles.preview }, img);
-
-        on(preview, "mouseup", () => {
-          this.onStickerSelect(document);
-        });
-
-        stickerHolder.append(preview);
-
-        sticker.tg.fileStorage
-          .downloadDocument(document, undefined, document.dcId)
-          .then((url) => {
-            img.src = url;
-          });
-      }
+      on(preview, "mouseup", () => {
+        this.onStickerSelect(document);
+      });
     }
 
     const call = () => {
@@ -260,6 +188,58 @@ export default class StickerPicker implements Component<Options> {
     };
 
     requestAnimationFrame(call);
+  }
+
+  private fillStickerPreview(
+    tg: TelegramClientProxy,
+    document: Document,
+    animated: boolean,
+    container: HTMLElement,
+    callbacks?: Function[]
+  ) {
+    if (animated) {
+      const callback = () => {
+        tg.fileStorage
+          .downloadDocument(document, undefined, document.dcId)
+          .then((url) => {
+            const lottie = createElement(Lottie, {
+              config: {
+                path: url,
+                loop: true,
+                autoplay: false,
+              },
+            });
+            container.append(lottie);
+
+            on(lottie, "mouseenter", () => {
+              if ((lottie.instance.animation as any).isPaused) {
+                lottie.instance.animation.goToAndPlay(0);
+              }
+            });
+
+            on(lottie, "mouseleave", () => {
+              lottie.instance.animation.stop();
+            });
+          });
+      };
+
+      if (callbacks) {
+        callbacks.push(callback);
+      } else {
+        callback();
+      }
+    } else {
+      const img = createElement("img", {
+        src: EMPTY_IMG,
+      }) as HTMLImageElement;
+      container.append(img);
+
+      tg.fileStorage
+        .downloadDocument(document, undefined, document.dcId)
+        .then((url) => {
+          img.src = url;
+        });
+    }
   }
 
   public panelClose() {
