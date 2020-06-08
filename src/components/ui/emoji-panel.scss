@@ -14,16 +14,6 @@
   display: flex;
   flex-direction: column;
 
-  @include breakpoint(xs) {
-    .tabsContainer {
-      flex-direction: column-reverse;
-
-      > :first-child {
-        box-shadow: 0 -2px 3px rgba(0, 0, 0, 0.08);
-      }
-    }
-  }
-
   @include breakpoint(sm) {
     @include popover-animation;
   }
@@ -39,11 +29,19 @@
     z-index: 999999999;
     @include slide-animation;
   }
+  
+  .tabsContainer {
+    flex-direction: column-reverse;
+
+    > :first-child {
+      box-shadow: 0 -2px 3px rgba(0, 0, 0, 0.08);
+      border-bottom: none;
+    }
+  }
 
   .tabs {
     position: relative;
     padding: 0 0.5em;
-    border-bottom: 1px solid $grey-light;
     display: flex;
     justify-content: center;
     align-items: center;

@@ -9,11 +9,7 @@ $previews-item-size: 46px;
   position: relative;
   height: 100%;
   display: flex;
-  flex-direction: column;
-
-  @include breakpoint(xs) {
-    flex-direction: column-reverse;
-  }
+  flex-direction: column-reverse;
 
   &,
   .stickerWrapper,
@@ -54,6 +50,7 @@ $previews-item-size: 46px;
     .preview {
       height: 4.7em;
       cursor: pointer;
+      text-align: center;
 
       &:hover {
         background-color: $grey-lighter;
@@ -62,23 +59,21 @@ $previews-item-size: 46px;
 
       > :global(.lottieWrapper),
       img {
-        width: 100%;
+        max-width: 100%;
+        height: 100%;
       }
     }
   }
 
   .tabs {
     padding: 0 0.5em;
-    border-top: 1px solid $grey-light;
     height: $previews-height;
     overflow-x: scroll;
     overflow-y: hidden;
     white-space: nowrap;
-    @include nice-scroll;
+    box-shadow: 0 2px 3px #000;
 
-    @include breakpoint(xs) {
-      box-shadow: 0 2px 3px #000;
-    }
+    @include nice-scroll;
 
     > button {
       margin-right: 0.5em;
