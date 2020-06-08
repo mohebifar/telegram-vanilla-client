@@ -23,7 +23,7 @@ $time-size: 0.75rem;
   @include route-xs(c) {
     width: 100vw;
     transform: translate3d(0, 0, 0);
-}
+  }
 
   // Route to anything but chat
   @include route-not-xs(c) {
@@ -236,6 +236,7 @@ $time-size: 0.75rem;
     position: relative;
     overflow: hidden;
     overflow-wrap: break-word;
+    cursor: default;
 
     pre {
       white-space: break-spaces;
@@ -633,6 +634,21 @@ $time-size: 0.75rem;
   .allEmoji {
     width: auto !important;
     min-width: 6em;
+    position: relative;
+
+    .reply {
+      top: 0.5rem;
+      left: 0;
+      bottom: auto;
+      max-width: initial;
+    }
+
+    &.hasReply {
+      .message {
+        display: block;
+        margin-top: 4em;
+      }
+    }
 
     .message {
       position: relative;
