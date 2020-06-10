@@ -13,5 +13,11 @@
         "string": "cpp",
         "vector": "cpp",
         "aes.h": "c"
+    },
+    "files.watcherExclude": {
+        "**/src/assets/emojis/**": true
+    },
+    "files.exclude": {
+        "**/src/assets/emojis/**": true
     }
 }
