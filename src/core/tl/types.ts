@@ -3,7 +3,8 @@ import {
   concatBuffers,
   pack,
   readBufferFromBigInt,
-  readBytesFromString
+  readBytesFromString,
+  readBufferFromHex
 } from "../binary";
 import { BinaryReader } from "../extensions/BinaryReader";
 import {
@@ -286,12 +287,12 @@ function serializeScalar(type: PrimitiveTypes | string, value: any) {
     return serializeBytes(value);
   } else if (type === "int") {
     return pack(value, "i", true);
+  } else if (type === "Bool") {
+    return readBufferFromHex(value ? 0xb5757299 : 0x379779bc);
   }
 
   return serializeTLObject(value) || new Uint8Array(0);
   //  else if (type === "true") {
-  //   // return true;
-  // } else if (type === "Bool") {
   //   // return true;
   // }
   // return new Uint8Array(0);
