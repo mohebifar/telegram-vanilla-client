@@ -71,7 +71,8 @@ $previews-item-size: 3em;
     overflow-x: scroll;
     overflow-y: hidden;
     white-space: nowrap;
-    box-shadow: 0 2px 3px #000;
+    box-shadow: 0 2px 3px #0000002b;
+    z-index: 9999;
 
     @include nice-scroll;
 

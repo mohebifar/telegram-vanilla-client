@@ -334,6 +334,8 @@ export default class StickerPicker implements Component<Options> {
   public panelClose() {
     this.lockLoadMore = true;
     this.wrapper.scrollTop = 0;
+    this.renderedStickerAreas.clear();
+    this.renderedTabs.clear();
     removeChildren(this.wrapper);
   }
 
