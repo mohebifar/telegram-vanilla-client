@@ -2,7 +2,7 @@ import { BigInteger } from "big-integer";
 import { TLObjectType } from "./types";
 
 export interface ResPQ extends TLObjectType<"ResPQ", 0x05162463, 0x786986b8> {
-  serverPublicKeyFingerprints: (string)[];
+  serverPublicKeyFingerprints: string[];
   pq: Uint8Array;
   serverNonce: string;
   nonce: string;
@@ -146,7 +146,7 @@ export interface DestroyAuthKeyRequest
 
 export interface MsgsAck
   extends TLObjectType<"MsgsAck", 0x62d6b459, 0x827677c4> {
-  msgIds: (string)[];
+  msgIds: string[];
 }
 
 export interface BadMsgNotification
@@ -166,7 +166,7 @@ export interface BadServerSalt
 
 export interface MsgsStateReq
   extends TLObjectType<"MsgsStateReq", 0xda69fb52, 0x18f01dd0> {
-  msgIds: (string)[];
+  msgIds: string[];
 }
 
 export interface MsgsStateInfo
@@ -178,7 +178,7 @@ export interface MsgsStateInfo
 export interface MsgsAllInfo
   extends TLObjectType<"MsgsAllInfo", 0x8cc0d131, 0xfa8fcb54> {
   info: string;
-  msgIds: (string)[];
+  msgIds: string[];
 }
 
 export interface MsgDetailedInfo
@@ -198,7 +198,7 @@ export interface MsgNewDetailedInfo
 
 export interface MsgResendReq
   extends TLObjectType<"MsgResendReq", 0x7d861a08, 0x2024514> {
-  msgIds: (string)[];
+  msgIds: string[];
 }
 
 export interface RpcError
@@ -1613,7 +1613,7 @@ export interface contacts_ImportedContacts
     | account_UpdateUsernameRequest
     | account_ChangePhoneRequest
   )[];
-  retryContacts: (string)[];
+  retryContacts: string[];
   popularInvites: PopularContact[];
   imported: ImportedContact[];
 }
@@ -2163,7 +2163,7 @@ export interface UpdateNewStickerSet
 
 export interface UpdateStickerSetsOrder
   extends TLObjectType<"UpdateStickerSetsOrder", 0x0bb2d201, 0x9f89304e> {
-  order: (string)[];
+  order: string[];
   masks?: boolean;
 }
 
@@ -3742,7 +3742,7 @@ export interface messages_Stickers
 
 export interface StickerPack
   extends TLObjectType<"StickerPack", 0x12b299d4, 0x9fefa4d4> {
-  documents: (string)[];
+  documents: string[];
   emoticon: string;
 }
 
@@ -5102,7 +5102,7 @@ export interface messages_FeaturedStickersNotModified
 
 export interface messages_FeaturedStickers
   extends TLObjectType<"messages_FeaturedStickers", 0xf89d88e5, 0x2614b722> {
-  unread: (string)[];
+  unread: string[];
   sets: (StickerSetCovered | StickerSetMultiCovered)[];
   hash: number;
 }
@@ -8381,7 +8381,7 @@ export interface InvokeAfterMsgsRequest
     | InvokeWithoutUpdatesRequest
     | InvokeWithMessagesRangeRequest
     | InvokeWithTakeoutRequest;
-  msgIds: (string)[];
+  msgIds: string[];
 }
 
 export interface InitConnectionRequest
@@ -8562,7 +8562,7 @@ export interface auth_CancelCodeRequest
 
 export interface auth_DropTempAuthKeysRequest
   extends TLObjectType<"auth_DropTempAuthKeysRequest", 0x8e48a188, 0xf5b399ac> {
-  exceptAuthKeys: (string)[];
+  exceptAuthKeys: string[];
 }
 
 export interface account_RegisterDeviceRequest
@@ -9618,7 +9618,7 @@ export interface messages_ForwardMessagesRequest
   background?: boolean;
   withMyScore?: boolean;
   grouped?: boolean;
-  randomId?: (string)[];
+  randomId?: string[];
   scheduleDate?: number;
 }
 
@@ -10036,7 +10036,7 @@ export interface messages_ReorderStickerSetsRequest
     0x78337739,
     0xf5b399ac
   > {
-  order: (string)[];
+  order: string[];
   masks?: boolean;
 }
 
@@ -10357,7 +10357,7 @@ export interface messages_ReadFeaturedStickersRequest
     0x5b118126,
     0xf5b399ac
   > {
-  id: (string)[];
+  id: string[];
 }
 
 export interface messages_GetRecentStickersRequest

@@ -34,6 +34,7 @@ const TLOBJECT_IN_TLS = [
 const errors = [];
 
 const [layer] = TLOBJECT_IN_TLS.map(findLayer).filter(Boolean);
+console.log('layer', layer)
 
 const methods = [
   ...parseMethods(
@@ -55,10 +56,10 @@ const TLTypeToTSTypeMap = new Map<string, string>([
   ["string", "string"],
   ["bytes", "Uint8Array"],
   ["int", "number"],
-  ["long", "BigInteger | string"],
-  ["int64", "BigInteger | string"],
-  ["int128", "BigInteger | string"],
-  ["int256", "BigInteger | string"],
+  ["long", "string"],
+  ["int64", "string"],
+  ["int128", "string"],
+  ["int256", "string"],
   ["double", "number"],
   ["Bool", "boolean"],
   ["true", "boolean"]
