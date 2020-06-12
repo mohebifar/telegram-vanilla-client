@@ -5,6 +5,11 @@
   html {
     overflow: hidden;
   }
+
+  *:not(button):not(input):not(textarea) {
+    -webkit-user-select: none !important;
+    -webkit-touch-callout: none !important;
+  }
 }
 
 body {
@@ -227,9 +232,15 @@ svg.waveform {
   }
 }
 
-@include breakpoint(xs) {
-  *:not(button):not(input):not(textarea) {
-    -webkit-user-select: none !important;
-    -webkit-touch-callout: none !important;
+.fadeIn {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }

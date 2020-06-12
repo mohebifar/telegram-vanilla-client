@@ -29,6 +29,12 @@
     z-index: 999999999;
     @include slide-animation;
   }
+
+  .searchIcon {
+    position: absolute;
+    left: 0.35em;
+    bottom: 0.35em;
+  }
   
   .tabsContainer {
     flex-direction: column-reverse;

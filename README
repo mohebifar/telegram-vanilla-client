@@ -11,9 +11,12 @@
 - Online user indicator on user's avatar in the dialog list
 - Last sent message read check status in the dialog list
 - Record and send voice message
-
+- Apple emojis
+  - [x] Apple emojis will be downloaded only on devices that are not mac-like
 - Basic mobile style
 - Support for webp stickers on Safari
+- Messages that are purely 1-3 emojis, will be displayed without the bubble and with a bigger font size
+- Featured Stickers and Search Stickers both locally and from the Telegram API
 
 ## Changelog (Round 2)
 

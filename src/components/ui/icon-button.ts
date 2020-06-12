@@ -25,7 +25,7 @@ export default class IconButton implements Component<Options> {
   constructor({ icon, color, variant = "light", ...rest }: Options) {
     const props = {};
     for (const k in rest) {
-      if (!(k in EventMap)) {
+      if (!(k in EventMap) && k !== 'class') {
         props[k] = rest[k];
       }
     }
@@ -46,7 +46,7 @@ export default class IconButton implements Component<Options> {
 
     this.element = createElement(
       "button",
-      { class: styles.btn + ' ripple ' + extraClass, ...props },
+      { class: styles.btn + ' ripple ' + extraClass + ' ' + rest['class'] || '', ...props },
       this.icon
     );
 

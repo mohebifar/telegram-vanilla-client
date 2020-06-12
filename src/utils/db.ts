@@ -5,7 +5,8 @@ import {
   Dialog as TLDialog,
   Message as TLMessage,
   messages_StickerSet,
-  UserFull
+  UserFull,
+  StickerSetCovered
 } from "../core/tl/TLObjects";
 import {
   AllDialogPeerTypes,
@@ -63,6 +64,8 @@ export interface DBStickerSet
   extends Omit<messages_StickerSet, "documents" | "packs"> {
   documents?: messages_StickerSet["documents"];
   packs?: messages_StickerSet["packs"];
+  covers?: StickerSetCovered["cover"][];
+  cover?: StickerSetCovered["cover"];
 }
 
 export type DBPeer = AllDialogPeerTypes &

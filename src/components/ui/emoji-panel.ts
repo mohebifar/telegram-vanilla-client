@@ -14,6 +14,7 @@ import Tabs, { Tab } from "./tabs";
 import GifPicker from "./gif-picker";
 import { isMobile } from "../../utils/mobile";
 import Icon, { Icons } from "./icon";
+import IconButton from "./icon-button";
 
 interface Options {
   onEmojiSelect(emoji: string): any;
@@ -76,11 +77,20 @@ export default class EmojiPanel implements Component<Options> {
         gifPicker.instance[index === 2 ? "panelOpen" : "panelClose"]();
       },
     });
+    this.tabsContainer.instance.setTab(1);
 
     const element = createElement(
       "div",
       { class: `${styles.container} hidden` },
-      this.tabsContainer
+      this.tabsContainer,
+      createElement(IconButton, {
+        icon: Icons.Search,
+        color: "grey",
+        class: styles.searchIcon,
+        onClick() {
+          stickerPicker.instance.router.replace("search");
+        },
+      })
     );
 
     on(element, "mouseenter", () => {
@@ -88,12 +98,15 @@ export default class EmojiPanel implements Component<Options> {
     });
 
     on(element, ["mouseleave", "blur"], () => {
-      this.deferHide(300, true);
+      // this.deferHide(300, true);
     });
 
-    on(document.body, ['mousedown', 'touchstart'], (event) => {
+    on(document.body, ["mousedown", "touchstart"], (event) => {
       const target = event.target as HTMLElement;
-      if (!target.closest("." + styles.container) && Date.now() - this.visibleTime > 300) {
+      if (
+        !target.closest("." + styles.container) &&
+        Date.now() - this.visibleTime > 300
+      ) {
         this.deferHide(300, true);
       }
     });

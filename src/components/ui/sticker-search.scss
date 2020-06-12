@@ -1,0 +1,73 @@
+@import "../../variables.scss";
+@import "../../mixins.scss";
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.heading {
+  padding: 1em;
+  display: flex;
+
+  > :last-child {
+    flex: 1;
+    margin-left: 1em;
+  }
+}
+
+.scrollView {
+  flex: 1;
+  overflow-y: auto;
+  @include nice-scroll;
+}
+
+.header {
+  display: flex;
+  padding: 1em;
+
+  .title {
+    flex: 1;
+
+    > :first-child {
+      font-weight: 500;
+      margin-bottom: 0.25em;
+    }
+
+    > :nth-child(2) {
+      color: $grey;
+      font-size: 0.8em;
+    }
+  }
+}
+
+.stickerCover {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+  gap: 0.25em;
+  min-height: 5em;
+
+  > img {
+    width: 100%;
+  }
+}
+
+.btn {
+  height: 2em;
+  border-radius: 1em;
+  padding: 0.5em 1em;
+  background-color: $blue;
+  color: $white;
+  border: none;
+  cursor: pointer;
+
+  &.btnSecondary {
+    background-color: $secondary-btn-surface;
+    color: $secondary-btn-text;
+  }
+
+  &:hover {
+    opacity: 0.9;
+  }
+}

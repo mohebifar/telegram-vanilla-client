@@ -1,27 +1,38 @@
 import { Document } from "../../core/tl/TLObjects";
 import { IStickerSet, StickerSet } from "../../models/sticker-set";
-import { Component, createElement, removeChildren, on } from "../../utils/dom";
-import Lottie from "./lottie";
-import * as styles from "./sticker-picker.scss";
-import { EMPTY_IMG } from "../../utils/images";
+import {
+  Component,
+  createElement,
+  removeChildren,
+  on,
+  Element,
+} from "../../utils/dom";
+import { fillStickerPreview } from "../../utils/render-sticker";
 import { debounce } from "../../utils/utils";
-import { TelegramClientProxy } from "../../telegram-worker-proxy";
+import StickerSearch from "./sticker-search";
+import Router from "./router";
+import * as styles from "./sticker-picker.scss";
+import Spinner from "./spinner";
 
 interface Options {
   onStickerSelect(document: Document): any;
 }
 
 export default class StickerPicker implements Component<Options> {
-  public readonly element: HTMLElement;
+  public readonly element: Element<Router>;
   public readonly wrapper: HTMLElement;
   public readonly dialogs: HTMLElement;
   public readonly tabs: HTMLElement;
+  public readonly router: Router;
+  private observer: IntersectionObserver;
   private onStickerSelect: Options["onStickerSelect"];
   private stickerSets: IStickerSet[];
   private currentOffset = 0;
   private currentPreviewOffset = 0;
   private limit = 2;
   private lockLoadMore = true;
+  private renderedTabs = new Map<string, HTMLElement>();
+  private renderedStickerAreas = new Map<string, HTMLElement>();
   private loadPromise = StickerSet.fetchAll().then((stickerSets) => {
     this.stickerSets = stickerSets;
     on(this.wrapper, "scroll", () => {
@@ -35,6 +46,33 @@ export default class StickerPicker implements Component<Options> {
         this.renderTabs();
       }
     });
+
+    StickerSet.events.on("installed", (sticker) => {
+      const stickerTab = this.renderTab(sticker);
+      if (stickerTab) {
+        this.tabs.prepend(stickerTab);
+      }
+
+      const [stickerArea, holder] = this.renderSticker(sticker);
+      if (stickerArea) {
+        this.wrapper.prepend(stickerArea);
+        this.observer.observe(holder);
+      }
+    });
+
+    StickerSet.events.on("uninstalled", (sticker) => {
+      const stickerTab = this.renderedTabs.get(sticker.set.id);
+      if (stickerTab) {
+        this.renderedTabs.delete(sticker.set.id);
+        stickerTab.remove();
+      }
+
+      const stickerArea = this.renderedStickerAreas.get(sticker.set.id);
+      if (stickerArea) {
+        this.renderedTabs.delete(sticker.set.id);
+        stickerArea.remove();
+      }
+    });
   });
 
   constructor({ onStickerSelect }: Options) {
@@ -46,24 +84,88 @@ export default class StickerPicker implements Component<Options> {
     });
 
     this.wrapper = createElement("div", { class: styles.stickerWrapper });
-    this.element = createElement(
+
+    this.observer = new IntersectionObserver(
+      debounce((entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            const stickerSet = (entry.target as any).sticker as IStickerSet;
+            this.observer.unobserve(entry.target);
+            stickerSet
+              .loadPack()
+              .then(() => {
+                this.renderTabsInHolder(stickerSet, entry.target as HTMLElement);
+              })
+              .catch(() => {
+                this.observer.observe(entry.target);
+              });
+          }
+        }
+      }, 70),
+      { root: this.wrapper }
+    );
+
+    const mainStickerPicker = createElement(
       "div",
       { class: styles.container },
       this.wrapper,
       this.tabs
     );
+
+    this.element = createElement(Router, {
+      routes: [
+        {
+          name: "picker",
+          render: () => mainStickerPicker,
+        },
+        {
+          name: "search",
+          render: () => {
+            return this.getSearchView();
+          },
+        },
+      ],
+    });
+
+    this.router = this.element.instance;
+    this.router.push("picker");
   }
 
-  private observer = new IntersectionObserver(
+  private tabObserver = new IntersectionObserver(
     debounce((entries) => {
       for (const entry of entries) {
         if (entry.isIntersecting) {
-          const stickerSet = (entry.target as any).sticker as IStickerSet;
-          this.observer.unobserve(entry.target);
-          stickerSet.loadPack().then(() => {
-            stickerSet.save();
-            this.renderTabsInHolder(stickerSet, entry.target as HTMLElement);
-          });
+          const target = entry.target as HTMLElement;
+          const stickerSet = (target as any).sticker as IStickerSet;
+
+          this.observer.unobserve(target);
+
+          stickerSet
+            .loadPack()
+            .then(() => {
+              stickerSet.save();
+
+              if (!stickerSet.documents || stickerSet.documents.length === 0) {
+                return;
+              }
+
+              const [document] = stickerSet.documents;
+              if (document.$t !== "Document") {
+                return;
+              }
+
+              removeChildren(target);
+
+              fillStickerPreview(
+                stickerSet.tg,
+                document,
+                stickerSet.set.animated,
+                target
+              );
+            })
+            .catch(() => {
+              this.observer.unobserve(target);
+            });
         }
       }
     }, 70),
@@ -93,32 +195,56 @@ export default class StickerPicker implements Component<Options> {
     );
 
     for (const sticker of stickers) {
-      const titleElement = createElement("button", {
-        title: sticker.set.title,
-      });
+      const element = this.renderTab(sticker);
+      if (element) {
+        this.tabs.append(element);
+      }
+    }
+
+    this.lockLoadMore = false;
+  }
+
+  private renderTab(sticker: IStickerSet) {
+    if (this.renderedTabs.has(sticker.set.id)) {
+      return null;
+    }
+
+    const titleElement = createElement("button", {
+      title: sticker.set.title,
+    });
+
+    if (sticker.documents && sticker.documents.length !== 0) {
       const [document] = sticker.documents;
       if (document.$t !== "Document") {
-        continue;
+        return null;
       }
 
       const { animated } = sticker.set;
 
-      this.fillStickerPreview(sticker.tg, document, animated, titleElement);
-
-      on(titleElement, "click", () => {
-        const index = this.stickerSets.indexOf(sticker);
-        const limit = index - this.currentOffset + 1;
-        if (limit > 0) {
-          this.renderStickers(limit);
-        }
-        this.wrapper
-          .querySelector('[data-index="' + index + '"]')
-          .scrollIntoView();
-      });
-
-      this.tabs.append(titleElement);
+      fillStickerPreview(sticker.tg, document, animated, titleElement);
+    } else {
+      titleElement.append(
+        createElement(Spinner, { size: "1.5em", color: "green" })
+      );
+      this.tabObserver.observe(titleElement);
     }
-    this.lockLoadMore = false;
+
+    on(titleElement, "click", () => {
+      const index = this.stickerSets.indexOf(sticker);
+      const limit = index - this.currentOffset + 1;
+      if (limit > 0) {
+        this.renderStickers(limit);
+      }
+      this.wrapper
+        .querySelector('[data-index="' + index + '"]')
+        .scrollIntoView();
+    });
+
+    (titleElement as any).sticker = sticker;
+
+    this.renderedTabs.set(sticker.set.id, titleElement);
+
+    return titleElement;
   }
 
   private renderStickers(limit = this.limit) {
@@ -130,20 +256,11 @@ export default class StickerPicker implements Component<Options> {
     );
 
     for (const sticker of stickers) {
-      const titleElement = createElement(
-        "div",
-        { class: styles.title },
-        sticker.set.title
-      );
-      const stickerHolder = createElement("div", {
-        class: styles.holder,
-        "data-index": this.stickerSets.indexOf(sticker),
-      });
-      const stickerElement = createElement("div", titleElement, stickerHolder);
-      (stickerHolder as any).sticker = sticker;
-      this.observer.observe(stickerHolder);
-
-      this.wrapper.append(stickerElement);
+      const [stickerArea, holder] = this.renderSticker(sticker);
+      if (stickerArea) {
+        this.wrapper.append(stickerArea);
+        this.observer.observe(holder);
+      }
     }
 
     if (isFirstLoad) {
@@ -151,6 +268,28 @@ export default class StickerPicker implements Component<Options> {
     }
 
     this.lockLoadMore = false;
+  }
+
+  private renderSticker(sticker: IStickerSet) {
+    if (this.renderedStickerAreas.has(sticker.set.id)) {
+      return [null, null];
+    }
+
+    const titleElement = createElement(
+      "div",
+      { class: styles.title },
+      sticker.set.title
+    );
+    const stickerHolder = createElement("div", {
+      class: styles.holder,
+      "data-index": this.stickerSets.indexOf(sticker),
+    });
+    const stickerElement = createElement("div", titleElement, stickerHolder);
+    (stickerHolder as any).sticker = sticker;
+
+    this.renderedStickerAreas.set(sticker.set.id, stickerElement);
+
+    return [stickerElement, stickerHolder];
   }
 
   private renderTabsInHolder(sticker: IStickerSet, stickerHolder: HTMLElement) {
@@ -164,13 +303,7 @@ export default class StickerPicker implements Component<Options> {
 
       const preview = createElement("div", { class: styles.preview });
 
-      this.fillStickerPreview(
-        sticker.tg,
-        document,
-        animated,
-        preview,
-        callbacks
-      );
+      fillStickerPreview(sticker.tg, document, animated, preview, callbacks);
 
       stickerHolder.append(preview);
 
@@ -190,56 +323,12 @@ export default class StickerPicker implements Component<Options> {
     requestAnimationFrame(call);
   }
 
-  private fillStickerPreview(
-    tg: TelegramClientProxy,
-    document: Document,
-    animated: boolean,
-    container: HTMLElement,
-    callbacks?: Function[]
-  ) {
-    if (animated) {
-      const callback = () => {
-        tg.fileStorage
-          .downloadDocument(document, undefined, document.dcId)
-          .then((url) => {
-            const lottie = createElement(Lottie, {
-              config: {
-                path: url,
-                loop: true,
-                autoplay: false,
-              },
-            });
-            container.append(lottie);
-
-            on(lottie, "mouseenter", () => {
-              if ((lottie.instance.animation as any).isPaused) {
-                lottie.instance.animation.goToAndPlay(0);
-              }
-            });
-
-            on(lottie, "mouseleave", () => {
-              lottie.instance.animation.stop();
-            });
-          });
-      };
-
-      if (callbacks) {
-        callbacks.push(callback);
-      } else {
-        callback();
-      }
-    } else {
-      const img = createElement("img", {
-        src: EMPTY_IMG,
-      }) as HTMLImageElement;
-      container.append(img);
-
-      tg.fileStorage
-        .downloadDocument(document, undefined, document.dcId)
-        .then((url) => {
-          img.src = url;
-        });
-    }
+  private getSearchView() {
+    return createElement(StickerSearch, {
+      onBack: () => {
+        this.router.replace("picker");
+      },
+    });
   }
 
   public panelClose() {
