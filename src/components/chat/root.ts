@@ -2,14 +2,9 @@ import { createElement, Component, Element } from "../../utils/dom";
 import * as styles from "./root.scss";
 import LeftSideBar from "../left-sidebar/left-sidebar";
 import Chat from "./chat";
-import { TelegramClientProxy } from "../../telegram-worker-proxy";
 import { IDialog } from "../../models/dialog";
 import { IMessage } from "../../models/message";
 import { setRouteInfo, registerRouter } from "../../utils/history";
-
-interface Options {
-  tgProxy: TelegramClientProxy;
-}
 
 export enum Route {
   DialogList = "dl",
@@ -17,15 +12,12 @@ export enum Route {
   Profile = "p",
 }
 
-export default class Root implements Component<Options> {
+export default class Root implements Component {
   public readonly element: HTMLElement;
-  public tgProxy: TelegramClientProxy;
   private chat: Element<Chat>;
   private sideBar: Element<LeftSideBar>;
 
-  constructor({ tgProxy }: Options) {
-    this.tgProxy = tgProxy;
-
+  constructor() {
     this.chat = createElement(Chat, {
       setRoute: this.setRoute,
     });

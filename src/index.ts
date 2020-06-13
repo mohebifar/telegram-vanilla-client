@@ -3,7 +3,7 @@ import Root from "./components/chat/root";
 import { Authorization } from "./core/tl/TLObjects";
 import { Model } from "./models/model";
 import "./styles.global.scss";
-import { makeProxy } from "./telegram-worker-proxy";
+import { makeProxy, TelegramClientProxy } from "./telegram-worker-proxy";
 import { handleUpdate } from "./update-handler";
 import { createElement } from "./utils/dom";
 import { startRipple } from "./utils/ripple";
@@ -30,26 +30,27 @@ async function start() {
   Model.tg = tgProxy;
 
   if (isUserAuthorized) {
-    setupRoot(tgProxy);
+    setupRoot();
   } else {
     setupSignInForm(tgProxy, connectionPromise);
   }
 }
 
-function setupRoot(tgProxy: any) {
-  const element = createElement(Root, { tgProxy });
+function setupRoot() {
+  const element = createElement(Root);
   startRipple();
   document.body.append(element);
 }
 
-function setupSignInForm(tgProxy: any, connectionPromise: Promise<void>) {
+function setupSignInForm(
+  tgProxy: TelegramClientProxy,
+  connectionPromise: Promise<void>
+) {
   const element = createElement(AuthRoot, {
     tgProxy,
     connectionPromise,
     finishCallback: (_authorization: Authorization) => {
-      // TODO: idk why this crashes. It's not needed atm
-      // store.me = authorization;
-      setupRoot(tgProxy);
+      setupRoot();
     },
   });
   document.body.append(element);
