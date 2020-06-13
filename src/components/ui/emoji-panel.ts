@@ -47,6 +47,17 @@ export default class EmojiPanel implements Component<Options> {
         this.setVisibility(false);
       },
     });
+    const searchButton = createElement(IconButton, {
+      icon: Icons.Search,
+      color: "grey",
+      class: styles.searchIcon + " hidden",
+      onClick: () => {
+        const stickerRoute = stickerPicker.instance.router;
+        if (stickerRoute.currentRouteName !== 'search') {
+          stickerRoute.replace("search");
+        }
+      },
+    });
 
     this.tabs = [
       {
@@ -73,6 +84,7 @@ export default class EmojiPanel implements Component<Options> {
       class: styles.tabsContainer,
       tabs: this.tabs,
       onTabChange: (index) => {
+        searchButton.classList[index === 1 ? "remove" : "add"]("hidden");
         stickerPicker.instance[index === 1 ? "panelOpen" : "panelClose"]();
         gifPicker.instance[index === 2 ? "panelOpen" : "panelClose"]();
       },
@@ -83,14 +95,7 @@ export default class EmojiPanel implements Component<Options> {
       "div",
       { class: `${styles.container} hidden` },
       this.tabsContainer,
-      createElement(IconButton, {
-        icon: Icons.Search,
-        color: "grey",
-        class: styles.searchIcon,
-        onClick() {
-          stickerPicker.instance.router.replace("search");
-        },
-      })
+      searchButton
     );
 
     on(element, "mouseenter", () => {
