@@ -1,5 +1,6 @@
 ## Changelog (Round 3)
 
+- Upgraded API Layer to 114
 - Fixed UI mismatch issues
 - Faster file upload and download
 - Fixed issue with uploading multiple files at once
@@ -10,13 +11,16 @@
 - Change user in the right sidebar on dialog change
 - Online user indicator on user's avatar in the dialog list
 - Last sent message read check status in the dialog list
-- Record and send voice message
+- Support for webp stickers on Safari
 - Apple emojis
   - [x] Apple emojis will be downloaded only on devices that are not mac-like
-- Basic mobile style
-- Support for webp stickers on Safari
 - Messages that are purely 1-3 emojis, will be displayed without the bubble and with a bigger font size
-- Featured Stickers and Search Stickers both locally and from the Telegram API
+- Basic mobile style
+- Record and send voice message with Safari, Chrome, and Firefox support by including vorbis encoder
+- Discovering featured stickers
+- Search stickers both locally and from the Telegram API
+- Add support for contact media
+- Add support for rendering polls (Quiz, anonymous polls)
 
 ## Changelog (Round 2)
 
