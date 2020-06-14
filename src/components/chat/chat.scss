@@ -818,6 +818,11 @@ $min-width-for-sidebar-animation: $chat-container-width + $left-sidebar-width +
         display: inline-block;
       }
 
+      > label {
+        padding-left: 1em;
+        min-width: calc(100% - 4em);
+      }
+
       > .voters {
         font-size: 0.8em;
         padding-top: 0.4em;
@@ -828,13 +833,39 @@ $min-width-for-sidebar-animation: $chat-container-width + $left-sidebar-width +
       }
 
       > button {
-        margin-right: 1em;
         border-radius: 1em;
         width: 1em;
         height: 1em;
         background: none;
         border: 2px solid #0000003b;
         outline: none;
+
+        &,
+        &.active {
+          transition: all 0.3s ease;
+        }
+
+        &.active {
+          background-color: $blue;
+          border-color: transparent;
+          position: relative;
+
+          &:after {
+            content: "";
+            background-image: url(/assets/icons/check.svg);
+            display: block;
+            width: 0.8em;
+            height: 0.8em;
+            position: absolute;
+            left: 0;
+            top: 0;
+            background-size: contain;
+            background-repeat: no-repeat;
+
+            @extend .fadeIn;
+            @extend .ic-white;
+          }
+        }
       }
 
       .progressWrapper {
@@ -876,5 +907,21 @@ $min-width-for-sidebar-animation: $chat-container-width + $left-sidebar-width +
     text-align: center;
     color: $grey;
     font-size: 0.9em;
+    height: 1.25em;
+    margin-top: 0.5em;
+
+    > button {
+      outline: none;
+      background: none;
+      border: none;
+      width: 100%;
+      color: $blue;
+      font-weight: 500;
+      cursor: pointer;
+
+      &:hover {
+        opacity: 0.8;
+      }
+    }
   }
 }

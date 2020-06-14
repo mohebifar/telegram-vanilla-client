@@ -14,6 +14,7 @@ import {
   UpdateUserTyping,
   UpdateReadChannelOutbox,
   UpdateReadHistoryOutbox,
+  UpdateMessagePoll,
 } from "./core/tl/TLObjects";
 import { extractIdFromPeer } from "./core/tl/utils";
 import { IMessage, Message } from "./models/message";
@@ -71,9 +72,33 @@ export function handleUpdate(update: AllUpdateTypes, extras: Extras = {}) {
     case "UpdateChatUserTyping":
       handleUpdateTyping(update);
       break;
+    case "UpdateMessagePoll":
+      handleUpdateMessagePoll(update);
+      break;
     default:
       console.debug("Unsupported update", update);
   }
+}
+
+async function handleUpdateMessagePoll(update: UpdateMessagePoll) {
+  const message = Message.pollToMessage.get(update.pollId) as any;
+  if (!message) {
+    return;
+  }
+
+  message.media = {
+    ...message._proxy.media,
+    poll: {
+      ...message.poll,
+      ...update.poll,
+    },
+    results: {
+      ...message.results,
+      ...update.results,
+    },
+  };
+
+  message.save();
 }
 
 async function handleNewMessageUpdate(

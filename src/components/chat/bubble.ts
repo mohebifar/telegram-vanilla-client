@@ -46,6 +46,7 @@ type AttachmentElement = Element<
   | AudioAttachment
   | WebAttachment
   | ContactAttachment
+  | PollAttachment
 >;
 
 interface Options {
@@ -244,7 +245,8 @@ export default class Bubble implements Component<Options> {
         node &&
         node.instance &&
         attachment.instance &&
-        node.instance instanceof attachment.instance.constructor
+        node.instance instanceof attachment.instance.constructor &&
+        !(node.instance instanceof PollAttachment)
       ) {
         console.debug("Attachment type is the same");
       } else {
@@ -349,7 +351,7 @@ export default class Bubble implements Component<Options> {
         } else {
           return this.getFileAttachment(media);
         }
-      } else if (media.$t === 'MessageMediaPoll') {
+      } else if (media.$t === "MessageMediaPoll") {
         return this.getPollAttachment(media);
       }
 
@@ -469,7 +471,7 @@ export default class Bubble implements Component<Options> {
     media: MessageMediaPoll
   ): [Element<PollAttachment>, "poll"] {
     return [
-      createElement(PollAttachment, { media, tg: this.message.tg }),
+      createElement(PollAttachment, { media, message: this.message }),
       "poll",
     ];
   }

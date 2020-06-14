@@ -6,7 +6,7 @@ import {
   messages_GetMessagesRequest,
   messages_MessagesSlice,
   UpdateShortChatMessage,
-  UpdateShortMessage
+  UpdateShortMessage,
 } from "../core/tl/TLObjects";
 import { extractIdFromPeer, getInputPeer } from "../core/tl/utils";
 import { DBMessage, TelegramDatabase } from "../utils/db";
@@ -28,7 +28,7 @@ export type IMessage = ModelWithProxy<"messages"> & ExtraMethods;
 
 @ModelDecorator({
   tableName: "messages",
-  primaryKey: ["id", "channelId"]
+  primaryKey: ["id", "channelId"],
 })
 export class Message extends Model<"messages"> {
   static get: (id: ModelKey<"messages">) => Promise<undefined | IMessage>;
@@ -37,6 +37,7 @@ export class Message extends Model<"messages"> {
   ) => Promise<(undefined | IMessage)[]>;
   static table: TelegramDatabase["messages"];
   static fromObject: (object: any) => IMessage;
+  static pollToMessage = new Map<string, IMessage>();
 
   public justSent = false;
 
@@ -44,6 +45,14 @@ export class Message extends Model<"messages"> {
     message: DialogMessageTypes | UpdateShortMessage | UpdateShortChatMessage
   ) {
     let normalizedMessage: DBMessage;
+
+    if (
+      "media" in message &&
+      message.media &&
+      message.media.$t === "MessageMediaPoll"
+    ) {
+      Message.pollToMessage.set(message.media.poll.id, this as any);
+    }
 
     if (
       message.$t === "UpdateShortMessage" ||
@@ -54,16 +63,16 @@ export class Message extends Model<"messages"> {
           ? {
               toId: {
                 $t: "PeerUser",
-                userId: message.userId
+                userId: message.userId,
               },
-              fromId: message.userId
+              fromId: message.userId,
             }
           : {
               toId: {
                 $t: "PeerChat",
-                chatId: message.chatId
+                chatId: message.chatId,
               },
-              fromId: message.fromId
+              fromId: message.fromId,
             }),
         $t: "Message",
         out: message.out,
@@ -75,7 +84,7 @@ export class Message extends Model<"messages"> {
         mentioned: message.mentioned,
         mediaUnread: message.mediaUnread,
         silent: message.silent,
-        entities: message.entities
+        entities: message.entities,
       } as any;
     } else {
       normalizedMessage = message as any;
@@ -121,14 +130,14 @@ export class Message extends Model<"messages"> {
           channel: {
             $t: "InputChannel",
             channelId: peer.id,
-            accessHash: (peer as Channel).accessHash
+            accessHash: (peer as Channel).accessHash,
           },
-          maxId: this._proxy.id
+          maxId: this._proxy.id,
         }
       : {
           $t: "messages_ReadHistoryRequest",
           maxId: this._proxy.id,
-          peer: getInputPeer(peer) as InputPeerUser
+          peer: getInputPeer(peer) as InputPeerUser,
         };
 
     return this.tg.invoke(input as any);
@@ -138,7 +147,7 @@ export class Message extends Model<"messages"> {
     ids: (number | InputMessageIdTypes)[],
     channel?: IPeer
   ) {
-    const inputIds = ids.map(id =>
+    const inputIds = ids.map((id) =>
       typeof id === "number" ? { $t: "InputMessageID", id } : id
     ) as InputMessageIdTypes[];
 
@@ -148,7 +157,7 @@ export class Message extends Model<"messages"> {
 
     const input = {
       ...base,
-      id: inputIds
+      id: inputIds,
     } as channels_GetMessagesRequest | messages_GetMessagesRequest;
 
     const messagesSlice = (await this.tg.invoke(
@@ -180,11 +189,11 @@ export class Message extends Model<"messages"> {
       $t: "messages_SearchGlobalRequest",
       offsetId,
       offsetPeer: {
-        $t: "InputPeerSelf"
+        $t: "InputPeerSelf",
       },
       offsetRate: 0,
       limit: 20,
-      q
+      q,
     })) as messages_MessagesSlice;
 
     for (const chat of response.chats) {
@@ -220,12 +229,12 @@ export class Message extends Model<"messages"> {
       if (this._proxy.fromId) {
         return Peer.get({
           id: this._proxy.fromId,
-          type: "User"
+          type: "User",
         });
       } else if (this._proxy.toId.$t === "PeerChannel") {
         return Peer.get({
           id: this._proxy.toId.channelId,
-          type: "Channel"
+          type: "Channel",
         });
       } else if (!this._proxy.fwdFrom) {
         const fwdType = this._proxy.fwdFrom.fromId ? "User" : "Channel";
@@ -234,7 +243,7 @@ export class Message extends Model<"messages"> {
             fwdType === "User"
               ? this._proxy.fwdFrom.fromId
               : this._proxy.fwdFrom.channelId,
-          type: fwdType
+          type: fwdType,
         });
       }
     }

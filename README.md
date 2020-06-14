@@ -14,6 +14,7 @@
 - Support for webp stickers on Safari
 - Apple emojis
   - [x] Apple emojis will be downloaded only on devices that are not mac-like
+- Keyboard events in media lightbox
 - Messages that are purely 1-3 emojis, will be displayed without the bubble and with a bigger font size
 - Basic mobile style
 - Record and send voice message with Safari, Chrome, and Firefox support by including vorbis encoder
@@ -21,6 +22,7 @@
 - Search stickers both locally and from the Telegram API
 - Add support for contact media
 - Add support for rendering polls (Quiz, anonymous polls)
+- Sending vote on polls and quizes
 
 ## Changelog (Round 2)
 
