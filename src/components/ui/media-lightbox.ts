@@ -31,6 +31,7 @@ import Icon, { Icons } from "./icon";
 import IconButton from "./icon-button";
 import * as styles from "./media-lightbox.scss";
 import Progress from "./progress";
+import { throttle } from "../../utils/utils";
 
 const sortRef = ["x", "y", "m", "s"];
 
@@ -50,12 +51,16 @@ export class LightBox implements Component<Options> {
   private sender: HTMLElement;
   private footer: HTMLElement;
   private tg: TelegramClientProxy;
+  private container: HTMLElement;
   private closed = false;
 
   public mediaWrapper: HTMLElement;
 
   constructor({ tg }: Options) {
     this.tg = tg;
+
+    on(document.body, "click", this.handleContainerClick, true);
+    on(document, "keyup", this.handleKeyboard);
 
     this.sender = createElement("div");
     const buttons = createElement(
@@ -128,6 +133,9 @@ export class LightBox implements Component<Options> {
   }
 
   public close() {
+    off(document.body, "click", this.handleContainerClick, true);
+    off(document, "keyup", this.handleKeyboard);
+
     this.closed = true;
     startAnimation(
       { o: { from: 1, to: 0 } },
@@ -261,15 +269,14 @@ export class LightBox implements Component<Options> {
       this.prevButton
     );
 
-    return [
-      createElement(
-        "div",
-        { class: styles.mediaAbsoluteContainer },
-        mediaWrapper,
-        this.footer
-      ),
+    this.container = createElement(
+      "div",
+      { class: styles.mediaAbsoluteContainer },
       mediaWrapper,
-    ];
+      this.footer
+    );
+
+    return [this.container, mediaWrapper];
   }
 
   private updateButtons() {
@@ -335,6 +342,26 @@ export class LightBox implements Component<Options> {
       );
     }
   }
+
+  private handleContainerClick = (event: Event) => {
+    if (event.target === this.container) {
+      this.close();
+    }
+  };
+
+  private handleKeyboard = (event: KeyboardEvent) => {
+    if (event.keyCode === 27) {
+      this.close();
+    } else if (event.keyCode === 39) {
+      this.navigate(true);
+    } else if (event.keyCode === 37) {
+      this.navigate(false);
+    }
+  };
+
+  private navigate = throttle((next: boolean) => {
+    (next ? this.nextButton : this.prevButton).click();
+  }, 400);
 }
 
 function getSize(
