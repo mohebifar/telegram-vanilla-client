@@ -72,6 +72,19 @@ export const tlObjectsDefinitions: any[] = [
     ]
   ],
   [
+    0x75a3f765,
+    [
+      ["BindAuthKeyInner", 0x2f099171],
+      [
+        ["nonce", "long"],
+        ["tempAuthKeyId", "long"],
+        ["permAuthKeyId", "long"],
+        ["tempSessionId", "long"],
+        ["expiresAt", "int"]
+      ]
+    ]
+  ],
+  [
     0x79cb045d,
     [
       ["ServerDHParamsFail", 0xa6188d9e],
@@ -380,6 +393,7 @@ export const tlObjectsDefinitions: any[] = [
   [0x09333afb, [["TlsBlockZero", 0xf1163490], [["length", "int"]]]],
   [0x10e8636f, [["TlsBlockDomain", 0xf1163490], []]],
   [0xe675a1c1, [["TlsBlockGrease", 0xf1163490], [["seed", "int"]]]],
+  [0x9eb95b5c, [["TlsBlockPublicKey", 0xf1163490], []]],
   [0xe725d44f, [["TlsBlockScope", 0xf1163490], [["entries", "Vector<_>"]]]],
   [0x58e4a740, [["RpcDropAnswerRequest", 0x4bca7570], [["reqMsgId", "long"]]]],
   [0xb921bd04, [["GetFutureSaltsRequest", 0x1090f517], [["num", "int"]]]],
@@ -641,7 +655,20 @@ export const tlObjectsDefinitions: any[] = [
       ]
     ]
   ],
-  [0x06b3765b, [["InputMediaPoll", 0xfaf846f4], [["poll", "_"]]]],
+  [
+    0x0f94e5f1,
+    [
+      ["InputMediaPoll", 0xfaf846f4],
+      [
+        ["flags", "#FLAG"],
+        ["poll", "_"],
+        ["correctAnswers", "Flag0<Vector<bytes>>"],
+        ["solution", "Flag1<string>"],
+        ["solutionEntities", "Flag1<Vector<_>>"]
+      ]
+    ]
+  ],
+  [0xe66fbf7b, [["InputMediaDice", 0xfaf846f4], [["emoticon", "string"]]]],
   [0x1ca48f57, [["InputChatPhotoEmpty", 0xd4eb2d74], []]],
   [0x927c55b4, [["InputChatUploadedPhoto", 0xd4eb2d74], [["file", "_"]]]],
   [0x8953ad37, [["InputChatPhoto", 0xd4eb2d74], [["id", "_"]]]],
@@ -722,6 +749,20 @@ export const tlObjectsDefinitions: any[] = [
         ["accessHash", "long"],
         ["fileReference", "bytes"],
         ["thumbSize", "string"]
+      ]
+    ]
+  ],
+  [
+    0xd83466f3,
+    [
+      ["InputPhotoLegacyFileLocation", 0x1523d462],
+      [
+        ["id", "long"],
+        ["accessHash", "long"],
+        ["fileReference", "bytes"],
+        ["volumeId", "long"],
+        ["localId", "int"],
+        ["secret", "long"]
       ]
     ]
   ],
@@ -918,7 +959,7 @@ export const tlObjectsDefinitions: any[] = [
     ]
   ],
   [
-    0x2d895c74,
+    0xf0e6672a,
     [
       ["ChannelFull", 0xd49a2697],
       [
@@ -954,6 +995,7 @@ export const tlObjectsDefinitions: any[] = [
         ["location", "Flag15<_>"],
         ["slowmodeSeconds", "Flag17<int>"],
         ["slowmodeNextSendDate", "Flag18<int>"],
+        ["statsDc", "Flag12<int>"],
         ["pts", "int"]
       ]
     ]
@@ -1159,6 +1201,16 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["poll", "_"],
         ["results", "_"]
+      ]
+    ]
+  ],
+  [
+    0x3f7ee58b,
+    [
+      ["MessageMediaDice", 0x476cbe32],
+      [
+        ["value", "int"],
+        ["emoticon", "string"]
       ]
     ]
   ],
@@ -1490,6 +1542,18 @@ export const tlObjectsDefinitions: any[] = [
         ["accessHash", "long"],
         ["slug", "string"],
         ["document", "_"],
+        ["settings", "Flag2<_>"]
+      ]
+    ]
+  ],
+  [
+    0x8af40b25,
+    [
+      ["WallPaperNoFile", 0x96a2c98b],
+      [
+        ["flags", "#FLAG"],
+        ["default", "Flag1<true>"],
+        ["dark", "Flag4<true>"],
         ["settings", "Flag2<_>"]
       ]
     ]
@@ -2390,6 +2454,54 @@ export const tlObjectsDefinitions: any[] = [
   ],
   [0x8216fba3, [["UpdateTheme", 0x9f89304e], [["theme", "_"]]]],
   [
+    0x871fb939,
+    [
+      ["UpdateGeoLiveViewed", 0x9f89304e],
+      [
+        ["peer", "_"],
+        ["msgId", "int"]
+      ]
+    ]
+  ],
+  [0x564fe691, [["UpdateLoginToken", 0x9f89304e], []]],
+  [
+    0x42f88f2c,
+    [
+      ["UpdateMessagePollVote", 0x9f89304e],
+      [
+        ["pollId", "long"],
+        ["userId", "int"],
+        ["options", "Vector<bytes>"]
+      ]
+    ]
+  ],
+  [
+    0x26ffde7d,
+    [
+      ["UpdateDialogFilter", 0x9f89304e],
+      [
+        ["flags", "#FLAG"],
+        ["id", "int"],
+        ["filter", "Flag0<_>"]
+      ]
+    ]
+  ],
+  [
+    0xa5d72105,
+    [["UpdateDialogFilterOrder", 0x9f89304e], [["order", "Vector<int>"]]]
+  ],
+  [0x3504914f, [["UpdateDialogFilters", 0x9f89304e], []]],
+  [
+    0x2661bf09,
+    [
+      ["UpdatePhoneCallSignalingData", 0x9f89304e],
+      [
+        ["phoneCallId", "long"],
+        ["data", "bytes"]
+      ]
+    ]
+  ],
+  [
     0xa56c2a3e,
     [
       ["updates_State", 0x23df1a01],
@@ -2875,7 +2987,7 @@ export const tlObjectsDefinitions: any[] = [
   ],
   [0x36f8c871, [["DocumentEmpty", 0x211fe820], [["id", "long"]]]],
   [
-    0x9ba29cc1,
+    0x1e87342b,
     [
       ["Document", 0x211fe820],
       [
@@ -2887,6 +2999,7 @@ export const tlObjectsDefinitions: any[] = [
         ["mimeType", "string"],
         ["size", "int"],
         ["thumbs", "Flag0<Vector<_>>"],
+        ["videoThumbs", "Flag1<Vector<_>>"],
         ["dcId", "int"],
         ["attributes", "Vector<_>"]
       ]
@@ -3137,7 +3250,7 @@ export const tlObjectsDefinitions: any[] = [
     ]
   ],
   [
-    0xfa64e172,
+    0xe89c45b2,
     [
       ["WebPage", 0x55a97481],
       [
@@ -3158,12 +3271,21 @@ export const tlObjectsDefinitions: any[] = [
         ["duration", "Flag7<int>"],
         ["author", "Flag8<string>"],
         ["document", "Flag9<_>"],
-        ["documents", "Flag11<Vector<_>>"],
-        ["cachedPage", "Flag10<_>"]
+        ["cachedPage", "Flag10<_>"],
+        ["attributes", "Flag12<Vector<_>>"]
       ]
     ]
   ],
-  [0x85849473, [["WebPageNotModified", 0x55a97481], []]],
+  [
+    0x7311ca11,
+    [
+      ["WebPageNotModified", 0x55a97481],
+      [
+        ["flags", "#FLAG"],
+        ["cachedPageViews", "Flag0<int>"]
+      ]
+    ]
+  ],
   [
     0xad01d61d,
     [
@@ -3287,6 +3409,7 @@ export const tlObjectsDefinitions: any[] = [
     [["InputStickerSetShortName", 0x3da389aa], [["shortName", "string"]]]
   ],
   [0x028703c8, [["InputStickerSetAnimatedEmoji", 0x3da389aa], []]],
+  [0xe67f520e, [["InputStickerSetDice", 0x3da389aa], [["emoticon", "string"]]]],
   [
     0xeeb46f27,
     [
@@ -3408,6 +3531,17 @@ export const tlObjectsDefinitions: any[] = [
         ["fwdText", "Flag1<string>"],
         ["url", "string"],
         ["bot", "_"]
+      ]
+    ]
+  ],
+  [
+    0xbbc7515d,
+    [
+      ["KeyboardButtonRequestPoll", 0xbad74a3],
+      [
+        ["flags", "#FLAG"],
+        ["quiz", "Flag0<Bool>"],
+        ["text", "string"]
       ]
     ]
   ],
@@ -3625,6 +3759,16 @@ export const tlObjectsDefinitions: any[] = [
     0x020df5d0,
     [
       ["MessageEntityBlockquote", 0xcf6419dc],
+      [
+        ["offset", "int"],
+        ["length", "int"]
+      ]
+    ]
+  ],
+  [
+    0x761e6af4,
+    [
+      ["MessageEntityBankCard", 0xcf6419dc],
       [
         ["offset", "int"],
         ["length", "int"]
@@ -4143,7 +4287,7 @@ export const tlObjectsDefinitions: any[] = [
     ]
   ],
   [
-    0xec338270,
+    0x353a686b,
     [
       ["MessageFwdHeader", 0x7a286804],
       [
@@ -4155,7 +4299,8 @@ export const tlObjectsDefinitions: any[] = [
         ["channelPost", "Flag2<int>"],
         ["postAuthor", "Flag3<string>"],
         ["savedFromPeer", "Flag4<_>"],
-        ["savedFromMsgId", "Flag4<int>"]
+        ["savedFromMsgId", "Flag4<int>"],
+        ["psaType", "Flag6<string>"]
       ]
     ]
   ],
@@ -4294,13 +4439,17 @@ export const tlObjectsDefinitions: any[] = [
       ]
     ]
   ],
-  [0x04ede3cf, [["messages_FeaturedStickersNotModified", 0x2614b722], []]],
   [
-    0xf89d88e5,
+    0xc6dc0c66,
+    [["messages_FeaturedStickersNotModified", 0x2614b722], [["count", "int"]]]
+  ],
+  [
+    0xb6abc341,
     [
       ["messages_FeaturedStickers", 0x2614b722],
       [
         ["hash", "int"],
+        ["count", "int"],
         ["sets", "Vector<_>"],
         ["unread", "Vector<long>"]
       ]
@@ -5084,7 +5233,7 @@ export const tlObjectsDefinitions: any[] = [
     ]
   ],
   [
-    0xa2bb35cb,
+    0xfc878fc8,
     [
       ["PhoneCallProtocol", 0x783991a3],
       [
@@ -5092,7 +5241,8 @@ export const tlObjectsDefinitions: any[] = [
         ["udpP2p", "Flag0<true>"],
         ["udpReflector", "Flag1<true>"],
         ["minLayer", "int"],
-        ["maxLayer", "int"]
+        ["maxLayer", "int"],
+        ["libraryVersions", "Vector<string>"]
       ]
     ]
   ],
@@ -5545,19 +5695,6 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["address", "string"],
         ["port", "int"]
-      ]
-    ]
-  ],
-  [0xe09e1fb8, [["help_ProxyDataEmpty", 0x21e2a448], [["expires", "int"]]]],
-  [
-    0x2bf7ee23,
-    [
-      ["help_ProxyDataPromo", 0x21e2a448],
-      [
-        ["expires", "int"],
-        ["peer", "_"],
-        ["chats", "Vector<_>"],
-        ["users", "Vector<_>"]
       ]
     ]
   ],
@@ -6020,7 +6157,7 @@ export const tlObjectsDefinitions: any[] = [
     ]
   ],
   [
-    0xae891bec,
+    0x98657f0d,
     [
       ["Page", 0xb438191e],
       [
@@ -6031,7 +6168,8 @@ export const tlObjectsDefinitions: any[] = [
         ["url", "string"],
         ["blocks", "Vector<_>"],
         ["photos", "Vector<_>"],
-        ["documents", "Vector<_>"]
+        ["documents", "Vector<_>"],
+        ["views", "Flag3<int>"]
       ]
     ]
   ],
@@ -6060,15 +6198,20 @@ export const tlObjectsDefinitions: any[] = [
     ]
   ],
   [
-    0xd5529d06,
+    0x86e18161,
     [
       ["Poll", 0x248e557b],
       [
         ["id", "long"],
         ["flags", "#FLAG"],
         ["closed", "Flag0<true>"],
+        ["publicVoters", "Flag1<true>"],
+        ["multipleChoice", "Flag2<true>"],
+        ["quiz", "Flag3<true>"],
         ["question", "string"],
-        ["answers", "Vector<_>"]
+        ["answers", "Vector<_>"],
+        ["closePeriod", "Flag4<int>"],
+        ["closeDate", "Flag5<int>"]
       ]
     ]
   ],
@@ -6079,20 +6222,24 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["flags", "#FLAG"],
         ["chosen", "Flag0<true>"],
+        ["correct", "Flag1<true>"],
         ["option", "bytes"],
         ["voters", "int"]
       ]
     ]
   ],
   [
-    0x5755785a,
+    0xbadcc1a3,
     [
       ["PollResults", 0xc3b4f687],
       [
         ["flags", "#FLAG"],
         ["min", "Flag0<true>"],
         ["results", "Flag1<Vector<_>>"],
-        ["totalVoters", "Flag2<int>"]
+        ["totalVoters", "Flag2<int>"],
+        ["recentVoters", "Flag3<Vector<int>>"],
+        ["solution", "Flag4<string>"],
+        ["solutionEntities", "Flag4<Vector<_>>"]
       ]
     ]
   ],
@@ -6148,6 +6295,7 @@ export const tlObjectsDefinitions: any[] = [
     ]
   ],
   [0x72091c80, [["InputWallPaperSlug", 0xee77201a], [["slug", "string"]]]],
+  [0x8427bbac, [["InputWallPaperNoFile", 0xee77201a], []]],
   [0x1c199183, [["account_WallPapersNotModified", 0xa2c548fd], []]],
   [
     0x702b65a9,
@@ -6172,7 +6320,7 @@ export const tlObjectsDefinitions: any[] = [
     ]
   ],
   [
-    0xa12f40b8,
+    0x05086cf8,
     [
       ["WallPaperSettings", 0x4175e312],
       [
@@ -6180,12 +6328,14 @@ export const tlObjectsDefinitions: any[] = [
         ["blur", "Flag1<true>"],
         ["motion", "Flag2<true>"],
         ["backgroundColor", "Flag0<int>"],
-        ["intensity", "Flag3<int>"]
+        ["secondBackgroundColor", "Flag4<int>"],
+        ["intensity", "Flag3<int>"],
+        ["rotation", "Flag4<int>"]
       ]
     ]
   ],
   [
-    0xd246fd47,
+    0xe04232f3,
     [
       ["AutoDownloadSettings", 0x512819c7],
       [
@@ -6196,7 +6346,8 @@ export const tlObjectsDefinitions: any[] = [
         ["phonecallsLessData", "Flag3<true>"],
         ["photoSizeMax", "int"],
         ["videoSizeMax", "int"],
-        ["fileSizeMax", "int"]
+        ["fileSizeMax", "int"],
+        ["videoUploadMaxbitrate", "int"]
       ]
     ]
   ],
@@ -6338,6 +6489,7 @@ export const tlObjectsDefinitions: any[] = [
       ]
     ]
   ],
+  [0xf8ec284b, [["PeerSelfLocated", 0xfada34ac], [["expires", "int"]]]],
   [
     0xd072acb4,
     [
@@ -6360,9 +6512,8 @@ export const tlObjectsDefinitions: any[] = [
     ]
   ],
   [0xf5890df1, [["InputThemeSlug", 0x7a100f0], [["slug", "string"]]]],
-  [0x483d270c, [["ThemeDocumentNotModified", 0x56b4c80c], []]],
   [
-    0xf7d90ce0,
+    0x028f1114,
     [
       ["Theme", 0x56b4c80c],
       [
@@ -6374,6 +6525,7 @@ export const tlObjectsDefinitions: any[] = [
         ["slug", "string"],
         ["title", "string"],
         ["document", "Flag2<_>"],
+        ["settings", "Flag3<_>"],
         ["installsCount", "int"]
       ]
     ]
@@ -6386,6 +6538,302 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["hash", "int"],
         ["themes", "Vector<_>"]
+      ]
+    ]
+  ],
+  [
+    0x629f1980,
+    [
+      ["auth_LoginToken", 0x6b55f636],
+      [
+        ["expires", "int"],
+        ["token", "bytes"]
+      ]
+    ]
+  ],
+  [
+    0x068e9916,
+    [
+      ["auth_LoginTokenMigrateTo", 0x6b55f636],
+      [
+        ["dcId", "int"],
+        ["token", "bytes"]
+      ]
+    ]
+  ],
+  [
+    0x390d5c5e,
+    [["auth_LoginTokenSuccess", 0x6b55f636], [["authorization", "_"]]]
+  ],
+  [
+    0x57e28221,
+    [
+      ["account_ContentSettings", 0xae3ff891],
+      [
+        ["flags", "#FLAG"],
+        ["sensitiveEnabled", "Flag0<true>"],
+        ["sensitiveCanChange", "Flag1<true>"]
+      ]
+    ]
+  ],
+  [
+    0xa927fec5,
+    [
+      ["messages_InactiveChats", 0x8bf3d7d4],
+      [
+        ["dates", "Vector<int>"],
+        ["chats", "Vector<_>"],
+        ["users", "Vector<_>"]
+      ]
+    ]
+  ],
+  [0xc3a12462, [["BaseThemeClassic", 0x1f03f444], []]],
+  [0xfbd81688, [["BaseThemeDay", 0x1f03f444], []]],
+  [0xb7b31ea8, [["BaseThemeNight", 0x1f03f444], []]],
+  [0x6d5f77ee, [["BaseThemeTinted", 0x1f03f444], []]],
+  [0x5b11125a, [["BaseThemeArctic", 0x1f03f444], []]],
+  [
+    0xbd507cd1,
+    [
+      ["InputThemeSettings", 0x8338c882],
+      [
+        ["flags", "#FLAG"],
+        ["baseTheme", "_"],
+        ["accentColor", "int"],
+        ["messageTopColor", "Flag0<int>"],
+        ["messageBottomColor", "Flag0<int>"],
+        ["wallpaper", "Flag1<_>"],
+        ["wallpaperSettings", "Flag1<_>"]
+      ]
+    ]
+  ],
+  [
+    0x9c14984a,
+    [
+      ["ThemeSettings", 0x82666d38],
+      [
+        ["flags", "#FLAG"],
+        ["baseTheme", "_"],
+        ["accentColor", "int"],
+        ["messageTopColor", "Flag0<int>"],
+        ["messageBottomColor", "Flag0<int>"],
+        ["wallpaper", "Flag1<_>"]
+      ]
+    ]
+  ],
+  [
+    0x54b56617,
+    [
+      ["WebPageAttributeTheme", 0xafcfe9c7],
+      [
+        ["flags", "#FLAG"],
+        ["documents", "Flag0<Vector<_>>"],
+        ["settings", "Flag1<_>"]
+      ]
+    ]
+  ],
+  [
+    0xa28e5559,
+    [
+      ["MessageUserVote", 0xc92cd592],
+      [
+        ["userId", "int"],
+        ["option", "bytes"],
+        ["date", "int"]
+      ]
+    ]
+  ],
+  [
+    0x36377430,
+    [
+      ["MessageUserVoteInputOption", 0xc92cd592],
+      [
+        ["userId", "int"],
+        ["date", "int"]
+      ]
+    ]
+  ],
+  [
+    0x0e8fe0de,
+    [
+      ["MessageUserVoteMultiple", 0xc92cd592],
+      [
+        ["userId", "int"],
+        ["options", "Vector<bytes>"],
+        ["date", "int"]
+      ]
+    ]
+  ],
+  [
+    0x0823f649,
+    [
+      ["messages_VotesList", 0xc2199885],
+      [
+        ["flags", "#FLAG"],
+        ["count", "int"],
+        ["votes", "Vector<_>"],
+        ["users", "Vector<_>"],
+        ["nextOffset", "Flag0<string>"]
+      ]
+    ]
+  ],
+  [
+    0xf568028a,
+    [
+      ["BankCardOpenUrl", 0xf2e2460e],
+      [
+        ["url", "string"],
+        ["name", "string"]
+      ]
+    ]
+  ],
+  [
+    0x3e24e573,
+    [
+      ["payments_BankCardData", 0x8c6dd68b],
+      [
+        ["title", "string"],
+        ["openUrls", "Vector<_>"]
+      ]
+    ]
+  ],
+  [
+    0x7438f7e8,
+    [
+      ["DialogFilter", 0x692bc457],
+      [
+        ["flags", "#FLAG"],
+        ["contacts", "Flag0<true>"],
+        ["nonContacts", "Flag1<true>"],
+        ["groups", "Flag2<true>"],
+        ["broadcasts", "Flag3<true>"],
+        ["bots", "Flag4<true>"],
+        ["excludeMuted", "Flag11<true>"],
+        ["excludeRead", "Flag12<true>"],
+        ["excludeArchived", "Flag13<true>"],
+        ["id", "int"],
+        ["title", "string"],
+        ["emoticon", "Flag25<string>"],
+        ["pinnedPeers", "Vector<_>"],
+        ["includePeers", "Vector<_>"],
+        ["excludePeers", "Vector<_>"]
+      ]
+    ]
+  ],
+  [
+    0x77744d4a,
+    [
+      ["DialogFilterSuggested", 0x31ede086],
+      [
+        ["filter", "_"],
+        ["description", "string"]
+      ]
+    ]
+  ],
+  [
+    0xb637edaf,
+    [
+      ["StatsDateRangeDays", 0x81236245],
+      [
+        ["minDate", "int"],
+        ["maxDate", "int"]
+      ]
+    ]
+  ],
+  [
+    0xcb43acde,
+    [
+      ["StatsAbsValueAndPrev", 0x3ebe59af],
+      [
+        ["current", "double"],
+        ["previous", "double"]
+      ]
+    ]
+  ],
+  [
+    0xcbce2fe0,
+    [
+      ["StatsPercentValue", 0x9702c51e],
+      [
+        ["part", "double"],
+        ["total", "double"]
+      ]
+    ]
+  ],
+  [0x4a27eb2d, [["StatsGraphAsync", 0x9b903153], [["token", "string"]]]],
+  [0xbedc9822, [["StatsGraphError", 0x9b903153], [["error", "string"]]]],
+  [
+    0x8ea464b6,
+    [
+      ["StatsGraph", 0x9b903153],
+      [
+        ["flags", "#FLAG"],
+        ["json", "_"],
+        ["zoomToken", "Flag0<string>"]
+      ]
+    ]
+  ],
+  [
+    0xad4fc9bd,
+    [
+      ["MessageInteractionCounters", 0x2638b720],
+      [
+        ["msgId", "int"],
+        ["views", "int"],
+        ["forwards", "int"]
+      ]
+    ]
+  ],
+  [
+    0xbdf78394,
+    [
+      ["stats_BroadcastStats", 0x7ff25428],
+      [
+        ["period", "_"],
+        ["followers", "_"],
+        ["viewsPerPost", "_"],
+        ["sharesPerPost", "_"],
+        ["enabledNotifications", "_"],
+        ["growthGraph", "_"],
+        ["followersGraph", "_"],
+        ["muteGraph", "_"],
+        ["topHoursGraph", "_"],
+        ["interactionsGraph", "_"],
+        ["ivInteractionsGraph", "_"],
+        ["viewsBySourceGraph", "_"],
+        ["newFollowersBySourceGraph", "_"],
+        ["languagesGraph", "_"],
+        ["recentMessageInteractions", "Vector<_>"]
+      ]
+    ]
+  ],
+  [0x98f6ac75, [["help_PromoDataEmpty", 0x9d595542], [["expires", "int"]]]],
+  [
+    0x8c39793f,
+    [
+      ["help_PromoData", 0x9d595542],
+      [
+        ["flags", "#FLAG"],
+        ["proxy", "Flag0<true>"],
+        ["expires", "int"],
+        ["peer", "_"],
+        ["chats", "Vector<_>"],
+        ["users", "Vector<_>"],
+        ["psaType", "Flag1<string>"],
+        ["psaMessage", "Flag2<string>"]
+      ]
+    ]
+  ],
+  [
+    0x435bb987,
+    [
+      ["VideoSize", 0x62f1d509],
+      [
+        ["type", "string"],
+        ["location", "_"],
+        ["w", "int"],
+        ["h", "int"],
+        ["size", "int"]
       ]
     ]
   ],
@@ -6410,7 +6858,7 @@ export const tlObjectsDefinitions: any[] = [
     ]
   ],
   [
-    0x785188b8,
+    0xc1cd5ea9,
     [
       ["InitConnectionRequest", 0xb7b2364b],
       [
@@ -6423,6 +6871,7 @@ export const tlObjectsDefinitions: any[] = [
         ["langPack", "string"],
         ["langCode", "string"],
         ["proxy", "Flag0<_>"],
+        ["params", "Flag1<_>"],
         ["query", "_"]
       ]
     ]
@@ -6568,6 +7017,25 @@ export const tlObjectsDefinitions: any[] = [
       ["auth_DropTempAuthKeysRequest", 0xf5b399ac],
       [["exceptAuthKeys", "Vector<long>"]]
     ]
+  ],
+  [
+    0xb1b41517,
+    [
+      ["auth_ExportLoginTokenRequest", 0x6b55f636],
+      [
+        ["apiId", "int"],
+        ["apiHash", "string"],
+        ["exceptIds", "Vector<int>"]
+      ]
+    ]
+  ],
+  [
+    0x95ac5ce4,
+    [["auth_ImportLoginTokenRequest", 0x6b55f636], [["token", "bytes"]]]
+  ],
+  [
+    0xe894ad4d,
+    [["auth_AcceptLoginTokenRequest", 0xc913c01a], [["token", "bytes"]]]
   ],
   [
     0x68976c6f,
@@ -6942,18 +7410,20 @@ export const tlObjectsDefinitions: any[] = [
     ]
   ],
   [
-    0x2b7ffd7f,
+    0x8432c21f,
     [
       ["account_CreateThemeRequest", 0x56b4c80c],
       [
+        ["flags", "#FLAG"],
         ["slug", "string"],
         ["title", "string"],
-        ["document", "_"]
+        ["document", "Flag2<_>"],
+        ["settings", "Flag3<_>"]
       ]
     ]
   ],
   [
-    0x3b8ea202,
+    0x5cb367d5,
     [
       ["account_UpdateThemeRequest", 0x56b4c80c],
       [
@@ -6962,7 +7432,8 @@ export const tlObjectsDefinitions: any[] = [
         ["theme", "_"],
         ["slug", "Flag0<string>"],
         ["title", "Flag1<string>"],
-        ["document", "Flag2<_>"]
+        ["document", "Flag2<_>"],
+        ["settings", "Flag3<_>"]
       ]
     ]
   ],
@@ -7007,6 +7478,24 @@ export const tlObjectsDefinitions: any[] = [
         ["format", "string"],
         ["hash", "int"]
       ]
+    ]
+  ],
+  [
+    0xb574b16b,
+    [
+      ["account_SetContentSettingsRequest", 0xf5b399ac],
+      [
+        ["flags", "#FLAG"],
+        ["sensitiveEnabled", "Flag0<true>"]
+      ]
+    ]
+  ],
+  [0x8b9b4dae, [["account_GetContentSettingsRequest", 0xae3ff891], []]],
+  [
+    0x65ad71dc,
+    [
+      ["account_GetMultiWallPapersRequest", 0x8ec35283],
+      [["wallpapers", "Vector<_>"]]
     ]
   ],
   [0x0d91a548, [["users_GetUsersRequest", 0x406da4d], [["id", "Vector<_>"]]]],
@@ -7126,8 +7615,16 @@ export const tlObjectsDefinitions: any[] = [
   ],
   [0xf831a20f, [["contacts_AcceptContactRequest", 0x8af52aac], [["id", "_"]]]],
   [
-    0x0a356056,
-    [["contacts_GetLocatedRequest", 0x8af52aac], [["geoPoint", "_"]]]
+    0xd348bc44,
+    [
+      ["contacts_GetLocatedRequest", 0x8af52aac],
+      [
+        ["flags", "#FLAG"],
+        ["background", "Flag1<true>"],
+        ["geoPoint", "_"],
+        ["selfExpires", "Flag0<int>"]
+      ]
+    ]
   ],
   [
     0x63c66506,
@@ -8238,6 +8735,64 @@ export const tlObjectsDefinitions: any[] = [
       ]
     ]
   ],
+  [
+    0xb86e380e,
+    [
+      ["messages_GetPollVotesRequest", 0xc2199885],
+      [
+        ["flags", "#FLAG"],
+        ["peer", "_"],
+        ["id", "int"],
+        ["option", "Flag0<bytes>"],
+        ["offset", "Flag1<string>"],
+        ["limit", "int"]
+      ]
+    ]
+  ],
+  [
+    0xb5052fea,
+    [
+      ["messages_ToggleStickerSetsRequest", 0xf5b399ac],
+      [
+        ["flags", "#FLAG"],
+        ["uninstall", "Flag0<true>"],
+        ["archive", "Flag1<true>"],
+        ["unarchive", "Flag2<true>"],
+        ["stickersets", "Vector<_>"]
+      ]
+    ]
+  ],
+  [0xf19ed96d, [["messages_GetDialogFiltersRequest", 0x601ce94d], []]],
+  [0xa29cd42c, [["messages_GetSuggestedDialogFiltersRequest", 0x7b296c39], []]],
+  [
+    0x1ad4a04a,
+    [
+      ["messages_UpdateDialogFilterRequest", 0xf5b399ac],
+      [
+        ["flags", "#FLAG"],
+        ["id", "int"],
+        ["filter", "Flag0<_>"]
+      ]
+    ]
+  ],
+  [
+    0xc563c1e4,
+    [
+      ["messages_UpdateDialogFiltersOrderRequest", 0xf5b399ac],
+      [["order", "Vector<int>"]]
+    ]
+  ],
+  [
+    0x5fe7025b,
+    [
+      ["messages_GetOldFeaturedStickersRequest", 0x2614b722],
+      [
+        ["offset", "int"],
+        ["limit", "int"],
+        ["hash", "int"]
+      ]
+    ]
+  ],
   [0xedd4882a, [["updates_GetStateRequest", 0x23df1a01], []]],
   [
     0x25939651,
@@ -8308,6 +8863,7 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["flags", "#FLAG"],
         ["precise", "Flag0<true>"],
+        ["cdnSupported", "Flag1<true>"],
         ["location", "_"],
         ["offset", "int"],
         ["limit", "int"]
@@ -8408,7 +8964,6 @@ export const tlObjectsDefinitions: any[] = [
     0x3dc0f114,
     [["help_GetRecentMeUrlsRequest", 0xf269c477], [["referer", "string"]]]
   ],
-  [0x3d7758e1, [["help_GetProxyDataRequest", 0x21e2a448], []]],
   [0x2ca51fd1, [["help_GetTermsOfServiceUpdateRequest", 0x293c2977], []]],
   [
     0xee72f79a,
@@ -8440,6 +8995,8 @@ export const tlObjectsDefinitions: any[] = [
       ]
     ]
   ],
+  [0xc0977421, [["help_GetPromoDataRequest", 0x9d595542], []]],
+  [0x1e251c95, [["help_HidePromoDataRequest", 0xf5b399ac], [["peer", "_"]]]],
   [
     0xcc104937,
     [
@@ -8757,6 +9314,7 @@ export const tlObjectsDefinitions: any[] = [
       ]
     ]
   ],
+  [0x11e831ee, [["channels_GetInactiveChannelsRequest", 0x8bf3d7d4], []]],
   [
     0xaa2769ed,
     [
@@ -8776,6 +9334,10 @@ export const tlObjectsDefinitions: any[] = [
         ["data", "_"]
       ]
     ]
+  ],
+  [
+    0x805d46f6,
+    [["bots_SetBotCommandsRequest", 0xf5b399ac], [["commands", "Vector<_>"]]]
   ],
   [
     0x99f09745,
@@ -8823,15 +9385,21 @@ export const tlObjectsDefinitions: any[] = [
     ]
   ],
   [
-    0x9bd86e6a,
+    0x2e79d779,
+    [["payments_GetBankCardDataRequest", 0x8c6dd68b], [["number", "string"]]]
+  ],
+  [
+    0xf1036780,
     [
       ["stickers_CreateStickerSetRequest", 0x9b704a5a],
       [
         ["flags", "#FLAG"],
         ["masks", "Flag0<true>"],
+        ["animated", "Flag1<true>"],
         ["userId", "_"],
         ["title", "string"],
         ["shortName", "string"],
+        ["thumb", "Flag2<_>"],
         ["stickers", "Vector<_>"]
       ]
     ]
@@ -8857,6 +9425,16 @@ export const tlObjectsDefinitions: any[] = [
       [
         ["stickerset", "_"],
         ["sticker", "_"]
+      ]
+    ]
+  ],
+  [
+    0x9a364e30,
+    [
+      ["stickers_SetStickerSetThumbRequest", 0x9b704a5a],
+      [
+        ["stickerset", "_"],
+        ["thumb", "_"]
       ]
     ]
   ],
@@ -8937,6 +9515,16 @@ export const tlObjectsDefinitions: any[] = [
     ]
   ],
   [
+    0xff7a9383,
+    [
+      ["phone_SendSignalingDataRequest", 0xf5b399ac],
+      [
+        ["peer", "_"],
+        ["data", "bytes"]
+      ]
+    ]
+  ],
+  [
     0xf2f2330a,
     [
       ["langpack_GetLangPackRequest", 0x52662d55],
@@ -8992,5 +9580,27 @@ export const tlObjectsDefinitions: any[] = [
   [
     0x1c295881,
     [["folders_DeleteFolderRequest", 0x8af52aac], [["folderId", "int"]]]
+  ],
+  [
+    0xab42441a,
+    [
+      ["stats_GetBroadcastStatsRequest", 0x7ff25428],
+      [
+        ["flags", "#FLAG"],
+        ["dark", "Flag0<true>"],
+        ["channel", "_"]
+      ]
+    ]
+  ],
+  [
+    0x621d5fa0,
+    [
+      ["stats_LoadAsyncGraphRequest", 0x9b903153],
+      [
+        ["flags", "#FLAG"],
+        ["token", "string"],
+        ["x", "Flag0<long>"]
+      ]
+    ]
   ]
 ];

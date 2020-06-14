@@ -52,6 +52,15 @@ export interface PQInnerDataTempDc
   pq: Uint8Array;
 }
 
+export interface BindAuthKeyInner
+  extends TLObjectType<"BindAuthKeyInner", 0x75a3f765, 0x2f099171> {
+  expiresAt: number;
+  tempSessionId: string;
+  permAuthKeyId: string;
+  tempAuthKeyId: string;
+  nonce: string;
+}
+
 export interface ServerDHParamsFail
   extends TLObjectType<"ServerDHParamsFail", 0x79cb045d, 0xa6188d9e> {
   newNonceHash: string;
@@ -297,6 +306,7 @@ export interface TlsClientHello
     | TlsBlockZero
     | TlsBlockDomain
     | TlsBlockGrease
+    | TlsBlockPublicKey
     | TlsBlockScope
   )[];
 }
@@ -324,6 +334,9 @@ export interface TlsBlockGrease
   seed: number;
 }
 
+export interface TlsBlockPublicKey
+  extends TLObjectType<"TlsBlockPublicKey", 0x9eb95b5c, 0xf1163490> {}
+
 export interface TlsBlockScope
   extends TLObjectType<"TlsBlockScope", 0xe725d44f, 0xf1163490> {
   entries: (
@@ -332,6 +345,7 @@ export interface TlsBlockScope
     | TlsBlockZero
     | TlsBlockDomain
     | TlsBlockGrease
+    | TlsBlockPublicKey
     | TlsBlockScope
   )[];
 }
@@ -572,8 +586,36 @@ export interface InputMediaGeoLive
 }
 
 export interface InputMediaPoll
-  extends TLObjectType<"InputMediaPoll", 0x06b3765b, 0xfaf846f4> {
+  extends TLObjectType<"InputMediaPoll", 0x0f94e5f1, 0xfaf846f4> {
   poll: Poll;
+  correctAnswers?: Uint8Array[];
+  solution?: string;
+  solutionEntities?: (
+    | MessageEntityUnknown
+    | MessageEntityMention
+    | MessageEntityHashtag
+    | MessageEntityBotCommand
+    | MessageEntityUrl
+    | MessageEntityEmail
+    | MessageEntityBold
+    | MessageEntityItalic
+    | MessageEntityCode
+    | MessageEntityPre
+    | MessageEntityTextUrl
+    | MessageEntityMentionName
+    | InputMessageEntityMentionName
+    | MessageEntityPhone
+    | MessageEntityCashtag
+    | MessageEntityUnderline
+    | MessageEntityStrike
+    | MessageEntityBlockquote
+    | MessageEntityBankCard
+  )[];
+}
+
+export interface InputMediaDice
+  extends TLObjectType<"InputMediaDice", 0xe66fbf7b, 0xfaf846f4> {
+  emoticon: string;
 }
 
 export interface InputChatPhotoEmpty
@@ -647,6 +689,16 @@ export interface InputPhotoFileLocation
   id: string;
 }
 
+export interface InputPhotoLegacyFileLocation
+  extends TLObjectType<"InputPhotoLegacyFileLocation", 0xd83466f3, 0x1523d462> {
+  secret: string;
+  localId: number;
+  volumeId: string;
+  fileReference: Uint8Array;
+  accessHash: string;
+  id: string;
+}
+
 export interface InputPeerPhotoFileLocation
   extends TLObjectType<"InputPeerPhotoFileLocation", 0x27d69997, 0x1523d462> {
   localId: number;
@@ -670,7 +722,8 @@ export interface InputStickerSetThumb
     | InputStickerSetEmpty
     | InputStickerSetID
     | InputStickerSetShortName
-    | InputStickerSetAnimatedEmoji;
+    | InputStickerSetAnimatedEmoji
+    | InputStickerSetDice;
 }
 
 export interface PeerUser
@@ -877,7 +930,7 @@ export interface ChatFull
 }
 
 export interface ChannelFull
-  extends TLObjectType<"ChannelFull", 0x2d895c74, 0xd49a2697> {
+  extends TLObjectType<"ChannelFull", 0xf0e6672a, 0xd49a2697> {
   pts: number;
   botInfo: BotInfo[];
   exportedInvite:
@@ -913,6 +966,7 @@ export interface ChannelFull
   location?: ChannelLocationEmpty | ChannelLocation;
   slowmodeSeconds?: number;
   slowmodeNextSendDate?: number;
+  statsDc?: number;
 }
 
 export interface ChatParticipant
@@ -1000,6 +1054,7 @@ export interface Message
     | MessageMediaInvoice
     | MessageMediaGeoLive
     | MessageMediaPoll
+    | MessageMediaDice
     | messages_GetWebPagePreviewRequest
     | messages_UploadMediaRequest;
   replyMarkup?:
@@ -1026,6 +1081,7 @@ export interface Message
     | MessageEntityUnderline
     | MessageEntityStrike
     | MessageEntityBlockquote
+    | MessageEntityBankCard
   )[];
   views?: number;
   editDate?: number;
@@ -1157,6 +1213,12 @@ export interface MessageMediaPoll
   extends TLObjectType<"MessageMediaPoll", 0x4bd6e798, 0x476cbe32> {
   results: PollResults;
   poll: Poll;
+}
+
+export interface MessageMediaDice
+  extends TLObjectType<"MessageMediaDice", 0x3f7ee58b, 0x476cbe32> {
+  emoticon: string;
+  value: number;
 }
 
 export interface MessageActionEmpty
@@ -1496,6 +1558,13 @@ export interface WallPaper
   creator?: boolean;
   default?: boolean;
   pattern?: boolean;
+  dark?: boolean;
+  settings?: WallPaperSettings;
+}
+
+export interface WallPaperNoFile
+  extends TLObjectType<"WallPaperNoFile", 0x8af40b25, 0x96a2c98b> {
+  default?: boolean;
   dark?: boolean;
   settings?: WallPaperSettings;
 }
@@ -2012,6 +2081,7 @@ export interface UpdateServiceNotification
     | MessageEntityUnderline
     | MessageEntityStrike
     | MessageEntityBlockquote
+    | MessageEntityBankCard
   )[];
   media:
     | MessageMediaEmpty
@@ -2026,6 +2096,7 @@ export interface UpdateServiceNotification
     | MessageMediaInvoice
     | MessageMediaGeoLive
     | MessageMediaPoll
+    | MessageMediaDice
     | messages_GetWebPagePreviewRequest
     | messages_UploadMediaRequest;
   message: string;
@@ -2158,7 +2229,8 @@ export interface UpdateNewStickerSet
     | stickers_CreateStickerSetRequest
     | stickers_RemoveStickerFromSetRequest
     | stickers_ChangeStickerPositionRequest
-    | stickers_AddStickerToSetRequest;
+    | stickers_AddStickerToSetRequest
+    | stickers_SetStickerSetThumbRequest;
 }
 
 export interface UpdateStickerSetsOrder
@@ -2415,7 +2487,7 @@ export interface UpdatePeerSettings
 
 export interface UpdatePeerLocated
   extends TLObjectType<"UpdatePeerLocated", 0xb4afcfb0, 0x9f89304e> {
-  peers: PeerLocated[];
+  peers: (PeerLocated | PeerSelfLocated)[];
 }
 
 export interface UpdateNewScheduledMessage
@@ -2436,11 +2508,46 @@ export interface UpdateDeleteScheduledMessages
 export interface UpdateTheme
   extends TLObjectType<"UpdateTheme", 0x8216fba3, 0x9f89304e> {
   theme:
-    | ThemeDocumentNotModified
     | Theme
     | account_CreateThemeRequest
     | account_UpdateThemeRequest
     | account_GetThemeRequest;
+}
+
+export interface UpdateGeoLiveViewed
+  extends TLObjectType<"UpdateGeoLiveViewed", 0x871fb939, 0x9f89304e> {
+  msgId: number;
+  peer: PeerUser | PeerChat | PeerChannel;
+}
+
+export interface UpdateLoginToken
+  extends TLObjectType<"UpdateLoginToken", 0x564fe691, 0x9f89304e> {}
+
+export interface UpdateMessagePollVote
+  extends TLObjectType<"UpdateMessagePollVote", 0x42f88f2c, 0x9f89304e> {
+  options: Uint8Array[];
+  userId: number;
+  pollId: string;
+}
+
+export interface UpdateDialogFilter
+  extends TLObjectType<"UpdateDialogFilter", 0x26ffde7d, 0x9f89304e> {
+  id: number;
+  filter?: DialogFilter;
+}
+
+export interface UpdateDialogFilterOrder
+  extends TLObjectType<"UpdateDialogFilterOrder", 0xa5d72105, 0x9f89304e> {
+  order: number[];
+}
+
+export interface UpdateDialogFilters
+  extends TLObjectType<"UpdateDialogFilters", 0x3504914f, 0x9f89304e> {}
+
+export interface UpdatePhoneCallSignalingData
+  extends TLObjectType<"UpdatePhoneCallSignalingData", 0x2661bf09, 0x9f89304e> {
+  data: Uint8Array;
+  phoneCallId: string;
 }
 
 export interface updates_State
@@ -2544,6 +2651,13 @@ export interface updates_Difference
     | UpdateNewScheduledMessage
     | UpdateDeleteScheduledMessages
     | UpdateTheme
+    | UpdateGeoLiveViewed
+    | UpdateLoginToken
+    | UpdateMessagePollVote
+    | UpdateDialogFilter
+    | UpdateDialogFilterOrder
+    | UpdateDialogFilters
+    | UpdatePhoneCallSignalingData
   )[];
   newEncryptedMessages: (EncryptedMessage | EncryptedMessageService)[];
   newMessages: (MessageEmpty | Message | MessageService)[];
@@ -2635,6 +2749,13 @@ export interface updates_DifferenceSlice
     | UpdateNewScheduledMessage
     | UpdateDeleteScheduledMessages
     | UpdateTheme
+    | UpdateGeoLiveViewed
+    | UpdateLoginToken
+    | UpdateMessagePollVote
+    | UpdateDialogFilter
+    | UpdateDialogFilterOrder
+    | UpdateDialogFilters
+    | UpdatePhoneCallSignalingData
   )[];
   newEncryptedMessages: (EncryptedMessage | EncryptedMessageService)[];
   newMessages: (MessageEmpty | Message | MessageService)[];
@@ -2682,6 +2803,7 @@ export interface UpdateShortMessage
     | MessageEntityUnderline
     | MessageEntityStrike
     | MessageEntityBlockquote
+    | MessageEntityBankCard
   )[];
 }
 
@@ -2720,6 +2842,7 @@ export interface UpdateShortChatMessage
     | MessageEntityUnderline
     | MessageEntityStrike
     | MessageEntityBlockquote
+    | MessageEntityBankCard
   )[];
 }
 
@@ -2800,7 +2923,14 @@ export interface UpdateShort
     | UpdatePeerLocated
     | UpdateNewScheduledMessage
     | UpdateDeleteScheduledMessages
-    | UpdateTheme;
+    | UpdateTheme
+    | UpdateGeoLiveViewed
+    | UpdateLoginToken
+    | UpdateMessagePollVote
+    | UpdateDialogFilter
+    | UpdateDialogFilterOrder
+    | UpdateDialogFilters
+    | UpdatePhoneCallSignalingData;
 }
 
 export interface UpdatesCombined
@@ -2891,6 +3021,13 @@ export interface UpdatesCombined
     | UpdateNewScheduledMessage
     | UpdateDeleteScheduledMessages
     | UpdateTheme
+    | UpdateGeoLiveViewed
+    | UpdateLoginToken
+    | UpdateMessagePollVote
+    | UpdateDialogFilter
+    | UpdateDialogFilterOrder
+    | UpdateDialogFilters
+    | UpdatePhoneCallSignalingData
   )[];
 }
 
@@ -2981,6 +3118,13 @@ export interface Updates
     | UpdateNewScheduledMessage
     | UpdateDeleteScheduledMessages
     | UpdateTheme
+    | UpdateGeoLiveViewed
+    | UpdateLoginToken
+    | UpdateMessagePollVote
+    | UpdateDialogFilter
+    | UpdateDialogFilterOrder
+    | UpdateDialogFilters
+    | UpdatePhoneCallSignalingData
   )[];
 }
 
@@ -3004,6 +3148,7 @@ export interface UpdateShortSentMessage
     | MessageMediaInvoice
     | MessageMediaGeoLive
     | MessageMediaPoll
+    | MessageMediaDice
     | messages_GetWebPagePreviewRequest
     | messages_UploadMediaRequest;
   entities?: (
@@ -3025,6 +3170,7 @@ export interface UpdateShortSentMessage
     | MessageEntityUnderline
     | MessageEntityStrike
     | MessageEntityBlockquote
+    | MessageEntityBankCard
   )[];
 }
 
@@ -3186,6 +3332,7 @@ export interface help_AppUpdate
     | MessageEntityUnderline
     | MessageEntityStrike
     | MessageEntityBlockquote
+    | MessageEntityBankCard
   )[];
   text: string;
   version: string;
@@ -3360,7 +3507,7 @@ export interface DocumentEmpty
 }
 
 export interface Document
-  extends TLObjectType<"Document", 0x9ba29cc1, 0x211fe820> {
+  extends TLObjectType<"Document", 0x1e87342b, 0x211fe820> {
   attributes: (
     | DocumentAttributeImageSize
     | DocumentAttributeAnimated
@@ -3378,6 +3525,7 @@ export interface Document
   accessHash: string;
   id: string;
   thumbs?: (PhotoSizeEmpty | PhotoSize | PhotoCachedSize | PhotoStrippedSize)[];
+  videoThumbs?: VideoSize[];
 }
 
 export interface help_Support
@@ -3686,7 +3834,8 @@ export interface DocumentAttributeSticker
     | InputStickerSetEmpty
     | InputStickerSetID
     | InputStickerSetShortName
-    | InputStickerSetAnimatedEmoji;
+    | InputStickerSetAnimatedEmoji
+    | InputStickerSetDice;
   alt: string;
   mask?: boolean;
   maskCoords?: MaskCoords;
@@ -3777,7 +3926,7 @@ export interface WebPagePending
 }
 
 export interface WebPage
-  extends TLObjectType<"WebPage", 0xfa64e172, 0x55a97481> {
+  extends TLObjectType<"WebPage", 0xe89c45b2, 0x55a97481> {
   hash: number;
   displayUrl: string;
   url: string;
@@ -3798,17 +3947,14 @@ export interface WebPage
     | Document
     | account_UploadThemeRequest
     | messages_GetDocumentByHashRequest;
-  documents?: (
-    | DocumentEmpty
-    | Document
-    | account_UploadThemeRequest
-    | messages_GetDocumentByHashRequest
-  )[];
   cachedPage?: Page;
+  attributes?: WebPageAttributeTheme[];
 }
 
 export interface WebPageNotModified
-  extends TLObjectType<"WebPageNotModified", 0x85849473, 0x55a97481> {}
+  extends TLObjectType<"WebPageNotModified", 0x7311ca11, 0x55a97481> {
+  cachedPageViews?: number;
+}
 
 export interface Authorization
   extends TLObjectType<"Authorization", 0xad01d61d, 0xc913c01a> {
@@ -3831,7 +3977,7 @@ export interface Authorization
 
 export interface account_Authorizations
   extends TLObjectType<"account_Authorizations", 0x1250abde, 0xbf5e0ff> {
-  authorizations: Authorization[];
+  authorizations: (Authorization | auth_AcceptLoginTokenRequest)[];
 }
 
 export interface account_Password
@@ -3935,6 +4081,11 @@ export interface InputStickerSetAnimatedEmoji
     0x028703c8,
     0x3da389aa
   > {}
+
+export interface InputStickerSetDice
+  extends TLObjectType<"InputStickerSetDice", 0xe67f520e, 0x3da389aa> {
+  emoticon: string;
+}
 
 export interface StickerSet
   extends TLObjectType<"StickerSet", 0xeeb46f27, 0xbad3ff91> {
@@ -4043,6 +4194,12 @@ export interface InputKeyboardButtonUrlAuth
   fwdText?: string;
 }
 
+export interface KeyboardButtonRequestPoll
+  extends TLObjectType<"KeyboardButtonRequestPoll", 0xbbc7515d, 0xbad74a3> {
+  text: string;
+  quiz?: boolean;
+}
+
 export interface KeyboardButtonRow
   extends TLObjectType<"KeyboardButtonRow", 0x77608b83, 0x847730ae> {
   buttons: (
@@ -4056,6 +4213,7 @@ export interface KeyboardButtonRow
     | KeyboardButtonBuy
     | KeyboardButtonUrlAuth
     | InputKeyboardButtonUrlAuth
+    | KeyboardButtonRequestPoll
   )[];
 }
 
@@ -4195,6 +4353,12 @@ export interface MessageEntityStrike
 
 export interface MessageEntityBlockquote
   extends TLObjectType<"MessageEntityBlockquote", 0x020df5d0, 0xcf6419dc> {
+  length: number;
+  offset: number;
+}
+
+export interface MessageEntityBankCard
+  extends TLObjectType<"MessageEntityBankCard", 0x761e6af4, 0xcf6419dc> {
   length: number;
   offset: number;
 }
@@ -4357,6 +4521,13 @@ export interface updates_ChannelDifference
     | UpdateNewScheduledMessage
     | UpdateDeleteScheduledMessages
     | UpdateTheme
+    | UpdateGeoLiveViewed
+    | UpdateLoginToken
+    | UpdateMessagePollVote
+    | UpdateDialogFilter
+    | UpdateDialogFilterOrder
+    | UpdateDialogFilters
+    | UpdatePhoneCallSignalingData
   )[];
   newMessages: (MessageEmpty | Message | MessageService)[];
   pts: number;
@@ -4506,6 +4677,7 @@ export interface help_TermsOfService
     | MessageEntityUnderline
     | MessageEntityStrike
     | MessageEntityBlockquote
+    | MessageEntityBankCard
   )[];
   text: string;
   id: DataJSON | bots_SendCustomRequestRequest | phone_GetCallConfigRequest;
@@ -4584,6 +4756,7 @@ export interface InputBotInlineMessageMediaAuto
     | MessageEntityUnderline
     | MessageEntityStrike
     | MessageEntityBlockquote
+    | MessageEntityBankCard
   )[];
   replyMarkup?:
     | ReplyKeyboardHide
@@ -4615,6 +4788,7 @@ export interface InputBotInlineMessageText
     | MessageEntityUnderline
     | MessageEntityStrike
     | MessageEntityBlockquote
+    | MessageEntityBankCard
   )[];
   replyMarkup?:
     | ReplyKeyboardHide
@@ -4766,6 +4940,7 @@ export interface BotInlineMessageMediaAuto
     | MessageEntityUnderline
     | MessageEntityStrike
     | MessageEntityBlockquote
+    | MessageEntityBankCard
   )[];
   replyMarkup?:
     | ReplyKeyboardHide
@@ -4797,6 +4972,7 @@ export interface BotInlineMessageText
     | MessageEntityUnderline
     | MessageEntityStrike
     | MessageEntityBlockquote
+    | MessageEntityBankCard
   )[];
   replyMarkup?:
     | ReplyKeyboardHide
@@ -4905,7 +5081,7 @@ export interface ExportedMessageLink
 }
 
 export interface MessageFwdHeader
-  extends TLObjectType<"MessageFwdHeader", 0xec338270, 0x7a286804> {
+  extends TLObjectType<"MessageFwdHeader", 0x353a686b, 0x7a286804> {
   date: number;
   fromId?: number;
   fromName?: string;
@@ -4914,6 +5090,7 @@ export interface MessageFwdHeader
   postAuthor?: string;
   savedFromPeer?: PeerUser | PeerChat | PeerChannel;
   savedFromMsgId?: number;
+  psaType?: string;
 }
 
 export interface auth_CodeTypeSms
@@ -5090,20 +5267,24 @@ export interface DraftMessage
     | MessageEntityUnderline
     | MessageEntityStrike
     | MessageEntityBlockquote
+    | MessageEntityBankCard
   )[];
 }
 
 export interface messages_FeaturedStickersNotModified
   extends TLObjectType<
     "messages_FeaturedStickersNotModified",
-    0x04ede3cf,
+    0xc6dc0c66,
     0x2614b722
-  > {}
+  > {
+  count: number;
+}
 
 export interface messages_FeaturedStickers
-  extends TLObjectType<"messages_FeaturedStickers", 0xf89d88e5, 0x2614b722> {
+  extends TLObjectType<"messages_FeaturedStickers", 0xb6abc341, 0x2614b722> {
   unread: string[];
   sets: (StickerSetCovered | StickerSetMultiCovered)[];
+  count: number;
   hash: number;
 }
 
@@ -6542,7 +6723,8 @@ export interface PhoneConnection
 }
 
 export interface PhoneCallProtocol
-  extends TLObjectType<"PhoneCallProtocol", 0xa2bb35cb, 0x783991a3> {
+  extends TLObjectType<"PhoneCallProtocol", 0xfc878fc8, 0x783991a3> {
+  libraryVersions: string[];
   maxLayer: number;
   minLayer: number;
   udpP2p?: boolean;
@@ -6801,12 +6983,14 @@ export interface ChannelAdminLogEventActionChangeStickerSet
     | InputStickerSetEmpty
     | InputStickerSetID
     | InputStickerSetShortName
-    | InputStickerSetAnimatedEmoji;
+    | InputStickerSetAnimatedEmoji
+    | InputStickerSetDice;
   prevStickerset:
     | InputStickerSetEmpty
     | InputStickerSetID
     | InputStickerSetShortName
-    | InputStickerSetAnimatedEmoji;
+    | InputStickerSetAnimatedEmoji
+    | InputStickerSetDice;
 }
 
 export interface ChannelAdminLogEventActionTogglePreHistoryHidden
@@ -7018,7 +7202,8 @@ export interface InputSingleMedia
     | InputMediaGame
     | InputMediaInvoice
     | InputMediaGeoLive
-    | InputMediaPoll;
+    | InputMediaPoll
+    | InputMediaDice;
   randomId?: string;
   entities?: (
     | MessageEntityUnknown
@@ -7039,6 +7224,7 @@ export interface InputSingleMedia
     | MessageEntityUnderline
     | MessageEntityStrike
     | MessageEntityBlockquote
+    | MessageEntityBankCard
   )[];
 }
 
@@ -7131,25 +7317,6 @@ export interface InputClientProxy
   extends TLObjectType<"InputClientProxy", 0x75588b3f, 0x91a4346> {
   port: number;
   address: string;
-}
-
-export interface help_ProxyDataEmpty
-  extends TLObjectType<"help_ProxyDataEmpty", 0xe09e1fb8, 0x21e2a448> {
-  expires: number;
-}
-
-export interface help_ProxyDataPromo
-  extends TLObjectType<"help_ProxyDataPromo", 0x2bf7ee23, 0x21e2a448> {
-  users: (
-    | UserEmpty
-    | User
-    | account_UpdateProfileRequest
-    | account_UpdateUsernameRequest
-    | account_ChangePhoneRequest
-  )[];
-  chats: (ChatEmpty | Chat | ChatForbidden | Channel | ChannelForbidden)[];
-  peer: PeerUser | PeerChat | PeerChannel;
-  expires: number;
 }
 
 export interface help_TermsOfServiceUpdateEmpty
@@ -7603,6 +7770,7 @@ export interface help_DeepLinkInfo
     | MessageEntityUnderline
     | MessageEntityStrike
     | MessageEntityBlockquote
+    | MessageEntityBankCard
   )[];
 }
 
@@ -7977,7 +8145,7 @@ export interface PageRelatedArticle
   publishedDate?: number;
 }
 
-export interface Page extends TLObjectType<"Page", 0xae891bec, 0xb438191e> {
+export interface Page extends TLObjectType<"Page", 0x98657f0d, 0xb438191e> {
   documents: (
     | DocumentEmpty
     | Document
@@ -8020,6 +8188,7 @@ export interface Page extends TLObjectType<"Page", 0xae891bec, 0xb438191e> {
   part?: boolean;
   rtl?: boolean;
   v2?: boolean;
+  views?: number;
 }
 
 export interface help_SupportName
@@ -8053,6 +8222,7 @@ export interface help_UserInfo
     | MessageEntityUnderline
     | MessageEntityStrike
     | MessageEntityBlockquote
+    | MessageEntityBankCard
   )[];
   message: string;
 }
@@ -8063,11 +8233,16 @@ export interface PollAnswer
   text: string;
 }
 
-export interface Poll extends TLObjectType<"Poll", 0xd5529d06, 0x248e557b> {
+export interface Poll extends TLObjectType<"Poll", 0x86e18161, 0x248e557b> {
   answers: PollAnswer[];
   question: string;
   id: string;
   closed?: boolean;
+  publicVoters?: boolean;
+  multipleChoice?: boolean;
+  quiz?: boolean;
+  closePeriod?: number;
+  closeDate?: number;
 }
 
 export interface PollAnswerVoters
@@ -8075,13 +8250,37 @@ export interface PollAnswerVoters
   voters: number;
   option: Uint8Array;
   chosen?: boolean;
+  correct?: boolean;
 }
 
 export interface PollResults
-  extends TLObjectType<"PollResults", 0x5755785a, 0xc3b4f687> {
+  extends TLObjectType<"PollResults", 0xbadcc1a3, 0xc3b4f687> {
   min?: boolean;
   results?: PollAnswerVoters[];
   totalVoters?: number;
+  recentVoters?: number[];
+  solution?: string;
+  solutionEntities?: (
+    | MessageEntityUnknown
+    | MessageEntityMention
+    | MessageEntityHashtag
+    | MessageEntityBotCommand
+    | MessageEntityUrl
+    | MessageEntityEmail
+    | MessageEntityBold
+    | MessageEntityItalic
+    | MessageEntityCode
+    | MessageEntityPre
+    | MessageEntityTextUrl
+    | MessageEntityMentionName
+    | InputMessageEntityMentionName
+    | MessageEntityPhone
+    | MessageEntityCashtag
+    | MessageEntityUnderline
+    | MessageEntityStrike
+    | MessageEntityBlockquote
+    | MessageEntityBankCard
+  )[];
 }
 
 export interface ChatOnlines
@@ -8134,6 +8333,9 @@ export interface InputWallPaperSlug
   slug: string;
 }
 
+export interface InputWallPaperNoFile
+  extends TLObjectType<"InputWallPaperNoFile", 0x8427bbac, 0xee77201a> {}
+
 export interface account_WallPapersNotModified
   extends TLObjectType<
     "account_WallPapersNotModified",
@@ -8145,6 +8347,7 @@ export interface account_WallPapers
   extends TLObjectType<"account_WallPapers", 0x702b65a9, 0xa2c548fd> {
   wallpapers: (
     | WallPaper
+    | WallPaperNoFile
     | account_GetWallPaperRequest
     | account_UploadWallPaperRequest
   )[];
@@ -8159,15 +8362,18 @@ export interface CodeSettings
 }
 
 export interface WallPaperSettings
-  extends TLObjectType<"WallPaperSettings", 0xa12f40b8, 0x4175e312> {
+  extends TLObjectType<"WallPaperSettings", 0x05086cf8, 0x4175e312> {
   blur?: boolean;
   motion?: boolean;
   backgroundColor?: number;
+  secondBackgroundColor?: number;
   intensity?: number;
+  rotation?: number;
 }
 
 export interface AutoDownloadSettings
-  extends TLObjectType<"AutoDownloadSettings", 0xd246fd47, 0x512819c7> {
+  extends TLObjectType<"AutoDownloadSettings", 0xe04232f3, 0x512819c7> {
+  videoUploadMaxbitrate: number;
   fileSizeMax: number;
   videoSizeMax: number;
   photoSizeMax: number;
@@ -8307,6 +8513,11 @@ export interface PeerLocated
   peer: PeerUser | PeerChat | PeerChannel;
 }
 
+export interface PeerSelfLocated
+  extends TLObjectType<"PeerSelfLocated", 0xf8ec284b, 0xfada34ac> {
+  expires: number;
+}
+
 export interface RestrictionReason
   extends TLObjectType<"RestrictionReason", 0xd072acb4, 0x6ad95ad> {
   text: string;
@@ -8325,10 +8536,7 @@ export interface InputThemeSlug
   slug: string;
 }
 
-export interface ThemeDocumentNotModified
-  extends TLObjectType<"ThemeDocumentNotModified", 0x483d270c, 0x56b4c80c> {}
-
-export interface Theme extends TLObjectType<"Theme", 0xf7d90ce0, 0x56b4c80c> {
+export interface Theme extends TLObjectType<"Theme", 0x028f1114, 0x56b4c80c> {
   installsCount: number;
   title: string;
   slug: string;
@@ -8341,6 +8549,7 @@ export interface Theme extends TLObjectType<"Theme", 0xf7d90ce0, 0x56b4c80c> {
     | Document
     | account_UploadThemeRequest
     | messages_GetDocumentByHashRequest;
+  settings?: ThemeSettings;
 }
 
 export interface account_ThemesNotModified
@@ -8349,13 +8558,340 @@ export interface account_ThemesNotModified
 export interface account_Themes
   extends TLObjectType<"account_Themes", 0x7f676421, 0x7fc52204> {
   themes: (
-    | ThemeDocumentNotModified
     | Theme
     | account_CreateThemeRequest
     | account_UpdateThemeRequest
     | account_GetThemeRequest
   )[];
   hash: number;
+}
+
+export interface auth_LoginToken
+  extends TLObjectType<"auth_LoginToken", 0x629f1980, 0x6b55f636> {
+  token: Uint8Array;
+  expires: number;
+}
+
+export interface auth_LoginTokenMigrateTo
+  extends TLObjectType<"auth_LoginTokenMigrateTo", 0x068e9916, 0x6b55f636> {
+  token: Uint8Array;
+  dcId: number;
+}
+
+export interface auth_LoginTokenSuccess
+  extends TLObjectType<"auth_LoginTokenSuccess", 0x390d5c5e, 0x6b55f636> {
+  authorization:
+    | auth_Authorization
+    | auth_AuthorizationSignUpRequired
+    | auth_SignUpRequest
+    | auth_SignInRequest
+    | auth_ImportAuthorizationRequest
+    | auth_ImportBotAuthorizationRequest
+    | auth_CheckPasswordRequest
+    | auth_RecoverPasswordRequest;
+}
+
+export interface account_ContentSettings
+  extends TLObjectType<"account_ContentSettings", 0x57e28221, 0xae3ff891> {
+  sensitiveEnabled?: boolean;
+  sensitiveCanChange?: boolean;
+}
+
+export interface messages_InactiveChats
+  extends TLObjectType<"messages_InactiveChats", 0xa927fec5, 0x8bf3d7d4> {
+  users: (
+    | UserEmpty
+    | User
+    | account_UpdateProfileRequest
+    | account_UpdateUsernameRequest
+    | account_ChangePhoneRequest
+  )[];
+  chats: (ChatEmpty | Chat | ChatForbidden | Channel | ChannelForbidden)[];
+  dates: number[];
+}
+
+export interface BaseThemeClassic
+  extends TLObjectType<"BaseThemeClassic", 0xc3a12462, 0x1f03f444> {}
+
+export interface BaseThemeDay
+  extends TLObjectType<"BaseThemeDay", 0xfbd81688, 0x1f03f444> {}
+
+export interface BaseThemeNight
+  extends TLObjectType<"BaseThemeNight", 0xb7b31ea8, 0x1f03f444> {}
+
+export interface BaseThemeTinted
+  extends TLObjectType<"BaseThemeTinted", 0x6d5f77ee, 0x1f03f444> {}
+
+export interface BaseThemeArctic
+  extends TLObjectType<"BaseThemeArctic", 0x5b11125a, 0x1f03f444> {}
+
+export interface InputThemeSettings
+  extends TLObjectType<"InputThemeSettings", 0xbd507cd1, 0x8338c882> {
+  accentColor: number;
+  baseTheme:
+    | BaseThemeClassic
+    | BaseThemeDay
+    | BaseThemeNight
+    | BaseThemeTinted
+    | BaseThemeArctic;
+  messageTopColor?: number;
+  messageBottomColor?: number;
+  wallpaper?: InputWallPaper | InputWallPaperSlug | InputWallPaperNoFile;
+  wallpaperSettings?: WallPaperSettings;
+}
+
+export interface ThemeSettings
+  extends TLObjectType<"ThemeSettings", 0x9c14984a, 0x82666d38> {
+  accentColor: number;
+  baseTheme:
+    | BaseThemeClassic
+    | BaseThemeDay
+    | BaseThemeNight
+    | BaseThemeTinted
+    | BaseThemeArctic;
+  messageTopColor?: number;
+  messageBottomColor?: number;
+  wallpaper?:
+    | WallPaper
+    | WallPaperNoFile
+    | account_GetWallPaperRequest
+    | account_UploadWallPaperRequest;
+}
+
+export interface WebPageAttributeTheme
+  extends TLObjectType<"WebPageAttributeTheme", 0x54b56617, 0xafcfe9c7> {
+  documents?: (
+    | DocumentEmpty
+    | Document
+    | account_UploadThemeRequest
+    | messages_GetDocumentByHashRequest
+  )[];
+  settings?: ThemeSettings;
+}
+
+export interface MessageUserVote
+  extends TLObjectType<"MessageUserVote", 0xa28e5559, 0xc92cd592> {
+  date: number;
+  option: Uint8Array;
+  userId: number;
+}
+
+export interface MessageUserVoteInputOption
+  extends TLObjectType<"MessageUserVoteInputOption", 0x36377430, 0xc92cd592> {
+  date: number;
+  userId: number;
+}
+
+export interface MessageUserVoteMultiple
+  extends TLObjectType<"MessageUserVoteMultiple", 0x0e8fe0de, 0xc92cd592> {
+  date: number;
+  options: Uint8Array[];
+  userId: number;
+}
+
+export interface messages_VotesList
+  extends TLObjectType<"messages_VotesList", 0x0823f649, 0xc2199885> {
+  users: (
+    | UserEmpty
+    | User
+    | account_UpdateProfileRequest
+    | account_UpdateUsernameRequest
+    | account_ChangePhoneRequest
+  )[];
+  votes: (
+    | MessageUserVote
+    | MessageUserVoteInputOption
+    | MessageUserVoteMultiple
+  )[];
+  count: number;
+  nextOffset?: string;
+}
+
+export interface BankCardOpenUrl
+  extends TLObjectType<"BankCardOpenUrl", 0xf568028a, 0xf2e2460e> {
+  name: string;
+  url: string;
+}
+
+export interface payments_BankCardData
+  extends TLObjectType<"payments_BankCardData", 0x3e24e573, 0x8c6dd68b> {
+  openUrls: BankCardOpenUrl[];
+  title: string;
+}
+
+export interface DialogFilter
+  extends TLObjectType<"DialogFilter", 0x7438f7e8, 0x692bc457> {
+  excludePeers: (
+    | InputPeerEmpty
+    | InputPeerSelf
+    | InputPeerChat
+    | InputPeerUser
+    | InputPeerChannel
+    | InputPeerUserFromMessage
+    | InputPeerChannelFromMessage
+  )[];
+  includePeers: (
+    | InputPeerEmpty
+    | InputPeerSelf
+    | InputPeerChat
+    | InputPeerUser
+    | InputPeerChannel
+    | InputPeerUserFromMessage
+    | InputPeerChannelFromMessage
+  )[];
+  pinnedPeers: (
+    | InputPeerEmpty
+    | InputPeerSelf
+    | InputPeerChat
+    | InputPeerUser
+    | InputPeerChannel
+    | InputPeerUserFromMessage
+    | InputPeerChannelFromMessage
+  )[];
+  title: string;
+  id: number;
+  contacts?: boolean;
+  nonContacts?: boolean;
+  groups?: boolean;
+  broadcasts?: boolean;
+  bots?: boolean;
+  excludeMuted?: boolean;
+  excludeRead?: boolean;
+  excludeArchived?: boolean;
+  emoticon?: string;
+}
+
+export interface DialogFilterSuggested
+  extends TLObjectType<"DialogFilterSuggested", 0x77744d4a, 0x31ede086> {
+  description: string;
+  filter: DialogFilter;
+}
+
+export interface StatsDateRangeDays
+  extends TLObjectType<"StatsDateRangeDays", 0xb637edaf, 0x81236245> {
+  maxDate: number;
+  minDate: number;
+}
+
+export interface StatsAbsValueAndPrev
+  extends TLObjectType<"StatsAbsValueAndPrev", 0xcb43acde, 0x3ebe59af> {
+  previous: number;
+  current: number;
+}
+
+export interface StatsPercentValue
+  extends TLObjectType<"StatsPercentValue", 0xcbce2fe0, 0x9702c51e> {
+  total: number;
+  part: number;
+}
+
+export interface StatsGraphAsync
+  extends TLObjectType<"StatsGraphAsync", 0x4a27eb2d, 0x9b903153> {
+  token: string;
+}
+
+export interface StatsGraphError
+  extends TLObjectType<"StatsGraphError", 0xbedc9822, 0x9b903153> {
+  error: string;
+}
+
+export interface StatsGraph
+  extends TLObjectType<"StatsGraph", 0x8ea464b6, 0x9b903153> {
+  json: DataJSON | bots_SendCustomRequestRequest | phone_GetCallConfigRequest;
+  zoomToken?: string;
+}
+
+export interface MessageInteractionCounters
+  extends TLObjectType<"MessageInteractionCounters", 0xad4fc9bd, 0x2638b720> {
+  forwards: number;
+  views: number;
+  msgId: number;
+}
+
+export interface stats_BroadcastStats
+  extends TLObjectType<"stats_BroadcastStats", 0xbdf78394, 0x7ff25428> {
+  recentMessageInteractions: MessageInteractionCounters[];
+  languagesGraph:
+    | StatsGraphAsync
+    | StatsGraphError
+    | StatsGraph
+    | stats_LoadAsyncGraphRequest;
+  newFollowersBySourceGraph:
+    | StatsGraphAsync
+    | StatsGraphError
+    | StatsGraph
+    | stats_LoadAsyncGraphRequest;
+  viewsBySourceGraph:
+    | StatsGraphAsync
+    | StatsGraphError
+    | StatsGraph
+    | stats_LoadAsyncGraphRequest;
+  ivInteractionsGraph:
+    | StatsGraphAsync
+    | StatsGraphError
+    | StatsGraph
+    | stats_LoadAsyncGraphRequest;
+  interactionsGraph:
+    | StatsGraphAsync
+    | StatsGraphError
+    | StatsGraph
+    | stats_LoadAsyncGraphRequest;
+  topHoursGraph:
+    | StatsGraphAsync
+    | StatsGraphError
+    | StatsGraph
+    | stats_LoadAsyncGraphRequest;
+  muteGraph:
+    | StatsGraphAsync
+    | StatsGraphError
+    | StatsGraph
+    | stats_LoadAsyncGraphRequest;
+  followersGraph:
+    | StatsGraphAsync
+    | StatsGraphError
+    | StatsGraph
+    | stats_LoadAsyncGraphRequest;
+  growthGraph:
+    | StatsGraphAsync
+    | StatsGraphError
+    | StatsGraph
+    | stats_LoadAsyncGraphRequest;
+  enabledNotifications: StatsPercentValue;
+  sharesPerPost: StatsAbsValueAndPrev;
+  viewsPerPost: StatsAbsValueAndPrev;
+  followers: StatsAbsValueAndPrev;
+  period: StatsDateRangeDays;
+}
+
+export interface help_PromoDataEmpty
+  extends TLObjectType<"help_PromoDataEmpty", 0x98f6ac75, 0x9d595542> {
+  expires: number;
+}
+
+export interface help_PromoData
+  extends TLObjectType<"help_PromoData", 0x8c39793f, 0x9d595542> {
+  users: (
+    | UserEmpty
+    | User
+    | account_UpdateProfileRequest
+    | account_UpdateUsernameRequest
+    | account_ChangePhoneRequest
+  )[];
+  chats: (ChatEmpty | Chat | ChatForbidden | Channel | ChannelForbidden)[];
+  peer: PeerUser | PeerChat | PeerChannel;
+  expires: number;
+  proxy?: boolean;
+  psaType?: string;
+  psaMessage?: string;
+}
+
+export interface VideoSize
+  extends TLObjectType<"VideoSize", 0x435bb987, 0x62f1d509> {
+  size: number;
+  h: number;
+  w: number;
+  location: FileLocationToBeDeprecated;
+  type: string;
 }
 
 export interface InvokeAfterMsgRequest
@@ -8385,7 +8921,7 @@ export interface InvokeAfterMsgsRequest
 }
 
 export interface InitConnectionRequest
-  extends TLObjectType<"InitConnectionRequest", 0x785188b8, 0xb7b2364b> {
+  extends TLObjectType<"InitConnectionRequest", 0xc1cd5ea9, 0xb7b2364b> {
   query:
     | InvokeAfterMsgRequest
     | InvokeAfterMsgsRequest
@@ -8402,6 +8938,14 @@ export interface InitConnectionRequest
   deviceModel: string;
   apiId: number;
   proxy?: InputClientProxy;
+  params?:
+    | JsonNull
+    | JsonBool
+    | JsonNumber
+    | JsonString
+    | JsonArray
+    | JsonObject
+    | help_GetAppConfigRequest;
 }
 
 export interface InvokeWithLayerRequest
@@ -8563,6 +9107,23 @@ export interface auth_CancelCodeRequest
 export interface auth_DropTempAuthKeysRequest
   extends TLObjectType<"auth_DropTempAuthKeysRequest", 0x8e48a188, 0xf5b399ac> {
   exceptAuthKeys: string[];
+}
+
+export interface auth_ExportLoginTokenRequest
+  extends TLObjectType<"auth_ExportLoginTokenRequest", 0xb1b41517, 0x6b55f636> {
+  exceptIds: number[];
+  apiHash: string;
+  apiId: number;
+}
+
+export interface auth_ImportLoginTokenRequest
+  extends TLObjectType<"auth_ImportLoginTokenRequest", 0x95ac5ce4, 0x6b55f636> {
+  token: Uint8Array;
+}
+
+export interface auth_AcceptLoginTokenRequest
+  extends TLObjectType<"auth_AcceptLoginTokenRequest", 0xe894ad4d, 0xc913c01a> {
+  token: Uint8Array;
 }
 
 export interface account_RegisterDeviceRequest
@@ -9039,7 +9600,7 @@ export interface account_GetNotifyExceptionsRequest
 
 export interface account_GetWallPaperRequest
   extends TLObjectType<"account_GetWallPaperRequest", 0xfc8ddbea, 0x96a2c98b> {
-  wallpaper: InputWallPaper | InputWallPaperSlug;
+  wallpaper: InputWallPaper | InputWallPaperSlug | InputWallPaperNoFile;
 }
 
 export interface account_UploadWallPaperRequest
@@ -9057,7 +9618,7 @@ export interface account_SaveWallPaperRequest
   extends TLObjectType<"account_SaveWallPaperRequest", 0x6c5a5b37, 0xf5b399ac> {
   settings: WallPaperSettings;
   unsave: boolean;
-  wallpaper: InputWallPaper | InputWallPaperSlug;
+  wallpaper: InputWallPaper | InputWallPaperSlug | InputWallPaperNoFile;
 }
 
 export interface account_InstallWallPaperRequest
@@ -9067,7 +9628,7 @@ export interface account_InstallWallPaperRequest
     0xf5b399ac
   > {
   settings: WallPaperSettings;
-  wallpaper: InputWallPaper | InputWallPaperSlug;
+  wallpaper: InputWallPaper | InputWallPaperSlug | InputWallPaperNoFile;
 }
 
 export interface account_ResetWallPapersRequest
@@ -9104,19 +9665,21 @@ export interface account_UploadThemeRequest
 }
 
 export interface account_CreateThemeRequest
-  extends TLObjectType<"account_CreateThemeRequest", 0x2b7ffd7f, 0x56b4c80c> {
-  document: InputDocumentEmpty | InputDocument;
+  extends TLObjectType<"account_CreateThemeRequest", 0x8432c21f, 0x56b4c80c> {
   title: string;
   slug: string;
+  document?: InputDocumentEmpty | InputDocument;
+  settings?: InputThemeSettings;
 }
 
 export interface account_UpdateThemeRequest
-  extends TLObjectType<"account_UpdateThemeRequest", 0x3b8ea202, 0x56b4c80c> {
+  extends TLObjectType<"account_UpdateThemeRequest", 0x5cb367d5, 0x56b4c80c> {
   theme: InputTheme | InputThemeSlug;
   format: string;
   slug?: string;
   title?: string;
   document?: InputDocumentEmpty | InputDocument;
+  settings?: InputThemeSettings;
 }
 
 export interface account_SaveThemeRequest
@@ -9143,6 +9706,31 @@ export interface account_GetThemesRequest
   extends TLObjectType<"account_GetThemesRequest", 0x285946f8, 0x7fc52204> {
   hash: number;
   format: string;
+}
+
+export interface account_SetContentSettingsRequest
+  extends TLObjectType<
+    "account_SetContentSettingsRequest",
+    0xb574b16b,
+    0xf5b399ac
+  > {
+  sensitiveEnabled?: boolean;
+}
+
+export interface account_GetContentSettingsRequest
+  extends TLObjectType<
+    "account_GetContentSettingsRequest",
+    0x8b9b4dae,
+    0xae3ff891
+  > {}
+
+export interface account_GetMultiWallPapersRequest
+  extends TLObjectType<
+    "account_GetMultiWallPapersRequest",
+    0x65ad71dc,
+    0x8ec35283
+  > {
+  wallpapers: (InputWallPaper | InputWallPaperSlug | InputWallPaperNoFile)[];
 }
 
 export interface users_GetUsersRequest
@@ -9324,8 +9912,10 @@ export interface contacts_AcceptContactRequest
 }
 
 export interface contacts_GetLocatedRequest
-  extends TLObjectType<"contacts_GetLocatedRequest", 0x0a356056, 0x8af52aac> {
+  extends TLObjectType<"contacts_GetLocatedRequest", 0xd348bc44, 0x8af52aac> {
   geoPoint: InputGeoPointEmpty | InputGeoPoint;
+  background?: boolean;
+  selfExpires?: number;
 }
 
 export interface messages_GetMessagesRequest
@@ -9527,6 +10117,7 @@ export interface messages_SendMessageRequest
     | MessageEntityUnderline
     | MessageEntityStrike
     | MessageEntityBlockquote
+    | MessageEntityBankCard
   )[];
   scheduleDate?: number;
 }
@@ -9549,7 +10140,8 @@ export interface messages_SendMediaRequest
     | InputMediaGame
     | InputMediaInvoice
     | InputMediaGeoLive
-    | InputMediaPoll;
+    | InputMediaPoll
+    | InputMediaDice;
   peer:
     | InputPeerEmpty
     | InputPeerSelf
@@ -9587,6 +10179,7 @@ export interface messages_SendMediaRequest
     | MessageEntityUnderline
     | MessageEntityStrike
     | MessageEntityBlockquote
+    | MessageEntityBankCard
   )[];
   scheduleDate?: number;
 }
@@ -9887,6 +10480,7 @@ export interface messages_GetWebPagePreviewRequest
     | MessageEntityUnderline
     | MessageEntityStrike
     | MessageEntityBlockquote
+    | MessageEntityBankCard
   )[];
 }
 
@@ -9934,7 +10528,8 @@ export interface messages_GetStickerSetRequest
     | InputStickerSetEmpty
     | InputStickerSetID
     | InputStickerSetShortName
-    | InputStickerSetAnimatedEmoji;
+    | InputStickerSetAnimatedEmoji
+    | InputStickerSetDice;
 }
 
 export interface messages_InstallStickerSetRequest
@@ -9948,7 +10543,8 @@ export interface messages_InstallStickerSetRequest
     | InputStickerSetEmpty
     | InputStickerSetID
     | InputStickerSetShortName
-    | InputStickerSetAnimatedEmoji;
+    | InputStickerSetAnimatedEmoji
+    | InputStickerSetDice;
 }
 
 export interface messages_UninstallStickerSetRequest
@@ -9961,7 +10557,8 @@ export interface messages_UninstallStickerSetRequest
     | InputStickerSetEmpty
     | InputStickerSetID
     | InputStickerSetShortName
-    | InputStickerSetAnimatedEmoji;
+    | InputStickerSetAnimatedEmoji
+    | InputStickerSetDice;
 }
 
 export interface messages_StartBotRequest
@@ -10178,7 +10775,8 @@ export interface messages_EditMessageRequest
     | InputMediaGame
     | InputMediaInvoice
     | InputMediaGeoLive
-    | InputMediaPoll;
+    | InputMediaPoll
+    | InputMediaDice;
   replyMarkup?:
     | ReplyKeyboardHide
     | ReplyKeyboardForceReply
@@ -10203,6 +10801,7 @@ export interface messages_EditMessageRequest
     | MessageEntityUnderline
     | MessageEntityStrike
     | MessageEntityBlockquote
+    | MessageEntityBankCard
   )[];
   scheduleDate?: number;
 }
@@ -10231,7 +10830,8 @@ export interface messages_EditInlineBotMessageRequest
     | InputMediaGame
     | InputMediaInvoice
     | InputMediaGeoLive
-    | InputMediaPoll;
+    | InputMediaPoll
+    | InputMediaDice;
   replyMarkup?:
     | ReplyKeyboardHide
     | ReplyKeyboardForceReply
@@ -10256,6 +10856,7 @@ export interface messages_EditInlineBotMessageRequest
     | MessageEntityUnderline
     | MessageEntityStrike
     | MessageEntityBlockquote
+    | MessageEntityBankCard
   )[];
 }
 
@@ -10332,6 +10933,7 @@ export interface messages_SaveDraftRequest
     | MessageEntityUnderline
     | MessageEntityStrike
     | MessageEntityBlockquote
+    | MessageEntityBankCard
   )[];
 }
 
@@ -10568,7 +11170,8 @@ export interface messages_UploadMediaRequest
     | InputMediaGame
     | InputMediaInvoice
     | InputMediaGeoLive
-    | InputMediaPoll;
+    | InputMediaPoll
+    | InputMediaDice;
   peer:
     | InputPeerEmpty
     | InputPeerSelf
@@ -11038,6 +11641,84 @@ export interface messages_DeleteScheduledMessagesRequest
     | InputPeerChannelFromMessage;
 }
 
+export interface messages_GetPollVotesRequest
+  extends TLObjectType<"messages_GetPollVotesRequest", 0xb86e380e, 0xc2199885> {
+  limit: number;
+  id: number;
+  peer:
+    | InputPeerEmpty
+    | InputPeerSelf
+    | InputPeerChat
+    | InputPeerUser
+    | InputPeerChannel
+    | InputPeerUserFromMessage
+    | InputPeerChannelFromMessage;
+  option?: Uint8Array;
+  offset?: string;
+}
+
+export interface messages_ToggleStickerSetsRequest
+  extends TLObjectType<
+    "messages_ToggleStickerSetsRequest",
+    0xb5052fea,
+    0xf5b399ac
+  > {
+  stickersets: (
+    | InputStickerSetEmpty
+    | InputStickerSetID
+    | InputStickerSetShortName
+    | InputStickerSetAnimatedEmoji
+    | InputStickerSetDice
+  )[];
+  uninstall?: boolean;
+  archive?: boolean;
+  unarchive?: boolean;
+}
+
+export interface messages_GetDialogFiltersRequest
+  extends TLObjectType<
+    "messages_GetDialogFiltersRequest",
+    0xf19ed96d,
+    0x601ce94d
+  > {}
+
+export interface messages_GetSuggestedDialogFiltersRequest
+  extends TLObjectType<
+    "messages_GetSuggestedDialogFiltersRequest",
+    0xa29cd42c,
+    0x7b296c39
+  > {}
+
+export interface messages_UpdateDialogFilterRequest
+  extends TLObjectType<
+    "messages_UpdateDialogFilterRequest",
+    0x1ad4a04a,
+    0xf5b399ac
+  > {
+  id: number;
+  filter?: DialogFilter;
+}
+
+export interface messages_UpdateDialogFiltersOrderRequest
+  extends TLObjectType<
+    "messages_UpdateDialogFiltersOrderRequest",
+    0xc563c1e4,
+    0xf5b399ac
+  > {
+  order: number[];
+}
+
+export interface messages_GetOldFeaturedStickersRequest
+  extends TLObjectType<
+    "messages_GetOldFeaturedStickersRequest",
+    0x5fe7025b,
+    0x2614b722
+  > {
+  hash: number;
+  limit: number;
+  offset: number;
+}
+
 export interface updates_GetStateRequest
   extends TLObjectType<"updates_GetStateRequest", 0xedd4882a, 0x23df1a01> {}
 
@@ -11111,9 +11792,11 @@ export interface upload_GetFileRequest
     | InputSecureFileLocation
     | InputTakeoutFileLocation
     | InputPhotoFileLocation
+    | InputPhotoLegacyFileLocation
     | InputPeerPhotoFileLocation
     | InputStickerSetThumb;
   precise?: boolean;
+  cdnSupported?: boolean;
 }
 
 export interface upload_SaveBigFilePartRequest
@@ -11172,6 +11855,7 @@ export interface upload_GetFileHashesRequest
     | InputSecureFileLocation
     | InputTakeoutFileLocation
     | InputPhotoFileLocation
+    | InputPhotoLegacyFileLocation
     | InputPeerPhotoFileLocation
     | InputStickerSetThumb;
 }
@@ -11215,9 +11899,6 @@ export interface help_GetRecentMeUrlsRequest
   extends TLObjectType<"help_GetRecentMeUrlsRequest", 0x3dc0f114, 0xf269c477> {
   referer: string;
 }
-
-export interface help_GetProxyDataRequest
-  extends TLObjectType<"help_GetProxyDataRequest", 0x3d7758e1, 0x21e2a448> {}
 
 export interface help_GetTermsOfServiceUpdateRequest
   extends TLObjectType<
@@ -11286,9 +11967,25 @@ export interface help_EditUserInfoRequest
     | MessageEntityUnderline
     | MessageEntityStrike
     | MessageEntityBlockquote
+    | MessageEntityBankCard
   )[];
   message: string;
   userId: InputUserEmpty | InputUserSelf | InputUser | InputUserFromMessage;
+}
+
+export interface help_GetPromoDataRequest
+  extends TLObjectType<"help_GetPromoDataRequest", 0xc0977421, 0x9d595542> {}
+
+export interface help_HidePromoDataRequest
+  extends TLObjectType<"help_HidePromoDataRequest", 0x1e251c95, 0xf5b399ac> {
+  peer:
+    | InputPeerEmpty
+    | InputPeerSelf
+    | InputPeerChat
+    | InputPeerUser
+    | InputPeerChannel
+    | InputPeerUserFromMessage
+    | InputPeerChannelFromMessage;
 }
 
 export interface channels_ReadHistoryRequest
@@ -11517,7 +12214,8 @@ export interface channels_SetStickersRequest
     | InputStickerSetEmpty
     | InputStickerSetID
     | InputStickerSetShortName
-    | InputStickerSetAnimatedEmoji;
+    | InputStickerSetAnimatedEmoji
+    | InputStickerSetDice;
   channel: InputChannelEmpty | InputChannel | InputChannelFromMessage;
 }
 
@@ -11601,6 +12299,13 @@ export interface channels_ToggleSlowModeRequest
   channel: InputChannelEmpty | InputChannel | InputChannelFromMessage;
 }
 
+export interface channels_GetInactiveChannelsRequest
+  extends TLObjectType<
+    "channels_GetInactiveChannelsRequest",
+    0x11e831ee,
+    0x8bf3d7d4
+  > {}
+
 export interface bots_SendCustomRequestRequest
   extends TLObjectType<
     "bots_SendCustomRequestRequest",
@@ -11619,6 +12324,11 @@ export interface bots_AnswerWebhookJSONQueryRequest
   > {
   data: DataJSON | bots_SendCustomRequestRequest | phone_GetCallConfigRequest;
   queryId: string;
+}
+
+export interface bots_SetBotCommandsRequest
+  extends TLObjectType<"bots_SetBotCommandsRequest", 0x805d46f6, 0xf5b399ac> {
+  commands: BotCommand[];
 }
 
 export interface payments_GetPaymentFormRequest
@@ -11683,10 +12393,19 @@ export interface payments_ClearSavedInfoRequest
   info?: boolean;
 }
 
+export interface payments_GetBankCardDataRequest
+  extends TLObjectType<
+    "payments_GetBankCardDataRequest",
+    0x2e79d779,
+    0x8c6dd68b
+  > {
+  number: string;
+}
+
 export interface stickers_CreateStickerSetRequest
   extends TLObjectType<
     "stickers_CreateStickerSetRequest",
-    0x9bd86e6a,
+    0xf1036780,
     0x9b704a5a
   > {
   stickers: InputStickerSetItem[];
@@ -11694,6 +12413,8 @@ export interface stickers_CreateStickerSetRequest
   title: string;
   userId: InputUserEmpty | InputUserSelf | InputUser | InputUserFromMessage;
   masks?: boolean;
+  animated?: boolean;
+  thumb?: InputDocumentEmpty | InputDocument;
 }
 
 export interface stickers_RemoveStickerFromSetRequest
@@ -11726,7 +12447,23 @@ export interface stickers_AddStickerToSetRequest
     | InputStickerSetEmpty
     | InputStickerSetID
     | InputStickerSetShortName
-    | InputStickerSetAnimatedEmoji;
+    | InputStickerSetAnimatedEmoji
+    | InputStickerSetDice;
+}
+
+export interface stickers_SetStickerSetThumbRequest
+  extends TLObjectType<
+    "stickers_SetStickerSetThumbRequest",
+    0x9a364e30,
+    0x9b704a5a
+  > {
+  thumb: InputDocumentEmpty | InputDocument;
+  stickerset:
+    | InputStickerSetEmpty
+    | InputStickerSetID
+    | InputStickerSetShortName
+    | InputStickerSetAnimatedEmoji
+    | InputStickerSetDice;
 }
 
 export interface phone_GetCallConfigRequest
@@ -11788,6 +12525,16 @@ export interface phone_SaveCallDebugRequest
   peer: InputPhoneCall;
 }
 
+export interface phone_SendSignalingDataRequest
+  extends TLObjectType<
+    "phone_SendSignalingDataRequest",
+    0xff7a9383,
+    0xf5b399ac
+  > {
+  data: Uint8Array;
+  peer: InputPhoneCall;
+}
+
 export interface langpack_GetLangPackRequest
   extends TLObjectType<"langpack_GetLangPackRequest", 0xf2f2330a, 0x52662d55> {
   langCode: string;
@@ -11836,12 +12583,29 @@ export interface folders_DeleteFolderRequest
   extends TLObjectType<"folders_DeleteFolderRequest", 0x1c295881, 0x8af52aac> {
   folderId: number;
 }
+
+export interface stats_GetBroadcastStatsRequest
+  extends TLObjectType<
+    "stats_GetBroadcastStatsRequest",
+    0xab42441a,
+    0x7ff25428
+  > {
+  channel: InputChannelEmpty | InputChannel | InputChannelFromMessage;
+  dark?: boolean;
+}
+
+export interface stats_LoadAsyncGraphRequest
+  extends TLObjectType<"stats_LoadAsyncGraphRequest", 0x621d5fa0, 0x9b903153> {
+  token: string;
+  x?: string;
+}
 export type TLObjectTypes =
   | ResPQ
   | PQInnerData
   | PQInnerDataDc
   | PQInnerDataTemp
   | PQInnerDataTempDc
+  | BindAuthKeyInner
   | ServerDHParamsFail
   | ServerDHParamsOk
   | ServerDHInnerData
@@ -11887,6 +12651,7 @@ export type TLObjectTypes =
   | TlsBlockZero
   | TlsBlockDomain
   | TlsBlockGrease
+  | TlsBlockPublicKey
   | TlsBlockScope
   | RpcDropAnswerRequest
   | GetFutureSaltsRequest
@@ -11922,6 +12687,7 @@ export type TLObjectTypes =
   | InputMediaInvoice
   | InputMediaGeoLive
   | InputMediaPoll
+  | InputMediaDice
   | InputChatPhotoEmpty
   | InputChatUploadedPhoto
   | InputChatPhoto
@@ -11935,6 +12701,7 @@ export type TLObjectTypes =
   | InputSecureFileLocation
   | InputTakeoutFileLocation
   | InputPhotoFileLocation
+  | InputPhotoLegacyFileLocation
   | InputPeerPhotoFileLocation
   | InputStickerSetThumb
   | PeerUser
@@ -11989,6 +12756,7 @@ export type TLObjectTypes =
   | MessageMediaInvoice
   | MessageMediaGeoLive
   | MessageMediaPoll
+  | MessageMediaDice
   | MessageActionEmpty
   | MessageActionChatCreate
   | MessageActionChatEditTitle
@@ -12034,6 +12802,7 @@ export type TLObjectTypes =
   | PeerNotifySettings
   | PeerSettings
   | WallPaper
+  | WallPaperNoFile
   | InputReportReasonSpam
   | InputReportReasonViolence
   | InputReportReasonPornography
@@ -12152,6 +12921,13 @@ export type TLObjectTypes =
   | UpdateNewScheduledMessage
   | UpdateDeleteScheduledMessages
   | UpdateTheme
+  | UpdateGeoLiveViewed
+  | UpdateLoginToken
+  | UpdateMessagePollVote
+  | UpdateDialogFilter
+  | UpdateDialogFilterOrder
+  | UpdateDialogFilters
+  | UpdatePhoneCallSignalingData
   | updates_State
   | updates_DifferenceEmpty
   | updates_Difference
@@ -12282,6 +13058,7 @@ export type TLObjectTypes =
   | InputStickerSetID
   | InputStickerSetShortName
   | InputStickerSetAnimatedEmoji
+  | InputStickerSetDice
   | StickerSet
   | messages_StickerSet
   | BotCommand
@@ -12296,6 +13073,7 @@ export type TLObjectTypes =
   | KeyboardButtonBuy
   | KeyboardButtonUrlAuth
   | InputKeyboardButtonUrlAuth
+  | KeyboardButtonRequestPoll
   | KeyboardButtonRow
   | ReplyKeyboardHide
   | ReplyKeyboardForceReply
@@ -12319,6 +13097,7 @@ export type TLObjectTypes =
   | MessageEntityUnderline
   | MessageEntityStrike
   | MessageEntityBlockquote
+  | MessageEntityBankCard
   | InputChannelEmpty
   | InputChannel
   | InputChannelFromMessage
@@ -12555,8 +13334,6 @@ export type TLObjectTypes =
   | messages_FoundStickerSets
   | FileHash
   | InputClientProxy
-  | help_ProxyDataEmpty
-  | help_ProxyDataPromo
   | help_TermsOfServiceUpdateEmpty
   | help_TermsOfServiceUpdate
   | InputSecureFileUploaded
@@ -12640,6 +13417,7 @@ export type TLObjectTypes =
   | ChatBannedRights
   | InputWallPaper
   | InputWallPaperSlug
+  | InputWallPaperNoFile
   | account_WallPapersNotModified
   | account_WallPapers
   | CodeSettings
@@ -12662,13 +13440,45 @@ export type TLObjectTypes =
   | ChannelLocationEmpty
   | ChannelLocation
   | PeerLocated
+  | PeerSelfLocated
   | RestrictionReason
   | InputTheme
   | InputThemeSlug
-  | ThemeDocumentNotModified
   | Theme
   | account_ThemesNotModified
   | account_Themes
+  | auth_LoginToken
+  | auth_LoginTokenMigrateTo
+  | auth_LoginTokenSuccess
+  | account_ContentSettings
+  | messages_InactiveChats
+  | BaseThemeClassic
+  | BaseThemeDay
+  | BaseThemeNight
+  | BaseThemeTinted
+  | BaseThemeArctic
+  | InputThemeSettings
+  | ThemeSettings
+  | WebPageAttributeTheme
+  | MessageUserVote
+  | MessageUserVoteInputOption
+  | MessageUserVoteMultiple
+  | messages_VotesList
+  | BankCardOpenUrl
+  | payments_BankCardData
+  | DialogFilter
+  | DialogFilterSuggested
+  | StatsDateRangeDays
+  | StatsAbsValueAndPrev
+  | StatsPercentValue
+  | StatsGraphAsync
+  | StatsGraphError
+  | StatsGraph
+  | MessageInteractionCounters
+  | stats_BroadcastStats
+  | help_PromoDataEmpty
+  | help_PromoData
+  | VideoSize
   | InvokeAfterMsgRequest
   | InvokeAfterMsgsRequest
   | InitConnectionRequest
@@ -12691,6 +13501,9 @@ export type TLObjectTypes =
   | auth_ResendCodeRequest
   | auth_CancelCodeRequest
   | auth_DropTempAuthKeysRequest
+  | auth_ExportLoginTokenRequest
+  | auth_ImportLoginTokenRequest
+  | auth_AcceptLoginTokenRequest
   | account_RegisterDeviceRequest
   | account_UnregisterDeviceRequest
   | account_UpdateNotifySettingsRequest
@@ -12753,6 +13566,9 @@ export type TLObjectTypes =
   | account_InstallThemeRequest
   | account_GetThemeRequest
   | account_GetThemesRequest
+  | account_SetContentSettingsRequest
+  | account_GetContentSettingsRequest
+  | account_GetMultiWallPapersRequest
   | users_GetUsersRequest
   | users_GetFullUserRequest
   | users_SetSecureValueErrorsRequest
@@ -12892,6 +13708,13 @@ export type TLObjectTypes =
   | messages_GetScheduledMessagesRequest
   | messages_SendScheduledMessagesRequest
   | messages_DeleteScheduledMessagesRequest
+  | messages_GetPollVotesRequest
+  | messages_ToggleStickerSetsRequest
+  | messages_GetDialogFiltersRequest
+  | messages_GetSuggestedDialogFiltersRequest
+  | messages_UpdateDialogFilterRequest
+  | messages_UpdateDialogFiltersOrderRequest
+  | messages_GetOldFeaturedStickersRequest
   | updates_GetStateRequest
   | updates_GetDifferenceRequest
   | updates_GetChannelDifferenceRequest
@@ -12916,7 +13739,6 @@ export type TLObjectTypes =
   | help_SetBotUpdatesStatusRequest
   | help_GetCdnConfigRequest
   | help_GetRecentMeUrlsRequest
-  | help_GetProxyDataRequest
   | help_GetTermsOfServiceUpdateRequest
   | help_AcceptTermsOfServiceRequest
   | help_GetDeepLinkInfoRequest
@@ -12926,6 +13748,8 @@ export type TLObjectTypes =
   | help_GetSupportNameRequest
   | help_GetUserInfoRequest
   | help_EditUserInfoRequest
+  | help_GetPromoDataRequest
+  | help_HidePromoDataRequest
   | channels_ReadHistoryRequest
   | channels_DeleteMessagesRequest
   | channels_DeleteUserHistoryRequest
@@ -12960,18 +13784,22 @@ export type TLObjectTypes =
   | channels_EditCreatorRequest
   | channels_EditLocationRequest
   | channels_ToggleSlowModeRequest
+  | channels_GetInactiveChannelsRequest
   | bots_SendCustomRequestRequest
   | bots_AnswerWebhookJSONQueryRequest
+  | bots_SetBotCommandsRequest
   | payments_GetPaymentFormRequest
   | payments_GetPaymentReceiptRequest
   | payments_ValidateRequestedInfoRequest
   | payments_SendPaymentFormRequest
   | payments_GetSavedInfoRequest
   | payments_ClearSavedInfoRequest
+  | payments_GetBankCardDataRequest
   | stickers_CreateStickerSetRequest
   | stickers_RemoveStickerFromSetRequest
   | stickers_ChangeStickerPositionRequest
   | stickers_AddStickerToSetRequest
+  | stickers_SetStickerSetThumbRequest
   | phone_GetCallConfigRequest
   | phone_RequestCallRequest
   | phone_AcceptCallRequest
@@ -12980,10 +13808,13 @@ export type TLObjectTypes =
   | phone_DiscardCallRequest
   | phone_SetCallRatingRequest
   | phone_SaveCallDebugRequest
+  | phone_SendSignalingDataRequest
   | langpack_GetLangPackRequest
   | langpack_GetStringsRequest
   | langpack_GetDifferenceRequest
   | langpack_GetLanguagesRequest
   | langpack_GetLanguageRequest
   | folders_EditPeerFoldersRequest
-  | folders_DeleteFolderRequest;
+  | folders_DeleteFolderRequest
+  | stats_GetBroadcastStatsRequest
+  | stats_LoadAsyncGraphRequest;
