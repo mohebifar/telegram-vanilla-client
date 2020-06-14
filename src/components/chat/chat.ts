@@ -232,23 +232,21 @@ export default class Chat implements Component<Options> {
     let lockScroll = false;
 
     on(this.scrollView, "scroll", () => {
-      if (lockScroll) {
-        if (this.scrollView.scrollTop < 1) {
-          if (clearOverflow) {
-            clearTimeout(clearOverflow);
-            cancelAnimationFrame(clearOverflowAnimationFrame);
-          }
-
-          this.scrollView.style.overflowY = "hidden";
-          this.scrollView.style["WebkitOverflowScrolling"] = "auto";
-
-          clearOverflow = setTimeout(() => {
-            clearOverflowAnimationFrame = requestAnimationFrame(() => {
-              this.scrollView.style.overflowY = null;
-              this.scrollView.style["WebkitOverflowScrolling"] = null;
-            });
-          }, 200);
+      if (isMobile() && lockScroll && this.scrollView.scrollTop < 1) {
+        if (clearOverflow) {
+          clearTimeout(clearOverflow);
+          cancelAnimationFrame(clearOverflowAnimationFrame);
         }
+
+        this.scrollView.style.overflowY = "hidden";
+        this.scrollView.style["WebkitOverflowScrolling"] = "auto";
+
+        clearOverflow = setTimeout(() => {
+          clearOverflowAnimationFrame = requestAnimationFrame(() => {
+            this.scrollView.style.overflowY = null;
+            this.scrollView.style["WebkitOverflowScrolling"] = null;
+          });
+        }, 200);
       }
 
       if (this.lockLoad || this.chatContainer.childNodes.length === 0) {
