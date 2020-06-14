@@ -24,13 +24,31 @@ export default class PollAttachment implements Component<Options> {
     const { poll, results } = media;
     const anonymous = !poll.publicVoters;
     const isQuiz = !!poll.quiz;
-    const isSingleChoice = !poll.multipleChoice;
+    const isSingleChoice = !poll.multipleChoice || poll.quiz;
 
     const heading = createElement(
       "div",
       { class: styles.heading },
       createElement("div", { class: styles.question }, poll.question),
-      anonymous ? createElement("div", "Anonymous Poll") : ""
+      anonymous
+        ? createElement(
+            "div",
+            createElement("div", "Anonymous Poll"),
+            results.solution
+              ? createElement(
+                  "span",
+                  {
+                    class: "tooltip",
+                    title: results.solution,
+                  },
+                  createElement(Icon, {
+                    icon: Icons.Tip,
+                    color: "blue",
+                  })
+                )
+              : ""
+          )
+        : ""
     );
 
     const answerVoters: PollAnswerVoters[] | undefined = results.results;
@@ -75,15 +93,19 @@ export default class PollAttachment implements Component<Options> {
       ? (answer: PollAnswer, index: number) => {
           const answerVoter = answerVoters[index];
           const percent = Math.round(
-            (answerVoter.voters / results.totalVoters) * 100
+            results.totalVoters
+              ? (answerVoter.voters / results.totalVoters) * 100
+              : 0
           );
-          const correct = isQuiz
-            ? !answerVoter.chosen && answerVoter.correct
-            : true;
+          const correct = isQuiz ? answerVoter.correct : true;
 
           return createElement(
             "div",
-            { class: styles.answer + " " + (correct ? "" : styles.wrong) },
+            {
+              class:
+                `${styles.answer} ${styles.voted} ` +
+                (correct || !answerVoter.chosen ? "" : styles.wrong),
+            },
             createElement("div", { class: styles.voters }, `${percent}%`),
             createElement("div", answer.text),
             createElement(
@@ -91,7 +113,14 @@ export default class PollAttachment implements Component<Options> {
               { class: styles.progressWrapper },
               createElement(
                 "div",
-                { class: styles.icon },
+                {
+                  class:
+                    styles.icon +
+                    " " +
+                    (!answerVoter.chosen && !answerVoter.correct
+                      ? styles.invisible
+                      : ""),
+                },
                 createElement(Icon, {
                   icon: correct ? Icons.Check : Icons.Close,
                   color: "white",

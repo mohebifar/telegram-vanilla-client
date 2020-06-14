@@ -50,6 +50,7 @@ export enum Icons {
   Back = "back",
   Stickers = "stickers",
   Gifs = "gifs",
+  Tip = "tip",
 }
 
 export enum IconSprite {

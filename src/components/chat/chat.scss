@@ -238,6 +238,10 @@ $time-size: 0.75rem;
     overflow-wrap: break-word;
     cursor: default;
 
+    &.noOverflow {
+      overflow: unset;
+    }
+
     pre {
       white-space: break-spaces;
     }
@@ -438,6 +442,11 @@ $time-size: 0.75rem;
 
         .fromName {
           color: $blue;
+        }
+
+        :global(.tooltip):after {
+          right: unset;
+          left: 0;
         }
       }
       .bubble:first-child {
@@ -795,8 +804,16 @@ $min-width-for-sidebar-animation: $chat-container-width + $left-sidebar-width +
     }
 
     > :nth-child(2) {
+      display: flex;
       color: $grey;
       margin-top: 0.2em;
+      align-items: center;
+      height: 1.75em;
+
+      > :first-child {
+        flex: 1;
+        font-size: 0.8em;
+      }
     }
   }
 
@@ -810,6 +827,10 @@ $min-width-for-sidebar-animation: $chat-container-width + $left-sidebar-width +
 
       &:not(:last-child) {
         margin-bottom: 1em;
+
+        &.voted {
+          margin-bottom: 0.5em;
+        }
       }
 
       > .voters,
@@ -880,6 +901,10 @@ $min-width-for-sidebar-animation: $chat-container-width + $left-sidebar-width +
           border-radius: 0.5em;
           margin-left: 1.3em;
           margin-right: 0.5em;
+
+          &.invisible {
+            visibility: hidden;
+          }
 
           > :global(.ic) {
             display: block;

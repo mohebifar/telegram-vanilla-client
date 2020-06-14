@@ -232,6 +232,7 @@ svg.waveform {
   }
 }
 
+// ---- Fade in ---- \\
 .fadeIn {
   animation: fadeIn 0.3s ease;
 }
@@ -243,4 +244,37 @@ svg.waveform {
   to {
     opacity: 1;
   }
+}
+
+// ---- TOOLTIP ---- \\
+$tooltip-surface: #000000aa;
+
+.tooltip {
+  display: inline;
+  position: relative;
+}
+
+.tooltip:hover:after {
+  display: block;
+  text-align: center;
+  background: $tooltip-surface;
+  border-radius: 8px;
+  color: $white;
+  content: attr(title);
+  padding: 0.5em;
+  width: 6em;
+  position: absolute;
+  right: -0.75em;
+  bottom: calc(100% + 9px);
+  font-size: 0.8em;
+}
+
+.tooltip:hover:before {
+  border: solid;
+  border-color: $tooltip-surface transparent;
+  border-width: 6px 6px 0 6px;
+  content: "";
+  left: 45%;
+  bottom: 30px;
+  position: absolute;
 }

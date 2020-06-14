@@ -231,6 +231,10 @@ export default class Bubble implements Component<Options> {
       bubbleClassName += " " + styles.hasReply;
     }
 
+    if (attachmentType === 'poll') {
+      bubbleClassName += " " + styles.noOverflow;
+    }
+
     if (isAnimatedSticker) {
       bubbleClassName += " " + styles.animated;
     }
