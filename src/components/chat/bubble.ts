@@ -4,6 +4,7 @@ import {
   MessageMediaWebPage,
   MessageMediaContact,
   DocumentAttributeVideo,
+  MessageMediaPoll,
 } from "../../core/tl/TLObjects";
 import { IDialog } from "../../models/dialog";
 import { IMessage, Message } from "../../models/message";
@@ -34,6 +35,7 @@ import QuoteBox from "./quote-box";
 import ServiceBubble from "./service-bubble";
 import ContactAttachment from "../attachments/contact";
 import { isAllEmoji } from "../../utils/emojis";
+import PollAttachment from "../attachments/poll";
 
 type AttachmentElement = Element<
   | AnimatedStickerAttachment
@@ -94,15 +96,15 @@ export default class Bubble implements Component<Options> {
 
     this.element = createElement(
       "div",
-      { "data-id": message.id, "data-date": message.date.format('YY-M-D') },
+      { "data-id": message.id, "data-date": message.date.format("YY-M-D") },
       this.attachment,
       messageWrapper
     );
 
     on(this.element, "longpress", (e: TouchEvent | MouseEvent) => {
       e.preventDefault();
-      const clientInfo = 'touches' in e ? e.touches[0] : e;
-      const {clientX, clientY} = clientInfo;
+      const clientInfo = "touches" in e ? e.touches[0] : e;
+      const { clientX, clientY } = clientInfo;
 
       if (window.getSelection) {
         window.getSelection().removeAllRanges();
@@ -164,7 +166,9 @@ export default class Bubble implements Component<Options> {
       this.element.prepend(this.getReplyElement(message.replyToMsgId));
     }
 
-    this.isForwarded = Boolean(this.message.$t === "Message" && this.message.fwdFrom);
+    this.isForwarded = Boolean(
+      this.message.$t === "Message" && this.message.fwdFrom
+    );
 
     if (this.isForwarded) {
       const originalSender = this.message.getPeerForwardedFrom();
@@ -345,6 +349,8 @@ export default class Bubble implements Component<Options> {
         } else {
           return this.getFileAttachment(media);
         }
+      } else if (media.$t === 'MessageMediaPoll') {
+        return this.getPollAttachment(media);
       }
 
       console.log("Unsupported media", media);
@@ -421,7 +427,7 @@ export default class Bubble implements Component<Options> {
   ): [Element<VideoAttachment>, "video" | "video-round"] {
     let type: "video" | "video-round" = "video";
 
-    if (media.document.$t === 'Document') {
+    if (media.document.$t === "Document") {
       const videoAttribute = media.document.attributes.find(
         (attribute) => attribute.$t === "DocumentAttributeVideo"
       ) as DocumentAttributeVideo;
@@ -456,6 +462,15 @@ export default class Bubble implements Component<Options> {
     return [
       createElement(FileAttachment, { media, tg: this.message.tg }),
       "file",
+    ];
+  }
+
+  private getPollAttachment(
+    media: MessageMediaPoll
+  ): [Element<PollAttachment>, "poll"] {
+    return [
+      createElement(PollAttachment, { media, tg: this.message.tg }),
+      "poll",
     ];
   }
 
@@ -505,13 +520,11 @@ export default class Bubble implements Component<Options> {
     switch (this.message.$t) {
       case "Message":
         return {
-          text: messageToHTML(this.message),
+          text: messageToHTML(this.message as any),
           time: this.message.date.format("HH:mm"),
         };
-      case "MessageEmpty":
-      case "MessageService":
       default:
-        // TODO: Support message service
+        // MessageEmpty and MessageService not supported by bubble
         return {
           text: "",
           time: "",

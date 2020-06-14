@@ -217,6 +217,8 @@ export function getMessageMediaType(
     return ["", "", undefined];
   } else if (media.$t === "MessageMediaContact") {
     return ["👤 ", "Contact", null];
+  } else if (media.$t === "MessageMediaPoll") {
+    return ["📊 ", media.poll.question, null];
   }
 
   return ["Unsupported media", null, null];
