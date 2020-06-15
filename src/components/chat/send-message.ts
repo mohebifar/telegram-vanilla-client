@@ -586,7 +586,29 @@ export default class SendMessageForm implements Component<Options> {
       );
     };
 
+    const emojiActivator = createElement(IconButton, {
+      icon: Icons.Smile,
+      type: "button",
+      onHover: (event) => {
+        if (!isMobile()) {
+          event.stopPropagation();
+          emojiPicker.instance.setVisibility(true);
+        }
+      },
+      onClick: () => {
+        if (!emojiPicker.instance.visible && isMobile()) {
+          emojiPicker.instance.setVisibility(true);
+        }
+      },
+      onHoverOut: () => {
+        if (!isMobile()) {
+          emojiPicker.instance.deferHide();
+        }
+      },
+    });
+
     const emojiPicker = createElement(EmojiPanel, {
+      activator: emojiActivator,
       onEmojiSelect: (emoji) => {
         const target = this.inputNode;
         if (target.setRangeText) {
@@ -601,18 +623,6 @@ export default class SendMessageForm implements Component<Options> {
       },
       onStickerSelect: onDocumentSelect,
       onGifSelect: onDocumentSelect,
-    });
-
-    const emojiActivator = createElement(IconButton, {
-      icon: Icons.Smile,
-      type: "button",
-      onHover: (event) => {
-        event.stopPropagation();
-        emojiPicker.instance.setVisibility(true);
-      },
-      onHoverOut: () => {
-        emojiPicker.instance.deferHide();
-      },
     });
 
     return [emojiPicker, emojiActivator];

@@ -20,12 +20,13 @@ interface Options {
   onEmojiSelect(emoji: string): any;
   onStickerSelect(document: Document): any;
   onGifSelect(document: Document): any;
+  activator: HTMLElement;
 }
 
 export default class EmojiPanel implements Component<Options> {
   public readonly element: HTMLElement;
 
-  private visible = false;
+  public visible = false;
   private lockVisibility = false;
   private timeout: number;
   private tabsContainer: Element<Tabs>;
@@ -33,7 +34,12 @@ export default class EmojiPanel implements Component<Options> {
 
   private tabs: Tab[];
 
-  constructor({ onEmojiSelect, onStickerSelect, onGifSelect }: Options) {
+  constructor({
+    onEmojiSelect,
+    onStickerSelect,
+    activator,
+    onGifSelect,
+  }: Options) {
     const emojiPicker = createElement(EmojiPicker, { onEmojiSelect });
     const gifPicker = createElement(GifPicker, {
       onGifSelect: (gif) => {
@@ -53,7 +59,7 @@ export default class EmojiPanel implements Component<Options> {
       class: styles.searchIcon + " hidden",
       onClick: () => {
         const stickerRoute = stickerPicker.instance.router;
-        if (stickerRoute.currentRouteName !== 'search') {
+        if (stickerRoute.currentRouteName !== "search") {
           stickerRoute.replace("search");
         }
       },
@@ -89,7 +95,7 @@ export default class EmojiPanel implements Component<Options> {
         gifPicker.instance[index === 2 ? "panelOpen" : "panelClose"]();
       },
     });
-    this.tabsContainer.instance.setTab(1);
+    this.tabsContainer.instance.setTab(0);
 
     const element = createElement(
       "div",
@@ -103,16 +109,19 @@ export default class EmojiPanel implements Component<Options> {
     });
 
     on(element, ["mouseleave", "blur"], () => {
-      // this.deferHide(300, true);
+      if (!isMobile()) {
+        this.deferHide(300);
+      }
     });
 
-    on(document.body, ["mousedown", "touchstart"], (event) => {
+    on(document.body, "click", (event) => {
       const target = event.target as HTMLElement;
-      if (
-        !target.closest("." + styles.container) &&
-        Date.now() - this.visibleTime > 300
-      ) {
-        this.deferHide(300, true);
+      const shouldClose = isMobile()
+        ? target === activator
+        : !target.closest("." + styles.container);
+
+      if (this.visible && shouldClose && Date.now() - this.visibleTime > 300) {
+        this.deferHide(300);
       }
     });
 
@@ -120,7 +129,7 @@ export default class EmojiPanel implements Component<Options> {
   }
 
   public setVisibility(visible = !this.visible) {
-    if (this.lockVisibility) {
+    if (this.lockVisibility || visible === this.visible) {
       return;
     }
 
@@ -147,10 +156,7 @@ export default class EmojiPanel implements Component<Options> {
     }
   }
 
-  public deferHide(timeout = 300, force = false) {
-    if (isMobile() && !force) {
-      return;
-    }
+  public deferHide(timeout = 300) {
     this.clearTimeout();
     this.timeout = setTimeout(() => {
       this.setVisibility(false);
