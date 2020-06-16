@@ -91,4 +91,8 @@ export default class EmojiPanel implements Component<Options> {
       this.onTabChange(index);
     }
   }
+
+  get tab() {
+    return this.currentTab;
+  }
 }

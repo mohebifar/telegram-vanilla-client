@@ -66,6 +66,7 @@ export default class Router implements Component<Options> {
     const route = this.findRoute(routeName);
     const rendered = route.render(params);
     const wrapped = this.wrap(rendered);
+    this.nameMap.set(rendered, routeName);
     this.stack = [rendered];
 
     removeChildren(this.element);

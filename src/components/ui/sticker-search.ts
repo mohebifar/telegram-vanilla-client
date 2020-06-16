@@ -24,7 +24,7 @@ export default class StickerSearch implements Component<Options> {
   public readonly element: Element<Router>;
   private readonly scrollView: HTMLElement;
 
-  constructor({onBack}: Options) {
+  constructor({ onBack }: Options) {
     const searchInput = createElement(SearchInput, {
       onInput: debounce(() => {
         const value = searchInput.instance.value.trim();
@@ -60,6 +60,10 @@ export default class StickerSearch implements Component<Options> {
     );
 
     this.displayFeaturedStickers();
+
+    requestAnimationFrame(() => {
+      searchInput.instance.focus();
+    });
   }
 
   private displayFeaturedStickers() {

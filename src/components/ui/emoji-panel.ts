@@ -58,9 +58,13 @@ export default class EmojiPanel implements Component<Options> {
       color: "grey",
       class: styles.searchIcon + " hidden",
       onClick: () => {
-        const stickerRoute = stickerPicker.instance.router;
-        if (stickerRoute.currentRouteName !== "search") {
-          stickerRoute.replace("search");
+        const { router } =
+          this.tabsContainer.instance.tab === 1
+            ? stickerPicker.instance
+            : gifPicker.instance;
+
+        if (router.currentRouteName !== "search") {
+          router.replace("search");
         }
       },
     });
@@ -90,7 +94,7 @@ export default class EmojiPanel implements Component<Options> {
       class: styles.tabsContainer,
       tabs: this.tabs,
       onTabChange: (index) => {
-        searchButton.classList[index === 1 ? "remove" : "add"]("hidden");
+        searchButton.classList[index !== 0 ? "remove" : "add"]("hidden");
         stickerPicker.instance[index === 1 ? "panelOpen" : "panelClose"]();
         gifPicker.instance[index === 2 ? "panelOpen" : "panelClose"]();
       },
