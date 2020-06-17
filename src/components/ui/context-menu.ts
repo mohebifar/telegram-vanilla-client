@@ -58,8 +58,11 @@ export class ContextMenu implements Component<Options> {
 
     if (clickActivator) {
       this.listener = (event: Event) => {
-        event.stopPropagation();
         const target = event.target as HTMLElement;
+        if (!target.closest("." + styles.item)) {
+          event.stopPropagation();
+        }
+
         if (!target.closest("." + styles.container)) {
           this.close();
         } else {
@@ -79,7 +82,10 @@ export class ContextMenu implements Component<Options> {
 
   private close() {
     this.element.remove();
-    off(document.body, events as any, this.listener);
+    off(document.body, events as any, this.listener, {
+      once: true,
+      capture: true,
+    });
 
     if (this.onClose) {
       this.onClose();
