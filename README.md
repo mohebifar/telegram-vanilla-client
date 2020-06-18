@@ -6,6 +6,7 @@
 - Fixed issue with uploading multiple files at once
 - Fixed blinking issue when sending sticker, GIF, and files
 - Fixed continous progress bar in shared media when no media exists
+- Show chat's pinned message
 - Show a spinner in light box for the first loaded image
 - Show sticker set previews
 - Change user in the right sidebar on dialog change
@@ -23,6 +24,7 @@
 - Add support for contact media
 - Add support for rendering polls (Quiz, anonymous polls)
 - Sending vote on polls and quizes
+- Search GIF
 
 ## Changelog (Round 2)
 

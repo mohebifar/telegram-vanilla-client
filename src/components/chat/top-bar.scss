@@ -27,11 +27,16 @@
 
     .meta {
       line-height: 1.6;
+      flex: 1;
 
       .title {
         font-weight: 500;
         width: 100%;
         max-width: 35em;
+
+        @include breakpoint(xs) {
+          max-width: 11em;
+        }
       }
 
       .subdue {
@@ -44,7 +49,8 @@
         }
       }
 
-      .title, .subdue {
+      .title,
+      .subdue {
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -55,5 +61,30 @@
   .buttons {
     display: flex;
     align-items: center;
+  }
+}
+
+.pinned:not(:empty) {
+  border-left: 2px solid $blue;
+  padding-left: 0.5em;
+  height: 2.75em;
+  cursor: pointer;
+
+  &:before {
+    content: "Pinned Message";
+    display: block;
+    font-weight: 500;
+    color: $blue;
+  }
+
+  > div {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    max-width: 20em;
+
+    @include breakpoint(xs) {
+      max-width: 11em;
+    }
   }
 }

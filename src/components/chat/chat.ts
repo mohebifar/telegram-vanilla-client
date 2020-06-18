@@ -142,6 +142,9 @@ export default class Chat implements Component<Options> {
           onBackClick: () => {
             this.setRoute(Route.DialogList);
           },
+          onMessageSelect: (message) => {
+            this.handleReplyClick(message.id);
+          },
         });
         removeChildren(this.topBarContainer);
         this.topBarContainer.append(this.topBar);

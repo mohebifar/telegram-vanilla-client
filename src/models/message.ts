@@ -172,7 +172,7 @@ export class Message extends Model<"messages"> {
       Peer.fromObject(chat).save();
     }
 
-    const messages = [];
+    const messages: IMessage[] = [];
     for (const message of messagesSlice.messages) {
       const model = Message.fromObject(message);
       model.save();
