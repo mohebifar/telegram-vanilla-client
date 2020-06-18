@@ -6,7 +6,7 @@ import { IPeer } from "../../models/peer";
 
 interface Options {
   peer: IPeer;
-  size?: "md" | "sm" | "xs" | "l";
+  size?: "md" | "sm" | "xs" | "l" | "xxs";
   class?: string;
 }
 
@@ -34,7 +34,7 @@ export default class Avatar implements Component<Options> {
       case "Chat":
         this.peer.tg.fileStorage
           .downloadProfilePhoto(this.peer.fields as any)
-          .then(url => {
+          .then((url) => {
             if (!url) {
               return;
             }
@@ -59,7 +59,7 @@ export default class Avatar implements Component<Options> {
         styles.avatar +
         " " +
         this.className +
-        (this.size ? " " + styles[this.size] : "")
+        (this.size ? " " + styles[this.size] : ""),
     });
 
     const { img, name } = await this.getInfo();
@@ -67,7 +67,7 @@ export default class Avatar implements Component<Options> {
     this.avatar = createElement("img", {
       src: img || EMPTY_IMG,
       alt: name,
-      class: "hidden"
+      class: "hidden",
     });
 
     const placeholder = createElement(
@@ -76,7 +76,7 @@ export default class Avatar implements Component<Options> {
         class:
           styles.placeholder +
           " " +
-          styles[`placeholder_${(Math.abs(this.peer.id) % 8) + 1}`]
+          styles[`placeholder_${(Math.abs(this.peer.id) % 8) + 1}`],
       },
       getChatLetters(name)
     );

@@ -797,13 +797,18 @@ $min-width-for-sidebar-animation: $chat-container-width + $left-sidebar-width +
   margin-bottom: -0.5em;
 
   .heading {
-    margin-bottom: 1em;
+    margin-bottom: 0.5em;
 
     .question {
       font-weight: 600;
     }
 
-    > :nth-child(2) {
+    .solution {
+      flex: 1;
+      text-align: right;
+    }
+
+    > :nth-child(2):not(:empty) {
       display: flex;
       color: $grey;
       margin-top: 0.2em;
@@ -811,8 +816,21 @@ $min-width-for-sidebar-animation: $chat-container-width + $left-sidebar-width +
       height: 1.75em;
 
       > :first-child {
-        flex: 1;
         font-size: 0.8em;
+        padding-right: 1em;
+      }
+
+      .recentVoters {
+        display: flex;
+
+        > div {
+          margin: 0;
+
+          &:not(:first-child) {
+            margin-left: -3px;
+            box-shadow: -1.2px 0 0 white;
+          }
+        }
       }
     }
   }

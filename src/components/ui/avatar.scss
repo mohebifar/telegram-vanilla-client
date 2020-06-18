@@ -7,7 +7,7 @@
   &:global(.online) {
     &::before {
       position: absolute;
-      content: '';
+      content: "";
       display: block;
       width: 10px;
       height: 10px;
@@ -65,6 +65,18 @@
     img {
       width: 3.375rem;
       height: 3.375rem;
+    }
+  }
+
+  &.xxs {
+    padding: 0;
+
+    &,
+    .placeholder,
+    img {
+      width: 1rem;
+      height: 1rem;
+      font-size: 0.3rem;
     }
   }
 

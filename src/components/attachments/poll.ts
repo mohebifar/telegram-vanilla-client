@@ -11,6 +11,8 @@ import { getInputPeer } from "../../core/tl/utils";
 
 import * as styles from "../chat/chat.scss";
 import { handleUpdate } from "../../update-handler";
+import { Peer } from "../../models/peer";
+import Avatar from "../ui/avatar";
 
 export interface Options {
   media: MessageMediaPoll;
@@ -26,29 +28,54 @@ export default class PollAttachment implements Component<Options> {
     const isQuiz = !!poll.quiz;
     const isSingleChoice = !poll.multipleChoice || poll.quiz;
 
+    let resultElement: HTMLElement;
+
+    if (anonymous) {
+      resultElement = createElement("div", "Anonymous Poll");
+    } else if (results.recentVoters) {
+      const recentVotersWrapper = createElement("div", {
+        class: styles.recentVoters,
+      });
+      resultElement = createElement(
+        "div",
+        { style: { display: "flex" } },
+        createElement("div", { style: { marginRight: "0.5em" } }, "Poll"),
+        recentVotersWrapper
+      );
+
+      Peer.bulkGet(
+        results.recentVoters.map((id) => ({
+          id,
+          type: "User",
+        }))
+      ).then((users) => {
+        recentVotersWrapper.append(
+          ...users.map((peer) => createElement(Avatar, { peer, size: "xxs" }))
+        );
+      });
+    }
+
     const heading = createElement(
       "div",
       { class: styles.heading },
       createElement("div", { class: styles.question }, poll.question),
-      anonymous
-        ? createElement(
-            "div",
-            createElement("div", "Anonymous Poll"),
-            results.solution
-              ? createElement(
-                  "span",
-                  {
-                    class: "tooltip",
-                    title: results.solution,
-                  },
-                  createElement(Icon, {
-                    icon: Icons.Tip,
-                    color: "blue",
-                  })
-                )
-              : ""
-          )
-        : ""
+      createElement(
+        "div",
+        resultElement,
+        results.solution
+          ? createElement(
+              "span",
+              {
+                class: "tooltip " + styles.solution,
+                title: results.solution,
+              },
+              createElement(Icon, {
+                icon: Icons.Tip,
+                color: "blue",
+              })
+            )
+          : ""
+      )
     );
 
     const answerVoters: PollAnswerVoters[] | undefined = results.results;
