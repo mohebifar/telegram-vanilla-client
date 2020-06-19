@@ -32,6 +32,8 @@ import { TransientMedia, IsTypingAction } from "../../utils/useful-types";
 import { parseFileSize, formatDurationWithMillis } from "../../utils/chat";
 import RecordButton from "./record-button";
 import { isMobile } from "../../utils/mobile";
+import { extractEmojis } from "../../utils/emojis";
+import EmojiPicker from "../ui/emoji-picker";
 
 interface Options {
   callback(message: SimplifiedMessageRequest): Promise<IMessage>;
@@ -634,6 +636,11 @@ export default class SendMessageForm implements Component<Options> {
       ...(this.replyMessage ? { replyToMsgId: this.replyMessage.id } : {}),
     });
     this.clearReply();
+    const emojis = extractEmojis(message.message);
+    if (emojis.length > 0) {
+      EmojiPicker.useEmojis(emojis);
+    }
+
     if (clear) {
       this.inputNode.value = "";
       this.recordButton.instance.setState("mic");

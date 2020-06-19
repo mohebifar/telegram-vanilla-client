@@ -141,6 +141,7 @@ export default class EmojiPanel implements Component<Options> {
     this.visible = visible;
 
     if (visible) {
+      (this.tabs[0].content as any).instance.panelOpen();
       this.visibleTime = Date.now();
       removeClass(this.element, "hidden");
       addClass(this.element, "visible");

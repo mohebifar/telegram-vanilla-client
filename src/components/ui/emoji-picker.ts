@@ -1,15 +1,23 @@
-import { Component, createElement, Element, on } from "../../utils/dom";
+import {
+  Component,
+  createElement,
+  Element,
+  on,
+  removeChildren,
+} from "../../utils/dom";
 import * as styles from "./emoji-picker.scss";
 import Icon, { Icons } from "./icon";
 import countries from "../../data/countries";
 import { throttle } from "../../utils/utils";
 import { getEmojiImage } from "../../utils/emojis";
+import db from "../../utils/db";
 
 interface Options {
   onEmojiSelect(emoji: string): any;
 }
 
 type EmojiCategories =
+  | "Recent"
   | "Smileys & Emotion"
   | "Animals & Nature"
   | "Food & Drink"
@@ -19,6 +27,7 @@ type EmojiCategories =
   | "Flags";
 
 const icons: { [k in EmojiCategories]: Icons } = {
+  Recent: Icons.Recent,
   "Smileys & Emotion": Icons.Smile,
   "Animals & Nature": Icons.Animals,
   "Food & Drink": Icons.Eats,
@@ -27,6 +36,8 @@ const icons: { [k in EmojiCategories]: Icons } = {
   Objects: Icons.Lamp,
   Flags: Icons.Flag,
 };
+
+const RECENT_EMOJIS_KEY = "recentEmojis";
 
 export default class EmojiPicker implements Component<Options> {
   public readonly element: HTMLElement;
@@ -91,12 +102,14 @@ export default class EmojiPicker implements Component<Options> {
 
   public static emojis: { [k in EmojiCategories]: string[] };
 
-  static prepareEmojis() {
+  static async prepareEmojis() {
     if (this.emojis) {
       return;
     }
 
     EmojiPicker.emojis = {} as any;
+
+    EmojiPicker.emojis.Recent = await this.getRecentEmojis();
 
     const { emojisRanges } = EmojiPicker;
 
@@ -114,14 +127,55 @@ export default class EmojiPicker implements Component<Options> {
     EmojiPicker.emojis.Flags = countries.map(({ e }) => e);
   }
 
+  static async useEmojis(emojis: string[]) {
+    const recentEmojis = await this.getRecentEmojis();
+    const newEmojis = [
+      ...emojis,
+      ...recentEmojis.filter((emoji) => !emojis.includes(emoji)),
+    ].slice(0, 18);
+
+    await db.configs.put({
+      key: RECENT_EMOJIS_KEY,
+      value: newEmojis,
+    });
+  }
+
+  static async getRecentEmojis(): Promise<string[]> {
+    const recentEmojis = await db.configs.get(RECENT_EMOJIS_KEY);
+    return (
+      (recentEmojis && recentEmojis.value) || [
+        "😂",
+        "😁",
+        "😃",
+        "🙏",
+        "😕",
+        "😐",
+        "😘",
+        "😍",
+        "😏",
+        "😒",
+        "😞",
+        "🥳",
+        "🤣",
+        "😎",
+        "👍",
+        "😅",
+      ]
+    );
+  }
+
   constructor({ onEmojiSelect }: Options) {
     this.onEmojiSelect = onEmojiSelect;
 
-    const element = createElement("div", {
+    this.element = createElement("div", {
       class: styles.container,
     });
 
-    EmojiPicker.prepareEmojis();
+    this.register();
+  }
+
+  private async register() {
+    await EmojiPicker.prepareEmojis();
     const titleElements: HTMLElement[] = [];
     const categoryElements: HTMLElement[] = [];
     const pickers: Element<Icon>[] = [];
@@ -129,17 +183,13 @@ export default class EmojiPicker implements Component<Options> {
     const emojiWrapper = createElement("div", { class: styles.emojiWrapper });
 
     Object.keys(EmojiPicker.emojis).forEach((category: EmojiCategories) => {
-      const emojis = createElement("div", { class: styles.emojisList });
+      const emojis = createElement("div", {
+        class: styles.emojisList,
+        "data-emoji-cat": category,
+      });
       const title = createElement("h3", { class: styles.title }, category);
 
-      EmojiPicker.emojis[category].forEach((emoji) => {
-        const button = createElement("button", { type: "button" });
-        button.innerHTML = getEmojiImage(emoji);
-        on(button, "click", () => {
-          this.onEmojiSelect(emoji);
-        });
-        emojis.append(button);
-      });
+      this.fillEmojis(category, emojis);
 
       const categoryElement = createElement(
         "div",
@@ -161,22 +211,26 @@ export default class EmojiPicker implements Component<Options> {
       );
     });
 
-    const updateTabColor = throttle(() => {
-      const { scrollTop } = emojiWrapper;
-      for (let i = categoryElements.length - 1; i >= 0; i--) {
-        const titleElement = categoryElements[i];
-        if (titleElement.offsetTop - 50 <= scrollTop) {
-          pickers.forEach((picker) => picker.instance.setColor("grey"));
-          pickers[i].instance.setColor("blue");
-          break;
+    const updateTabColor = throttle(
+      () => {
+        const { scrollTop } = emojiWrapper;
+        for (let i = categoryElements.length - 1; i >= 0; i--) {
+          const titleElement = categoryElements[i];
+          if (titleElement.offsetTop - 60 <= scrollTop) {
+            pickers.forEach((picker) => picker.instance.setColor("grey"));
+            pickers[i].instance.setColor("blue");
+            break;
+          }
         }
-      }
-    }, 300, true);
+      },
+      300,
+      true
+    );
 
     on(emojiWrapper, "scroll", updateTabColor);
     pickers[0].instance.setColor("blue");
 
-    element.append(
+    this.element.append(
       emojiWrapper,
       createElement(
         "div",
@@ -184,13 +238,34 @@ export default class EmojiPicker implements Component<Options> {
         ...pickers.map((icon, i) => {
           const element = createElement("div", { class: "categoryTab" }, icon);
           on(element, "click", () => {
-            emojiWrapper.scrollTo({ top: categoryElements[i].offsetTop - 50, behavior: "smooth" });
+            emojiWrapper.scrollTo({
+              top: categoryElements[i].offsetTop - 60,
+              behavior: "smooth",
+            });
           });
           return element;
         })
       )
     );
+  }
 
-    this.element = element;
+  private fillEmojis(category: EmojiCategories, wrapper: HTMLElement) {
+    removeChildren(wrapper);
+    EmojiPicker.emojis[category].forEach((emoji) => {
+      const button = createElement("button", { type: "button" });
+      button.innerHTML = getEmojiImage(emoji);
+      on(button, "click", () => {
+        this.onEmojiSelect(emoji);
+      });
+      wrapper.append(button);
+    });
+  }
+
+  public async panelOpen() {
+    EmojiPicker.emojis.Recent = await EmojiPicker.getRecentEmojis();
+    const element = this.element.querySelector(
+      '[data-emoji-cat="Recent"]'
+    ) as HTMLElement;
+    this.fillEmojis("Recent", element);
   }
 }
