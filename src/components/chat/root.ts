@@ -1,4 +1,10 @@
-import { createElement, Component, Element } from "../../utils/dom";
+import {
+  createElement,
+  Component,
+  Element,
+  on,
+  scrollTo,
+} from "../../utils/dom";
 import * as styles from "./root.scss";
 import LeftSideBar from "../left-sidebar/left-sidebar";
 import Chat from "./chat";
@@ -30,9 +36,46 @@ export default class Root implements Component {
       this.sideBar,
       this.chat
     );
+
+    const viewport = (window as any).visualViewport as any | undefined;
+
     const resizeCallback = () => {
-      this.element.style.height = `${window.innerHeight}px`;
+      const height = (viewport && viewport.height) || window.innerHeight;
+
+      [
+        this.element,
+        document.documentElement,
+        document.body,
+        document.getElementById("chat-root"),
+      ].forEach((element) => {
+        if (element) {
+          element.style.height = `${height}px`;
+        }
+      });
+
+      scrollTo(document.documentElement, { top: 0, behavior: "smooth" });
     };
+
+    if (viewport) {
+      viewport.addEventListener("resize", resizeCallback);
+    }
+
+    on(document, ["focusin", "focusout"], (event) => {
+      if (
+        event.target instanceof HTMLElement &&
+        event.target.tagName.toLowerCase() === "textarea"
+      ) {
+        const endDate = Date.now() + 300;
+        const update = () => {
+          resizeCallback();
+          if (Date.now() < endDate) {
+            requestAnimationFrame(update);
+          } else {
+          }
+        };
+        update();
+      }
+    });
 
     document.documentElement.className = "chat";
 
