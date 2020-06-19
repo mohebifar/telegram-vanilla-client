@@ -4,6 +4,7 @@ import {
   Element,
   on,
   removeChildren,
+  scrollTo,
 } from "../../utils/dom";
 import * as styles from "./emoji-picker.scss";
 import Icon, { Icons } from "./icon";
@@ -238,7 +239,7 @@ export default class EmojiPicker implements Component<Options> {
         ...pickers.map((icon, i) => {
           const element = createElement("div", { class: "categoryTab" }, icon);
           on(element, "click", () => {
-            emojiWrapper.scrollTo({
+            scrollTo(emojiWrapper, {
               top: categoryElements[i].offsetTop - 60,
               behavior: "smooth",
             });

@@ -11,6 +11,7 @@ import {
   addClass,
   on,
   removeClass,
+  scrollTo,
 } from "../../utils/dom";
 import { debounce, throttle } from "../../utils/utils";
 import RightSidebar from "../right-sidebar/right-sidebar";
@@ -89,7 +90,7 @@ export default class Chat implements Component<Options> {
 
     this.element = createElement(
       "div",
-      { class: styles.root },
+      { class: styles.root, id: 'chat-root' },
       this.rightSidebar,
       chatSection
     );
@@ -230,28 +231,7 @@ export default class Chat implements Component<Options> {
   }
 
   private register() {
-    let clearOverflow = 0;
-    let clearOverflowAnimationFrame = 0;
-    let lockScroll = false;
-
     on(this.scrollView, "scroll", () => {
-      if (isMobile() && lockScroll && this.scrollView.scrollTop < 1) {
-        if (clearOverflow) {
-          clearTimeout(clearOverflow);
-          cancelAnimationFrame(clearOverflowAnimationFrame);
-        }
-
-        this.scrollView.style.overflowY = "hidden";
-        this.scrollView.style["WebkitOverflowScrolling"] = "auto";
-
-        clearOverflow = setTimeout(() => {
-          clearOverflowAnimationFrame = requestAnimationFrame(() => {
-            this.scrollView.style.overflowY = null;
-            this.scrollView.style["WebkitOverflowScrolling"] = null;
-          });
-        }, 200);
-      }
-
       if (this.lockLoad || this.chatContainer.childNodes.length === 0) {
         return;
       }
@@ -267,7 +247,6 @@ export default class Chat implements Component<Options> {
 
         const message = lastBubble.instance && lastBubble.instance.message;
         if (message) {
-          lockScroll = true;
           this.peer
             .fetchHistory(
               isAtTop
@@ -296,9 +275,6 @@ export default class Chat implements Component<Options> {
               return this.addMessages(messages, {
                 prepend: isAtTop,
               });
-            })
-            .then(() => {
-              lockScroll = false;
             })
             .catch(() => {
               this.lockLoad = false;
@@ -521,7 +497,7 @@ export default class Chat implements Component<Options> {
       } else if (prepend) {
         const endScroll = this.scrollView.scrollHeight;
 
-        this.scrollView.scrollTo({
+        scrollTo(this.scrollView, {
           top: endScroll - currentScroll + currentScrollTop,
         });
       }
@@ -570,9 +546,14 @@ export default class Chat implements Component<Options> {
   }
 
   private scrollToEnd(animated = true) {
-    this.scrollView.scrollTo({
+    const { scrollTop, offsetHeight, scrollHeight } = this.scrollView;
+    if (scrollTop + offsetHeight >= scrollHeight) {
+      return;
+    }
+
+    scrollTo(this.scrollView, {
       behavior: animated ? "smooth" : "auto",
-      top: this.scrollView.scrollHeight,
+      top: scrollHeight,
     });
 
     this.stayAtTheEnd = true;

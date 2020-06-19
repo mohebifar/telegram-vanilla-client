@@ -6,6 +6,7 @@ import {
   removeChildren,
   on,
   Element,
+  scrollTo,
 } from "../../utils/dom";
 import { fillStickerPreview } from "../../utils/render-sticker";
 import { debounce } from "../../utils/utils";
@@ -224,10 +225,15 @@ export default class StickerPicker implements Component<Options> {
       if (limit > 0) {
         this.renderStickers(limit);
       }
-      this.wrapper
-        .querySelector('[data-index="' + index + '"]')
-        .scrollIntoView();
-      this.wrapper.scrollTop -= 34;
+
+      const holder = this.wrapper.querySelector(
+        '[data-index="' + index + '"]'
+      ) as HTMLElement;
+      const scrollToPosition = holder.offsetTop - 34;
+
+      scrollTo(this.wrapper, {
+        top: scrollToPosition,
+      });
     });
 
     if (sticker.set.id === "recent") {

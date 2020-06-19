@@ -265,3 +265,11 @@ export function off<
     element.removeEventListener(eventType, listener, options);
   }
 }
+
+export function scrollTo(scrollElement: HTMLElement, options: ScrollToOptions) {
+  scrollElement.style.overflow = "hidden";
+  scrollElement.scrollTo(options);
+  setTimeout(() => {
+    scrollElement.style.overflow = "";
+  }, 10);
+}
