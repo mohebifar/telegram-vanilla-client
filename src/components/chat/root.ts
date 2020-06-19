@@ -33,6 +33,9 @@ export default class Root implements Component {
     const resizeCallback = () => {
       this.element.style.height = `${window.innerHeight}px`;
     };
+
+    document.documentElement.className = "chat";
+
     window.addEventListener("resize", resizeCallback);
     resizeCallback();
     this.register();
