@@ -13,6 +13,7 @@ import StickerSearch from "./sticker-search";
 import Router from "./router";
 import * as styles from "./sticker-picker.scss";
 import Spinner from "./spinner";
+import Icon, { Icons } from "./icon";
 
 interface Options {
   onStickerSelect(document: Document): any;
@@ -24,7 +25,6 @@ export default class StickerPicker implements Component<Options> {
   public readonly dialogs: HTMLElement;
   public readonly tabs: HTMLElement;
   public readonly router: Router;
-  private observer: IntersectionObserver;
   private onStickerSelect: Options["onStickerSelect"];
   private stickerSets: IStickerSet[];
   private currentOffset = 0;
@@ -33,6 +33,7 @@ export default class StickerPicker implements Component<Options> {
   private lockLoadMore = true;
   private renderedTabs = new Map<string, HTMLElement>();
   private renderedStickerAreas = new Map<string, HTMLElement>();
+  private recentHolder: HTMLElement;
   private loadPromise = StickerSet.fetchAll().then((stickerSets) => {
     this.stickerSets = stickerSets;
     on(this.wrapper, "scroll", () => {
@@ -44,6 +45,15 @@ export default class StickerPicker implements Component<Options> {
     on(this.tabs, "scroll", () => {
       if (!this.lockLoadMore && this.isTabsAtEnd()) {
         this.renderTabs();
+      }
+    });
+
+    StickerSet.events.on("recent_updated", (documents) => {
+      if (this.recentHolder) {
+        const stickerSet = (this.recentHolder as any).sticker as IStickerSet;
+        stickerSet.documents = documents;
+        removeChildren(this.recentHolder);
+        this.fillHolder(stickerSet, this.recentHolder);
       }
     });
 
@@ -85,26 +95,6 @@ export default class StickerPicker implements Component<Options> {
 
     this.wrapper = createElement("div", { class: styles.stickerWrapper });
 
-    this.observer = new IntersectionObserver(
-      debounce((entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            const stickerSet = (entry.target as any).sticker as IStickerSet;
-            this.observer.unobserve(entry.target);
-            stickerSet
-              .loadPack()
-              .then(() => {
-                this.renderTabsInHolder(stickerSet, entry.target as HTMLElement);
-              })
-              .catch(() => {
-                this.observer.observe(entry.target);
-              });
-          }
-        }
-      }, 70),
-      { root: this.wrapper }
-    );
-
     const mainStickerPicker = createElement(
       "div",
       { class: styles.container },
@@ -131,6 +121,26 @@ export default class StickerPicker implements Component<Options> {
     this.router.push("picker");
   }
 
+  private observer = new IntersectionObserver(
+    debounce((entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          const stickerSet = (entry.target as any).sticker as IStickerSet;
+          this.observer.unobserve(entry.target);
+          stickerSet
+            .loadPack()
+            .then(() => {
+              this.fillHolder(stickerSet, entry.target as HTMLElement);
+            })
+            .catch(() => {
+              this.observer.observe(entry.target);
+            });
+        }
+      }
+    }, 70),
+    { root: this.wrapper }
+  );
+
   private tabObserver = new IntersectionObserver(
     debounce((entries) => {
       for (const entry of entries) {
@@ -138,7 +148,7 @@ export default class StickerPicker implements Component<Options> {
           const target = entry.target as HTMLElement;
           const stickerSet = (target as any).sticker as IStickerSet;
 
-          this.observer.unobserve(target);
+          this.tabObserver.unobserve(target);
 
           stickerSet
             .loadPack()
@@ -156,15 +166,10 @@ export default class StickerPicker implements Component<Options> {
 
               removeChildren(target);
 
-              fillStickerPreview(
-                stickerSet.tg,
-                document,
-                stickerSet.set.animated,
-                target
-              );
+              fillStickerPreview(stickerSet.tg, document, target);
             })
             .catch(() => {
-              this.observer.unobserve(target);
+              this.tabObserver.observe(target);
             });
         }
       }
@@ -213,22 +218,6 @@ export default class StickerPicker implements Component<Options> {
       title: sticker.set.title,
     });
 
-    if (sticker.documents && sticker.documents.length !== 0) {
-      const [document] = sticker.documents;
-      if (document.$t !== "Document") {
-        return null;
-      }
-
-      const { animated } = sticker.set;
-
-      fillStickerPreview(sticker.tg, document, animated, titleElement);
-    } else {
-      titleElement.append(
-        createElement(Spinner, { size: "1.5em", color: "green" })
-      );
-      this.tabObserver.observe(titleElement);
-    }
-
     on(titleElement, "click", () => {
       const index = this.stickerSets.indexOf(sticker);
       const limit = index - this.currentOffset + 1;
@@ -238,7 +227,30 @@ export default class StickerPicker implements Component<Options> {
       this.wrapper
         .querySelector('[data-index="' + index + '"]')
         .scrollIntoView();
+      this.wrapper.scrollTop -= 34;
     });
+
+    if (sticker.set.id === "recent") {
+      titleElement.append(
+        createElement(Icon, {
+          icon: Icons.Recent,
+          color: "grey",
+          class: styles.recentTab,
+        })
+      );
+    } else if (sticker.documents && sticker.documents.length !== 0) {
+      const [document] = sticker.documents;
+      if (document.$t !== "Document") {
+        return null;
+      }
+
+      fillStickerPreview(sticker.tg, document, titleElement);
+    } else {
+      titleElement.append(
+        createElement(Spinner, { size: "1.5em", color: "green" })
+      );
+      this.tabObserver.observe(titleElement);
+    }
 
     (titleElement as any).sticker = sticker;
 
@@ -258,6 +270,10 @@ export default class StickerPicker implements Component<Options> {
     for (const sticker of stickers) {
       const [stickerArea, holder] = this.renderSticker(sticker);
       if (stickerArea) {
+        if (sticker.set.id === "recent") {
+          this.recentHolder = holder;
+        }
+
         this.wrapper.append(stickerArea);
         this.observer.observe(holder);
       }
@@ -292,8 +308,7 @@ export default class StickerPicker implements Component<Options> {
     return [stickerElement, stickerHolder];
   }
 
-  private renderTabsInHolder(sticker: IStickerSet, stickerHolder: HTMLElement) {
-    const { animated } = sticker.set;
+  private fillHolder(sticker: IStickerSet, stickerHolder: HTMLElement) {
     const callbacks: Function[] = [];
 
     for (const document of sticker.documents) {
@@ -303,7 +318,7 @@ export default class StickerPicker implements Component<Options> {
 
       const preview = createElement("div", { class: styles.preview });
 
-      fillStickerPreview(sticker.tg, document, animated, preview, callbacks);
+      fillStickerPreview(sticker.tg, document, preview, callbacks);
 
       stickerHolder.append(preview);
 

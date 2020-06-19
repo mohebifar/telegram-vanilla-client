@@ -1,9 +1,9 @@
+@import "./icon.global.scss";
 @import "../../variables.scss";
 @import "../../mixins.scss";
 
 $previews-height: 3.5em;
 $previews-item-size: 3em;
-
 
 .container {
   position: relative;
@@ -65,6 +65,14 @@ $previews-item-size: 3em;
     }
   }
 
+  .recentTab {
+    width: 1.5em;
+
+    &:hover {
+      @extend .ic-blue;
+    }
+  }
+
   .tabs {
     padding: 0.25em 0.5em 0;
     height: $previews-height;
@@ -87,8 +95,7 @@ $previews-item-size: 3em;
       height: $previews-item-size;
       padding: 0;
 
-      > :global(.lottieWrapper)
-      > :global(.spinner),
+      > :global(.lottieWrapper) > :global(.spinner),
       img {
         max-width: 100%;
         height: $previews-item-size !important;

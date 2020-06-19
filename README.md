@@ -26,6 +26,7 @@
 - Sending vote on polls and quizzes
 - Search GIF (uses the @gif inline bot to do the search)
 - Recent emojis (updated when a message is sent by scanning its content and extracting emojis)
+- Support recent stickers
 
 ## Changelog (Round 2)
 

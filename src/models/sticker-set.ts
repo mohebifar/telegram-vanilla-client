@@ -5,6 +5,9 @@ import {
   messages_AllStickersNotModified,
   messages_StickerSet,
   messages_FoundStickerSets,
+  Document,
+  messages_RecentStickersNotModified,
+  messages_RecentStickers,
 } from "../core/tl/TLObjects";
 import db, { TelegramDatabase } from "../utils/db";
 import { Model, ModelDecorator, ModelKey, ModelWithProxy } from "./model";
@@ -18,6 +21,8 @@ interface ExtraMethods {
 export type IStickerSet = ModelWithProxy<"stickerSet"> & ExtraMethods;
 
 const STICKER_HASH_CONFIG_KEY = "allStickersHash";
+const RECENT_STICKERS_KEY = "recentStickers";
+const RECENT_STICKERS_HASH_CONFIG_KEY = "recentStickersHash";
 
 @ModelDecorator({
   tableName: "stickerSet",
@@ -32,6 +37,7 @@ export class StickerSet extends Model<"stickerSet"> implements ExtraMethods {
   static fromObject: (object: any, forceRecreate?: boolean) => IStickerSet;
   private loadingPromise: Promise<void> | null = null;
   private static all: IStickerSet[];
+  private static recentCache: Document[];
 
   protected prepareValues(stickerSet: TLStickerSet) {
     return stickerSet;
@@ -46,8 +52,19 @@ export class StickerSet extends Model<"stickerSet"> implements ExtraMethods {
       hash,
     })) as messages_AllStickers | messages_AllStickersNotModified;
 
+    const recentStickerDocuments = await this.getRecentStickers();
+
+    const recentSet = StickerSet.fromObject({
+      $t: "messages_StickerSet",
+      set: {
+        id: "recent",
+        title: "Recent",
+      },
+      documents: recentStickerDocuments,
+    });
+
     if (response.$t === "messages_AllStickersNotModified") {
-      return this.getAll();
+      return [recentSet, ...(await this.getAll())];
     }
 
     try {
@@ -77,7 +94,7 @@ export class StickerSet extends Model<"stickerSet"> implements ExtraMethods {
       key: STICKER_HASH_CONFIG_KEY,
     });
 
-    return result;
+    return [recentSet, ...result];
   }
 
   static async getAll() {
@@ -100,7 +117,7 @@ export class StickerSet extends Model<"stickerSet"> implements ExtraMethods {
     return result;
   }
 
-  static async searchStickerSet(q?: string) {
+  static async search(q?: string) {
     const response = (await this.tg.invoke(
       q
         ? {
@@ -138,11 +155,63 @@ export class StickerSet extends Model<"stickerSet"> implements ExtraMethods {
           !allNetworkIds.includes(stickerSet.set.id)
       );
 
-      console.log(localStickers, localFiltered, lowerCaseQ);
       return [...networkResult, ...localFiltered];
     }
 
     return networkResult;
+  }
+
+  static async getRecentStickers(): Promise<Document[]> {
+    if (this.recentCache) {
+      return this.recentCache;
+    }
+
+    const hashRecord = await db.configs.get(RECENT_STICKERS_HASH_CONFIG_KEY);
+    const hash = (hashRecord && hashRecord.value) || 0;
+
+    const response = (await this.tg.invoke({
+      $t: "messages_GetRecentStickersRequest",
+      hash,
+    })) as messages_RecentStickersNotModified | messages_RecentStickers;
+
+    if (response.$t === "messages_RecentStickersNotModified") {
+      const recentStickers = await db.configs.get(RECENT_STICKERS_KEY);
+      if (recentStickers && recentStickers.value) {
+        return (this.recentCache = recentStickers.value);
+      }
+    }
+
+    if (response.$t === "messages_RecentStickers") {
+      return (this.recentCache = response.stickers.slice(0, 20) as Document[]);
+    }
+
+    const stickers = await this.search();
+
+    return (this.recentCache = stickers
+      .map((sticker) => {
+        if (sticker.covers) {
+          return sticker.covers.find(
+            (document) => document.$t === "Document"
+          ) as Document;
+        }
+
+        return sticker.cover as Document;
+      })
+      .filter(Boolean)).slice(0, 5);
+  }
+
+  static async use(document: Document) {
+    const recentStickers = await StickerSet.getRecentStickers();
+    this.recentCache = [
+      document,
+      ...recentStickers.filter((item) => item.id !== document.id),
+    ].slice(0, 20);
+    this.events.emit("recent_updated", this.recentCache);
+
+    db.configs.put({
+      value: this.recentCache,
+      key: RECENT_STICKERS_KEY,
+    });
   }
 
   public async loadPack() {

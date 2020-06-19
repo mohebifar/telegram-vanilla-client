@@ -34,6 +34,7 @@ import RecordButton from "./record-button";
 import { isMobile } from "../../utils/mobile";
 import { extractEmojis } from "../../utils/emojis";
 import EmojiPicker from "../ui/emoji-picker";
+import { StickerSet } from "../../models/sticker-set";
 
 interface Options {
   callback(message: SimplifiedMessageRequest): Promise<IMessage>;
@@ -564,30 +565,35 @@ export default class SendMessageForm implements Component<Options> {
     return [attachmentDropdown, attachmentActivator];
   }
 
-  private createEmojiPanel() {
-    const onDocumentSelect = (document: Document) => {
-      this.sendMessage(
-        {
-          $t: "messages_SendMediaRequest",
-          media: {
-            $t: "InputMediaDocument",
-            id: {
-              $t: "InputDocument",
-              accessHash: document.accessHash,
-              fileReference: document.fileReference,
-              id: document.id,
-            },
+  private handleSendDocument(document: Document) {
+    this.sendMessage(
+      {
+        $t: "messages_SendMediaRequest",
+        media: {
+          $t: "InputMediaDocument",
+          id: {
+            $t: "InputDocument",
+            accessHash: document.accessHash,
+            fileReference: document.fileReference,
+            id: document.id,
           },
-          actualMedia: {
-            $t: "MessageMediaDocument",
-            document,
-          },
-          message: "",
         },
-        false
-      );
-    };
+        actualMedia: {
+          $t: "MessageMediaDocument",
+          document,
+        },
+        message: "",
+      },
+      false
+    );
+  }
 
+  private handleSendSticker(document: Document) {
+    StickerSet.use(document);
+    this.handleSendDocument(document);
+  }
+
+  private createEmojiPanel() {
     const emojiActivator = createElement(IconButton, {
       icon: Icons.Smile,
       type: "button",
@@ -623,8 +629,8 @@ export default class SendMessageForm implements Component<Options> {
           document.execCommand("insertText", false, emoji);
         }
       },
-      onStickerSelect: onDocumentSelect,
-      onGifSelect: onDocumentSelect,
+      onStickerSelect: this.handleSendSticker.bind(this),
+      onGifSelect: this.handleSendDocument.bind(this),
     });
 
     return [emojiPicker, emojiActivator];

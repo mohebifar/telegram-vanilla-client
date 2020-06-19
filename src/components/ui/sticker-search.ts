@@ -29,7 +29,7 @@ export default class StickerSearch implements Component<Options> {
       onInput: debounce(() => {
         const value = searchInput.instance.value.trim();
 
-        StickerSet.searchStickerSet(value).then((result) => {
+        StickerSet.search(value).then((result) => {
           if (value !== searchInput.instance.value) {
             return;
           }
@@ -68,7 +68,7 @@ export default class StickerSearch implements Component<Options> {
 
   private displayFeaturedStickers() {
     removeChildren(this.scrollView);
-    StickerSet.searchStickerSet().then((stickerSet) => {
+    StickerSet.search().then((stickerSet) => {
       this.renderStickers(stickerSet);
     });
   }
@@ -123,7 +123,7 @@ export default class StickerSearch implements Component<Options> {
 
       for (const sticker of covers) {
         if (sticker.$t === "Document") {
-          fillStickerPreview(StickerSet.tg, sticker, set.animated, body);
+          fillStickerPreview(StickerSet.tg, sticker, body);
         }
       }
       stickerWrapper.append(header, body);

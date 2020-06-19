@@ -7,10 +7,11 @@ import { EMPTY_IMG } from "./images";
 export function fillStickerPreview(
   tg: TelegramClientProxy,
   document: Document,
-  animated: boolean,
   container: HTMLElement,
   callbacks?: Function[]
 ) {
+  const animated = document.mimeType === "application/x-tgsticker";
+
   if (animated) {
     const callback = () => {
       tg.fileStorage
@@ -26,7 +27,10 @@ export function fillStickerPreview(
           container.append(lottie);
 
           on(lottie, "mouseenter", () => {
-            if (lottie.instance.animation && (lottie.instance.animation as any).isPaused) {
+            if (
+              lottie.instance.animation &&
+              (lottie.instance.animation as any).isPaused
+            ) {
               lottie.instance.animation.goToAndPlay(0);
             }
           });
