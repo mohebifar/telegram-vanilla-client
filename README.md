@@ -27,6 +27,7 @@
 - Search GIF (uses the @gif inline bot to do the search)
 - Recent emojis (updated when a message is sent by scanning its content and extracting emojis)
 - Support recent stickers
+- Fixed video playback on Safari iOS
 
 ## Changelog (Round 2)
 

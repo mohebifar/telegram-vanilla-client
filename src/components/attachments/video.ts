@@ -94,7 +94,12 @@ export default class VideoAttachment implements Component<Options> {
           downloadIndicator.remove();
           downloaded = true;
           img.remove();
-          const video = createElement("video", { src }) as HTMLVideoElement;
+          const video = createElement(
+            "video",
+            { playsinline: "playsinline" },
+            createElement("source", { src, type: "video/mp4" })
+          ) as HTMLVideoElement;
+
           video.muted = true;
           video.loop = true;
           video.autoplay = true;
