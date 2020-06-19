@@ -120,9 +120,10 @@ export default class EmojiPanel implements Component<Options> {
 
     on(document.body, "click", (event) => {
       const target = event.target as HTMLElement;
+      const clickedOnContainer = target.closest("." + styles.container);
       const shouldClose = isMobile()
-        ? target === activator
-        : !target.closest("." + styles.container);
+        ? target === activator || !clickedOnContainer
+        : !clickedOnContainer;
 
       if (this.visible && shouldClose && Date.now() - this.visibleTime > 300) {
         this.deferHide(300);

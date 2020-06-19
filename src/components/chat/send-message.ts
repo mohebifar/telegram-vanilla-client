@@ -60,6 +60,10 @@ export default class SendMessageForm implements Component<Options> {
       dir: "auto",
     }) as HTMLTextAreaElement;
     autosize(this.inputNode);
+    
+    on(this.inputNode, "focus", () => {
+      emojiPicker.instance.setVisibility(false);
+    });
 
     const voiceUploader = this.uploadFactory("voice", (_type, requests) => {
       return new Promise((resolve, reject) => {
@@ -593,7 +597,7 @@ export default class SendMessageForm implements Component<Options> {
     this.handleSendDocument(document);
   }
 
-  private createEmojiPanel() {
+  private createEmojiPanel(): [Element<EmojiPanel>, Element<IconButton>] {
     const emojiActivator = createElement(IconButton, {
       icon: Icons.Smile,
       type: "button",
@@ -651,8 +655,8 @@ export default class SendMessageForm implements Component<Options> {
       this.inputNode.value = "";
       this.recordButton.instance.setState("mic");
       autosize.update(this.inputNode);
+      this.focus();
     }
-    this.focus();
     return result;
   }
 }
