@@ -23,8 +23,9 @@
 - Search stickers both locally and from the Telegram API
 - Add support for contact media
 - Add support for rendering polls (Quiz, anonymous polls)
-- Sending vote on polls and quizes
-- Search GIF
+- Sending vote on polls and quizzes
+- Search GIF (uses the @gif inline bot to do the search)
+- Recent emojis (updated when a message is sent by scanning its content and extracting emojis)
 
 ## Changelog (Round 2)
 

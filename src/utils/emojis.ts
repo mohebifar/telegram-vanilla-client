@@ -4,8 +4,12 @@ const isApple = /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform);
 
 let emojiMap: Map<string, string>;
 
-const regex = /(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])/g;
-const allEmojiRegex = /^(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff]){1,3}$/;
+const regex = /(\u00a9|\u00ae|[\u2030-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])/g;
+const allEmojiRegex = /^(\u00a9|\u00ae|[\u2030-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff]){1,3}$/;
+
+export function extractEmojis(text: string) {
+  return Array.from(new Set(text.match(regex))).filter(Boolean);
+}
 
 export function isAllEmoji(emoji: string) {
   return allEmojiRegex.test(emoji.trim());
