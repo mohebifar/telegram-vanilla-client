@@ -38,7 +38,7 @@
     // "experimentalDecorators": true /* Enables experimental support for ES7 decorators. */,
     // "emitDecoratorMetadata": true /* Enables experimental support for emitting type metadata for decorators. */,
 
-    "lib": ["esnext.bigint", "es2017", "dom", "webworker"],
+    "lib": ["esnext.bigint", "es2019", "dom", "webworker"],
     "types": ["dom-mediacapture-record"],
     "typeRoots": ["node_modules/@types", "src/types"]
   },
