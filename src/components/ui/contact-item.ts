@@ -38,9 +38,10 @@ export default class ContactItem implements Component<Options> {
   public async update() {
     removeChildren(this.element);
     this.avatar = createElement(Avatar, {
-      peer: this.peer
+      peer: this.peer,
+      isDialog: true,
     });
-    const title = this.peer.displayName;
+    const title = this.peer.displayPeerName;
     const text = getChatSubdueText(this.peer);
     this.title = createElement("div", { dir: "auto" }, title);
     this.text = createElement("span", { dir: "auto" }, text);

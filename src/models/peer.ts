@@ -10,6 +10,7 @@ import {
   Message as TLMessage,
   contacts_Found,
   messages_MessagesSlice,
+  messages_PeerDialogs,
 } from "../core/tl/TLObjects";
 import {
   getInputPeer,
@@ -82,6 +83,8 @@ export type SimplifiedMessageRequest = (
   transientModel?: IMessage;
 };
 
+const SELF_DIALOG_NAME = "Saved Messages";
+
 let transientIds = new Set<number>();
 
 function generateTransientId() {
@@ -118,12 +121,28 @@ export class Peer extends Model<"peers"> implements ExtraMethods {
       q,
     })) as contacts_Found;
 
+    const myResults: IPeer[] = [];
+    const result: IPeer[] = [];
+
+    const regex = new RegExp("^" + q, "i");
+
+    if (regex.test(SELF_DIALOG_NAME)) {
+      const self = (await this.tg.invoke({
+        $t: "messages_GetPeerDialogsRequest",
+        peers: [{ $t: "InputDialogPeer", peer: { $t: "InputPeerSelf" } }],
+      })) as messages_PeerDialogs;
+      const [dialog] = self.dialogs;
+
+      if (dialog && self.users.length > 0) {
+        response.users.unshift(self.users[0]);
+        response.myResults.unshift(dialog.peer);
+      }
+    }
+
     for (const peer of [...response.chats, ...response.users]) {
       Peer.fromObject(peer).save();
     }
 
-    const myResults: IPeer[] = [];
-    const result: IPeer[] = [];
     for (const contact of response.myResults) {
       const model = await Peer.get(extractIdFromPeer(contact));
       myResults.push(model);
@@ -261,19 +280,23 @@ export class Peer extends Model<"peers"> implements ExtraMethods {
     ...message
   }: SimplifiedMessageRequest): [IMessage, Promise<any> | undefined, boolean] {
     let shouldCreateBubble = true;
-    const randomId = transientModel ? transientModel.id : generateTransientId() as any;
+    const randomId = transientModel
+      ? transientModel.id
+      : (generateTransientId() as any);
     const media =
       actualMedia || ("media" in message ? message.media : undefined);
 
-    const messageModel = transientModel || Message.fromObject({
-      ...message,
-      $t: "Message",
-      date: Date.now() / 1000,
-      id: randomId,
-      toId: getPeer(this.fields),
-      out: true,
-      ...(media ? { media } : {}),
-    });
+    const messageModel =
+      transientModel ||
+      Message.fromObject({
+        ...message,
+        $t: "Message",
+        date: Date.now() / 1000,
+        id: randomId,
+        toId: getPeer(this.fields),
+        out: true,
+        ...(media ? { media } : {}),
+      });
     messageModel.justSent = true;
     messageModel.saveInMemory();
 
@@ -391,8 +414,8 @@ export class Peer extends Model<"peers"> implements ExtraMethods {
   }
 
   get displayPeerName() {
-    if (this._proxy.$t === 'User' && this._proxy.isSelf) {
-      return 'Saved Messages';
+    if (this._proxy.$t === "User" && this._proxy.isSelf) {
+      return SELF_DIALOG_NAME;
     }
 
     return this.displayName;
