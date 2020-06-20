@@ -61,6 +61,7 @@ export class FileStorage {
     [dcId: number]: Array<Promise<any> | undefined>;
   } = {};
   private uploadedFiles = new Map<string, Blob | null>();
+  private blobUrlCache = new Map<string, string>();
   public decodeWebp: (data: Uint8Array) => Promise<Uint8Array> | Uint8Array = (
     data: Uint8Array
   ) => data;
@@ -134,13 +135,19 @@ export class FileStorage {
     }
   ) {
     const key = this.generateKey(location);
+    const blobUrlCacheKey = `${cacheKey || 'u'}_${key}`;
     const cache = cacheKey && this.cache && this.cache[cacheKey];
+
+    if (this.blobUrlCache.has(blobUrlCacheKey)) {
+      return this.blobUrlCache.get(blobUrlCacheKey);
+    }
 
     if (cache) {
       const match = await cache.match(key);
       if (match) {
         const url = URL.createObjectURL(await match.blob());
         console.debug("Cache hit", cacheKey, url);
+        this.blobUrlCache.set(blobUrlCacheKey, url);
         return url;
       }
     }
@@ -225,6 +232,8 @@ export class FileStorage {
     if (cache) {
       cache.put(key, new Response(blob));
     }
+
+    this.blobUrlCache.set(blobUrlCacheKey, url);
 
     return url;
   }
