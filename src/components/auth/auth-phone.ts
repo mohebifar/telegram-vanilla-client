@@ -4,6 +4,7 @@ import Button from "../ui/button";
 import CountryPicker from "../ui/country-picker";
 import countries from "../../data/countries";
 import { makeModal } from "../ui/modal";
+import Checkbox from "../ui/checkbox";
 
 interface Options {
   callback: (countryCode: string, phoneNumber: string) => any;
@@ -29,7 +30,7 @@ export default class AuthPhone implements Component<Options> {
 
     const logo = createElement("img", {
       src: "/assets/logo.svg",
-      alt: "Telegram"
+      alt: "Telegram",
     });
     const h1 = createElement("h1", "Sign in to Telegram");
     const h4 = createElement(
@@ -45,19 +46,33 @@ export default class AuthPhone implements Component<Options> {
     );
     this.countryInput = createElement(CountryPicker, {
       placeholder: "Country",
-      onChange: this.handleCountryCodeChange
+      onChange: this.handleCountryCodeChange,
     });
 
     this.phoneNumberInput = createElement(Input, {
       placeholder: "Phone number",
       type: "tel",
       autocomplete: "off",
-      onInput: this.handlePhoneNumberChange
+      onInput: this.handlePhoneNumberChange,
     });
 
     this.btn = createElement(Button, {
-      caption: "NEXT"
+      caption: "NEXT",
     });
+
+    const rememberMe = createElement(
+      "label",
+      {
+        style: {
+          display: "flex",
+          alignItems: "center",
+          textAlign: "left",
+          marginBottom: "1em",
+        },
+      },
+      createElement(Checkbox),
+      createElement("div", { style: { marginLeft: "0.5em" } }, "Remember me")
+    );
 
     const signInForm = createElement(
       "form",
@@ -67,10 +82,11 @@ export default class AuthPhone implements Component<Options> {
       h4,
       this.countryInput,
       this.phoneNumberInput,
+      rememberMe,
       this.btn
     );
 
-    on(signInForm, "submit", event => {
+    on(signInForm, "submit", (event) => {
       event.preventDefault();
       this.handleSubmit();
     });
