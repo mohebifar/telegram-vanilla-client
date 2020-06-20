@@ -27,7 +27,7 @@ export default class RecordButton implements Component<Options> {
   private icon: Element<Icon>;
   private state: "send" | "mic" = "mic";
   private waveform: number[] = [];
-  private waitForRecord: Promise<void>;
+  private waitForRecord?: Promise<void>;
 
   constructor({ onEnd, onStart, onClear }: Options) {
     this.onEnd = onEnd;
@@ -39,22 +39,39 @@ export default class RecordButton implements Component<Options> {
     });
     this.element = createElement("button", this.icon);
 
-    const handleTouchStart = () => {
+    let timeout: number;
+    let touching = false;
+
+    const handleTouchStart = async () => {
       if (this.state !== "mic") {
         return;
       }
 
-      const startTime = Date.now();
+      touching = true;
+      const hasPermission = await this.requestPermission();
 
-      const handleTouchEnd = () => {
-        this.stop(Date.now() - startTime < 400);
-        off(document, ["mouseup", "touchend"], handleTouchEnd);
-      };
+      if (!hasPermission || !touching) {
+        return;
+      }
 
-      on(document, ["mouseup", "touchend"], handleTouchEnd);
+      timeout = setTimeout(() => {
+        const startTime = Date.now();
 
-      this.waitForRecord = this.record();
+        const handleTouchEnd = () => {
+          this.stop(Date.now() - startTime < 400);
+          off(document, ["mouseup", "touchend"], handleTouchEnd);
+        };
+
+        on(document, ["mouseup", "touchend"], handleTouchEnd);
+
+        this.waitForRecord = this.record();
+      });
     };
+
+    on(this.element, ["mouseup", "touchend"], () => {
+      touching = false;
+      clearTimeout(timeout);
+    });
 
     on(this.element, ["mousedown", "touchstart"], handleTouchStart);
     on(this.element, "touchcancel", () => {
@@ -66,25 +83,39 @@ export default class RecordButton implements Component<Options> {
   }
 
   public setState(state: "send" | "mic") {
+    this.state = state;
     this.icon.instance.setColor(state === "send" ? "blue" : "grey");
     this.icon.instance.setIcon(
       state === "send" ? Icons.Send : Icons.Microphone2
     );
   }
 
+  private requestPermission() {
+    return Promise.race([
+      navigator.mediaDevices.getUserMedia({
+        audio: true,
+        video: false,
+      }),
+      new Promise((resolve) => setTimeout(() => resolve(false), 2000)),
+    ]).then((resolved) => Boolean(resolved));
+  }
+
   private record = async () => {
     try {
-      navigator.mediaDevices.enumerateDevices;
-      this.stream = await navigator.mediaDevices.getUserMedia({
+      navigator.mediaDevices.getUserMedia({
         audio: true,
         video: false,
       });
-
     } catch (error) {
       console.log("error", error);
       this.onClear();
       return;
     }
+
+    this.stream = await navigator.mediaDevices.getUserMedia({
+      audio: true,
+      video: false,
+    });
 
     const sampleRate = 64000;
     this.audioContext = new AudioContext({
@@ -117,30 +148,44 @@ export default class RecordButton implements Component<Options> {
   };
 
   private stop = async (skip = false) => {
+    console.log(this.waitForRecord);
+    let canSend = false;
     try {
-      await this.waitForRecord;
-      if (this.stream) {
-        this.stream.getTracks().forEach((track) => {
-          track.stop();
-        });
-        this.processor.disconnect();
-        this.analyser.disconnect();
-        this.microphone.disconnect();
-        const result = await this.recorder.stop();
-        if (result && !skip) {
-          const [data, duration] = result;
-          if (duration > 200) {
-            const waveform = scaleWaveform(this.waveform, 63);
-            this.onEnd(data, Math.round(duration / 1000), waveform);
-            return;
+      if (this.waitForRecord) {
+        await this.waitForRecord;
+        console.log("ended wait");
+        if (this.stream) {
+          this.stream.getTracks().forEach((track) => {
+            track.stop();
+          });
+          this.processor.disconnect();
+          this.analyser.disconnect();
+          this.microphone.disconnect();
+          const result = await this.recorder.stop();
+          if (result && !skip) {
+            const [data, duration] = result;
+            if (duration > 200) {
+              const waveform = scaleWaveform(this.waveform, 63);
+              this.onEnd(data, Math.round(duration / 1000), waveform);
+              canSend = true;
+            }
           }
         }
       }
-    } finally {
-      this.element.style.boxShadow = this.getBoxShadow(0);
+    } catch (err) {
+      console.log("err", err);
     }
 
-    this.onClear();
+    this.waitForRecord = undefined;
+    this.element.style.boxShadow = this.getBoxShadow(0);
+
+    setTimeout(() => {
+      this.element.style.boxShadow = this.getBoxShadow(0);
+    }, 400);
+
+    if (!canSend) {
+      this.onClear();
+    }
   };
 
   private getBoxShadow(decible: number) {

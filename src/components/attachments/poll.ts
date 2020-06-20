@@ -192,7 +192,7 @@ export default class PollAttachment implements Component<Options> {
           );
         };
 
-    const answers = createElement("div", ...poll.answers.map(renderAnswer));
+    const answers = createElement("div", ...(poll.answers || []).map(renderAnswer));
 
     const answersWrapper = createElement(
       "div",

@@ -106,13 +106,15 @@ export default class VideoAttachment implements Component<Options> {
           element.append(video);
 
           let observer = new IntersectionObserver(
-            entries => {
-              const entry = entries[0];
+            async (entries) => {
+              const entry = entries[0] as any;
+
               if (entry) {
+                await entry.promise;
                 if (entry.isIntersecting) {
-                  video.play();
+                  entry.promise = video.play();
                 } else {
-                  video.pause();
+                  entry.promise = video.pause();
                 }
               }
             },

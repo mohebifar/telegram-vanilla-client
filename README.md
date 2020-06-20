@@ -28,6 +28,7 @@
 - Recent emojis (updated when a message is sent by scanning its content and extracting emojis)
 - Support recent stickers
 - Fixed video playback on Safari iOS
+- Support sending polls
 
 ## Changelog (Round 2)
 

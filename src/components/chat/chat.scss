@@ -18,13 +18,13 @@ $time-size: 0.75rem;
   }
 
   // Route to chat
-  @include route-xs(c) {
+  @include route-xs(ch) {
     width: 100vw;
     transform: translate3d(0, 0, 0);
   }
 
   // Route to anything but chat
-  @include route-not-xs(c) {
+  @include route-not-xs(ch) {
     visibility: hidden;
     transform: translate3d(100vw, 0, 0);
   }

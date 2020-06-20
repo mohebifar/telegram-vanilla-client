@@ -14,7 +14,7 @@ import { setRouteInfo, registerRouter } from "../../utils/history";
 
 export enum Route {
   DialogList = "dl",
-  Chat = "c",
+  ChatView = "ch",
   Profile = "p",
 }
 
@@ -83,7 +83,7 @@ export default class Root implements Component {
     registerRouter({
       onChange: ({ dialog, rsb }) => {
         if (rsb) {
-          this.setRoute(rsb ? Route.Profile : Route.Chat);
+          this.setRoute(rsb ? Route.Profile : Route.ChatView);
         } else if (dialog) {
           this.onChatSelect(dialog);
         } else {
@@ -96,7 +96,7 @@ export default class Root implements Component {
   private onChatSelect = async (dialog: IDialog, message?: IMessage) => {
     this.chat.instance.setActiveDialog(dialog, message && message.id);
     this.sideBar.instance.setActiveDialog(dialog);
-    this.setRoute(Route.Chat);
+    this.setRoute(Route.ChatView);
     setRouteInfo({
       dialog,
     });

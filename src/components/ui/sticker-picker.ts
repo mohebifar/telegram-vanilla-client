@@ -16,6 +16,7 @@ import * as styles from "./sticker-picker.scss";
 import * as panelStyles from "./emoji-panel.scss";
 import Spinner from "./spinner";
 import Icon, { Icons } from "./icon";
+import { isMobile } from "../../utils/mobile";
 
 interface Options {
   onStickerSelect(document: Document): any;
@@ -120,7 +121,7 @@ export default class StickerPicker implements Component<Options> {
       onRouteChange: (route) => {
         const panel = this.element.closest("." + panelStyles.container) as HTMLElement;
 
-        if (panel) {
+        if (panel && isMobile()) {
           if (route === "search") {
             panel.setAttribute('data-h-adjust', 'true');
           } else {

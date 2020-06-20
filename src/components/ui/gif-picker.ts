@@ -15,6 +15,7 @@ import SearchInput from "./search-input";
 import { debounce } from "../../utils/utils";
 import { Icons } from "./icon";
 import IconButton from "./icon-button";
+import { isMobile } from "../../utils/mobile";
 
 interface Options {
   onGifSelect(document: Document): any;
@@ -55,7 +56,7 @@ export default class GifPicker implements Component<Options> {
       onRouteChange: (route) => {
         const panel = this.element.closest("." + panelStyles.container) as HTMLElement;
 
-        if (panel) {
+        if (panel && isMobile()) {
           if (route === "search") {
             panel.setAttribute('data-h-adjust', 'true');
           } else {
