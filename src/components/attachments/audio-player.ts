@@ -63,6 +63,10 @@ export default class AudioAttachment implements Component<Options> {
     };
 
     const moveSeekbar = () => {
+      if (!this.element || !this.element.parentNode) {
+        return;
+      }
+
       if (audioManager.src !== source) {
         clearPlayState();
         return;
@@ -126,7 +130,9 @@ export default class AudioAttachment implements Component<Options> {
     };
 
     const pause = () => {
-      audio.pause();
+      if (source === audio.src) {
+        audio.pause();
+      }
       clearPlayState();
       off(audio, "ended", handleEnded, { once: true });
     };
@@ -155,11 +161,17 @@ export default class AudioAttachment implements Component<Options> {
         if (autoplay) {
           play();
         } else {
-          pause();
+          clearPlayState();
         }
 
         off(iconWrapper, "click", handleStopDownloadClick);
         off(iconWrapper, "click", handleDownloadClick);
+
+        if (audio.src === source) {
+          moveSeekbar();
+          clearPauseState();
+          on(audio, "ended", handleEnded, { once: true });
+        }
       }
 
       duration.innerText = formatDuration(audioAttribute.duration);
@@ -234,6 +246,24 @@ export default class AudioAttachment implements Component<Options> {
       iconWrapper,
       createElement("div", { class: styles.documentContent }, title, duration)
     );
+
+    if (
+      media.$t === "MessageMediaDocument" &&
+      media.document.$t === "Document"
+    ) {
+      tg.fileStorage.documentIsCached(media.document).then((isCached) => {
+        if (!isCached) {
+          return;
+        }
+
+        off(iconWrapper, "click", handleDownloadClick);
+        on(iconWrapper, "click", handleStopDownloadClick);
+        fileIcon.instance.showProgress(0, "c");
+        tg.fileStorage
+          .downloadMedia(media, undefined, onDownloadProgress)
+          .then((src) => downloadFinishCallback(src, false));
+      });
+    }
 
     this.element = element;
   }
