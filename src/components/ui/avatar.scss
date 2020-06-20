@@ -24,6 +24,11 @@
     position: absolute;
     top: 0;
     left: 0;
+
+    &:global(.ic) {
+      max-width: 50%;
+      left: 25%;
+    }
   }
 
   .placeholder {
@@ -55,6 +60,10 @@
     }
     &_8 {
       background: #fba76f;
+    }
+
+    &.self {
+      background-color: $blue;
     }
   }
 

@@ -49,7 +49,7 @@ export default class TopBar implements Component<Options> {
     const profile = createElement(
       "div",
       { class: "pointer " + styles.profileHolder },
-      createElement(Avatar, { peer, size: "sm" }),
+      createElement(Avatar, { peer, size: "sm", isDialog: true }),
       createElement(
         "div",
         { class: styles.meta },
@@ -111,7 +111,7 @@ export default class TopBar implements Component<Options> {
 
   public update() {
     this.displayNameContainer.innerHTML = replaceEmoji(
-      escapeHTML(this.peer.displayName)
+      escapeHTML(this.peer.displayPeerName)
     );
     let subdue = getChatSubdueText(this.peer);
     if (subdue === "online") {

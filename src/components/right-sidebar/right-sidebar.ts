@@ -5,6 +5,7 @@ import Router from "../ui/router";
 import MessageSearch from "./message-search";
 import ProfileDetails from "./profile-details";
 import * as styles from "./right-sidebar.scss";
+import { isMobile } from "../../utils/mobile";
 
 interface Options {
   onMessageSelect(peer: IPeer, message: IMessage): any;
@@ -33,6 +34,10 @@ export default class RightSideBar implements Component<Options> {
             createElement(MessageSearch, {
               onMessageSelect: (_, message) => {
                 onMessageSelect(peer, message);
+
+                if (isMobile()) {
+                  this.close();
+                }
               },
               peer,
               back: () => this.back(),

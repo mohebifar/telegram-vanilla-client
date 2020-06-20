@@ -84,7 +84,8 @@ export default class MessageSearch extends SlideTransition
       peer,
       onClick: (peer, message) => {
         this.onMessageSelect(peer, message);
-      }
+      },
+      scope: 'search'
     });
     await element.instance.register();
 

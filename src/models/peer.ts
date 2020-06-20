@@ -36,6 +36,7 @@ interface FetchHistoryInput {
 
 interface ExtraMethods {
   displayName: string;
+  displayPeerName: string;
   fetchHistory(options: FetchHistoryInput): Promise<IMessage[]>;
   sendMessage(
     message: SimplifiedMessageRequest
@@ -387,6 +388,14 @@ export class Peer extends Model<"peers"> implements ExtraMethods {
 
   get displayName() {
     return getDialogDisplayName(this.fields);
+  }
+
+  get displayPeerName() {
+    if (this._proxy.$t === 'User' && this._proxy.isSelf) {
+      return 'Saved Messages';
+    }
+
+    return this.displayName;
   }
 
   private hasAllRights() {

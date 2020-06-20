@@ -154,7 +154,8 @@ export default class GlobalSearch extends DefaultTransition
     const element = createElement(DialogItem, {
       message,
       peer,
-      onClick: this.handleChatSelect
+      onClick: this.handleChatSelect,
+      scope: 'search'
     });
     await element.instance.register();
 

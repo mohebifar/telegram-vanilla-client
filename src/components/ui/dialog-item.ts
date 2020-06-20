@@ -15,6 +15,7 @@ import { replaceEmoji } from "../../utils/emojis";
 import * as styles from "./dialog-item.scss";
 
 interface Options {
+  scope?: "search";
   dialog?: IDialog;
   message?: IMessage;
   peer: IPeer;
@@ -34,6 +35,7 @@ export default class DialogItem implements Component<Options> {
   private message: Options["message"];
   private peer: Options["peer"];
   private onClick: Options["onClick"];
+  private scope?: Options["scope"];
 
   constructor(options: Options) {
     const wrapper = createElement("div", {
@@ -45,6 +47,7 @@ export default class DialogItem implements Component<Options> {
     this.dialog = options.dialog;
     this.message = options.message;
     this.onClick = options.onClick;
+    this.scope = options.scope;
 
     // this.register(options);
   }
@@ -53,6 +56,7 @@ export default class DialogItem implements Component<Options> {
     this.avatar = createElement(Avatar, {
       // chatId: chatId
       peer: this.peer,
+      isDialog: this.scope !== "search",
     });
 
     this.unreadCount = createElement("div");
@@ -118,30 +122,33 @@ export default class DialogItem implements Component<Options> {
       this.dialog.readOutboxMaxId > 0 &&
       this.dialog.readInboxMaxId !== this.dialog.readOutboxMaxId &&
       this.dialog.readInboxMaxId !== this.dialog.topMessage &&
-      this.dialog.unreadCount === 0) {
-
-        if (
-          this.dialog.readOutboxMaxId === this.dialog.topMessage
-        ) {
-          this.dateWrapper.append(
-            createElement(Icon, {
-              icon: Icons.Checks,
-              color: "green",
-            })
-          );
-        } else if (this.dialog.readOutboxMaxId < this.dialog.topMessage) {
-          this.dateWrapper.append(
-            createElement(Icon, {
-              icon: Icons.Check,
-              color: "green",
-            })
-          );
-        }
+      this.dialog.unreadCount === 0
+    ) {
+      if (this.dialog.readOutboxMaxId === this.dialog.topMessage) {
+        this.dateWrapper.append(
+          createElement(Icon, {
+            icon: Icons.Checks,
+            color: "green",
+          })
+        );
+      } else if (this.dialog.readOutboxMaxId < this.dialog.topMessage) {
+        this.dateWrapper.append(
+          createElement(Icon, {
+            icon: Icons.Check,
+            color: "green",
+          })
+        );
       }
+    }
     this.unreadCount.className = classList.join(" ");
   }
 
   private async getInfo() {
+    const title =
+      this.scope !== "search"
+      ? this.peer.displayPeerName
+      : this.peer.displayName;
+
     if (this.dialog) {
       const isTypings = this.dialog.getIsTyping();
       const shouldShowPin = this.dialog.unreadCount === 0 && this.dialog.pinned;
@@ -156,7 +163,7 @@ export default class DialogItem implements Component<Options> {
         unread: shouldShowPin
           ? createElement(Icon, { icon: Icons.PinnedChat, color: "white" })
           : shortenCount(this.dialog.unreadCount || 0),
-        title: this.peer.displayName,
+        title,
         date,
         text: (text && text.slice(0, 50)) || "",
         silent: this.dialog.slient,
@@ -166,7 +173,7 @@ export default class DialogItem implements Component<Options> {
 
       return {
         unread: undefined,
-        title: this.peer.displayName,
+        title,
         date: getDialogDisplayDate(this.message.date),
         text: (text && text.slice(0, 50)) || "",
         silent: false,
