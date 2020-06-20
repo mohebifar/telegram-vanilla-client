@@ -69,6 +69,10 @@ export default class Router implements Component<Options> {
     this.nameMap.set(rendered, routeName);
     this.stack = [rendered];
 
+    if (this.onRouteChange) {
+      this.onRouteChange(this.currentRouteName);
+    }
+
     removeChildren(this.element);
     this.element.append(wrapped);
   }

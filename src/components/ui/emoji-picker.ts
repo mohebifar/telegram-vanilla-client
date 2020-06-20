@@ -224,7 +224,7 @@ export default class EmojiPicker implements Component<Options> {
           }
         }
       },
-      300,
+      100,
       true
     );
 

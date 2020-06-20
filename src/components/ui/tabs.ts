@@ -53,6 +53,10 @@ export default class EmojiPanel implements Component<Options> {
   }
 
   public setTab(index: number) {
+    if (this.currentTab === index) {
+      return;
+    }
+
     const tab = this.tabs[index];
 
     this.panels.forEach(panel => removeClass(panel, styles.active));

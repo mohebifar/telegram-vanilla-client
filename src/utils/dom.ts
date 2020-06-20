@@ -273,3 +273,15 @@ export function scrollTo(scrollElement: HTMLElement, options: ScrollToOptions) {
     scrollElement.style.overflow = "";
   }, 10);
 }
+
+export function isDescendentOf(from: HTMLElement, to: HTMLElement) {
+  let parent = from;
+
+  while ((parent = parent.parentElement)) {
+    if (parent === to) {
+      return true;
+    }
+  }
+
+  return false;
+}

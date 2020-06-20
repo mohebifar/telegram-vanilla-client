@@ -6,6 +6,7 @@ import {
   on,
   removeClass,
   addClass,
+  isDescendentOf,
 } from "../../utils/dom";
 import * as styles from "./emoji-panel.scss";
 import EmojiPicker from "./emoji-picker";
@@ -118,17 +119,31 @@ export default class EmojiPanel implements Component<Options> {
       }
     });
 
-    on(document.body, "click", (event) => {
-      const target = event.target as HTMLElement;
-      const clickedOnContainer = target.closest("." + styles.container);
-      const shouldClose = isMobile()
-        ? target === activator || !clickedOnContainer
-        : !clickedOnContainer;
+    on(
+      document.body,
+      "click",
+      (event) => {
+        if (!this.visible) {
+          return;
+        }
 
-      if (this.visible && shouldClose && Date.now() - this.visibleTime > 300) {
-        this.deferHide(300);
-      }
-    });
+        const target = event.target as HTMLElement;
+        const clickedOnContainer = isDescendentOf(target, this.element);
+
+        const shouldClose = isMobile()
+          ? target === activator || !clickedOnContainer
+          : !clickedOnContainer;
+
+        if (
+          this.visible &&
+          shouldClose &&
+          Date.now() - this.visibleTime > 300
+        ) {
+          this.deferHide(300);
+        }
+      },
+      { capture: true }
+    );
 
     this.element = element;
   }
@@ -147,6 +162,7 @@ export default class EmojiPanel implements Component<Options> {
       removeClass(this.element, "hidden");
       addClass(this.element, "visible");
     } else {
+      console.log('visisbiliyty paaar')
       removeClass(this.element, "visible");
       addClass(this.element, "hidden");
       // this.lockVisibility = true;
@@ -163,6 +179,7 @@ export default class EmojiPanel implements Component<Options> {
   }
 
   public deferHide(timeout = 300) {
+    console.trace();
     this.clearTimeout();
     this.timeout = setTimeout(() => {
       this.setVisibility(false);

@@ -32,7 +32,7 @@ export default class Root implements Component {
     });
     this.element = createElement(
       "div",
-      { class: styles.container },
+      { class: styles.container, "data-h-adjust": true },
       this.sideBar,
       this.chat
     );
@@ -42,16 +42,11 @@ export default class Root implements Component {
     const resizeCallback = () => {
       const height = (viewport && viewport.height) || window.innerHeight;
 
-      [
-        this.element,
-        document.documentElement,
-        document.body,
-        document.getElementById("chat-root"),
-      ].forEach((element) => {
-        if (element) {
+      document
+        .querySelectorAll("[data-h-adjust]")
+        .forEach((element: HTMLElement) => {
           element.style.height = `${height}px`;
-        }
-      });
+        });
 
       scrollTo(document.documentElement, { top: 0, behavior: "smooth" });
     };
@@ -63,14 +58,13 @@ export default class Root implements Component {
     on(document, ["focusin", "focusout"], (event) => {
       if (
         event.target instanceof HTMLElement &&
-        event.target.tagName.toLowerCase() === "textarea"
+        ["textarea", "input"].includes(event.target.tagName.toLowerCase())
       ) {
         const endDate = Date.now() + 300;
         const update = () => {
           resizeCallback();
           if (Date.now() < endDate) {
             requestAnimationFrame(update);
-          } else {
           }
         };
         update();

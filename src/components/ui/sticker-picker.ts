@@ -13,6 +13,7 @@ import { debounce } from "../../utils/utils";
 import StickerSearch from "./sticker-search";
 import Router from "./router";
 import * as styles from "./sticker-picker.scss";
+import * as panelStyles from "./emoji-panel.scss";
 import Spinner from "./spinner";
 import Icon, { Icons } from "./icon";
 
@@ -116,6 +117,18 @@ export default class StickerPicker implements Component<Options> {
           },
         },
       ],
+      onRouteChange: (route) => {
+        const panel = this.element.closest("." + panelStyles.container) as HTMLElement;
+
+        if (panel) {
+          if (route === "search") {
+            panel.setAttribute('data-h-adjust', 'true');
+          } else {
+            panel.removeAttribute('data-h-adjust');
+            panel.style.height = null;
+          }
+        }
+      },
     });
 
     this.router = this.element.instance;

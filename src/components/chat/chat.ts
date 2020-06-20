@@ -90,7 +90,7 @@ export default class Chat implements Component<Options> {
 
     this.element = createElement(
       "div",
-      { class: styles.root, id: 'chat-root' },
+      { class: styles.root, id: 'chat-root', 'data-h-adjust': true },
       this.rightSidebar,
       chatSection
     );

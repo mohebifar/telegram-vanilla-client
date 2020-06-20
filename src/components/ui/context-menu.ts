@@ -1,4 +1,4 @@
-import { createElement, Component, on, off } from "../../utils/dom";
+import { createElement, Component, on, off, isDescendentOf } from "../../utils/dom";
 import * as styles from "./context-menu.scss";
 import Icon, { Icons } from "./icon";
 
@@ -63,7 +63,7 @@ export class ContextMenu implements Component<Options> {
           event.stopPropagation();
         }
 
-        if (!target.closest("." + styles.container)) {
+        if (!isDescendentOf(target, element)) {
           this.close();
         } else {
           on(document.body, events as any, this.listener, {

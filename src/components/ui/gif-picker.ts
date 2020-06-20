@@ -8,6 +8,7 @@ import {
   Element,
 } from "../../utils/dom";
 import VideoAttachment from "../attachments/video";
+import * as panelStyles from "./emoji-panel.scss";
 import * as styles from "./gif-picker.scss";
 import Router from "./router";
 import SearchInput from "./search-input";
@@ -51,6 +52,18 @@ export default class GifPicker implements Component<Options> {
           },
         },
       ],
+      onRouteChange: (route) => {
+        const panel = this.element.closest("." + panelStyles.container) as HTMLElement;
+
+        if (panel) {
+          if (route === "search") {
+            panel.setAttribute('data-h-adjust', 'true');
+          } else {
+            panel.removeAttribute('data-h-adjust');
+            panel.style.height = null;
+          }
+        }
+      },
     });
 
     this.router = this.element.instance;
