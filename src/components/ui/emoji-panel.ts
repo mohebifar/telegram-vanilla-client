@@ -162,7 +162,6 @@ export default class EmojiPanel implements Component<Options> {
       removeClass(this.element, "hidden");
       addClass(this.element, "visible");
     } else {
-      console.log('visisbiliyty paaar')
       removeClass(this.element, "visible");
       addClass(this.element, "hidden");
       // this.lockVisibility = true;
@@ -179,7 +178,6 @@ export default class EmojiPanel implements Component<Options> {
   }
 
   public deferHide(timeout = 300) {
-    console.trace();
     this.clearTimeout();
     this.timeout = setTimeout(() => {
       this.setVisibility(false);

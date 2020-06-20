@@ -6,7 +6,7 @@ import {
 } from "../../core/tl/TLObjects";
 import { Component, createElement, on, removeChildren } from "../../utils/dom";
 import Icon, { Icons } from "../ui/icon";
-import { IMessage } from "../../models/message";
+import { IMessage, Message } from "../../models/message";
 import { getInputPeer } from "../../core/tl/utils";
 
 import * as styles from "../chat/chat.scss";
@@ -27,6 +27,14 @@ export default class PollAttachment implements Component<Options> {
     const anonymous = !poll.publicVoters;
     const isQuiz = !!poll.quiz;
     const isSingleChoice = !poll.multipleChoice || poll.quiz;
+
+    if (
+      "media" in message &&
+      message.media &&
+      message.media.$t === "MessageMediaPoll"
+    ) {
+      Message.pollToMessage.set(message.media.poll.id, message);
+    }
 
     let resultElement: HTMLElement;
 
@@ -213,6 +221,7 @@ export default class PollAttachment implements Component<Options> {
             msgId: message.id,
             peer: getInputPeer(await message.getPeer()),
           })) as Updates;
+
           handleUpdate(result);
         } catch {
           submitButton.disabled = false;

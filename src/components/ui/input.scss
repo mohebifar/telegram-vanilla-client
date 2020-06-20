@@ -54,6 +54,13 @@ $prefix-width: 2.5rem;
     }
   }
 
+  &.hasSuffix {
+    input,
+    textarea {
+      padding-right: $input-padding-h + $prefix-width;
+    }
+  }
+
   input,
   textarea {
     border: $input-border-width solid $grey-light;

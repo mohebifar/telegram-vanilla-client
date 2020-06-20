@@ -36,6 +36,7 @@ import ServiceBubble from "./service-bubble";
 import ContactAttachment from "../attachments/contact";
 import { isAllEmoji } from "../../utils/emojis";
 import PollAttachment from "../attachments/poll";
+import Spinner from "../ui/spinner";
 
 type AttachmentElement = Element<
   | AnimatedStickerAttachment
@@ -231,7 +232,7 @@ export default class Bubble implements Component<Options> {
       bubbleClassName += " " + styles.hasReply;
     }
 
-    if (attachmentType === 'poll') {
+    if (attachmentType === "poll") {
       bubbleClassName += " " + styles.noOverflow;
     }
 
@@ -245,6 +246,7 @@ export default class Bubble implements Component<Options> {
 
     if (attachment) {
       const node = this.attachment.childNodes.item(0) as AttachmentElement;
+      
       if (
         node &&
         node.instance &&
@@ -357,6 +359,15 @@ export default class Bubble implements Component<Options> {
         }
       } else if (media.$t === "MessageMediaPoll") {
         return this.getPollAttachment(media);
+      } else if ((media.$t as any) === "InputMediaPoll") {
+        return [
+          createElement(
+            "div",
+            { style: { textAlign: "center", padding: '2em' } },
+            createElement(Spinner, { color: "blue", size: "2em" })
+          ),
+          "loading",
+        ];
       }
 
       console.log("Unsupported media", media);

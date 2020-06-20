@@ -1,7 +1,11 @@
 import autosize from "autosize";
-import { InputMediaUploadedDocument, Document } from "../../core/tl/TLObjects";
+import {
+  InputMediaUploadedDocument,
+  Document,
+  PollAnswer,
+} from "../../core/tl/TLObjects";
 import { IMessage } from "../../models/message";
-import { Peer, SimplifiedMessageRequest } from "../../models/peer";
+import { Peer, SimplifiedMessageRequest, IPeer } from "../../models/peer";
 import {
   Component,
   createElement,
@@ -35,10 +39,12 @@ import { isMobile } from "../../utils/mobile";
 import { extractEmojis } from "../../utils/emojis";
 import EmojiPicker from "../ui/emoji-picker";
 import { StickerSet } from "../../models/sticker-set";
+import Checkbox from "../ui/checkbox";
 
 interface Options {
   callback(message: SimplifiedMessageRequest): Promise<IMessage>;
   startTyping(action?: IsTypingAction): void;
+  peer?: IPeer;
 }
 
 export default class SendMessageForm implements Component<Options> {
@@ -50,6 +56,8 @@ export default class SendMessageForm implements Component<Options> {
   private recordButton: Element<RecordButton>;
   private deleteVoiceElement: Element<IconButton>;
   private preventMessage = false;
+  private attachmentDropdown: Element<ContextMenu>;
+  private peer: Options["peer"];
 
   constructor({ callback, startTyping }: Options) {
     this.callback = callback;
@@ -60,7 +68,7 @@ export default class SendMessageForm implements Component<Options> {
       dir: "auto",
     }) as HTMLTextAreaElement;
     autosize(this.inputNode);
-    
+
     on(this.inputNode, "focus", () => {
       emojiPicker.instance.setVisibility(false);
     });
@@ -103,6 +111,8 @@ export default class SendMessageForm implements Component<Options> {
     const [attachmentDropdown, attachmentActivator] = this.createAttachment();
     const [emojiPicker, emojiActivator] = this.createEmojiPanel();
     const timer = createElement("div", { class: `${styles.timer} hidden` });
+
+    this.attachmentDropdown = attachmentDropdown;
 
     const inputRow = createElement(
       "div",
@@ -210,6 +220,15 @@ export default class SendMessageForm implements Component<Options> {
     });
 
     on(this.element, "submit", this.handleSubmit);
+  }
+
+  public setPeer(peer: IPeer) {
+    this.peer = peer;
+    const canSendPoll = peer.canSendPoll();
+    (canSendPoll ? removeClass : addClass)(
+      this.attachmentDropdown.querySelector("button") as HTMLElement,
+      "hidden"
+    );
   }
 
   public focus() {
@@ -485,7 +504,7 @@ export default class SendMessageForm implements Component<Options> {
     };
   }
 
-  private createAttachment() {
+  private createAttachment(): [Element<ContextMenu>, Element<IconButton>] {
     let timeout: number;
 
     const imageDialog = makeFileDialog(
@@ -518,8 +537,8 @@ export default class SendMessageForm implements Component<Options> {
         {
           title: "Poll",
           icon: Icons.Poll,
-          onClick() {
-            console.log("poll");
+          onClick: () => {
+            this.createPoll();
           },
         },
       ],
@@ -567,6 +586,155 @@ export default class SendMessageForm implements Component<Options> {
     });
 
     return [attachmentDropdown, attachmentActivator];
+  }
+
+  private createPoll() {
+    if (!this.peer.canSendPoll()) {
+      return;
+    }
+
+    const answersWrapper = createElement("div", {
+      style: { overflowX: "auto", maxHeight: "30vh", paddingTop: '1.5em', marginTop: '-1.5em' },
+    });
+
+    const question = createElement(Input, {
+      placeholder: "Ask a Question",
+      type: "text",
+    });
+
+    const anonymous = createElement(
+      "label",
+      { class: styles.checkboxWrapper },
+      createElement(Checkbox),
+      createElement("div", "Anonymous Voting")
+    );
+
+    const multipleAnswers = createElement(
+      "label",
+      { class: styles.checkboxWrapper },
+      createElement(Checkbox),
+      createElement("div", "Multiple Answers")
+    );
+
+    const quizMode = createElement(
+      "label",
+      { class: styles.checkboxWrapper },
+      createElement(Checkbox),
+      createElement("div", "Quiz Mode")
+    );
+
+    const element = createElement(
+      "div",
+      question,
+      createElement("hr"),
+      answersWrapper,
+      createElement("hr"),
+      anonymous,
+      multipleAnswers,
+      quizMode
+    );
+
+    const newOption = () => {
+      const input = createElement(Input, {
+        placeholder: "option",
+        type: "text",
+        onInput: () => {
+          addOptionIfNeeded();
+        },
+      });
+      answersWrapper.append(input);
+    };
+
+    const update = () => {
+      let index = 1;
+      const canDelete = answersWrapper.childNodes.length > 2;
+      for (
+        let input = answersWrapper.firstChild as Element<Input>;
+        input !== null;
+        input = input.nextSibling as Element<Input>
+      ) {
+        const isLast = !input.nextSibling;
+
+        input.instance.setPlaceholder(
+          isLast ? "Add option" : `Option ${index++}`
+        );
+
+        input.instance.setSuffix(
+          canDelete && !isLast
+            ? createElement(IconButton, {
+                icon: Icons.Close,
+                onClick: () => {
+                  input.remove();
+                  update();
+                },
+              })
+            : undefined
+        );
+      }
+    };
+
+    const addOptionIfNeeded = () => {
+      const lastInput = answersWrapper.children.item(
+        answersWrapper.children.length - 1
+      ) as Element<Input>;
+
+      if (lastInput.instance.value) {
+        newOption();
+        update();
+      }
+    };
+
+    ["", "", ""].forEach(newOption);
+
+    update();
+
+    const modal = makeModal("New Poll", element, {
+      caption: "CREATE",
+      onClick: () => {
+        const questionText = question.instance.value.trim();
+
+        const inputs: string[] = [];
+        for (
+          let input = answersWrapper.firstChild as Element<Input>;
+          input !== null;
+          input = input.nextSibling as Element<Input>
+        ) {
+          const value = input.instance.value.trim();
+          if (input.nextSibling && value) {
+            inputs.push(value);
+          }
+        }
+        const pollAnswers: PollAnswer[] = inputs.map(
+          (answer, i): PollAnswer => ({
+            $t: "PollAnswer",
+            option: new Uint8Array([39, i + 50]),
+            text: answer,
+          })
+        );
+
+        if (!questionText || pollAnswers.length < 2) {
+          return;
+        }
+
+        this.sendMessage(
+          {
+            $t: "messages_SendMediaRequest",
+            media: {
+              $t: "InputMediaPoll",
+              poll: {
+                $t: "Poll",
+                question: questionText,
+                answers: pollAnswers,
+                id: "1231111",
+              },
+            },
+            message: "",
+          },
+          false
+        );
+        modal.close();
+      },
+    });
   }
 
   private handleSendDocument(document: Document) {

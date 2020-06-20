@@ -3,7 +3,7 @@ import {
   Component,
   Element,
   removeChildren,
-  on
+  on,
 } from "../../utils/dom";
 import autosize from "autosize";
 import * as styles from "./input.scss";
@@ -13,7 +13,7 @@ enum EventMap {
   onBlur = "blur",
   onFocus = "focus",
   onChange = "change",
-  onInput = "input"
+  onInput = "input",
 }
 
 type EventAttributes = keyof typeof EventMap;
@@ -35,8 +35,8 @@ export default class Input implements Component<Options> {
   public element: HTMLElement;
   private inputNode: HTMLInputElement;
   private placeholder: HTMLElement;
-  private prefix: Element<unknown>;
-  private suffix: Element<unknown>;
+  private prefix: Element<any>;
+  private suffix: Element<any>;
 
   constructor({
     placeholder,
@@ -47,8 +47,8 @@ export default class Input implements Component<Options> {
     this.inputNode = createElement(tag, {
       placeholder,
       ...Object.keys(rest)
-        .filter(key => !(key in EventMap))
-        .reduce((a, b) => ({ ...a, [b]: rest[b] }), {})
+        .filter((key) => !(key in EventMap))
+        .reduce((a, b) => ({ ...a, [b]: rest[b] }), {}),
     }) as HTMLInputElement;
     if (tag === "textarea") {
       autosize(this.inputNode);
@@ -58,17 +58,17 @@ export default class Input implements Component<Options> {
       { class: styles.placeholder },
       placeholder
     );
-    this.prefix = createElement("div", { class: styles.prefix }, "");
+    this.prefix = createElement("div", { class: styles.prefix });
     this.suffix = createElement("div", { class: styles.suffix });
 
     this.element = createElement(
       "div",
       {
-        class: styles.inputWrapper + " " + wrapperClass
+        class: styles.inputWrapper + " " + wrapperClass,
       },
+      this.suffix,
       this.inputNode,
-      this.placeholder,
-      this.suffix
+      this.placeholder
     );
 
     Object.entries(EventMap).forEach(([attrName, eventName]) => {
@@ -114,8 +114,18 @@ export default class Input implements Component<Options> {
     this.prefix.innerHTML = value;
   }
 
-  setSuffix(node: HTMLElement) {
+  setSuffix(node?: HTMLElement) {
     removeChildren(this.suffix);
-    this.suffix.append(node);
+    const fn = node ? "add" : "remove";
+    this.element.classList[fn](styles.hasSuffix);
+
+    if (node) {
+      this.suffix.append(node);
+    }
+  }
+
+  setPlaceholder(placeholder: string) {
+    this.placeholder.innerText = placeholder;
+    this.inputNode.setAttribute('placeholder', placeholder);
   }
 }

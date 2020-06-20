@@ -1,3 +1,5 @@
+@import "../../variables.scss";
+
 .container {
   animation: animateContainer 0.3s ease;
   position: fixed;
@@ -40,6 +42,13 @@
     padding: 1rem;
     max-height: 70vh;
     overflow-y: auto;
+
+    hr {
+      margin: 0 -1em 1.5em;
+      background: $grey-lighter;
+      border: none;
+      height: 1px;
+    }
   }
 }
 

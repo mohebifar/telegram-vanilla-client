@@ -1,5 +1,10 @@
-import { dataUriBufferAsync } from "../core/binary";
 import { WebpMachine } from "webp-hero";
+
+async function dataUriBufferAsync(dataUrl: string) {
+  const response = await fetch(dataUrl);
+  const buffer = await response.arrayBuffer();
+  return new Uint8Array(buffer);
+}
 
 export async function decodeWebp(data: Uint8Array) {
   const webpMachine = await getMachine();

@@ -161,6 +161,7 @@ export default class Chat implements Component<Options> {
 
       if (canSendMessage) {
         requestAnimationFrame(() => {
+          this.sendMessageForm.instance.setPeer(this.peer);
           this.sendMessageForm.instance.focus();
         });
       }
@@ -330,9 +331,14 @@ export default class Chat implements Component<Options> {
       }
     );
 
-    Message.events.on("synced", async ({ message }: { message: IMessage }) => {
+    Message.events.on("synced", async ({ message, clientId }: { message: IMessage, clientId: number }) => {
       if (message.$t === "MessageEmpty") {
         return;
+      }
+
+      if (message.id !== clientId) {
+        const currentElement = this.idToElementMap.get(clientId);
+        this.idToElementMap.set(message.id, currentElement)
       }
 
       const peerId = extractIdFromPeer(message.toId);

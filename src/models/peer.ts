@@ -46,6 +46,7 @@ interface ExtraMethods {
   loadFull(): Promise<void>;
   isChannel(): boolean;
   canSendMessage(): boolean;
+  canSendPoll(): boolean;
   isGroupChat(): boolean;
   searchMessage(
     q: string,
@@ -282,7 +283,7 @@ export class Peer extends Model<"peers"> implements ExtraMethods {
     let shouldCreateBubble = true;
     const randomId = transientModel
       ? transientModel.id
-      : (generateTransientId() as any);
+      : generateTransientId();
     const media =
       actualMedia || ("media" in message ? message.media : undefined);
 
@@ -390,6 +391,13 @@ export class Peer extends Model<"peers"> implements ExtraMethods {
       (this._proxy.$t === "Channel" && !this._proxy.broadcast) ||
       this._proxy.$t === "Chat" ||
       (this._proxy.adminRights && this._proxy.adminRights.postMessages)
+    );
+  }
+
+  public canSendPoll() {
+    return (
+      this.canSendMessage() &&
+      (this._proxy.$t === "Channel" || this._proxy.$t === "Chat")
     );
   }
 

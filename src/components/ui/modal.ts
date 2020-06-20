@@ -1,4 +1,4 @@
-import { createElement, Component, on } from "../../utils/dom";
+import { createElement, Component, on, isDescendentOf } from "../../utils/dom";
 import * as styles from "./modal.scss";
 import { startAnimation } from "../../utils/easing";
 import IconButton from "./icon-button";
@@ -32,7 +32,7 @@ export default class Modal implements Component<Options> {
       icon: Icons.Close,
       onClick: () => {
         this.close(true);
-      }
+      },
     });
     const headingElement = createElement(
       "div",
@@ -45,7 +45,7 @@ export default class Modal implements Component<Options> {
           ? createElement(Button, {
               caption: action.caption,
               size: "s",
-              onClick: action.onClick
+              onClick: action.onClick,
             })
           : ""
       )
@@ -63,16 +63,18 @@ export default class Modal implements Component<Options> {
       this.close(true);
     });
 
-    on(modal, "click", e => {
-      e.preventDefault();
-      e.stopPropagation();
+    on(modal, "click", (e) => {
+      if (isDescendentOf(e.target as HTMLElement, modal)) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
     });
   }
 
   public close(callOnClose = false) {
     startAnimation(
       { o: { from: 1, to: 0 } },
-      v => {
+      (v) => {
         this.element.style.opacity = v.o + "";
       },
       () => {

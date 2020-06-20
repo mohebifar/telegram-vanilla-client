@@ -1,4 +1,3 @@
-import { BigInteger as JBigInt } from "big-integer";
 import {
   UpdateDeleteChannelMessages,
   UpdateDeleteMessages,
@@ -23,7 +22,7 @@ import { AllUpdateTypes, DialogMessageTypes } from "./utils/useful-types";
 import { Dialog, IDialog } from "./models/dialog";
 
 interface TransientMessageData {
-  randomId: JBigInt;
+  randomId: number;
   message: IMessage;
 }
 

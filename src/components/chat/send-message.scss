@@ -203,3 +203,14 @@
     opacity: 0;
   }
 }
+
+.checkboxWrapper {
+  display: flex;
+  align-items: center;
+  text-align: left;
+  margin-bottom: 1em;
+
+  > div {
+    margin-left: 0.5em;
+  }
+}

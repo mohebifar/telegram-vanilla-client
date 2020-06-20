@@ -47,14 +47,6 @@ export class Message extends Model<"messages"> {
     let normalizedMessage: DBMessage;
 
     if (
-      "media" in message &&
-      message.media &&
-      message.media.$t === "MessageMediaPoll"
-    ) {
-      Message.pollToMessage.set(message.media.poll.id, this as any);
-    }
-
-    if (
       message.$t === "UpdateShortMessage" ||
       message.$t === "UpdateShortChatMessage"
     ) {
