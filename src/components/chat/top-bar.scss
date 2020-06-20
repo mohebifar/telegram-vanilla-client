@@ -65,8 +65,10 @@
 }
 
 .pinned:not(:empty) {
+  $pinned-padding-base: 0.5em;
+
   border-left: 2px solid $blue;
-  padding-left: 0.5em;
+  padding-left: $pinned-padding-base;
   height: 2.75em;
   cursor: pointer;
 
@@ -77,14 +79,38 @@
     color: $blue;
   }
 
+  &:after {
+    content: '';
+    border-left: 2px solid #4ea4f7;
+    display: block;
+    height: calc(100% - #{$pinned-padding-base * 2});
+    width: 2px;
+    position: absolute;
+    left: $pinned-padding-base;
+    top: $pinned-padding-base;
+  }
+
   > div {
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
     max-width: 20em;
 
-    @include breakpoint(xs) {
+    @include breakpoint(sm) {
       max-width: 11em;
     }
+  }
+
+  @include breakpoint(xs) {
+    position: absolute;
+    top: 60px;
+    background: white;
+    z-index: 99999;
+    padding: $pinned-padding-base;
+    padding-left: $pinned-padding-base * 2;
+    height: unset;
+    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.2), inset 0 2px 3px rgba(0, 0, 0, 0.2);
+    left: 0;
+    right: 0;
   }
 }
