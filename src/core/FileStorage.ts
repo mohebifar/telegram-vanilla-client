@@ -578,20 +578,16 @@ function getContentType(type: upload_File["type"]) {
 }
 
 function getPartSize(fileSize: number) {
-  if (fileSize <= 128000) {
+  if (fileSize <= 64000) {
     // 128KB
     return 64;
   }
   if (fileSize <= 512000) {
     // 512KB
-    return 128;
+    return 512;
   }
   if (fileSize <= 1e6) {
     // 1MB
-    return 256;
-  }
-  if (fileSize <= 1572864000) {
-    // 1500MB
     return 512;
   }
 
