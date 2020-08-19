@@ -1,10 +1,16 @@
 import {
   Document,
   DocumentAttributeVideo,
-  MessageMediaDocument
+  MessageMediaDocument,
 } from "../../core/tl/TLObjects";
 import { TelegramClientProxy } from "../../telegram-worker-proxy";
-import { Component, createElement, off, removeClass, on } from "../../utils/dom";
+import {
+  Component,
+  createElement,
+  off,
+  removeClass,
+  on,
+} from "../../utils/dom";
 import { EMPTY_IMG } from "../../utils/images";
 import { fitImageSize } from "../../utils/upload-file";
 import * as styles from "../chat/chat.scss";
@@ -31,7 +37,7 @@ export default class VideoAttachment implements Component<Options> {
     onClick,
     tg,
     autoDownload = false,
-    measureSize = (w, h) => fitImageSize(w, h, 320, 320)
+    measureSize = (w, h) => fitImageSize(w, h, 320, 320),
   }: Options) {
     if (!document && media.document.$t === "Document") {
       document = media.document;
@@ -78,7 +84,7 @@ export default class VideoAttachment implements Component<Options> {
       on(element, "click", stopListener);
 
       tg.fileStorage
-        .downloadDocument(document, undefined, document.dcId, t => {
+        .downloadDocument(document, undefined, document.dcId, (t) => {
           if (!shouldContinue) {
             shouldContinue = true;
             return false;
@@ -86,7 +92,7 @@ export default class VideoAttachment implements Component<Options> {
           progress.instance.progress(t);
           return true;
         })
-        .then(src => {
+        .then((src) => {
           progress.remove();
           if (!src) {
             return;
@@ -105,25 +111,19 @@ export default class VideoAttachment implements Component<Options> {
           video.autoplay = true;
           element.append(video);
 
-          let observer = new IntersectionObserver(
-            async (entries) => {
-              const entry = entries[0] as any;
+          let observer = new IntersectionObserver(async (entries) => {
+            const entry = entries[0] as any;
 
-              if (entry) {
-                await entry.promise;
-                if (entry.isIntersecting) {
-                  entry.promise = video.play();
-                } else {
-                  entry.promise = video.pause();
-                }
+            if (entry) {
+              await entry.promise;
+              if (entry.isIntersecting) {
+                entry.promise = video.play();
+              } else {
+                video.currentTime = 0;
+                entry.promise = video.pause();
               }
-            },
-            {
-              root: globalDocument.body,
-              rootMargin: "0px",
-              threshold: 0
             }
-          );
+          });
 
           observer.observe(video);
 
@@ -162,19 +162,19 @@ export default class VideoAttachment implements Component<Options> {
 
     tg.fileStorage
       .downloadDocument(document, 0, document.dcId)
-      .then(url => {
+      .then((url) => {
         if (!downloaded) {
           img.setAttribute("src", url);
         }
       })
-      .catch(err => {
+      .catch((err) => {
         console.log(err, document);
       });
 
     if (autoDownload) {
       downloadListener();
     }
-    tg.fileStorage.documentIsCached(document).then(isCached => {
+    tg.fileStorage.documentIsCached(document).then((isCached) => {
       isCached && downloadListener();
     });
 
