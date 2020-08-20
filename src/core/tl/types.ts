@@ -13,7 +13,7 @@ import {
 } from "./core/GZIPPacked";
 import {
   CONSTRUCTOR_ID as MESSAGE_CONTAINER_CONSTRUCTOR_ID,
-  messageContaienerReader,
+  messageContainerReader,
   MessageContainer
 } from "./core/MessageContainer";
 import {
@@ -79,7 +79,7 @@ tlObjectsDefintionMap.set(GZIP_CONSTRUCTOR_ID, gzipPackedReader as any);
 tlObjectsDefintionMap.set(RPC_RESULT_CONSTRUCTOR_ID, rpcResultReader as any);
 tlObjectsDefintionMap.set(
   MESSAGE_CONTAINER_CONSTRUCTOR_ID,
-  messageContaienerReader as any
+  messageContainerReader as any
 );
 
 const tlObjectsDefintionMapByType = new Map<TLTypeNames, TLObjectDefinition>();

@@ -152,7 +152,7 @@ export class FileStorage {
       }
     }
 
-    const [promise, finish] = this.addToQueue(dcId);
+    // const [promise, finish] = this.addToQueue(dcId);
 
     const partSizeKb = getPartSize(fileSize || 64);
     const partSize = partSizeKb * 1024;
@@ -169,7 +169,7 @@ export class FileStorage {
 
     let aborted = false;
     // Wait for other files to be downloaded
-    await promise;
+    // await promise;
 
     do {
       try {
@@ -201,7 +201,7 @@ export class FileStorage {
         console.error(err);
         if (++retries > MAX_RETRIES_PER_FILE) {
           console.debug(`Retried downloading ${retries} times.`);
-          finish();
+          // finish();
           throw new Error(
             `Failed to download file after ${MAX_RETRIES_PER_FILE} tries.`
           );
@@ -213,7 +213,7 @@ export class FileStorage {
       // || (!file && !fileSize)
     );
 
-    finish();
+    // finish();
 
     if (aborted) {
       return undefined;
@@ -473,27 +473,27 @@ export class FileStorage {
     return url;
   }
 
-  private addToQueue(dcId: number): [Promise<any>, () => void] {
-    if (!this.downloadQueue[dcId]) {
-      this.downloadQueue[dcId] = [];
-    }
-    let r: () => void;
+  // private addToQueue(dcId: number): [Promise<any>, () => void] {
+  //   if (!this.downloadQueue[dcId]) {
+  //     this.downloadQueue[dcId] = [];
+  //   }
+  //   let r: () => void;
 
-    const wait = this.downloadQueue[dcId];
+  //   const wait = this.downloadQueue[dcId];
 
-    const promise = new Promise((resolve) => {
-      r = resolve;
-    });
-    wait.push(promise);
+  //   const promise = new Promise((resolve) => {
+  //     r = resolve;
+  //   });
+  //   wait.push(promise);
 
-    return [
-      Promise.all(wait.filter((pro) => pro !== promise)),
-      () => {
-        wait.splice(wait.indexOf(promise), 1);
-        r();
-      },
-    ];
-  }
+  //   return [
+  //     Promise.all(wait.filter((pro) => pro !== promise)),
+  //     () => {
+  //       wait.splice(wait.indexOf(promise), 1);
+  //       r();
+  //     },
+  //   ];
+  // }
 
   private generateBlobUrl(
     bytes: Uint8Array,
@@ -578,16 +578,20 @@ function getContentType(type: upload_File["type"]) {
 }
 
 function getPartSize(fileSize: number) {
-  if (fileSize <= 64000) {
+  if (fileSize <= 128000) {
     // 128KB
     return 64;
   }
   if (fileSize <= 512000) {
     // 512KB
-    return 512;
+    return 128;
   }
   if (fileSize <= 1e6) {
     // 1MB
+    return 256;
+  }
+  if (fileSize <= 1572864000) {
+    // 1500MB
     return 512;
   }
 

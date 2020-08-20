@@ -1,5 +1,6 @@
 import { unpack, readBigIntFromBuffer } from "../binary";
 import { tlObjectReader } from "../tl/types";
+import { TypeNotFoundError } from "../mtproto/errors";
 
 export class BinaryReader {
   private last: Uint8Array = null;
@@ -111,7 +112,7 @@ export class BinaryReader {
       this.seek(-4);
       const position = this.getPosition();
       this.setPosition(position);
-      throw new Error(`Unknown constructor type ${constructorId.toString(16)}`);
+      throw new TypeNotFoundError(constructorId);
     }
 
     return reader(this);

@@ -23,7 +23,7 @@ export const MAXIMUM_SIZE = 1044456 - 8;
 // other factors like size per request, but we cannot know this.
 export const MAXIMUM_LENGTH = 100;
 
-export function messageContaienerReader(
+export function messageContainerReader(
   _,
   reader: BinaryReader
 ): MessageContainer {

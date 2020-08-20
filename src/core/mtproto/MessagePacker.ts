@@ -1,10 +1,9 @@
 import { BigInteger as JBigInt } from "big-integer";
 import { concatBuffers, pack } from "../binary";
-import { BinaryWriter } from "../extensions/BinaryWriter";
 import {
   CONSTRUCTOR_ID as MESSAGE_CONTAINER_CONSTRUCTOR_ID,
   MAXIMUM_LENGTH,
-  MAXIMUM_SIZE
+  MAXIMUM_SIZE,
 } from "../tl/core/MessageContainer";
 import { MTProtoState } from "./MTProtoState";
 import { RequestState } from "./RequestState";
@@ -20,9 +19,10 @@ export class MessagePacker {
   private ready: Promise<void | boolean>;
   private setReady: (state?: boolean) => void;
   private queue: RequestState[] = [];
+  private timer = 0;
 
   constructor(private state: MTProtoState) {
-    this.ready = new Promise(resolve => {
+    this.ready = new Promise((resolve) => {
       this.setReady = resolve;
     });
   }
@@ -31,32 +31,42 @@ export class MessagePacker {
     return this.queue;
   }
 
+  private endWait() {
+    if (this.timer) {
+      return;
+    }
+
+    this.timer = setTimeout(() => {
+      this.timer = 0;
+      this.setReady(true);
+    }, 1);
+  }
+
   append(state: RequestState) {
     this.queue.push(state);
-    this.setReady(true);
+    this.endWait();
   }
 
   prepend(state: RequestState) {
     this.queue.unshift(state);
-    this.setReady(true);
+    this.endWait();
   }
 
   extend(states: RequestState[]) {
     for (const state of states) {
       this.queue.push(state);
     }
-    this.setReady(true);
+    this.endWait();
   }
 
   async get(): Promise<MessagePack> {
     if (!this.queue.length) {
-      this.ready = new Promise(resolve => {
+      this.ready = new Promise((resolve) => {
         this.setReady = resolve;
       });
       await this.ready;
     }
-    let data: Uint8Array;
-    const buffer = new BinaryWriter(new Uint8Array(0));
+    let buffer = new Uint8Array(0);
 
     const batch: RequestState[] = [];
     let size = 0;
@@ -69,8 +79,7 @@ export class MessagePacker {
         // if (state.after) {
         //   afterId = state.after.msgId;
         // }
-        state.msgId = this.state.writeDataAsMessage(
-          buffer,
+        const [message, msgId] = this.state.writeDataAsMessage(
           state.data,
           state.isRequest,
           afterId
@@ -78,7 +87,8 @@ export class MessagePacker {
 
         console.debug(`Assigned msgId = ${state.msgId} to ${state.request.$t}`);
 
-        buffer.write(state.data);
+        state.msgId = msgId;
+        buffer = concatBuffers([buffer, message]);
         batch.push(state);
         continue;
       }
@@ -95,23 +105,28 @@ export class MessagePacker {
       size = 0;
       continue;
     }
+
     if (!batch.length) {
       return null;
+    } else if (batch.length === 1) {
+      return { batch, data: buffer };
+    } else {
+      const containerData = concatBuffers([
+        pack(MESSAGE_CONTAINER_CONSTRUCTOR_ID, "I"),
+        pack(batch.length, "i", true),
+        buffer,
+      ]);
+
+      const [data, containerId] = this.state.writeDataAsMessage(
+        containerData,
+        false
+      );
+
+      for (const state of batch) {
+        state.containerId = containerId;
+      }
+
+      return { batch, data };
     }
-
-    data = concatBuffers([
-      pack(MESSAGE_CONTAINER_CONSTRUCTOR_ID, "I", false),
-      pack(batch.length, "i", true),
-      buffer.getValue()
-    ]);
-
-    const containerId = this.state.writeDataAsMessage(buffer, data, false);
-
-    for (const state of batch) {
-      state.containerId = containerId;
-    }
-
-    data = buffer.getValue();
-    return { batch, data };
   }
 }

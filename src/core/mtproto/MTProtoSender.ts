@@ -8,11 +8,18 @@ import { RequestState } from "./RequestState";
 import { MessagePacker } from "./MessagePacker";
 import { BinaryReader } from "../extensions/BinaryReader";
 import { TLObjectTypes } from "../tl/types";
+import { BadMsgNotification } from "../tl/TLObjects";
 import { AuthKey } from "../crypto/AuthKey";
-import { RPCError, InvalidBufferError } from "./errors";
+import {
+  RPCError,
+  InvalidBufferError,
+  TypeNotFoundError,
+  SecurityError,
+} from "./errors";
 // import { RPCResult } from "./tl/core/RPCResult";
 import { sleep } from "../../utils/utils";
 import { MTSession } from "./MTSessionManager";
+import { RPCResult } from "../tl/core/RPCResult";
 
 interface Options {
   updateCallback?: (obj: TLObjectTypes) => any;
@@ -47,7 +54,7 @@ export class MTProtoSender {
     ["MsgsStateReq", this.handleStateForgotten.bind(this)],
     ["MsgResendReq", this.handleStateForgotten.bind(this)],
     ["MsgsAllInfo", this.handleMsgAll.bind(this)],
-    ["OnDisconnect", this._handleDisconnect.bind(this)]
+    ["OnDisconnect", this._handleDisconnect.bind(this)],
   ]);
 
   constructor(
@@ -124,26 +131,34 @@ export class MTProtoSender {
     }
   }
 
-  public async send(request: TLObjectTypes) {
+  public send(request: TLObjectTypes) {
     if (!this.userConnected) {
       throw new Error("Cannot send requests while disconnected");
     }
 
-    let resolved = false;
-    let timeout = 0;
     const state = new RequestState(request);
+    return this.sendRequestState(state);
+  }
+
+  private async sendRequestState(state: RequestState, retry = 0) {
+    if (retry > 3) {
+      return state.reject("Timeout");
+    }
+
     this.sendQueue.append(state);
+    const result = await Promise.race([
+      state.promise,
+      new Promise((resolve) => {
+        setTimeout(() => {
+          resolve(null);
+        }, 2500 * (retry + 1));
+      }),
+    ]);
 
-    setTimeout(() => {
-      if (!resolved) {
-        state.reject(new Error("Timeout"));
-      }
-    }, 5000);
-
-    const result = await state.promise;
-    clearInterval(timeout);
-    resolved = true;
-
+    if (!result) {
+      const newState = new RequestState(state.request);
+      return this.sendRequestState(newState, retry + 1);
+    }
     return result;
   }
 
@@ -152,7 +167,7 @@ export class MTProtoSender {
       if (this.pendingAck.size) {
         const ack = new RequestState({
           $t: "MsgsAck",
-          msgIds: Array.from(this.pendingAck).map(v => jBigInt(v).toString())
+          msgIds: Array.from(this.pendingAck),
         });
 
         this.sendQueue.append(ack);
@@ -167,23 +182,21 @@ export class MTProtoSender {
         continue;
       }
 
-      const batch = pack.batch;
-
       console.debug(
-        `Encrypting ${batch.length} message(s) in ${pack.data.length} bytes for sending`
+        `Encrypting ${pack.batch.length} message(s) in ${pack.data.length} bytes for sending`
       );
 
       const data = await this.state.encryptMessageData(pack.data);
 
       try {
+        for (const state of pack.batch) {
+          this.pendingState.set(state.msgId.toString(), state);
+        }
         await this.connection.send(data);
       } catch (e) {
         console.log(e);
         console.info("Connection closed while sending data");
         return;
-      }
-      for (const state of batch) {
-        this.pendingState.set(state.msgId.toString(), state);
       }
       console.debug("Encrypted messages put in a queue to be sent");
     }
@@ -206,14 +219,19 @@ export class MTProtoSender {
       try {
         message = await this.state.decryptMessageData(body);
       } catch (e) {
-        console.error("Error while decrypting incoming data", e);
-
-        if (e instanceof InvalidBufferError) {
+        if (e instanceof TypeNotFoundError || e instanceof SecurityError) {
+          continue;
+        } else if (e instanceof InvalidBufferError) {
           console.info("Broken authorization key; resetting");
           if (this.authKeyCallback) {
             this.authKeyCallback(null);
           }
           this.startReconnect(e);
+
+          return;
+        } else {
+          console.error("Unhandled error while receiving data");
+          return;
         }
       }
 
@@ -243,8 +261,8 @@ export class MTProtoSender {
 
     const toPop: JBigInt[] = [];
 
-    this.pendingState.forEach(state => {
-      if (state.containerId === msgId) {
+    this.pendingState.forEach((state) => {
+      if (msgId && state.containerId && msgId.equals(state.containerId)) {
         toPop.push(state.msgId);
       }
     });
@@ -267,26 +285,27 @@ export class MTProtoSender {
     return [];
   }
 
-  private async handleRPCResult(message: TLMessage<any>) {
+  private async handleRPCResult(message: TLMessage<RPCResult>) {
     const rpcResult = message.obj;
     const reqMsgId = rpcResult.reqMsgId.toString();
     const state = this.pendingState.get(reqMsgId);
-    if (state) {
-      this.pendingState.delete(reqMsgId);
-    }
     console.debug(`Handling RPC result for message ${reqMsgId}`);
 
     if (!state) {
       try {
         const reader = new BinaryReader(rpcResult.body);
 
-        console.log("reader.tgReadObject()", reader.tgReadObject());
-        if (!(reader.tgReadObject() instanceof File)) {
-          throw new Error("Not an upload.File");
+        const object = reader.tgReadObject();
+        if (
+          typeof object === "object" &&
+          "$t" in object &&
+          object.$t !== "upload_File"
+        ) {
+          throw new TypeNotFoundError();
         }
       } catch (e) {
         console.log(e);
-        if (e instanceof Error) {
+        if (e instanceof TypeNotFoundError) {
           console.info(
             `Received response without parent request: ${rpcResult.body}`
           );
@@ -295,6 +314,8 @@ export class MTProtoSender {
           throw e;
         }
       }
+    } else {
+      this.pendingState.delete(reqMsgId);
     }
 
     if (rpcResult.error) {
@@ -356,14 +377,14 @@ export class MTProtoSender {
     const badSalt = message.obj;
     console.debug(`Handling bad salt for message ${badSalt.badMsgId}`);
     this.state.salt = jBigInt(badSalt.newServerSalt);
-    const states = this.popStates(badSalt.badMsgId);
+    const states = this.popStates(jBigInt(badSalt.badMsgId));
     this.sendQueue.extend(states);
     console.debug(`${states.length} message(s) will be resent`);
   }
 
   private async handleBadNotification(message: TLMessage<any>) {
-    const badMsg = message.obj;
-    const states = this.popStates(badMsg.badMsgId);
+    const badMsg = message.obj as BadMsgNotification;
+    const states = this.popStates(jBigInt(badMsg.badMsgId));
     console.debug(`Handling bad msg`, badMsg);
     if ([16, 17].includes(badMsg.errorCode)) {
       // Sent msg_id too low or too high (respectively).
@@ -440,7 +461,7 @@ export class MTProtoSender {
       new RequestState({
         $t: "MsgsStateInfo",
         reqMsgId: message.msgId.toString(),
-        info: String.fromCharCode(1).repeat(message.obj.msgIds)
+        info: String.fromCharCode(1).repeat(message.obj.msgIds),
       })
     );
   }

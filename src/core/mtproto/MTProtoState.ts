@@ -7,14 +7,13 @@ import {
   concatBuffers,
   byteBuffersEqual,
   pack,
-  mod
+  mod,
 } from "../binary";
 import { sha256, encryptIGE, decryptIGE } from "../crypto";
 import { TLMessage } from "../types";
 import { BinaryReader } from "../extensions/BinaryReader";
-import { BinaryWriter } from "../extensions/BinaryWriter";
 import { serializeTLObject } from "../tl/types";
-import { InvalidBufferError } from "./errors";
+import { InvalidBufferError, SecurityError } from "./errors";
 import { gzipIfLarge } from "../tl/core/GZIPPacked";
 import { MTSession } from "./MTSessionManager";
 
@@ -36,40 +35,39 @@ export class MTProtoState {
   }
 
   public writeDataAsMessage(
-    buffer: BinaryWriter,
     data: Uint8Array,
     contentRelated: boolean,
     afterId?: JBigInt
-  ): JBigInt {
+  ): [Uint8Array, JBigInt] {
     const msgId = this.getNewMessageId();
     const seqNo = this.getSequenceNumber(contentRelated);
-    let body: Uint8Array;
 
-    if (!afterId) {
-      body = gzipIfLarge(contentRelated, data);
-    } else {
-      body = gzipIfLarge(
-        contentRelated,
-        serializeTLObject({
-          $t: "InvokeAfterMsgRequest",
-          msgId: afterId.toString(),
-          query: data as any
-        })
-      );
-    }
+    const body = gzipIfLarge(
+      contentRelated,
+      afterId
+        ? serializeTLObject({
+            $t: "InvokeAfterMsgRequest",
+            msgId: afterId.toString(),
+            query: data as any,
+          })
+        : data
+    );
 
-    buffer.write(pack(msgId, "q", true));
-    buffer.write(pack(seqNo, "i", true));
-    buffer.write(pack(body.length, "i", true));
-    buffer.write(body);
-    return msgId;
+    const message = concatBuffers([
+      pack(msgId, "q", true),
+      pack(seqNo, "i", true),
+      pack(body.length, "i", true),
+      body,
+    ]);
+
+    return [message, msgId];
   }
 
   public async encryptMessageData(rawData: Uint8Array) {
     const data = concatBuffers([
       pack(this.salt, "q"),
       pack(this.id, "q"),
-      rawData
+      rawData,
     ]);
     const padding = generateRandomBytes(mod(-(data.length + 12), 16) + 12);
     // Being substr(what, offset, length); x = 0 for client
@@ -78,7 +76,7 @@ export class MTProtoState {
       concatBuffers([
         this.session.authKey.key.slice(88, 88 + 32),
         data,
-        padding
+        padding,
       ])
     );
 
@@ -94,7 +92,7 @@ export class MTProtoState {
     return concatBuffers([
       keyId,
       msgKey,
-      await encryptIGE(concatBuffers([data, padding]), key, iv)
+      await encryptIGE(concatBuffers([data, padding]), key, iv),
     ]);
   }
 
@@ -107,7 +105,7 @@ export class MTProtoState {
     const keyId = readBigIntFromBuffer(body.slice(0, 8));
 
     if (!keyId.equals(this.session.authKey.keyId)) {
-      throw new Error("Server replied with an invalid auth key");
+      throw new SecurityError("Server replied with an invalid auth key");
     }
 
     const msgKey = body.slice(8, 24);
@@ -126,14 +124,17 @@ export class MTProtoState {
     );
 
     if (!byteBuffersEqual(msgKey, ourKey.slice(8, 24))) {
-      throw new Error("Received msg_key doesn't match with expected one");
+      console.warn("Inequal msgKey", msgKey, ourKey.slice(8, 24));
+      throw new SecurityError(
+        "Received msg_key doesn't match with expected one"
+      );
     }
 
     const reader = new BinaryReader(body);
     reader.readLong(); // removeSalt
     const serverId = reader.readLong();
     if (!serverId.equals(this.id)) {
-      throw new Error("Server replied with a wrong session ID");
+      throw new SecurityError("Server replied with a wrong session ID");
     }
 
     const remoteMsgId = reader.readLong();
@@ -148,7 +149,7 @@ export class MTProtoState {
     return {
       msgId: remoteMsgId,
       seqNo: remoteSequence,
-      obj
+      obj,
     } as any;
   }
 
@@ -188,9 +189,9 @@ export class MTProtoState {
       const result = this.sequence * 2 + 1;
       this.sequence += 1;
       return result;
-    } else {
-      return this.sequence * 2;
     }
+
+    return this.sequence * 2;
   }
 
   private async calculateKeyAndIv(
@@ -209,13 +210,13 @@ export class MTProtoState {
     const key = concatBuffers([
       sha256a.slice(0, 8),
       sha256b.slice(8, 24),
-      sha256a.slice(24, 32)
+      sha256a.slice(24, 32),
     ]);
 
     const iv = concatBuffers([
       sha256b.slice(0, 8),
       sha256a.slice(8, 24),
-      sha256b.slice(24, 32)
+      sha256b.slice(24, 32),
     ]);
 
     return { key, iv };

@@ -22,6 +22,20 @@ export class InvalidBufferError extends Error {
   }
 }
 
+export class TypeNotFoundError extends Error {
+  constructor(constructorId?: number) {
+    super(
+      `Unknown constructor type ${constructorId && constructorId.toString(16)}`
+    );
+  }
+}
+
+export class SecurityError extends Error {
+  constructor(message?: string) {
+    super(message);
+  }
+}
+
 type RPCErrorMessages =
   | "ABOUT_TOO_LONG"
   | "ACCESS_TOKEN_EXPIRED"

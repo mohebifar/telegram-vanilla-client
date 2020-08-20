@@ -111,7 +111,7 @@ export default class VideoAttachment implements Component<Options> {
           video.autoplay = true;
           element.append(video);
 
-          let observer = new IntersectionObserver(async (entries) => {
+          const observer = new IntersectionObserver(async (entries) => {
             const entry = entries[0] as any;
 
             if (entry) {
