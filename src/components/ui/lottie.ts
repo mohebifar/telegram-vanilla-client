@@ -1,6 +1,6 @@
 import {
   AnimationConfigWithPath,
-  AnimationItem
+  AnimationItem,
 } from "lottie-web/build/player/lottie_light";
 import { Component, createElement, Element } from "../../utils/dom";
 
@@ -14,7 +14,7 @@ interface Options {
 }
 
 const observer = new IntersectionObserver(
-  entries => {
+  (entries) => {
     for (const entry of entries) {
       const { instance } = entry.target as Element<Lottie>;
 
@@ -32,7 +32,7 @@ const observer = new IntersectionObserver(
     }
   },
   {
-    threshold: [0, 0.25, 0.5, 0.75, 1]
+    threshold: [0, 0.25, 0.5, 0.75, 1],
   }
 );
 
@@ -48,7 +48,7 @@ export default class Lottie implements Component<Options> {
     this.element = createElement("div", {
       ...rest,
       class: `lottieWrapper ${rest.class || ""}`,
-      "data-bm-renderer": "svg"
+      "data-bm-renderer": "svg",
     });
 
     this.onReady = onReady;
@@ -72,7 +72,10 @@ export default class Lottie implements Component<Options> {
         this.animation = lottie.loadAnimation({
           ...this.config,
           renderer: "svg",
-          container: this.element
+          container: this.element,
+          rendererSettings: {
+            progressiveLoad: true,
+          },
         });
 
         if (this.autoClean) {
