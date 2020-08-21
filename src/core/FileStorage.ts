@@ -1,6 +1,7 @@
 import { BigInteger as JBigInt } from "big-integer";
 import { inflate } from "pako";
 import { MD5 } from "spu-md5";
+import PQueue from "p-queue";
 import { concatBuffers, generateRandomLong, readBufferFromHex } from "./binary";
 import { TelegramClient } from "./TelegramClient";
 import {
@@ -57,9 +58,6 @@ type ProgressCallback = (progress: number) => any;
 
 export class FileStorage {
   private cache: Record<CacheKey, Cache>;
-  private downloadQueue: {
-    [dcId: number]: Array<Promise<any> | undefined>;
-  } = {};
   private uploadedFiles = new Map<string, Blob | null>();
   private blobUrlCache = new Map<string, string>();
   public decodeWebp: (data: Uint8Array) => Promise<Uint8Array> | Uint8Array = (
@@ -135,7 +133,7 @@ export class FileStorage {
     }
   ) {
     const key = this.generateKey(location);
-    const blobUrlCacheKey = `${cacheKey || 'u'}_${key}`;
+    const blobUrlCacheKey = `${cacheKey || "u"}_${key}`;
     const cache = cacheKey && this.cache && this.cache[cacheKey];
 
     if (this.blobUrlCache.has(blobUrlCacheKey)) {
@@ -152,8 +150,6 @@ export class FileStorage {
       }
     }
 
-    // const [promise, finish] = this.addToQueue(dcId);
-
     const partSizeKb = getPartSize(fileSize || 64);
     const partSize = partSizeKb * 1024;
     const bytesArray = [];
@@ -168,52 +164,103 @@ export class FileStorage {
     const send = sender.send.bind(sender);
 
     let aborted = false;
-    // Wait for other files to be downloaded
-    // await promise;
 
-    do {
-      try {
-        file = await send({
-          $t: "upload_GetFileRequest",
-          limit: partSize,
-          offset,
-          location,
-        });
-        bytesArray.push(file.bytes);
-        offset += partSize;
+    if (fileSize) {
+      const queue = new PQueue({ concurrency: 10 });
+      let finishedCount = 0;
 
-        if (onProgress) {
-          const shouldContinue = await onProgress(
-            fileSize && offset / fileSize
-          );
+      if (onProgress) {
+        queue.on("next", async () => {
+          if (aborted) {
+            return;
+          }
+
+          const processed = ++finishedCount / total;
+          const shouldContinue = await onProgress(processed);
+
           if (shouldContinue === false) {
             aborted = true;
-            break;
+            queue.clear();
+          }
+        });
+      }
+
+      const total = Math.ceil(fileSize / partSize);
+
+      for (let i = 0; i < total; i++) {
+        queue.add(() => {
+          let retries = 0;
+          const offset = i * partSize;
+          const request = async () => {
+            try {
+              const filePart = await send({
+                $t: "upload_GetFileRequest",
+                limit: partSize,
+                offset,
+                location,
+              });
+
+              if (filePart) {
+                file = filePart;
+                bytesArray[i] = filePart.bytes;
+              }
+            } catch (error) {
+              if (++retries < MAX_RETRIES_PER_FILE) {
+                return request();
+              }
+
+              console.error(error);
+              throw Error("Max retries for file download");
+            }
+          };
+
+          return request();
+        });
+      }
+
+      await queue.onIdle();
+    } else {
+      do {
+        try {
+          file = await send({
+            $t: "upload_GetFileRequest",
+            limit: partSize,
+            offset,
+            location,
+          });
+          bytesArray.push(file.bytes);
+          offset += partSize;
+
+          if (onProgress) {
+            const shouldContinue = await onProgress(
+              fileSize && offset / fileSize
+            );
+            if (shouldContinue === false) {
+              aborted = true;
+              break;
+            }
+          }
+        } catch (err) {
+          console.error({
+            limit: partSize,
+            offset,
+            location,
+          });
+
+          console.error(err);
+          if (++retries > MAX_RETRIES_PER_FILE) {
+            console.debug(`Retried downloading ${retries} times.`);
+            throw new Error(
+              `Failed to download file after ${MAX_RETRIES_PER_FILE} tries.`
+            );
           }
         }
-      } catch (err) {
-        console.error({
-          limit: partSize,
-          offset,
-          location,
-        });
-
-        console.error(err);
-        if (++retries > MAX_RETRIES_PER_FILE) {
-          console.debug(`Retried downloading ${retries} times.`);
-          // finish();
-          throw new Error(
-            `Failed to download file after ${MAX_RETRIES_PER_FILE} tries.`
-          );
-        }
-      }
-    } while (
-      (file && file.bytes.length !== 0) ||
-      (fileSize && bytesArray.length * partSize < fileSize)
-      // || (!file && !fileSize)
-    );
-
-    // finish();
+      } while (
+        (file && file.bytes.length !== 0) ||
+        (fileSize && bytesArray.length * partSize < fileSize)
+        // || (!file && !fileSize)
+      );
+    }
 
     if (aborted) {
       return undefined;
@@ -472,28 +519,6 @@ export class FileStorage {
 
     return url;
   }
-
-  // private addToQueue(dcId: number): [Promise<any>, () => void] {
-  //   if (!this.downloadQueue[dcId]) {
-  //     this.downloadQueue[dcId] = [];
-  //   }
-  //   let r: () => void;
-
-  //   const wait = this.downloadQueue[dcId];
-
-  //   const promise = new Promise((resolve) => {
-  //     r = resolve;
-  //   });
-  //   wait.push(promise);
-
-  //   return [
-  //     Promise.all(wait.filter((pro) => pro !== promise)),
-  //     () => {
-  //       wait.splice(wait.indexOf(promise), 1);
-  //       r();
-  //     },
-  //   ];
-  // }
 
   private generateBlobUrl(
     bytes: Uint8Array,
