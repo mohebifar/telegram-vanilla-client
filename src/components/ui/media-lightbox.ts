@@ -361,7 +361,7 @@ export class LightBox implements Component<Options> {
 
   private navigate = throttle((next: boolean) => {
     (next ? this.nextButton : this.prevButton).click();
-  }, 400);
+  }, 400, true);
 }
 
 function getSize(

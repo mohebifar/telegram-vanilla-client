@@ -1,5 +1,5 @@
 export const sleep = (ms: number) =>
-  new Promise(resolve => setTimeout(resolve, ms));
+  new Promise((resolve) => setTimeout(resolve, ms));
 
 export function formatPhoneNumber(phoneNumber: string) {
   const cleaned = phoneNumber.replace(/\D/g, "");
@@ -27,22 +27,21 @@ export function throttle<T extends Function>(
   immediate = false
 ) {
   let timeout = null;
-  let initialCall = true;
 
   return (function(...args: any[]) {
-    const callNow = immediate && initialCall;
-    const next = () => {
-      callback.apply(this, args);
+    const next = (skipCall = false) => {
+      if (!skipCall) {
+        callback.apply(this, args);
+      }
       timeout = null;
     };
 
-    if (callNow) {
-      initialCall = false;
+    if (!timeout && immediate) {
       next();
     }
 
     if (!timeout) {
-      timeout = setTimeout(next, wait);
+      timeout = setTimeout(next, wait, immediate);
     }
   } as never) as T;
 }
