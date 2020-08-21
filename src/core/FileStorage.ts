@@ -81,25 +81,54 @@ export class FileStorage {
 
     const partSize = (getPartSize(bytes.length) / 4) * 1024;
     const numberOfParts = Math.ceil(bytes.length / partSize);
-    let filePart = 0;
-    let retries = 0;
-    while (filePart < numberOfParts && retries < 5) {
-      const index = filePart * partSize;
-      try {
-        await this.client.invoke({
-          $t: "upload_SaveFilePartRequest",
-          bytes: bytes.slice(index, index + partSize),
-          fileId,
-          filePart,
-        });
-        filePart++;
-        if (onProgress) {
-          onProgress(Math.min((filePart * partSize) / bytes.length, 1));
+
+    const queue = new PQueue({ concurrency: 10 });
+    let finishedCount = 0;
+    let aborted = false;
+
+    if (onProgress) {
+      queue.on("next", async () => {
+        if (aborted) {
+          return;
         }
-      } catch {
-        retries++;
-      }
+
+        const processed = ++finishedCount / numberOfParts;
+        const shouldContinue = await onProgress(processed);
+
+        if (shouldContinue === false) {
+          aborted = true;
+          queue.clear();
+        }
+      });
     }
+
+    for (let filePart = 0; filePart < numberOfParts; filePart++) {
+      queue.add(() => {
+        let retries = 0;
+        const index = filePart * partSize;
+        const request = async () => {
+          try {
+            await this.client.invoke({
+              $t: "upload_SaveFilePartRequest",
+              bytes: bytes.slice(index, index + partSize),
+              fileId,
+              filePart,
+            });
+          } catch (error) {
+            if (++retries < MAX_RETRIES_PER_FILE) {
+              return request();
+            }
+
+            console.error(error);
+            throw Error("Max retries for file upload");
+          }
+        };
+
+        return request();
+      });
+    }
+
+    await queue.onIdle();
 
     this.uploadedFiles.set(fileId, new Blob([buffer]));
 
