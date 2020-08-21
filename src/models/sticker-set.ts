@@ -253,6 +253,8 @@ export class StickerSet extends Model<"stickerSet"> implements ExtraMethods {
       archived: false,
     });
 
+    StickerSet.all = [this._proxy, ...StickerSet.all];
+
     this._proxy.set.installedDate = dayjs().unix();
     this.save();
     StickerSet.events.emit("installed", this._proxy);
@@ -267,6 +269,10 @@ export class StickerSet extends Model<"stickerSet"> implements ExtraMethods {
         id: this._proxy.set.id,
         accessHash: this._proxy.set.accessHash,
       },
+    });
+
+    StickerSet.all = StickerSet.all.filter(({ set }) => {
+      return set.id !== this._proxy.set.id;
     });
 
     this._proxy.set.installedDate = undefined;

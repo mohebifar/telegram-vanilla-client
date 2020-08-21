@@ -7,6 +7,7 @@ import {
   on,
   Element,
   scrollTo,
+  getNthChild,
 } from "../../utils/dom";
 import { fillStickerPreview } from "../../utils/render-sticker";
 import { debounce } from "../../utils/utils";
@@ -63,12 +64,12 @@ export default class StickerPicker implements Component<Options> {
     StickerSet.events.on("installed", (sticker) => {
       const stickerTab = this.renderTab(sticker);
       if (stickerTab) {
-        this.tabs.prepend(stickerTab);
+        this.tabs.insertBefore(stickerTab, getNthChild(this.tabs, 1));
       }
 
       const [stickerArea, holder] = this.renderSticker(sticker);
       if (stickerArea) {
-        this.wrapper.prepend(stickerArea);
+        this.wrapper.insertBefore(stickerArea, getNthChild(this.wrapper, 1));
         this.observer.observe(holder);
       }
     });
@@ -119,13 +120,15 @@ export default class StickerPicker implements Component<Options> {
         },
       ],
       onRouteChange: (route) => {
-        const panel = this.element.closest("." + panelStyles.container) as HTMLElement;
+        const panel = this.element.closest(
+          "." + panelStyles.container
+        ) as HTMLElement;
 
         if (panel && isMobile()) {
           if (route === "search") {
-            panel.setAttribute('data-h-adjust', 'true');
+            panel.setAttribute("data-h-adjust", "true");
           } else {
-            panel.removeAttribute('data-h-adjust');
+            panel.removeAttribute("data-h-adjust");
             panel.style.height = null;
           }
         }
