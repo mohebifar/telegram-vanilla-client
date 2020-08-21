@@ -129,6 +129,7 @@ export default class VideoAttachment implements Component<Options> {
 
           if (isGIF) {
             removeClass(element, "pointer");
+            downloadListener();
           } else {
             on(element, "click", () => {
               const canvas = globalDocument.createElement("canvas");
