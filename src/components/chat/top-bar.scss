@@ -79,16 +79,16 @@
     color: $blue;
   }
 
-  &:after {
-    content: '';
-    border-left: 2px solid #4ea4f7;
-    display: block;
-    height: calc(100% - #{$pinned-padding-base * 2});
-    width: 2px;
-    position: absolute;
-    left: $pinned-padding-base;
-    top: $pinned-padding-base;
-  }
+  // &:after {
+  //   content: '';
+  //   border-left: 2px solid #4ea4f7;
+  //   display: block;
+  //   height: calc(100% - #{$pinned-padding-base * 2});
+  //   width: 2px;
+  //   position: absolute;
+  //   left: $pinned-padding-base;
+  //   top: $pinned-padding-base;
+  // }
 
   > div {
     white-space: nowrap;

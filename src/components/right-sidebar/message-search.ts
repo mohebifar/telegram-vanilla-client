@@ -30,16 +30,16 @@ export default class MessageSearch extends SlideTransition
     this.searchResultView = createElement("div");
 
     const searchInput = createElement(SearchInput, {
-      onInput: event => {
+      onInput: (event) => {
         const searchValue = event.target.value.trim();
         this.search(searchValue);
-      }
+      },
     });
     const iconButton = createElement(IconButton, {
       icon: Icons.Close,
       onClick: () => {
         back();
-      }
+      },
     });
     const topMenu = createElement(
       "div",
@@ -73,19 +73,24 @@ export default class MessageSearch extends SlideTransition
     const messages = await this.peer.searchMessage(q);
     for (const message of messages) {
       const peer = await message.getSender();
-      const element = await this.makeDialog(message, peer);
+      const element = await this.makeDialog(message, peer, q);
       this.searchResultView.append(element);
     }
   }, 400);
 
-  private async makeDialog(message: IMessage, peer: IPeer) {
+  private async makeDialog(
+    message: IMessage,
+    peer: IPeer,
+    highlightText: string
+  ) {
     const element = createElement(DialogItem, {
       message,
       peer,
       onClick: (peer, message) => {
         this.onMessageSelect(peer, message);
       },
-      scope: 'search'
+      scope: "search",
+      highlightText,
     });
     await element.instance.register();
 

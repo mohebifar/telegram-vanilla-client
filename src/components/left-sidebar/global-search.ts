@@ -121,7 +121,7 @@ export default class GlobalSearch extends DefaultTransition
     const messages = await Message.globalSearch(q);
     for (const message of messages) {
       const peer = await message.getPeer();
-      const element = await this.makeDialog(message, peer);
+      const element = await this.makeDialog(message, peer, q);
       globalSearchContainer.append(element);
     }
 
@@ -150,12 +150,13 @@ export default class GlobalSearch extends DefaultTransition
     this.onChatSelect(dialog, message);
   };
 
-  private async makeDialog(message: IMessage, peer: IPeer) {
+  private async makeDialog(message: IMessage, peer: IPeer, highlightText: string) {
     const element = createElement(DialogItem, {
       message,
       peer,
       onClick: this.handleChatSelect,
-      scope: 'search'
+      scope: 'search',
+      highlightText
     });
     await element.instance.register();
 

@@ -18,6 +18,7 @@ interface Options {
   scope?: "search";
   dialog?: IDialog;
   message?: IMessage;
+  highlightText?: string;
   peer: IPeer;
   onClick: (peer: IPeer, message: IMessage) => any;
 }
@@ -36,6 +37,7 @@ export default class DialogItem implements Component<Options> {
   private peer: Options["peer"];
   private onClick: Options["onClick"];
   private scope?: Options["scope"];
+  private highlightText?: Options["highlightText"];
 
   constructor(options: Options) {
     const wrapper = createElement("div", {
@@ -48,6 +50,7 @@ export default class DialogItem implements Component<Options> {
     this.message = options.message;
     this.onClick = options.onClick;
     this.scope = options.scope;
+    this.highlightText = options.highlightText;
 
     // this.register(options);
   }
@@ -97,7 +100,27 @@ export default class DialogItem implements Component<Options> {
 
   public async update() {
     const { text, title, date, unread, silent } = await this.getInfo();
-    this.text.innerHTML = replaceEmoji(escapeHTML(text));
+
+    let textContent = escapeHTML(text);
+    if (this.highlightText) {
+      const lowerCaseContent = textContent.toLowerCase();
+      let offset = 0;
+      textContent = escapeHTML(this.highlightText).split(" ").reduce((str, word) => {
+        const index = lowerCaseContent.indexOf(word.toLowerCase());
+        if (index === -1) {
+          return str;
+        }
+        const originalWord = str.substr(offset + index, word.length);
+        const replacement = `<span class="${styles.highlight}">${originalWord}</span>`;
+
+        offset += replacement.length - originalWord.length;
+
+        return str.replace(originalWord, replacement);
+      }, textContent);
+    }
+    textContent = replaceEmoji(textContent);
+
+    this.text.innerHTML = textContent;
     this.title.innerHTML = replaceEmoji(escapeHTML(title));
     this.date.innerText = date;
     removeChildren(this.unreadCount);
@@ -146,8 +169,8 @@ export default class DialogItem implements Component<Options> {
   private async getInfo() {
     const title =
       this.scope !== "search"
-      ? this.peer.displayPeerName
-      : this.peer.displayName;
+        ? this.peer.displayPeerName
+        : this.peer.displayName;
 
     if (this.dialog) {
       const isTypings = this.dialog.getIsTyping();
@@ -169,7 +192,7 @@ export default class DialogItem implements Component<Options> {
         silent: this.dialog.slient,
       };
     } else {
-      const text = (this.message as any).message || "";
+      const text: string = (this.message as any).message || "";
 
       return {
         unread: undefined,
