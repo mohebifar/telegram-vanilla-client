@@ -24,14 +24,13 @@ import {
   removeClass,
 } from "../../utils/dom";
 import { startAnimation } from "../../utils/easing";
-import { EMPTY_IMG } from "../../utils/images";
 import { fitImageSize, saveData } from "../../utils/upload-file";
 import Avatar from "./avatar";
-import Icon, { Icons } from "./icon";
+import { Icons } from "./icon";
 import IconButton from "./icon-button";
 import * as styles from "./media-lightbox.scss";
-import Progress from "./progress";
 import { throttle } from "../../utils/utils";
+import { MediaPlayer } from "./media-player";
 
 const sortRef = ["x", "y", "m", "s"];
 
@@ -42,7 +41,6 @@ export interface Options {
 export class LightBox implements Component<Options> {
   public readonly element: HTMLElement;
 
-  private image: HTMLImageElement;
   private media: ISharedMedia;
   private peer: IPeer;
   private mediaContainer: HTMLElement;
@@ -51,8 +49,7 @@ export class LightBox implements Component<Options> {
   private sender: HTMLElement;
   private footer: HTMLElement;
   private tg: TelegramClientProxy;
-  private container: HTMLElement;
-  private closed = false;
+  private container: Element<MediaPlayer>;
 
   public mediaWrapper: HTMLElement;
 
@@ -129,14 +126,14 @@ export class LightBox implements Component<Options> {
   }
 
   public setSrc(src: string) {
-    this.image.src = src;
+    this.container.instance.setSrc(src);
   }
 
   public close() {
     off(document.body, "click", this.handleContainerClick, true);
     off(document, "keyup", this.handleKeyboard);
 
-    this.closed = true;
+    this.container.instance.abort();
     startAnimation(
       { o: { from: 1, to: 0 } },
       (v) => {
@@ -151,14 +148,6 @@ export class LightBox implements Component<Options> {
     const { media } = sharedMedia;
 
     const size = getSize(media as any);
-    let progress: Element<Progress>;
-    let downloadIndicator: HTMLElement;
-    progress = createElement(Progress);
-    downloadIndicator = createElement(
-      "div",
-      { class: "downloadIndicator" },
-      progress
-    );
 
     if (flip !== 0) {
       const oldWrapper = this.mediaWrapper;
@@ -173,13 +162,6 @@ export class LightBox implements Component<Options> {
 
       this.mediaWrapper = newWrapper;
       this.mediaContainer.append(newImmediate);
-
-      this.tg.fileStorage.downloadMedia(media, 0).then((url) => {
-        if (this.media === sharedMedia) {
-          this.setSrc(url);
-          this.image.className = "blur";
-        }
-      });
 
       const oldTo =
         flip * -1 * (window.innerWidth + parseInt(oldWrapper.style.width) / 2);
@@ -198,45 +180,13 @@ export class LightBox implements Component<Options> {
       );
     }
 
-    this.mediaWrapper.append(downloadIndicator);
+    this.container.instance.updateMedia(sharedMedia);
 
     Message.fromObject(sharedMedia)
       .getSender()
       .then((sender) => {
         if (sender !== this.peer) {
           this.setPeer(sender, flip);
-        }
-      });
-
-    this.tg.fileStorage
-      .downloadMedia(media, undefined, (t) => {
-        if (this.media !== sharedMedia) {
-          return false;
-        }
-
-        if (progress) {
-          progress.instance.progress(t);
-        }
-
-        return !this.closed;
-      })
-      .then((url) => {
-        if (this.media === sharedMedia) {
-          if (downloadIndicator) {
-            downloadIndicator.remove();
-          }
-
-          if (media.$t === "MessageMediaPhoto") {
-            this.image.className = "";
-            this.setSrc(url);
-          } else {
-            const video = createElement("video", {
-              src: url,
-              controls: "controls",
-            });
-            this.image.remove();
-            this.mediaWrapper.prepend(video);
-          }
         }
       });
 
@@ -248,35 +198,17 @@ export class LightBox implements Component<Options> {
   }
 
   private createMediaWrapper() {
-    this.image = createElement("img", { src: EMPTY_IMG }) as HTMLImageElement;
-    this.footer = createElement("div", { class: styles.footer });
-    this.nextButton = createElement(
-      "button",
-      { class: styles.navButton + " " + styles.next + " hidden" },
-      createElement(Icon, { icon: Icons.Down, color: "white" })
-    );
-    this.prevButton = createElement(
-      "button",
-      { class: styles.navButton + " " + styles.prev + " hidden" },
-      createElement(Icon, { icon: Icons.Down, color: "white" })
-    );
+    this.container = createElement(MediaPlayer, {
+      tg: this.tg,
+    });
 
-    const mediaWrapper = createElement(
-      "div",
-      { class: styles.mediaWrapper },
-      this.image,
-      this.nextButton,
-      this.prevButton
-    );
+    const instance = this.container.instance;
 
-    this.container = createElement(
-      "div",
-      { class: styles.mediaAbsoluteContainer },
-      mediaWrapper,
-      this.footer
-    );
+    this.footer = instance.footer;
+    this.nextButton = instance.nextButton;
+    this.prevButton = instance.prevButton;
 
-    return [this.container, mediaWrapper];
+    return [this.container, instance.mediaWrapper];
   }
 
   private updateButtons() {
@@ -359,9 +291,16 @@ export class LightBox implements Component<Options> {
     }
   };
 
-  private navigate = throttle((next: boolean) => {
-    (next ? this.nextButton : this.prevButton).click();
-  }, 400, true);
+  private navigate = throttle(
+    (next: boolean) => {
+      if (this.container) {
+        this.container.instance.abort();
+      }
+      (next ? this.nextButton : this.prevButton).click();
+    },
+    400,
+    true
+  );
 }
 
 function getSize(

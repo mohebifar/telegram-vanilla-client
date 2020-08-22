@@ -10,6 +10,7 @@ import {
   off,
   removeClass,
   on,
+  Element,
 } from "../../utils/dom";
 import { EMPTY_IMG } from "../../utils/images";
 import { fitImageSize } from "../../utils/upload-file";
@@ -50,7 +51,7 @@ export default class VideoAttachment implements Component<Options> {
     const isGIF = document.attributes.some(
       ({ $t }) => $t === "DocumentAttributeAnimated"
     );
-    const icon = createElement(Icon, { icon: Icons.Download, color: "white" });
+    const icon = createElement(Icon, { icon: Icons.Play, color: "white" });
     let shouldContinue = true;
 
     const downloadIndicator = createElement(
@@ -67,17 +68,22 @@ export default class VideoAttachment implements Component<Options> {
     );
 
     let downloaded = false;
+    let progress: Element<Progress>;
 
     function stopListener() {
       on(element, "click", downloadListener);
       off(element, "click", stopListener);
-      icon.instance.setIcon(Icons.Download);
+      icon.instance.setIcon(Icons.Play);
       shouldContinue = false;
+      if (progress) {
+        progress.remove();
+        progress = undefined;
+      }
     }
 
     const downloadListener = () => {
       off(element, "click", downloadListener);
-      const progress = createElement(Progress);
+      progress = createElement(Progress);
       downloadIndicator.append(progress);
 
       icon.instance.setIcon(Icons.Close);
@@ -93,9 +99,12 @@ export default class VideoAttachment implements Component<Options> {
           return true;
         })
         .then((src) => {
-          progress.remove();
           if (!src) {
             return;
+          }
+          if (progress) {
+            progress.remove();
+            progress = undefined;
           }
           downloadIndicator.remove();
           downloaded = true;

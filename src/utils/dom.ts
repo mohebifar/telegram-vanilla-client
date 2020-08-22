@@ -163,15 +163,16 @@ export function removeClass<T extends HTMLElement | Element<any>>(
   element.classList.remove(...tokens);
 }
 
-type HTMLElementEventNames = keyof HTMLElementEventMap;
+type AllEventMap = HTMLElementEventMap & SourceBufferEventMap & MediaSourceEventMap;
+type AllEventNames = keyof AllEventMap;
 type AddintionalEvents = "longpress";
-type EventNames<K = HTMLElementEventNames> = K extends HTMLElementEventNames[]
+type EventNames<K = AllEventNames> = K extends AllEventNames[]
   ? K[number]
   : K | AddintionalEvents;
-type EventType<K> = K extends HTMLElementEventNames
-  ? HTMLElementEventMap[K]
-  : K extends HTMLElementEventNames[]
-  ? HTMLElementEventMap[K[number]]
+type EventType<K> = K extends AllEventNames
+  ? AllEventMap[K]
+  : K extends AllEventNames[]
+  ? AllEventMap[K[number]]
   : Event;
 
 const longPressMap = new Map<Function, [Function, Function]>();
@@ -179,8 +180,8 @@ const longPressMap = new Map<Function, [Function, Function]>();
 const preventDefault = (event: Event) => event.preventDefault();
 
 export function on<
-  K extends HTMLElementEventNames,
-  T extends Document | HTMLElement | SVGElement | Element<any>
+  K extends AllEventNames,
+  T extends EventTarget
 >(
   element: T,
   eventType: EventNames<K> | EventNames<K>[],
@@ -221,20 +222,26 @@ export function on<
     } else {
       on(element, "contextmenu", listener as any, options);
     }
+    return () => off(element, "longpress", listener as any, options);
   }
 
   if (Array.isArray(eventType)) {
-    eventType.forEach((event) => {
-      on(element, event, listener, options);
-    });
+    const cleanUps = eventType.map((event) =>
+      on(element, event, listener, options)
+    );
+
+    return () => {
+      cleanUps.forEach((cleanUp) => cleanUp());
+    };
   } else {
     element.addEventListener(eventType, listener, options);
+    return () => off(element, eventType, listener, options);
   }
 }
 
 export function off<
-  K extends HTMLElementEventNames,
-  T extends Document | HTMLElement | SVGElement | Element<any>
+  K extends AllEventNames,
+  T extends EventTarget
 >(
   element: T,
   eventType: EventNames<K> | EventNames<K>[],

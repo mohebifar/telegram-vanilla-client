@@ -623,6 +623,8 @@ $time-size: 0.75rem;
 
     .message {
       @extend .grey-area;
+      bottom: 0.5rem !important;
+      right: 0.25rem !important;
 
       .time {
         @extend .grey-time;

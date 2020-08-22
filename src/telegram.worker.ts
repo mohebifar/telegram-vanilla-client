@@ -113,7 +113,7 @@ async function connect(apiId: number, apiHash: string) {
 
       const newArgs = data.args.map((arg) => {
         if (typeof arg === "object" && arg.__ === "c" && arg.r) {
-          return (args: any[]) =>
+          return (...args: any[]) =>
             new Promise((resolve) => {
               postMessage({
                 type: "callback",

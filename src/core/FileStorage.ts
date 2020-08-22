@@ -54,7 +54,7 @@ type CacheKey =
   | typeof CACHE_KEY_FILE
   | typeof CACHE_KEY_DOCUMENT;
 
-type ProgressCallback = (progress: number) => any;
+type ProgressCallback = (progress: number, data?: Uint8Array[]) => any;
 
 export class FileStorage {
   private cache: Record<CacheKey, Cache>;
@@ -173,7 +173,6 @@ export class FileStorage {
       const match = await cache.match(key);
       if (match) {
         const url = URL.createObjectURL(await match.blob());
-        console.debug("Cache hit", cacheKey, url);
         this.blobUrlCache.set(blobUrlCacheKey, url);
         return url;
       }
@@ -195,7 +194,7 @@ export class FileStorage {
     let aborted = false;
 
     if (fileSize) {
-      const queue = new PQueue({ concurrency: 10 });
+      const queue = new PQueue({ concurrency: 6 });
       let finishedCount = 0;
 
       if (onProgress) {
@@ -235,6 +234,7 @@ export class FileStorage {
               }
             } catch (error) {
               if (++retries < MAX_RETRIES_PER_FILE) {
+                await new Promise((r) => setTimeout(r, 500));
                 return request();
               }
 
@@ -644,9 +644,13 @@ function getPartSize(fileSize: number) {
     // 1MB
     return 256;
   }
+  if (fileSize <= 1e7) {
+    // 10MB
+    return 512;
+  }
   if (fileSize <= 1572864000) {
     // 1500MB
-    return 512;
+    return 1024;
   }
 
   throw new Error("File size too large");

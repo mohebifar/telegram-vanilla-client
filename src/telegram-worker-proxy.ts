@@ -86,7 +86,7 @@ export async function makeProxy(
         tgWorker.postMessage({
           type: "callback_return",
           r: data.r,
-          return: callback(data.result),
+          return: callback(...data.result),
         });
       }
     } else if (data.type === "webp_request") {
