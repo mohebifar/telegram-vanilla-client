@@ -217,7 +217,7 @@ export default class EmojiPicker implements Component<Options> {
         const { scrollTop } = emojiWrapper;
         for (let i = categoryElements.length - 1; i >= 0; i--) {
           const titleElement = categoryElements[i];
-          if (titleElement.offsetTop - 60 <= scrollTop) {
+          if (titleElement.offsetTop - 100 <= scrollTop) {
             pickers.forEach((picker) => picker.instance.setColor("grey"));
             pickers[i].instance.setColor("blue");
             break;
