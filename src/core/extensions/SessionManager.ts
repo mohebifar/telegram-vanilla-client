@@ -11,7 +11,7 @@ const dcToURL = [
   "flora.web.telegram.org"
 ];
 
-const defaultDc = 4;
+const defaultDc = 2;
 const handlers = new Map<string, { resolve: Function; reject: Function }>();
 
 addEventListener("message", ({ data }) => {
