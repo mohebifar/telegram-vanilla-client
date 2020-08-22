@@ -191,8 +191,8 @@ export class LightBox implements Component<Options> {
           new: { from: newFrom, to: 0 },
         },
         (v) => {
-          oldImmediate.style.transform = `translateX(${v.old}px)`;
-          newImmediate.style.transform = `translateX(${v.new}px)`;
+          oldImmediate.style.transform = `translate3d(${v.old}px, 0, 0)`;
+          newImmediate.style.transform = `translate3d(${v.new}px, 0, 0)`;
         },
         () => oldImmediate.remove()
       );
@@ -333,8 +333,8 @@ export class LightBox implements Component<Options> {
         (v) => {
           currentElement.style.opacity = v.o + "";
           newElement.style.opacity = 1 - v.o + "";
-          currentElement.style.transform = `translateX(${v.xOld}px)`;
-          newElement.style.transform = `translateX(${v.xNew}px)`;
+          currentElement.style.transform = `translate3d(${v.xOld}px, 0, 0)`;
+          newElement.style.transform = `translate3d(${v.xNew}px, 0, 0)`;
         },
         () => {
           currentElement.remove();

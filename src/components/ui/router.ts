@@ -134,7 +134,7 @@ export abstract class SlideTransition implements Transition {
   public readonly element: HTMLElement;
 
   private transition(node: HTMLElement, v: { x: number; a: number }) {
-    node.style.transform = `translateX(${v.x}%)`;
+    node.style.transform = `translate3d(${v.x}%, 0, 0)`;
     node.style.boxShadow = `0 -25em 0 25em rgba(0,0,0,${v.a})`;
   }
 

@@ -72,7 +72,7 @@ export default class EmojiPanel implements Component<Options> {
     this.contentWrapper.append(content);
 
     if (oldContent) {
-      content.style.transform = `translateX(${width}px)`;
+      content.style.transform = `translate3d(${width}px, 0, 0)`;
       const direction = this.currentTab > index ? 1 : -1;
 
       startAnimation(
@@ -81,8 +81,8 @@ export default class EmojiPanel implements Component<Options> {
           n: { from: -width * direction, to: 0 }
         },
         v => {
-          oldContent.style.transform = `translateX(${v.o}px)`;
-          content.style.transform = `translateX(${v.n}px)`;
+          oldContent.style.transform = `translate3d(${v.o}px, 0, 0)`;
+          content.style.transform = `translate3d(${v.n}px, 0, 0)`;
         },
         () => {
           oldContent.remove();
