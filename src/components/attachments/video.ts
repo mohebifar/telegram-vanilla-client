@@ -129,7 +129,6 @@ export default class VideoAttachment implements Component<Options> {
 
           if (isGIF) {
             removeClass(element, "pointer");
-            downloadListener();
           } else {
             on(element, "click", () => {
               const canvas = globalDocument.createElement("canvas");
@@ -172,7 +171,7 @@ export default class VideoAttachment implements Component<Options> {
         console.log(err, document);
       });
 
-    if (autoDownload) {
+    if (autoDownload || isGIF) {
       downloadListener();
     }
     tg.fileStorage.documentIsCached(document).then((isCached) => {
