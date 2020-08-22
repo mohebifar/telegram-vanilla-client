@@ -8,7 +8,7 @@ import {
   getNthChild,
   removeClass,
   addClass,
-  on
+  on,
 } from "../../utils/dom";
 import DialogItem from "../ui/dialog-item";
 import * as dialogItemStyles from "../ui/dialog-item.scss";
@@ -18,6 +18,8 @@ import Spinner from "../ui/spinner";
 
 interface Options {
   onChatSelect(dialog: IDialog, message: IMessage): any;
+  dialogs?: IDialog[];
+  folderId?: number;
 }
 
 export default class DialogList extends FadeTransition
@@ -32,18 +34,22 @@ export default class DialogList extends FadeTransition
   private dialogsToElement = new Map<IDialog, Element<DialogItem>>();
   private peerToElement = new Map<IPeer, Element<DialogItem>>();
   private onChatSelect: Options["onChatSelect"];
+  private dialogs: Options["dialogs"];
+  private folderId: Options["folderId"];
 
-  constructor({ onChatSelect }: Options) {
+  constructor({ onChatSelect, dialogs, folderId }: Options) {
     super();
     this.onChatSelect = onChatSelect;
+    this.dialogs = dialogs;
+    this.folderId = folderId;
     this.dialogsContainer = createElement("div", { class: styles.dialogsList });
     this.pinnedDialogsContainer = createElement("div", {
-      class: `${styles.dialogsList} ${styles.pinned}`
+      class: `${styles.dialogsList} ${styles.pinned}`,
     });
     this.element = createElement(
       "div",
       {
-        class: styles.dialogsWrapper + " " + styles.loading
+        class: styles.dialogsWrapper + " " + styles.loading,
       },
       this.pinnedDialogsContainer,
       this.dialogsContainer,
@@ -69,7 +75,7 @@ export default class DialogList extends FadeTransition
   }
 
   private async register() {
-    const dialogs = await Dialog.fetch();
+    const dialogs = this.dialogs || (await Dialog.fetch(undefined));
     await this.addDialogs(dialogs);
     removeClass(this.element, styles.loading);
 
@@ -83,17 +89,15 @@ export default class DialogList extends FadeTransition
         this.rearrangeItems(object);
       }
     );
-    Peer.events.on(
-      "saved",
-      ({ object }: { object: IPeer; gid: string }) => {
-        if (object.type === 'User') {
-          const element = this.peerToElement.get(object);
-            if (element) {
-              element.instance.update();
-            }
+
+    Peer.events.on("saved", ({ object }: { object: IPeer; gid: string }) => {
+      if (object.type === "User") {
+        const element = this.peerToElement.get(object);
+        if (element) {
+          element.instance.update();
         }
       }
-    );
+    });
 
     Dialog.events.on("typing", ({ dialog }: { dialog: IDialog }) => {
       if (this.dialogsToElement.has(dialog)) {
@@ -107,11 +111,11 @@ export default class DialogList extends FadeTransition
         this.element.scrollTop + this.element.clientHeight >=
         this.element.scrollHeight - 200;
 
-      if (!this.paginating && isAtBottom) {
+      if (!this.paginating && isAtBottom && !this.folderId) {
         this.paginating = true;
 
         Dialog.fetch(this.getLastDialog())
-          .then(dialogs => this.addDialogs(dialogs))
+          .then((dialogs) => this.addDialogs(dialogs))
           .then(() => {
             this.paginating = false;
           })
@@ -124,9 +128,9 @@ export default class DialogList extends FadeTransition
 
   private async addDialogs(dialogs: IDialog[]) {
     const peers = await Peer.bulkGet(
-      dialogs.map(dialog => ({
+      dialogs.map((dialog) => ({
         id: dialog.peerId,
-        type: dialog.peerType
+        type: dialog.peerType,
       }))
     );
 
@@ -146,7 +150,7 @@ export default class DialogList extends FadeTransition
     const element = createElement(DialogItem, {
       dialog,
       peer,
-      onClick: this.onPeerSelect
+      onClick: this.onPeerSelect,
     });
     await element.instance.register();
 
@@ -175,6 +179,12 @@ export default class DialogList extends FadeTransition
 
   private async rearrangeItems(updatedDialog: IDialog) {
     if (updatedDialog.pinned) {
+      return;
+    }
+    if (
+      this.folderId &&
+      !this.dialogs.some((dialog) => dialog.equals(updatedDialog))
+    ) {
       return;
     }
     let updatedElement: Element<DialogItem>;

@@ -300,14 +300,13 @@ function serializeScalar(type: PrimitiveTypes | string, value: any) {
 
 export function serializeBytes(input: string | Uint8Array) {
   let data: Uint8Array;
-  if (!(input instanceof Uint8Array)) {
-    if (typeof input == "string") {
-      data = readBytesFromString(input);
-    } else {
-      throw Error(`Bytes or bigint or str expected, not ${typeof input}`);
-    }
-  } else {
+
+  if (input instanceof Uint8Array) {
     data = input;
+  } else if (typeof input == "string") {
+    data = readBytesFromString(input);
+  } else {
+    throw Error(`Bytes or bigint or str expected, not ${typeof input}`);
   }
 
   const r: Uint8Array[] = [];

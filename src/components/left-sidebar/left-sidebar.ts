@@ -6,9 +6,9 @@ import { Icons, IconSprite } from "../ui/icon";
 import IconButton from "../ui/icon-button";
 import Router from "../ui/router";
 import SearchInput from "../ui/search-input";
-import DialogList from "./dialog-list";
 import GlobalSearch from "./global-search";
 import * as styles from "./left-sidebar.scss";
+import Folders from "./folders";
 
 interface Options {
   onChatSelect(dialog: IDialog, message?: IMessage): any;
@@ -17,7 +17,7 @@ interface Options {
 export default class LeftSideBar implements Component<Options> {
   public readonly element: HTMLElement;
 
-  private readonly dialogList: Element<DialogList>;
+  private readonly dialogList: Element<Folders>;
   private search: Element<SearchInput>;
   private globalSearch: Element<GlobalSearch>;
   private iconButton: Element<IconButton>;
@@ -97,7 +97,7 @@ export default class LeftSideBar implements Component<Options> {
     });
     this.router = routerElement.instance;
 
-    this.dialogList = createElement(DialogList, { onChatSelect });
+    this.dialogList = createElement(Folders, { onChatSelect });
     this.globalSearch = createElement(GlobalSearch, {
       onChatSelect,
       router: this.router

@@ -12,6 +12,10 @@ export function getInputPeer(
   checkHash = true
   // @ts-ignore
 ): InputPeerTypes {
+  if (!entity) {
+    return undefined;
+  }
+
   if (entity.subclassOfId === 0xc91c90b6) {
     // crc32(b'InputPeer')
     return entity;
@@ -24,7 +28,7 @@ export function getInputPeer(
       return {
         $t: "InputPeerUser",
         userId: entity.id,
-        accessHash: entity.accessHash
+        accessHash: entity.accessHash,
       };
     } else {
       throw new Error("User without access_hash or min info cannot be input");
@@ -37,7 +41,7 @@ export function getInputPeer(
   ) {
     return {
       $t: "InputPeerChat",
-      chatId: entity.id
+      chatId: entity.id,
     };
   }
   if (entity.$t === "Channel") {
@@ -45,7 +49,7 @@ export function getInputPeer(
       return {
         $t: "InputPeerChannel",
         channelId: entity.id,
-        accessHash: entity.accessHash
+        accessHash: entity.accessHash,
       };
     } else {
       throw new TypeError(
@@ -59,7 +63,7 @@ export function getInputPeer(
     return {
       $t: "InputPeerChannel",
       channelId: entity.id,
-      accessHash: entity.accessHash
+      accessHash: entity.accessHash,
     };
   }
 
@@ -67,14 +71,14 @@ export function getInputPeer(
     return {
       $t: "InputPeerUser",
       userId: entity.userId,
-      accessHash: entity.accessHash
+      accessHash: entity.accessHash,
     };
   }
   if (entity.$t === "InputChannel") {
     return {
       $t: "InputPeerChannel",
       channelId: entity.channelId,
-      accessHash: entity.accessHash
+      accessHash: entity.accessHash,
     };
   }
   if (entity.$t === "UserEmpty") {
@@ -199,6 +203,6 @@ export function extractIdFromPeer(peer: PeerChannel | PeerChat | PeerUser) {
 
   return {
     id: peer[idKey],
-    type: simplifyPeerType(peer.$t)
+    type: simplifyPeerType(peer.$t),
   };
 }

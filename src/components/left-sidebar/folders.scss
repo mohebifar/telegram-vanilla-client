@@ -1,0 +1,18 @@
+.container {
+  &,
+  > div {
+    flex-grow: 1;
+    height: 100%;
+  }
+
+  > div > :first-child {
+      justify-content: flex-start;
+      > button {
+          padding: 0.75em;
+      }
+  }
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

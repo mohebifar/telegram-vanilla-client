@@ -4,11 +4,16 @@ import {
   messages_DialogsSlice,
   messages_GetDialogsRequest,
   messages_PeerDialogs,
+  DialogFilter,
 } from "../core/tl/TLObjects";
 import { extractIdFromPeer, getInputPeer } from "../core/tl/utils";
 import { getDialogDisplayDate, getMessageSummary } from "../utils/chat";
 import { DBDialog, TelegramDatabase } from "../utils/db";
-import { IsTypingAction, TypingState } from "../utils/useful-types";
+import {
+  IsTypingAction,
+  TypingState,
+  InputPeerTypes,
+} from "../utils/useful-types";
 import { IMessage, Message } from "./message";
 import { Model, ModelDecorator, ModelKey, ModelWithProxy } from "./model";
 import { IPeer, Peer } from "./peer";
@@ -22,6 +27,7 @@ interface ExtraMethods {
   startTyping(action: IsTypingAction): void;
   getIsTyping(): TypingState[];
   clearTypingTimeout(userId: number): void;
+  equals(dialog: IDialog): boolean;
   slient: boolean;
 }
 
@@ -60,13 +66,16 @@ export class Dialog extends Model<"dialogs"> implements ExtraMethods {
     return result[0];
   }
 
-  static async bulkGet(ids: ModelKey<"dialogs">[]) {
+  static async bulkGet(
+    ids: ModelKey<"dialogs">[] | InputPeerTypes[]
+  ) {
     const dialogs: IDialog[] = [];
     const inputs = [];
-    for (const id of ids) {
-      const input = await getInputPeerFromPrimaryKey(id);
-      inputs.push(input);
-    }
+
+      for (const id of ids) {
+        const input = 'peerId' in id ? await getInputPeerFromPrimaryKey(id) : id;
+        inputs.push(input);
+      }
 
     const response = (await this.tg.invoke({
       $t: "messages_GetPeerDialogsRequest",
@@ -109,6 +118,25 @@ export class Dialog extends Model<"dialogs"> implements ExtraMethods {
     return dialogs;
   }
 
+  static async fetchFolders(): Promise<[DialogFilter[], IDialog[][]]> {
+    const response = ((await this.tg.invoke({
+      $t: "messages_GetDialogFiltersRequest",
+    })) as never) as DialogFilter[];
+
+    const dialogsLists: IDialog[][] = [];
+
+    for (const folder of response) {
+      const dialogsResult = await Dialog.bulkGet(folder.includePeers);
+      dialogsLists.push(
+        dialogsResult.sort((a, b) =>
+          a.lastMessageDate > b.lastMessageDate ? -1 : 1
+        )
+      );
+    }
+
+    return [response, dialogsLists];
+  }
+
   static async fetch(offsetDialog?: IDialog): Promise<IDialog[]> {
     let offsetDate = 0;
     let offsetId = 0;
@@ -133,7 +161,7 @@ export class Dialog extends Model<"dialogs"> implements ExtraMethods {
       offsetId,
       offsetPeer,
       hash: 0,
-      limit: 40,
+      limit: Math.ceil(window.innerHeight / 76) + 3,
     })) as messages_DialogsSlice;
 
     for (const chat of response.chats) {
@@ -269,6 +297,13 @@ export class Dialog extends Model<"dialogs"> implements ExtraMethods {
     this.isTyping = this.isTyping.filter((typing) => typing.userId !== userId);
   }
 
+  public equals(dialog: IDialog) {
+    return (
+      this._proxy.peerId === dialog.peerId &&
+      this._proxy.peerType === dialog.peerType
+    );
+  }
+
   get slient() {
     if (this.fields.notifySettings.$t === "PeerNotifySettings") {
       return dayjs(this.fields.notifySettings.muteUntil * 1000).isAfter(
@@ -288,11 +323,11 @@ export class Dialog extends Model<"dialogs"> implements ExtraMethods {
 
 async function getInputPeerFromPrimaryKey({
   peerId,
-  peerType
+  peerType,
 }: ModelKey<"dialogs">) {
   const peer = await Peer.get({
     id: peerId,
-    type: peerType
+    type: peerType,
   });
   return getInputPeer(peer);
 }
