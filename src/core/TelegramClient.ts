@@ -287,7 +287,7 @@ export class TelegramClient {
 
     this.disconnect();
     await sleep(500);
-    // this.sessionManager.clearAll();
+    this.sessionManager.clearAll();
     this.prepareSender();
     await this.connect();
   }
