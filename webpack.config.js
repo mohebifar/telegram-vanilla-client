@@ -8,6 +8,7 @@ const webpack = require("webpack");
 const minifyPrivatesTransformer = require("ts-transformer-minify-privates")
   .default;
 const TerserPlugin = require("terser-webpack-plugin");
+const WorkboxWebpackPlugin = require("workbox-webpack-plugin");
 
 const sassRegex = /\.(scss|sass)$/;
 const sassGlobalRegex = /\.global\.(scss|sass)$/;
@@ -22,12 +23,12 @@ module.exports = ({ NODE_ENV }) => {
 
   return {
     entry: {
-      main: "./src/index.ts"
+      main: "./src/index.ts",
     },
     output: {
       path: Path.join(__dirname, "build"),
       filename: "js/[name].js",
-      chunkFilename: "js/[name].bundle.js"
+      chunkFilename: "js/[name].bundle.js",
     },
     optimization: {
       minimizer: [
@@ -37,40 +38,44 @@ module.exports = ({ NODE_ENV }) => {
           terserOptions: {
             mangle: {
               properties: {
-                regex: /^_private_.+$/
-              }
-            }
-          }
-        })
-      ]
+                regex: /^_private_.+$/,
+              },
+            },
+          },
+        }),
+      ],
     },
     plugins: [
       new WorkerPlugin(),
       new CleanWebpackPlugin(),
       new CopyWebpackPlugin([
-        { from: Path.resolve(__dirname, "./src/assets"), to: "assets" }
+        { from: Path.resolve(__dirname, "./src/assets"), to: "assets" },
       ]),
       new HtmlWebpackPlugin({
-        template: "./src/index.html"
+        template: "./src/index.html",
       }),
       new MiniCssExtractPlugin({
         // Options similar to the same options in webpackOptions.output
         // both options are optional
         filename: "[name].css",
-        chunkFilename: "[id].css"
+        chunkFilename: "[id].css",
+      }),
+      new WorkboxWebpackPlugin.InjectManifest({
+        swSrc: "./src/telegram.serviceWorker.ts",
+        swDest: 'sw.js'
       }),
       // new webpack.EnvironmentPlugin(["API_ID", "API_HASH"]),
       new webpack.DefinePlugin({
         TG_API_ID: process.env.API_ID,
         TG_API_HASH: JSON.stringify(process.env.API_HASH),
-        ENVIRONMENT: 'WEB'
-      })
+        ENVIRONMENT: "WEB",
+      }),
     ],
     resolve: {
       alias: {
-        "~": "./src"
+        "~": "./src",
       },
-      extensions: [".tsx", ".ts", ".js", ".json"]
+      extensions: [".tsx", ".ts", ".js", ".json"],
     },
     module: {
       rules: [
@@ -80,8 +85,8 @@ module.exports = ({ NODE_ENV }) => {
           use: {
             loader: "awesome-typescript-loader",
             options: {
-              getCustomTransformers: program => ({
-                before: [minifyPrivatesTransformer(program)]
+              getCustomTransformers: (program) => ({
+                before: [minifyPrivatesTransformer(program)],
               }),
               useBabel: true,
               babelOptions: {
@@ -94,44 +99,44 @@ module.exports = ({ NODE_ENV }) => {
                         chrome: "58",
                         safari: "13",
                         firefox: "68",
-                        edge: "18"
+                        edge: "18",
                       },
-                      modules: false
-                    }
-                  ]
+                      modules: false,
+                    },
+                  ],
                 ],
                 plugins: [
                   // "./generators/babel-tl-minifier",
                   ...(isProduction
                     ? [
                         "transform-remove-console",
-                        "./generators/babel-tl-minifier"
+                        "./generators/babel-tl-minifier",
                       ]
-                    : [])
-                ]
+                    : []),
+                ],
               },
-              babelCore: "@babel/core" // needed for Babel v7
-            }
-          }
+              babelCore: "@babel/core", // needed for Babel v7
+            },
+          },
         },
         {
           test: /\.wasm$/,
           type: "javascript/auto",
-          loader: "arraybuffer-lite-loader"
+          loader: "arraybuffer-lite-loader",
         },
         {
           test: /\.mjs$/,
           include: /node_modules/,
-          type: "javascript/auto"
+          type: "javascript/auto",
         },
         {
           test: /\.(ico|jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2)(\?.*)?$/,
           use: {
             loader: "file-loader",
             options: {
-              name: "[path][name].[ext]"
-            }
-          }
+              name: "[path][name].[ext]",
+            },
+          },
         },
         {
           test: sassGlobalRegex,
@@ -142,12 +147,12 @@ module.exports = ({ NODE_ENV }) => {
             {
               loader: "css-loader",
               options: {
-                modules: false
-              }
+                modules: false,
+              },
             },
             // Compiles Sass to CSS
-            "sass-loader"
-          ].filter(Boolean)
+            "sass-loader",
+          ].filter(Boolean),
         },
         {
           test: sassRegex,
@@ -160,14 +165,14 @@ module.exports = ({ NODE_ENV }) => {
               loader: "css-loader",
               options: {
                 modules: {
-                  localIdentName: classNamePattern
-                }
-              }
+                  localIdentName: classNamePattern,
+                },
+              },
             },
-            "sass-loader"
-          ].filter(Boolean)
-        }
-      ]
-    }
+            "sass-loader",
+          ].filter(Boolean),
+        },
+      ],
+    },
   };
 };

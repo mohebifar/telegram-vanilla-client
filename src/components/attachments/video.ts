@@ -7,7 +7,6 @@ import { TelegramClientProxy } from "../../telegram-worker-proxy";
 import {
   Component,
   createElement,
-  off,
   removeClass,
   on,
   Element,
@@ -17,6 +16,7 @@ import { fitImageSize } from "../../utils/upload-file";
 import * as styles from "../chat/chat.scss";
 import Icon, { Icons } from "../ui/icon";
 import Progress from "../ui/progress";
+import { canStream } from "../../utils/video";
 
 export interface Options {
   media?: MessageMediaDocument;
@@ -48,9 +48,14 @@ export default class VideoAttachment implements Component<Options> {
       return;
     }
 
+    let poster: string;
+    let video: HTMLVideoElement;
+
     const isGIF = document.attributes.some(
       ({ $t }) => $t === "DocumentAttributeAnimated"
     );
+    const shouldStream = canStream(document);
+
     const icon = createElement(Icon, { icon: Icons.Play, color: "white" });
     let shouldContinue = true;
 
@@ -59,7 +64,9 @@ export default class VideoAttachment implements Component<Options> {
       { class: "downloadIndicator" },
       icon
     );
-    const img = createElement("img", { src: EMPTY_IMG, class: "blur" });
+    const img = createElement("img", {
+      src: EMPTY_IMG,
+    }) as HTMLImageElement;
     const element = createElement(
       "div",
       { class: styles.attachment + " pointer" },
@@ -71,8 +78,8 @@ export default class VideoAttachment implements Component<Options> {
     let progress: Element<Progress>;
 
     function stopListener() {
-      on(element, "click", downloadListener);
-      off(element, "click", stopListener);
+      removeClickListener();
+      removeClickListener = on(element, "click", downloadListener);
       icon.instance.setIcon(Icons.Play);
       shouldContinue = false;
       if (progress) {
@@ -81,13 +88,35 @@ export default class VideoAttachment implements Component<Options> {
       }
     }
 
+    const openMedia = () => {
+      if (!poster) {
+        if (video) {
+          const canvas = globalDocument.createElement("canvas");
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          canvas
+            .getContext("2d")
+            .drawImage(video, 0, 0, canvas.width, canvas.height);
+          poster = canvas.toDataURL();
+        } else {
+          poster = img.src;
+        }
+      }
+
+      onClick(poster);
+    };
+
+    const streamListener = () => {
+      openMedia();
+    };
+
     const downloadListener = () => {
-      off(element, "click", downloadListener);
+      removeClickListener();
       progress = createElement(Progress);
       downloadIndicator.append(progress);
 
       icon.instance.setIcon(Icons.Close);
-      on(element, "click", stopListener);
+      removeClickListener = on(element, "click", stopListener);
 
       tg.fileStorage
         .downloadDocument(document, undefined, document.dcId, (t) => {
@@ -106,10 +135,11 @@ export default class VideoAttachment implements Component<Options> {
             progress.remove();
             progress = undefined;
           }
+          removeClickListener();
           downloadIndicator.remove();
           downloaded = true;
           img.remove();
-          const video = createElement(
+          video = createElement(
             "video",
             { playsinline: "playsinline" },
             createElement("source", { src, type: "video/mp4" })
@@ -139,22 +169,17 @@ export default class VideoAttachment implements Component<Options> {
           if (isGIF) {
             removeClass(element, "pointer");
           } else {
-            on(element, "click", () => {
-              const canvas = globalDocument.createElement("canvas");
-              canvas.width = video.videoWidth;
-              canvas.height = video.videoHeight;
-              canvas
-                .getContext("2d")
-                .drawImage(video, 0, 0, canvas.width, canvas.height);
-              const initialPhoto = canvas.toDataURL();
-
-              onClick(initialPhoto);
-            });
+            console.log("add event", element);
+            removeClickListener = on(element, "click", streamListener);
           }
         });
     };
 
-    on(element, "click", downloadListener);
+    let removeClickListener = on(
+      element,
+      "click",
+      shouldStream ? streamListener : downloadListener
+    );
 
     const videoAttributes = document.attributes.find(
       ({ $t }) => $t === "DocumentAttributeVideo"
@@ -170,10 +195,10 @@ export default class VideoAttachment implements Component<Options> {
     }
 
     tg.fileStorage
-      .downloadDocument(document, 0, document.dcId)
+      .downloadDocument(document, 1, document.dcId)
       .then((url) => {
         if (!downloaded) {
-          img.setAttribute("src", url);
+          img.src = url;
         }
       })
       .catch((err) => {

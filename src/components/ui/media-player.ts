@@ -5,7 +5,8 @@ import { EMPTY_IMG } from "../../utils/images";
 import Icon, { Icons } from "./icon";
 import * as styles from "./media-lightbox.scss";
 import Progress from "./progress";
-import { DocumentAttributeVideo } from "../../core/tl/TLObjects";
+import { Document } from "../../core/tl/TLObjects";
+import { canStream } from "../../utils/video";
 
 export interface Options {
   tg: TelegramClientProxy;
@@ -22,7 +23,8 @@ export class MediaPlayer implements Component<Options> {
   private downloadIndicator: HTMLElement;
   private aborted = false;
   private tg: Options["tg"];
-  private imageSet = false;
+  private imageSet = -1;
+  private video?: HTMLVideoElement;
 
   public mediaWrapper: HTMLElement;
 
@@ -66,9 +68,12 @@ export class MediaPlayer implements Component<Options> {
     this.mediaWrapper.append(this.downloadIndicator);
   }
 
-  public setSrc(url: string) {
+  public setSrc(url: string, size = 2) {
     this.image.src = url;
-    this.imageSet = true;
+    if (this.video) {
+      this.video.setAttribute("poster", url);
+    }
+    this.imageSet = size;
   }
 
   public abort() {
@@ -77,34 +82,57 @@ export class MediaPlayer implements Component<Options> {
 
   public updateMedia(sharedMedia: ISharedMedia) {
     const { media } = sharedMedia;
-
-    this.tg.fileStorage.downloadMedia(media, 0).then((url) => {
-      if (!this.aborted && !this.imageSet) {
-        this.setSrc(url);
-        this.image.className = "blur";
-      }
+    [0, 1].forEach((size) => {
+      this.tg.fileStorage.downloadMedia(media, size).then((url) => {
+        if (!this.aborted && this.imageSet < size) {
+          this.setSrc(url);
+          this.image.className = size === 0 ? "blur" : "";
+        }
+      });
     });
 
     const isPhoto = media.$t === "MessageMediaPhoto";
-    const videoAttribute =
-      media.$t === "MessageMediaDocument" &&
-      media.document.$t === "Document" &&
-      (media.document.attributes.find(
-        ({ $t }) => $t === "DocumentAttributeVideo"
-      ) as DocumentAttributeVideo);
-    const canStream = videoAttribute && videoAttribute.supportsStreaming;
-    console.debug("Media is streamable: ", canStream);
+    const shouldStream =
+      media.$t === "MessageMediaDocument" && canStream(media.document);
 
     const createVideo = (src?: string) => {
-      const video = createElement("video", {
-        src,
-        controls: "controls",
-      }) as HTMLVideoElement;
+      const video = createElement(
+        "video",
+        {
+          controls: "controls",
+          autoplay: "autoplay",
+          playsinline: "playsinline",
+        },
+        createElement("source", {
+          src,
+        })
+      ) as HTMLVideoElement;
       this.image.remove();
       this.mediaWrapper.prepend(video);
 
+      video.setAttribute("poster", this.image.src);
+
+      if (this.downloadIndicator) {
+        this.downloadIndicator.remove();
+      }
+
       return video;
     };
+
+    if (shouldStream) {
+      const document = (media as any).document as Document;
+      const id = [
+        document.id,
+        document.dcId,
+        document.accessHash,
+        document.fileReference.join(","),
+      ].join("_");
+
+      this.video = createVideo(
+        `/streaming/file?id=${id}&size=${document.size}&mime_type=video/mp4`
+      );
+      return;
+    }
 
     this.tg.fileStorage
       .downloadMedia(media, undefined, (t) => {
@@ -131,7 +159,7 @@ export class MediaPlayer implements Component<Options> {
           this.image.className = "";
           this.setSrc(url);
         } else {
-          createVideo(url);
+          this.video = createVideo(url);
         }
       });
   }

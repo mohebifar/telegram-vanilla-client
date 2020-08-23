@@ -17,7 +17,7 @@ import {
   Config,
   DcOption,
   InvokeWithLayerRequest,
-  TLObjectTypes
+  TLObjectTypes,
 } from "./tl/TLObjects";
 
 const LAYER = 114;
@@ -63,8 +63,8 @@ export class TelegramClient {
         langPack: "", // "langPacks are for official apps only"
         systemLangCode: this.systemLangCode,
         query: x as any,
-        proxy: null // no proxies yet.
-      }
+        proxy: null, // no proxies yet.
+      },
     };
   };
 
@@ -85,7 +85,7 @@ export class TelegramClient {
       // delay: this._retryDelay,
       autoReconnectCallback: () => {},
       authKeyCallback: this.authKeyCallback.bind(this),
-      updateCallback: this.handleUpdate.bind(this)
+      updateCallback: this.handleUpdate.bind(this),
     });
   }
 
@@ -94,7 +94,7 @@ export class TelegramClient {
 
     await this.sender.send(
       this.initWith({
-        $t: "help_GetConfigRequest"
+        $t: "help_GetConfigRequest",
       } as any)
     );
   }
@@ -131,8 +131,8 @@ export class TelegramClient {
           phoneNumber,
           apiId: this.apiId,
           settings: {
-            $t: "CodeSettings"
-          }
+            $t: "CodeSettings",
+          },
         })) as auth_SentCode;
       } catch (e) {
         if (e instanceof RPCError && e.message === "AUTH_RESTART") {
@@ -161,7 +161,7 @@ export class TelegramClient {
       result = (await this.invoke({
         $t: "auth_ResendCodeRequest",
         phoneNumber,
-        phoneCodeHash
+        phoneCodeHash,
       })) as auth_SentCode;
 
       this.phoneCodeHash[phoneNumber] = result.phoneCodeHash;
@@ -177,18 +177,18 @@ export class TelegramClient {
       $t: "auth_SignInRequest",
       phoneNumber: this.phoneNumber,
       phoneCodeHash: phoneCodeHash,
-      phoneCode
+      phoneCode,
     })) as Authorization;
   }
 
   public async signInWithPassword(password: string) {
     const pwd = (await this.invoke({
-      $t: "account_GetPasswordRequest"
+      $t: "account_GetPasswordRequest",
     })) as account_Password;
 
     return (await this.invoke({
       $t: "auth_CheckPasswordRequest",
-      password: await computeCheck(pwd, password)
+      password: await computeCheck(pwd, password),
     })) as Authorization;
   }
 
@@ -200,11 +200,11 @@ export class TelegramClient {
       phoneNumber: this.phoneNumber,
       phoneCodeHash,
       firstName,
-      lastName
+      lastName,
     }) as any;
   }
 
-  public async invoke(request: TLObjectTypes) {
+  public async invoke(request: TLObjectTypes, dcId?: number) {
     let attempt = 0;
     let error: Error;
     console.debug("=> Outgoing", request);
@@ -223,9 +223,11 @@ export class TelegramClient {
       }
     }
 
+    const sender = dcId ? await this.borrowSender(dcId) : this.sender;
+
     for (attempt = 0; attempt < this.requestRetries; attempt++) {
       try {
-        const result = await this.sender.send(request);
+        const result = await sender.send(request);
 
         return result;
       } catch (e) {
@@ -239,10 +241,10 @@ export class TelegramClient {
           } else if (FILE_MIGRATE_PATTERN.test(e.message)) {
             const matches = e.message.match(FILE_MIGRATE_PATTERN);
             const dcId = Number(matches[1]);
-            await sleep(1000);
+            console.log("Handling file migrate to", dcId);
 
             // TODO: must resend the request to the new dc
-            await this.borrowSender(dcId);
+            return this.invoke(request, dcId);
           } else if (FLOOD_WAIT_PATTERN.test(e.message)) {
             const matches = e.message.match(FLOOD_WAIT_PATTERN);
             const seconds = Number(matches[2]);
@@ -312,7 +314,7 @@ export class TelegramClient {
     if (!session.authKey.key) {
       const auth = (await this.invoke({
         $t: "auth_ExportAuthorizationRequest",
-        dcId
+        dcId,
       })) as auth_ExportedAuthorization;
 
       await sender.connect();
@@ -321,7 +323,7 @@ export class TelegramClient {
         this.initWith({
           $t: "auth_ImportAuthorizationRequest",
           id: auth.id,
-          bytes: auth.bytes
+          bytes: auth.bytes,
         })
       );
 
@@ -336,13 +338,13 @@ export class TelegramClient {
   private async findDC(dcId: number, cdn = false): Promise<DcOption | null> {
     if (!this.config) {
       this.config = (await this.invoke({
-        $t: "help_GetConfigRequest"
+        $t: "help_GetConfigRequest",
       })) as Config;
     }
 
     if (cdn && !this.cdnConfig) {
       this.cdnConfig = (await this.invoke({
-        $t: "help_GetCdnConfigRequest"
+        $t: "help_GetCdnConfigRequest",
       })) as CdnConfig;
       for (const pk of this.cdnConfig.publicKeys) {
         await addKey(pk.publicKey);

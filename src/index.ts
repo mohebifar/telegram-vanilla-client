@@ -8,6 +8,7 @@ import { handleUpdate } from "./update-handler";
 import { createElement } from "./utils/dom";
 import { startRipple } from "./utils/ripple";
 import { prepareEmojiMap } from "./utils/emojis";
+import { handleServiceWorkerMessage } from "./service-worker-handler";
 
 async function start() {
   await prepareEmojiMap();
@@ -54,6 +55,24 @@ function setupSignInForm(
     },
   });
   document.body.append(element);
+}
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker
+      .register("/sw.js")
+      .then((registration) => {
+        console.log("SW registered: ", registration);
+      })
+      .catch((registrationError) => {
+        console.log(registrationError);
+      });
+  });
+
+  navigator.serviceWorker.addEventListener(
+    "message",
+    handleServiceWorkerMessage
+  );
 }
 
 try {
