@@ -237,11 +237,10 @@ export class TelegramClient {
             const dcId = Number(matches[1]);
 
             await this.switchDC(dcId);
-            continue;
+            return this.invoke(request);
           } else if (FILE_MIGRATE_PATTERN.test(e.message)) {
             const matches = e.message.match(FILE_MIGRATE_PATTERN);
             const dcId = Number(matches[1]);
-            console.log("Handling file migrate to", dcId);
 
             // TODO: must resend the request to the new dc
             return this.invoke(request, dcId);
@@ -287,9 +286,8 @@ export class TelegramClient {
     await this.sessionManager.setDefaultDc(newDc);
 
     this.disconnect();
-    this.sender.disconnect();
     await sleep(500);
-    this.sessionManager.clearAll();
+    // this.sessionManager.clearAll();
     this.prepareSender();
     await this.connect();
   }
