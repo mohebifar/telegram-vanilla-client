@@ -4,6 +4,8 @@ import { Component, createElement, on } from "../../utils/dom";
 import { EMPTY_IMG } from "../../utils/images";
 import { mediaLightBox } from "../ui/media-lightbox";
 import * as styles from "./shared-media.scss";
+import { DocumentAttributeVideo } from "../../core/tl/TLObjects";
+import { formatDuration } from "../../utils/chat";
 
 interface Options {
   peer: IPeer;
@@ -58,7 +60,23 @@ export default class SharedMediaPanel implements Component<Options> {
     const img = createElement("img", {
       src: initialPhoto,
     }) as HTMLImageElement;
-    const element = createElement("button", { class: styles.tile }, img);
+    const videoAttribute =
+      media.media.$t === "MessageMediaDocument" &&
+      media.media.document.$t === "Document" &&
+      (media.media.document.attributes.find(
+        ({ $t }) => $t === "DocumentAttributeVideo"
+      ) as DocumentAttributeVideo | undefined);
+
+    const element = createElement(
+      "button",
+      { class: styles.tile },
+      img,
+      videoAttribute && createElement(
+        "div",
+        { class: styles.meta },
+        formatDuration(videoAttribute.duration)
+      )
+    );
     on(element, "click", () => {
       mediaLightBox({
         source: element,
