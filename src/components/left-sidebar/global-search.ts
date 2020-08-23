@@ -118,14 +118,16 @@ export default class GlobalSearch extends DefaultTransition
       )
     );
 
-    const messages = await Message.globalSearch(q);
+    const [messages, [myContacts, globalContacts]] = await Promise.all([
+      Message.globalSearch(q),
+      Peer.search(q)
+    ]);
     for (const message of messages) {
       const peer = await message.getPeer();
       const element = await this.makeDialog(message, peer, q);
       globalSearchContainer.append(element);
     }
 
-    const [myContacts, globalContacts] = await Peer.search(q);
     Dialog.bulkGet(
       [...myContacts, ...globalContacts].map(t => ({
         peerType: t.type,

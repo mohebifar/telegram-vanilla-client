@@ -285,3 +285,19 @@ $tooltip-surface: #000000aa;
   bottom: 30px;
   position: absolute;
 }
+
+.d-flex {
+  display: flex;
+}
+
+.fill {
+  flex: 1;
+}
+
+.align-center {
+  align-items: center;
+}
+
+.justify-center {
+  justify-content: center;
+}

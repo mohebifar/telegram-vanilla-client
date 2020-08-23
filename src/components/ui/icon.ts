@@ -51,6 +51,8 @@ export enum Icons {
   Stickers = "stickers",
   Gifs = "gifs",
   Tip = "tip",
+  CloudDownload = "clouddownload",
+  Muted = "muted",
 }
 
 export enum IconSprite {

@@ -10,6 +10,7 @@ import {
   removeClass,
   on,
   Element,
+  removeChildren,
 } from "../../utils/dom";
 import { EMPTY_IMG } from "../../utils/images";
 import { fitImageSize } from "../../utils/upload-file";
@@ -17,6 +18,7 @@ import * as styles from "../chat/chat.scss";
 import Icon, { Icons } from "../ui/icon";
 import Progress from "../ui/progress";
 import { canStream } from "../../utils/video";
+import { parseFileSize, formatDuration } from "../../utils/chat";
 
 export interface Options {
   media?: MessageMediaDocument;
@@ -51,10 +53,70 @@ export default class VideoAttachment implements Component<Options> {
     let poster: string;
     let video: HTMLVideoElement;
 
+    const videoAttributes = document.attributes.find(
+      ({ $t }) => $t === "DocumentAttributeVideo"
+    ) as DocumentAttributeVideo;
     const isGIF = document.attributes.some(
       ({ $t }) => $t === "DocumentAttributeAnimated"
     );
+    const autoPlayable = isGIF;
+
     const shouldStream = canStream(document);
+
+    const metaWrapper = createElement("div", {
+      class: styles.attachmentMeta + " d-flex align-center",
+    });
+
+    const updateMeta = (() => {
+      let info: HTMLElement;
+      let downloadButton = createElement(
+        "div",
+        createElement(Icon, { icon: Icons.CloudDownload, color: "white" })
+      );
+
+      const duration = formatDuration(videoAttributes.duration);
+      const fileSize = parseFileSize(document.size, 1);
+
+      return (progress?: number) => {
+        if (downloading || (downloaded && downloadButton)) {
+          downloadButton.remove();
+        }
+
+        if (!autoPlayable) {
+          if (!downloaded && !downloading) {
+            metaWrapper.prepend(downloadButton);
+            on(downloadButton, "click", downloadListener);
+          }
+
+          if (!info) {
+            info = createElement("div");
+            metaWrapper.append(info);
+          }
+
+          removeChildren(info);
+
+          if (videoAttributes) {
+            info.append(createElement("p", duration));
+          }
+
+          if (!downloaded) {
+            info.append(
+              createElement(
+                "p",
+                typeof progress !== "undefined"
+                  ? parseFileSize(progress * document.size, 1) + "/"
+                  : "",
+                fileSize
+              )
+            );
+          } else {
+            metaWrapper.append(
+              createElement(Icon, { icon: Icons.Muted, color: "white" })
+            );
+          }
+        }
+      };
+    })();
 
     const icon = createElement(Icon, { icon: Icons.Play, color: "white" });
     let shouldContinue = true;
@@ -64,17 +126,17 @@ export default class VideoAttachment implements Component<Options> {
       { class: "downloadIndicator" },
       icon
     );
-    const img = createElement("img", {
-      src: EMPTY_IMG,
-    }) as HTMLImageElement;
+    const img = createElement("img", { src: EMPTY_IMG }) as HTMLImageElement;
     const element = createElement(
       "div",
       { class: styles.attachment + " pointer" },
       img,
-      downloadIndicator
+      downloadIndicator,
+      metaWrapper
     );
 
     let downloaded = false;
+    let downloading = false;
     let progress: Element<Progress>;
 
     function stopListener() {
@@ -82,10 +144,12 @@ export default class VideoAttachment implements Component<Options> {
       removeClickListener = on(element, "click", downloadListener);
       icon.instance.setIcon(Icons.Play);
       shouldContinue = false;
+      downloading = false;
       if (progress) {
         progress.remove();
         progress = undefined;
       }
+      updateMeta();
     }
 
     const openMedia = () => {
@@ -106,17 +170,19 @@ export default class VideoAttachment implements Component<Options> {
       onClick(poster);
     };
 
-    const streamListener = () => {
-      openMedia();
-    };
-
-    const downloadListener = () => {
+    const downloadListener = (e?: Event) => {
+      if (e) {
+        e.stopPropagation();
+      }
+      downloading = true;
       removeClickListener();
       progress = createElement(Progress);
       downloadIndicator.append(progress);
 
       icon.instance.setIcon(Icons.Close);
       removeClickListener = on(element, "click", stopListener);
+
+      updateMeta(0);
 
       tg.fileStorage
         .downloadDocument(document, undefined, document.dcId, (t) => {
@@ -125,6 +191,7 @@ export default class VideoAttachment implements Component<Options> {
             return false;
           }
           progress.instance.progress(t);
+          updateMeta(t);
           return true;
         })
         .then((src) => {
@@ -136,8 +203,10 @@ export default class VideoAttachment implements Component<Options> {
             progress = undefined;
           }
           removeClickListener();
-          downloadIndicator.remove();
           downloaded = true;
+          updateMeta();
+
+          downloadIndicator.remove();
           img.remove();
           video = createElement(
             "video",
@@ -166,11 +235,16 @@ export default class VideoAttachment implements Component<Options> {
 
           observer.observe(video);
 
-          if (isGIF) {
+          if (progress) {
+            progress.remove();
+            progress = undefined;
+          }
+
+          if (autoPlayable) {
             removeClass(element, "pointer");
           } else {
             console.log("add event", element);
-            removeClickListener = on(element, "click", streamListener);
+            removeClickListener = on(element, "click", openMedia);
           }
         });
     };
@@ -178,12 +252,10 @@ export default class VideoAttachment implements Component<Options> {
     let removeClickListener = on(
       element,
       "click",
-      shouldStream ? streamListener : downloadListener
+      shouldStream ? openMedia : downloadListener
     );
 
-    const videoAttributes = document.attributes.find(
-      ({ $t }) => $t === "DocumentAttributeVideo"
-    ) as DocumentAttributeVideo;
+    updateMeta();
 
     if (videoAttributes) {
       const [width, height] = measureSize(videoAttributes.w, videoAttributes.h);
@@ -205,7 +277,7 @@ export default class VideoAttachment implements Component<Options> {
         console.log(err, document);
       });
 
-    if (autoDownload || isGIF) {
+    if (autoDownload || autoPlayable) {
       downloadListener();
     }
     tg.fileStorage.documentIsCached(document).then((isCached) => {

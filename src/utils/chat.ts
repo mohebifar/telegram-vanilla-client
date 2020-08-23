@@ -317,10 +317,13 @@ export function sortPhotoSizes<
   return result.concat(arr);
 }
 
-export function parseFileSize(size: number) {
-  const i = Math.floor(Math.log(size) / Math.log(1024));
+export function parseFileSize(size: number, decimals = 2) {
+  let log = Math.log(size);
+  log = log < 0 ? 0 : log;
+
+  const i = Math.floor(log / Math.log(1024));
   const units = ["B", "kB", "MB", "GB", "TB"];
-  return `${(size / Math.pow(1024, i)).toFixed(2)}${units[i]}`;
+  return `${(size / Math.pow(1024, i)).toFixed(decimals)}${units[i]}`;
 }
 
 export function formatDuration(seconds: number) {

@@ -80,7 +80,7 @@ export class MediaPlayer implements Component<Options> {
     this.aborted = true;
   }
 
-  public updateMedia(sharedMedia: ISharedMedia) {
+  public async updateMedia(sharedMedia: ISharedMedia) {
     const { media } = sharedMedia;
     [0, 1].forEach((size) => {
       this.tg.fileStorage.downloadMedia(media, size).then((url) => {
@@ -93,7 +93,9 @@ export class MediaPlayer implements Component<Options> {
 
     const isPhoto = media.$t === "MessageMediaPhoto";
     const shouldStream =
-      media.$t === "MessageMediaDocument" && canStream(media.document);
+      media.$t === "MessageMediaDocument" &&
+      canStream(media.document) &&
+      !(await this.tg.fileStorage.documentIsCached(media.document as any));
 
     const createVideo = (src?: string) => {
       const video = createElement(

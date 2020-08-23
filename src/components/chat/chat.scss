@@ -972,3 +972,26 @@ $min-width-for-sidebar-animation: $chat-container-width + $left-sidebar-width +
 .seekbar {
   @include seekbar;
 }
+
+.attachmentMeta {
+  &:empty {
+    display: none;
+  }
+  > div:not(:last-child) {
+    margin-right: 0.5em;
+  }
+
+  :global(.ic-muted) {
+    height: 1.6em;
+  }
+
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: #00000063;
+  color: #ffffffe3;
+  font-size: 0.7em;
+  padding: 0.4em 0.6em;
+  border-radius: 1em;
+  margin: 0.4em;
+}
