@@ -186,10 +186,7 @@ export class FileStorage {
     let retries = 0;
     let file: upload_File;
 
-    const sender = await this.client.borrowSender(
-      dcId || this.client.session.dcId
-    );
-    const send = sender.send.bind(sender);
+    const send = (request: upload_GetFileRequest) => this.client.invoke(request, dcId);
 
     let aborted = false;
 
@@ -448,7 +445,7 @@ export class FileStorage {
         return this.downloadCachedPhotoSize(size);
       }
     }
-    const shouldInflate = document.mimeType === "application/x-tgsticker";
+    const shouldInflate = !size && document.mimeType === "application/x-tgsticker";
     const result = await this.download(
       this.getDocumentLocation(document, size),
       {

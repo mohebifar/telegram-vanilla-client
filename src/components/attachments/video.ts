@@ -18,7 +18,11 @@ import * as styles from "../chat/chat.scss";
 import Icon, { Icons } from "../ui/icon";
 import Progress from "../ui/progress";
 import { canStream } from "../../utils/video";
-import { parseFileSize, formatDuration } from "../../utils/chat";
+import {
+  parseFileSize,
+  formatDuration,
+  sortPhotoSizes,
+} from "../../utils/chat";
 
 export interface Options {
   media?: MessageMediaDocument;
@@ -136,6 +140,7 @@ export default class VideoAttachment implements Component<Options> {
     let downloaded = false;
     let downloading = false;
     let progress: Element<Progress>;
+    let removeClickListener: Function;
 
     function stopListener() {
       removeClickListener();
@@ -247,15 +252,25 @@ export default class VideoAttachment implements Component<Options> {
         });
     };
 
-    let removeClickListener: Function;
+    canStream(document)
+      .then((shouldStream) => {
+        removeClickListener = on(
+          element,
+          "click",
+          shouldStream ? openMedia : downloadListener
+        );
 
-    canStream(document).then((shouldStream) => {
-      removeClickListener = on(
-        element,
-        "click",
-        shouldStream ? openMedia : downloadListener
-      );
-    });
+        if (autoDownload || autoPlayable) {
+          return true;
+        }
+
+        return tg.fileStorage.documentIsCached(document);
+      })
+      .then((shouldAutoDownload) => {
+        if (shouldAutoDownload) {
+          downloadListener();
+        }
+      });
 
     updateMeta();
 
@@ -269,7 +284,11 @@ export default class VideoAttachment implements Component<Options> {
     }
 
     tg.fileStorage
-      .downloadDocument(document, 1, document.dcId)
+      .downloadDocument(
+        document,
+        document.thumbs && sortPhotoSizes(document.thumbs, ["s", "m"])[0],
+        document.dcId
+      )
       .then((url) => {
         if (!downloaded) {
           img.src = url;
@@ -278,13 +297,6 @@ export default class VideoAttachment implements Component<Options> {
       .catch((err) => {
         console.log(err, document);
       });
-
-    if (autoDownload || autoPlayable) {
-      downloadListener();
-    }
-    tg.fileStorage.documentIsCached(document).then((isCached) => {
-      isCached && downloadListener();
-    });
 
     this.element = element;
   }

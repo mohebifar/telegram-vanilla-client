@@ -794,10 +794,8 @@ export default class SendMessageForm implements Component<Options> {
         if (target.setRangeText) {
           const start = target.selectionStart;
           target.setRangeText(emoji);
-          this.focus();
           target.selectionStart = target.selectionEnd = start + emoji.length;
         } else {
-          this.focus();
           document.execCommand("insertText", false, emoji);
         }
       },

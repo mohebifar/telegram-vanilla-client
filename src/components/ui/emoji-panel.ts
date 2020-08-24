@@ -45,13 +45,13 @@ export default class EmojiPanel implements Component<Options> {
     const gifPicker = createElement(GifPicker, {
       onGifSelect: (gif) => {
         onGifSelect(gif);
-        this.setVisibility(false);
+        // this.setVisibility(false);
       },
     });
     const stickerPicker = createElement(StickerPicker, {
       onStickerSelect: (sticker) => {
         onStickerSelect(sticker);
-        this.setVisibility(false);
+        // this.setVisibility(false);
       },
     });
     const searchButton = createElement(IconButton, {

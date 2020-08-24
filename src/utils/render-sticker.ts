@@ -11,6 +11,7 @@ export function fillStickerPreview(
   callbacks?: Function[]
 ) {
   const animated = document.mimeType === "application/x-tgsticker";
+  (container as any).document = document;
 
   if (animated) {
     const callback = () => {

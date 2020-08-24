@@ -56,8 +56,28 @@ export default class StickerPicker implements Component<Options> {
       if (this.recentHolder) {
         const stickerSet = (this.recentHolder as any).sticker as IStickerSet;
         stickerSet.documents = documents;
-        removeChildren(this.recentHolder);
-        this.fillHolder(stickerSet, this.recentHolder);
+        const firstDocument = documents[0];
+        let moved = false;
+
+        for (let i = 0; i < this.recentHolder.childNodes.length; i++) {
+          const currentPreview = this.recentHolder.childNodes.item(i);
+          const { document: currentDocument } = currentPreview as any;
+          if (currentDocument === firstDocument) {
+            this.recentHolder.prepend(currentPreview);
+            moved = true;
+            return;
+          }
+        }
+
+        if (!moved) {
+          const lastPreview = getNthChild(this.recentHolder, "last");
+          lastPreview.remove();
+
+          const preview = createElement("div", { class: styles.preview });
+          fillStickerPreview(StickerSet.tg, firstDocument, preview);
+
+          this.recentHolder.prepend(preview);
+        }
       }
     });
 

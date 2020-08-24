@@ -62,7 +62,8 @@ interface Options {
 export default class Bubble implements Component<Options> {
   public readonly element: HTMLElement;
   private inner: HTMLElement;
-  private attachment: HTMLElement;
+  private attachmentWrapper: HTMLElement;
+  private attachemnt: [AttachmentElement, string];
   private messageText: HTMLElement;
   private time: HTMLElement;
   private sentIndicator?: Element<Icon>;
@@ -87,7 +88,9 @@ export default class Bubble implements Component<Options> {
 
     this.messageText = createElement("span", { dir: "auto" });
     this.inner = createElement("div", { class: styles.inner }, this.time);
-    this.attachment = createElement("div", { class: styles.attachmentWrapper });
+    this.attachmentWrapper = createElement("div", {
+      class: styles.attachmentWrapper,
+    });
 
     const messageWrapper = createElement(
       "div",
@@ -99,7 +102,7 @@ export default class Bubble implements Component<Options> {
     this.element = createElement(
       "div",
       { "data-id": message.id, "data-date": message.date.format("YY-M-D") },
-      this.attachment,
+      this.attachmentWrapper,
       messageWrapper
     );
 
@@ -200,7 +203,13 @@ export default class Bubble implements Component<Options> {
   }
 
   public update() {
-    const [attachment, attachmentType] = this.getAttachments();
+    const attachmentArray =
+      this.attachemnt && this.attachemnt[1] !== "poll"
+        ? this.attachemnt
+        : this.getAttachments();
+    const hasChanged = this.attachemnt !== attachmentArray;
+    this.attachemnt = attachmentArray;
+    const [attachment, attachmentType] = attachmentArray;
     const { text, time } = this.getInfo();
     this.messageText.innerHTML = text;
 
@@ -245,23 +254,15 @@ export default class Bubble implements Component<Options> {
     this.updateInner(time);
 
     if (attachment) {
-      const node = this.attachment.childNodes.item(0) as AttachmentElement;
-      
-      if (
-        node &&
-        node.instance &&
-        attachment.instance &&
-        node.instance instanceof attachment.instance.constructor &&
-        !(node.instance instanceof PollAttachment)
-      ) {
-        console.debug("Attachment type is the same");
+      if (!hasChanged) {
+        console.log("Attachment type is the same");
       } else {
-        removeChildren(this.attachment);
-        this.attachment.append(attachment);
+        removeChildren(this.attachmentWrapper);
+        this.attachmentWrapper.append(attachment);
       }
 
       if (attachmentType === "web") {
-        this.element.append(this.attachment);
+        this.element.append(this.attachmentWrapper);
       }
 
       // If forwarded, because of the extra line on the left, there is no need to fix the width
@@ -363,7 +364,7 @@ export default class Bubble implements Component<Options> {
         return [
           createElement(
             "div",
-            { style: { textAlign: "center", padding: '2em' } },
+            { style: { textAlign: "center", padding: "2em" } },
             createElement(Spinner, { color: "blue", size: "2em" })
           ),
           "loading",
