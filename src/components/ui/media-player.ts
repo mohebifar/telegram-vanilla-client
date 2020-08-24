@@ -94,7 +94,7 @@ export class MediaPlayer implements Component<Options> {
     const isPhoto = media.$t === "MessageMediaPhoto";
     const shouldStream =
       media.$t === "MessageMediaDocument" &&
-      canStream(media.document) &&
+      (await canStream(media.document)) &&
       !(await this.tg.fileStorage.documentIsCached(media.document as any));
 
     const createVideo = (src?: string) => {

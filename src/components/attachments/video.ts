@@ -61,8 +61,6 @@ export default class VideoAttachment implements Component<Options> {
     );
     const autoPlayable = isGIF;
 
-    const shouldStream = canStream(document);
-
     const metaWrapper = createElement("div", {
       class: styles.attachmentMeta + " d-flex align-center",
     });
@@ -249,11 +247,15 @@ export default class VideoAttachment implements Component<Options> {
         });
     };
 
-    let removeClickListener = on(
-      element,
-      "click",
-      shouldStream ? openMedia : downloadListener
-    );
+    let removeClickListener: Function;
+
+    canStream(document).then((shouldStream) => {
+      removeClickListener = on(
+        element,
+        "click",
+        shouldStream ? openMedia : downloadListener
+      );
+    });
 
     updateMeta();
 

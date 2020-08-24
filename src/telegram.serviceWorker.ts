@@ -98,12 +98,14 @@ self.addEventListener("fetch", (event) => {
     /http[:s]+\/\/.*?(\/(.*?)\/.*$)/.exec(event.request.url) || [];
 
   switch (scope) {
-    case "streaming": {
+    case "streaming":
       const [start, end] = parseRange(event.request.headers.get("Range") || "");
-
       event.respondWith(fetchStreamRequest(url, start, end));
       break;
-    }
+
+    case "check":
+      event.respondWith(new Response(null, { status: 200 }));
+      break;
   }
 });
 

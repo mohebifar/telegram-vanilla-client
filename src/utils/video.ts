@@ -3,8 +3,24 @@ import {
   MessageMediaDocument,
 } from "../core/tl/TLObjects";
 
-export function canStream(document: MessageMediaDocument["document"]) {
-  if (document.$t !== "Document") {
+const capability = "serviceWorker" in navigator;
+
+const checkSupport = (() => {
+  let supports: boolean;
+
+  return async () => {
+    if (supports) {
+      return supports;
+    }
+
+    return fetch("/check/support")
+      .then(() => supports = true)
+      .catch(() => supports = false);
+  };
+})();
+
+export async function canStream(document: MessageMediaDocument["document"]) {
+  if (!capability || document.$t !== "Document" || !(await checkSupport())) {
     return false;
   }
   const videoAttribute = document.attributes.find(
