@@ -5,7 +5,7 @@ import Icon, { Icons, Options as IconOptions, IconSprite } from "./icon";
 interface Options {
   icon: Icons | IconSprite;
   color?: IconOptions["color"];
-  variant?: "light" | "dark" | "none";
+  variant?: "light" | "dark" | "primary" | "none";
   onClick?(event: Event): void;
   onHover?(event: Event): void;
   onHoverOut?(event: Event): void;
@@ -36,6 +36,9 @@ export default class IconButton implements Component<Options> {
       extraClass += styles.light;
     } else if (variant === "dark") {
       extraClass += styles.dark;
+      finalColor = finalColor || "white";
+    } else if (variant === "primary") {
+      extraClass += styles.primary;
       finalColor = finalColor || "white";
     }
 

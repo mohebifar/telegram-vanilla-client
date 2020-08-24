@@ -18,6 +18,7 @@ import {
   DcOption,
   InvokeWithLayerRequest,
   TLObjectTypes,
+  auth_AuthorizationSignUpRequired,
 } from "./tl/TLObjects";
 
 const LAYER = 114;
@@ -178,7 +179,7 @@ export class TelegramClient {
       phoneNumber: this.phoneNumber,
       phoneCodeHash: phoneCodeHash,
       phoneCode,
-    })) as Authorization;
+    })) as Authorization | auth_AuthorizationSignUpRequired;
   }
 
   public async signInWithPassword(password: string) {

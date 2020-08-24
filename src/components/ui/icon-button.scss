@@ -33,4 +33,11 @@ $size: 2.75rem;
       background-color: $dark-hover;
     }
   }
+
+  &.primary {
+    background-color: $blue;
+    &:hover {
+      background-color: lighten($blue, 2%);
+    }
+  }
 }

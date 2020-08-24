@@ -3,7 +3,7 @@ import AuthPhone from "./auth-phone";
 import AuthPassword from "./auth-password";
 import AuthCode from "./auth-code";
 import AuthSignUp from "./auth-signup";
-import { Authorization } from "../../core/tl/TLObjects";
+import { Authorization, help_TermsOfService } from "../../core/tl/TLObjects";
 import { TelegramClientProxy } from "../../telegram-worker-proxy";
 
 interface Options {
@@ -14,13 +14,14 @@ interface Options {
 
 export default class AuthRoot implements Component<Options> {
   public element: HTMLElement;
-  private authPhone?: Element<AuthPhone>;
+  private authPhone: Element<AuthPhone>;
   private authPassword: Element<AuthPassword>;
   private authCode: Element<AuthCode>;
   private authSignUp: Element<AuthSignUp>;
   private tgProxy: TelegramClientProxy;
   private connectionPromise: Options["connectionPromise"];
   private finishCallback: Options["finishCallback"];
+  private termsOfService: help_TermsOfService;
 
   constructor({ tgProxy, finishCallback, connectionPromise }) {
     this.finishCallback = finishCallback;
@@ -29,7 +30,7 @@ export default class AuthRoot implements Component<Options> {
     this.element = createElement("div");
 
     this.authPhone = createElement(AuthPhone, {
-      callback: this.handleSendCode
+      callback: this.handleSendCode,
     });
 
     this.element.append(this.authPhone);
@@ -42,7 +43,7 @@ export default class AuthRoot implements Component<Options> {
     this.authCode = createElement(AuthCode, {
       callback: this.handleSignInWithCode,
       phoneNumber: phoneNumber,
-      countryCode: countryCode
+      countryCode: countryCode,
     });
     this.authPhone.remove();
 
@@ -52,26 +53,27 @@ export default class AuthRoot implements Component<Options> {
   private handleSignInWithCode = async (code: string) => {
     let authorization: Authorization;
     try {
-      authorization = await this.tgProxy.signInWithCode(code);
+      const result = await this.tgProxy.signInWithCode(code);
+      if (result.$t === "auth_AuthorizationSignUpRequired") {
+        this.termsOfService = result.termsOfService;
+        return this.showSignUpForm();
+      }
+
+      authorization = result;
     } catch (error) {
       if (
         error.message === "PHONE_PASSWORD_PROTECTED" ||
         error.message === "SESSION_PASSWORD_NEEDED"
       ) {
         this.authPassword = createElement(AuthPassword, {
-          callback: this.handleSignInWithPassword
+          callback: this.handleSignInWithPassword,
         });
 
         this.authCode.remove();
         this.element.append(this.authPassword);
         return;
       } else if (error.message === "PHONE_NUMBER_UNOCCUPIED") {
-        this.authSignUp = createElement(AuthSignUp, {
-          callback: this.handleSignUp
-        });
-
-        this.authCode.remove();
-        this.element.append(this.authSignUp);
+        this.showSignUpForm();
         return;
       }
 
@@ -81,13 +83,39 @@ export default class AuthRoot implements Component<Options> {
     this.handleAuthFinish(authorization);
   };
 
+  private showSignUpForm() {
+    this.authSignUp = createElement(AuthSignUp, {
+      callback: this.handleSignUp,
+    });
+
+    this.authCode.remove();
+    this.element.append(this.authSignUp);
+  }
+
   private handleSignInWithPassword = async (password: string) => {
     const authorization = await this.tgProxy.signInWithPassword(password);
     this.handleAuthFinish(authorization);
   };
 
-  private handleSignUp = async (firstName: string, lastName: string) => {
-    const authorization = await this.tgProxy.signUp(firstName, lastName);
+  private handleSignUp = async (
+    firstName: string,
+    lastName?: string,
+    profilePhoto?: ArrayBuffer
+  ) => {
+    const authorization = await this.tgProxy.signUp(firstName, lastName || "");
+    if (this.termsOfService) {
+      await this.tgProxy.invoke({
+        $t: "help_AcceptTermsOfServiceRequest",
+        id: this.termsOfService.id,
+      });
+    }
+    if (profilePhoto) {
+      const file = await this.tgProxy.fileStorage.upload(profilePhoto);
+      await this.tgProxy.invoke({
+        $t: "photos_UploadProfilePhotoRequest",
+        file,
+      });
+    }
     this.handleAuthFinish(authorization);
   };
 

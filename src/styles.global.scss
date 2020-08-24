@@ -69,11 +69,27 @@ button {
     }
 
     .profile-photo-picker {
+      background-size: contain;
       background-color: $blue;
       border-radius: 5rem;
       display: flex;
       align-items: center;
       justify-content: center;
+      cursor: pointer;
+
+      &.selected {
+        .ic {
+          display: none;
+        }
+      }
+      
+
+      &:hover {
+        opacity: 0.9;
+        .ic {
+          transform: scale(1.05);
+        }
+      }
 
       .ic {
         width: 3rem;

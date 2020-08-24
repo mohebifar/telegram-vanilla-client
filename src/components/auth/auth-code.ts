@@ -66,6 +66,12 @@ export default class AuthCode implements Component<Options> {
     });
 
     this.element = createElement("div", { class: "sign-in" }, signInForm);
+
+    setTimeout(() => {
+      requestAnimationFrame(() => {
+        this.codeInput.instance.focus();
+      });
+    }, 300);
   }
 
   private handleSubmit = async () => {

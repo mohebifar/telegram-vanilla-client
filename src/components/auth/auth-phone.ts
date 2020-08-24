@@ -56,6 +56,12 @@ export default class AuthPhone implements Component<Options> {
       onInput: this.handlePhoneNumberChange,
     });
 
+    setTimeout(() => {
+      requestAnimationFrame(() => {
+        this.phoneNumberInput.instance.focus();
+      });
+    }, 300);
+
     this.btn = createElement(Button, {
       caption: "NEXT",
     });

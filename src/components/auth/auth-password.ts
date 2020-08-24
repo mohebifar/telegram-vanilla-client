@@ -86,6 +86,12 @@ export default class AuthPassword implements Component<Options> {
     });
 
     this.element = createElement("div", { class: "sign-in" }, signInForm);
+
+    setTimeout(() => {
+      requestAnimationFrame(() => {
+        this.passwordInput.instance.focus();
+      });
+    }, 300);
   }
 
   renderPeekButton() {

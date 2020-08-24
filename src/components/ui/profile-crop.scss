@@ -1,0 +1,17 @@
+.wrapper {
+  position: relative;
+  overflow: hidden;
+  margin: auto;
+}
+
+.cropper {
+  position: absolute;
+  box-shadow: 0 0 0 500px rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  cursor: move;
+}
+
+.imageWrapper {
+  width: 100%;
+  border-radius: 0.4em;
+}

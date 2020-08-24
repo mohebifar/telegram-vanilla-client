@@ -3,9 +3,17 @@ import { makeModal } from "../ui/modal";
 import Input from "../ui/input";
 import Button from "../ui/button";
 import Icon, { Icons } from "../ui/icon";
+import ProfileCrop from "../ui/profile-crop";
+import IconButton from "../ui/icon-button";
+import { sleep } from "../../utils/utils";
+import { makeFileDialog, readImage, readFile } from "../../utils/upload-file";
 
 interface Options {
-  callback: (firstName: string, lastName: string) => void;
+  callback: (
+    firstName: string,
+    lastName?: string,
+    profileFile?: ArrayBuffer
+  ) => Promise<any>;
 }
 
 export default class AuthSignUp implements Component<Options> {
@@ -15,7 +23,41 @@ export default class AuthSignUp implements Component<Options> {
   private lastNameInput: Element<Input>;
   private callback: Options["callback"];
   private profilePhotoPicker: HTMLElement;
+  private profileFile: ArrayBuffer;
 
+  private cropProfile(image: HTMLImageElement) {
+    const cropper = createElement(ProfileCrop, {
+      image,
+    });
+
+    const modal = makeModal(
+      "Drag to Reposition",
+      createElement(
+        "div",
+        {},
+        cropper,
+        createElement(IconButton, {
+          icon: Icons.Check,
+          color: "white",
+          variant: "primary",
+          style: {
+            float: "right",
+          },
+          onClick: async () => {
+            modal.close();
+            const blob = await cropper.instance.getBlob();
+            this.profilePhotoPicker.style.backgroundImage = `url(${URL.createObjectURL(
+              blob
+            )})`;
+            this.profilePhotoPicker.classList.add("selected");
+            this.profileFile = await blob.arrayBuffer();
+            await sleep(300);
+            cropper.instance.unmount();
+          },
+        })
+      )
+    );
+  }
   constructor({ callback }: Options) {
     this.callback = callback;
 
@@ -29,26 +71,37 @@ export default class AuthSignUp implements Component<Options> {
     this.firstNameInput = createElement(Input, {
       placeholder: "Name",
       type: "text",
-      autocomplete: "given-name"
+      autocomplete: "given-name",
     });
     this.lastNameInput = createElement(Input, {
       placeholder: "Last Name (optional)",
       type: "text",
-      autocomplete: "family-name"
+      autocomplete: "family-name",
     });
     this.profilePhotoPicker = createElement(
-      "div",
+      "label",
       {
-        class: "profile-photo-picker"
+        for: makeFileDialog("image/*", false, (file) => {
+          readFile(file)
+            .then((buffer) => readImage(buffer))
+            .then((image) => {
+              this.cropProfile(image);
+            });
+        }),
+        class: "profile-photo-picker",
       },
       createElement(Icon, {
         icon: Icons.CameraAdd,
-        color: "white"
+        color: "white",
       })
     );
 
+    on(this.profilePhotoPicker, "click", () => {
+      console.log("asdasdkasd");
+    });
+
     this.btn = createElement(Button, {
-      caption: "START MESSAGING"
+      caption: "START MESSAGING",
     });
     const signUpForm = createElement(
       "form",
@@ -60,7 +113,7 @@ export default class AuthSignUp implements Component<Options> {
       this.btn
     );
 
-    on(signUpForm, "submit", event => {
+    on(signUpForm, "submit", (event) => {
       event.preventDefault();
       this.handleSubmit();
     });
@@ -81,7 +134,7 @@ export default class AuthSignUp implements Component<Options> {
     btn.disable();
 
     try {
-      await this.callback(firstName, lastName);
+      await this.callback(firstName, lastName, this.profileFile);
     } catch (error) {
       makeModal("An error occured", error.message);
     } finally {
