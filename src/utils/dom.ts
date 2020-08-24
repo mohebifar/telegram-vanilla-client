@@ -35,6 +35,8 @@ export function preload(
 
 type Children = Node | Component | string;
 
+type AllElementNameMap = SVGElementTagNameMap & HTMLElementTagNameMap;
+
 export function createElement<
   CC,
   C extends ComponentType<CC>,
@@ -45,24 +47,24 @@ export function createElement<
   ...children: Children[]
 ): Element<C>;
 
-export function createElement<P extends {}>(
-  component: string,
+export function createElement<P extends {}, C extends keyof AllElementNameMap>(
+  component: C,
   attrs?: P | undefined,
   ...children: Children[]
-): HTMLElement;
+): AllElementNameMap[C];
 
 export function createElement<P extends {}, C extends ComponentClass<P>>(
   component: C,
   ...children: Children[]
 ): Element<C[keyof C]>;
 
-export function createElement<P extends {}>(
-  component: string,
+export function createElement<P extends {}, C extends keyof AllElementNameMap>(
+  component: C,
   ...children: Children[]
-): Element<undefined>;
+): AllElementNameMap[C];
 
 export function createElement<P extends {}>(
-  type: ComponentClass<P> | string,
+  type: ComponentClass<P> | keyof AllElementNameMap,
   ...args: [Children | P | undefined, ...Children[]]
 ) {
   const factory =
@@ -163,7 +165,9 @@ export function removeClass<T extends HTMLElement | Element<any>>(
   element.classList.remove(...tokens);
 }
 
-type AllEventMap = HTMLElementEventMap & SourceBufferEventMap & MediaSourceEventMap;
+type AllEventMap = HTMLElementEventMap &
+  SourceBufferEventMap &
+  MediaSourceEventMap;
 type AllEventNames = keyof AllEventMap;
 type AddintionalEvents = "longpress";
 type EventNames<K = AllEventNames> = K extends AllEventNames[]
@@ -179,10 +183,7 @@ const longPressMap = new Map<Function, [Function, Function]>();
 
 const preventDefault = (event: Event) => event.preventDefault();
 
-export function on<
-  K extends AllEventNames,
-  T extends EventTarget
->(
+export function on<K extends AllEventNames, T extends EventTarget>(
   element: T,
   eventType: EventNames<K> | EventNames<K>[],
   listener: (this: HTMLFormElement, ev: EventType<K>) => any,
@@ -239,10 +240,7 @@ export function on<
   }
 }
 
-export function off<
-  K extends AllEventNames,
-  T extends EventTarget
->(
+export function off<K extends AllEventNames, T extends EventTarget>(
   element: T,
   eventType: EventNames<K> | EventNames<K>[],
   listener: (this: HTMLFormElement, ev: EventType<K>) => any,
