@@ -19,7 +19,7 @@ export type ModelWithProxy<
 
 export function ModelDecorator({
   tableName,
-  primaryKey
+  primaryKey,
 }: {
   tableName: string;
   primaryKey: string[];
@@ -56,12 +56,17 @@ export function ModelDecorator({
       }
     };
 
-    modelClass.bulkGet = async function(ids: PrimaryKey[]) {
+    modelClass.bulkGet = async function(
+      ids: PrimaryKey[],
+      skipDb = false,
+      ...restArgs: any[]
+    ) {
       const notFounds: PrimaryKey[] = [];
-      const promise = ids.map(id => {
+      const promise = ids.map((id) => {
         if (modelClass.isInMemory(id)) {
           return modelClass.getFromMemory(id);
-        } else {
+        }
+        if (!skipDb) {
           return (async () => {
             try {
               const data = await modelClass.table.get(id as any);
@@ -77,14 +82,18 @@ export function ModelDecorator({
             return undefined;
           })();
         }
+
+        notFounds.push(id);
+        return undefined;
       });
 
       const resultsPreFallback = (await Promise.all(promise)).filter(
-        v => v !== undefined
+        (v) => v !== undefined
       );
 
       if (notFounds.length > 0 && fallbackBulkGet) {
-        const restResult = (await fallbackBulkGet(notFounds)) || [];
+        const restResult =
+          (await fallbackBulkGet(notFounds, skipDb, ...restArgs)) || [];
         return [...resultsPreFallback, ...restResult];
       }
 
@@ -166,14 +175,14 @@ export class Model<
         return prop in obj.fields || prop in obj;
       },
       set: function(obj, prop, value) {
-        if(prop in obj) {
+        if (prop in obj) {
           obj[prop] = value;
         } else {
           obj.fields[prop] = value;
         }
 
         return true;
-      }
+      },
     });
     obj._proxy = proxy;
 
@@ -187,7 +196,7 @@ export class Model<
       return;
     }
 
-    Object.keys(values).forEach(key => {
+    Object.keys(values).forEach((key) => {
       this.fields[key] = values[key];
     });
   }

@@ -6,7 +6,7 @@ import {
   messages_PeerDialogs,
   DialogFilter,
 } from "../core/tl/TLObjects";
-import { extractIdFromPeer, getInputPeer } from "../core/tl/utils";
+import { extractIdFromPeer, getInputPeer, getPeer } from "../core/tl/utils";
 import { getDialogDisplayDate, getMessageSummary } from "../utils/chat";
 import { DBDialog, TelegramDatabase } from "../utils/db";
 import {
@@ -67,15 +67,27 @@ export class Dialog extends Model<"dialogs"> implements ExtraMethods {
   }
 
   static async bulkGet(
-    ids: ModelKey<"dialogs">[] | InputPeerTypes[]
+    ids: ModelKey<"dialogs">[],
+    _skipDb?: boolean,
+    inputPeers?: InputPeerTypes[]
   ) {
     const dialogs: IDialog[] = [];
     const inputs = [];
 
-      for (const id of ids) {
-        const input = 'peerId' in id ? await getInputPeerFromPrimaryKey(id) : id;
-        inputs.push(input);
+    for (const id of ids) {
+      let input: InputPeerTypes;
+      if (inputPeers) {
+        input = inputPeers.find((inputPeer) => {
+          const simplifiedId = extractIdFromPeer(inputPeer as any);
+          return (
+            simplifiedId.id === id.peerId && simplifiedId.type === id.peerType
+          );
+        });
       }
+
+      input = input || (await getInputPeerFromPrimaryKey(id));
+      inputs.push(input);
+    }
 
     const response = (await this.tg.invoke({
       $t: "messages_GetPeerDialogsRequest",
@@ -111,6 +123,7 @@ export class Dialog extends Model<"dialogs"> implements ExtraMethods {
           dialog,
           lastMessageDate: (message && message.date.unix()) || 0,
         });
+        object.save();
         dialogs.push(object);
       }
     }
@@ -126,7 +139,18 @@ export class Dialog extends Model<"dialogs"> implements ExtraMethods {
     const dialogsLists: IDialog[][] = [];
 
     for (const folder of response) {
-      const dialogsResult = await Dialog.bulkGet(folder.includePeers);
+      const ids = folder.includePeers.map((inputPeer) => {
+        const id = extractIdFromPeer(getPeer(inputPeer));
+        return {
+          peerId: id.id,
+          peerType: id.type,
+        } as ModelKey<"dialogs">;
+      });
+      const dialogsResult = await Dialog.bulkGet(
+        ids,
+        true,
+        folder.includePeers
+      );
       dialogsLists.push(
         dialogsResult.sort((a, b) =>
           a.lastMessageDate > b.lastMessageDate ? -1 : 1

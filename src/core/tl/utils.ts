@@ -1,5 +1,12 @@
 import { AllDialogPeerTypes, InputPeerTypes } from "../../utils/useful-types";
-import { PeerChannel, PeerChat, PeerUser } from "./TLObjects";
+import {
+  PeerChannel,
+  PeerChat,
+  PeerUser,
+  InputPeerChannel,
+  InputPeerChat,
+  InputPeerUser,
+} from "./TLObjects";
 import { TLObjectTypes } from "./types";
 
 function _raiseCastFail(entity: TLObjectTypes, target: string) {
@@ -167,12 +174,20 @@ export function getPeer(
 }
 
 export function simplifyPeerType(
-  type: AllDialogPeerTypes["$t"] | "PeerChat" | "PeerUser" | "PeerChannel"
+  type:
+    | AllDialogPeerTypes["$t"]
+    | "PeerChat"
+    | "PeerUser"
+    | "PeerChannel"
+    | "InputPeerUser"
+    | "InputPeerChat"
+    | "InputPeerChannel"
 ): "Chat" | "Channel" | "User" {
   if (
     type === "Chat" ||
     type === "ChatEmpty" ||
     type === "ChatForbidden" ||
+    type === "InputPeerChat" ||
     type === "PeerChat"
   ) {
     return "Chat";
@@ -180,6 +195,7 @@ export function simplifyPeerType(
   if (
     type === "Channel" ||
     type === "ChannelForbidden" ||
+    type === "InputPeerChannel" ||
     type === "PeerChannel"
   ) {
     return "Channel";
@@ -187,15 +203,26 @@ export function simplifyPeerType(
   return "User";
 }
 
-export function extractIdFromPeer(peer: PeerChannel | PeerChat | PeerUser) {
+export function extractIdFromPeer(
+  peer:
+    | PeerChannel
+    | PeerChat
+    | PeerUser
+    | InputPeerChat
+    | InputPeerChannel
+    | InputPeerUser
+) {
   let idKey: string;
   switch (peer.$t) {
+    case "InputPeerChannel":
     case "PeerChannel":
       idKey = "channelId";
       break;
+    case "InputPeerChat":
     case "PeerChat":
       idKey = "chatId";
       break;
+    case "InputPeerUser":
     case "PeerUser":
       idKey = "userId";
       break;
