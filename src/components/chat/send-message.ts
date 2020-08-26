@@ -69,10 +69,6 @@ export default class SendMessageForm implements Component<Options> {
     }) as HTMLTextAreaElement;
     autosize(this.inputNode);
 
-    on(this.inputNode, "focus", () => {
-      emojiPicker.instance.setVisibility(false);
-    });
-
     const voiceUploader = this.uploadFactory("voice", (_type, requests) => {
       return new Promise((resolve, reject) => {
         const end = () => {
@@ -798,6 +794,7 @@ export default class SendMessageForm implements Component<Options> {
         } else {
           document.execCommand("insertText", false, emoji);
         }
+        this.focus();
       },
       onStickerSelect: this.handleSendSticker.bind(this),
       onGifSelect: this.handleSendDocument.bind(this),

@@ -41,7 +41,9 @@ export default class EmojiPanel implements Component<Options> {
     activator,
     onGifSelect,
   }: Options) {
-    const emojiPicker = createElement(EmojiPicker, { onEmojiSelect });
+    const emojiPicker = createElement(EmojiPicker, {
+      onEmojiSelect,
+    });
     const gifPicker = createElement(GifPicker, {
       onGifSelect: (gif) => {
         onGifSelect(gif);
@@ -149,7 +151,14 @@ export default class EmojiPanel implements Component<Options> {
   }
 
   public setVisibility(visible = !this.visible) {
-    if (this.lockVisibility || visible === this.visible) {
+    if (visible === this.visible) {
+      if (visible) {
+        this.clearTimeout();
+      }
+      return;
+    }
+
+    if (this.lockVisibility) {
       return;
     }
 
@@ -177,7 +186,7 @@ export default class EmojiPanel implements Component<Options> {
     }
   }
 
-  public deferHide(timeout = 300) {
+  public deferHide(timeout = 600) {
     this.clearTimeout();
     this.timeout = setTimeout(() => {
       this.setVisibility(false);
