@@ -90,7 +90,7 @@ export default class Chat implements Component<Options> {
 
     this.element = createElement(
       "div",
-      { class: styles.root, id: 'chat-root', 'data-h-adjust': true },
+      { class: styles.root, id: "chat-root", "data-h-adjust": true },
       this.rightSidebar,
       chatSection
     );
@@ -225,10 +225,16 @@ export default class Chat implements Component<Options> {
 
   private getFirstOrLastBubble(childPosToLookAt: "first" | "last") {
     const bubbleWrapper = getNthChild(this.chatContainer, childPosToLookAt);
-    return getNthChild(
+    const possibleBubble = getNthChild(
       getNthChild(bubbleWrapper, "last"),
       childPosToLookAt
-    ) as Element<Bubble>;
+    );
+
+    if (possibleBubble.classList.contains(styles.album)) {
+      return getNthChild(possibleBubble, childPosToLookAt) as Element<Bubble>;
+    }
+
+    return possibleBubble as Element<Bubble>;
   }
 
   private register() {
@@ -331,27 +337,36 @@ export default class Chat implements Component<Options> {
       }
     );
 
-    Message.events.on("synced", async ({ message, clientId }: { message: IMessage, clientId: number }) => {
-      if (message.$t === "MessageEmpty") {
-        return;
-      }
+    Message.events.on(
+      "synced",
+      async ({
+        message,
+        clientId,
+      }: {
+        message: IMessage;
+        clientId: number;
+      }) => {
+        if (message.$t === "MessageEmpty") {
+          return;
+        }
 
-      if (message.id !== clientId) {
-        const currentElement = this.idToElementMap.get(clientId);
-        this.idToElementMap.set(message.id, currentElement)
-      }
+        if (message.id !== clientId) {
+          const currentElement = this.idToElementMap.get(clientId);
+          this.idToElementMap.set(message.id, currentElement);
+        }
 
-      const peerId = extractIdFromPeer(message.toId);
-      if (
-        peerId.id === this.peer.id &&
-        peerId.type === this.peer.type &&
-        this.isAtBottom()
-      ) {
-        requestAnimationFrame(() => {
-          this.scrollToEnd();
-        });
+        const peerId = extractIdFromPeer(message.toId);
+        if (
+          peerId.id === this.peer.id &&
+          peerId.type === this.peer.type &&
+          this.isAtBottom()
+        ) {
+          requestAnimationFrame(() => {
+            this.scrollToEnd();
+          });
+        }
       }
-    });
+    );
 
     Message.events.on(
       "created",
@@ -671,11 +686,40 @@ export default class Chat implements Component<Options> {
         dialog: this.dialog,
       });
       this.idToElementMap.set(message.id, messageElement);
-      lastBubbleHolder[insertFn](messageElement);
+      if (message.$t === "Message" && message.groupedId) {
+        const id = `album-${message.groupedId}`;
+        let albumWrapper = document.getElementById(
+          `album-${message.groupedId}`
+        );
+        if (!albumWrapper) {
+          // .album
+          albumWrapper = createElement("div", { id });
+        }
+        albumWrapper[insertFn](messageElement);
+        lastBubbleHolder[insertFn](albumWrapper);
+        this.updateAlbum(message.groupedId);
+      } else {
+        lastBubbleHolder[insertFn](messageElement);
+      }
       return messageElement;
     } catch (err) {
       console.log("failed to show a message", message, err);
     }
+  }
+
+  private updateAlbum(groupId: string) {
+    const element = document.getElementById(`album-${groupId}`);
+    const childCount = element.childNodes.length;
+    const countClassKey =
+      "count-" + (childCount > 2 ? "r" + (childCount % 3) : childCount);
+
+    let newClassName = `${styles.album} ${styles[countClassKey]}`;
+
+    const firstChild = element.children.item(0);
+    if (firstChild && firstChild.querySelector("[data-vertical]")) {
+      newClassName += " " + styles.vertical;
+    }
+    element.className = newClassName;
   }
 
   private handleNewMessage = (message: IMessage) => {
@@ -710,7 +754,17 @@ export default class Chat implements Component<Options> {
         bubble !== null;
         bubble = bubble.previousSibling as Element<Bubble>
       ) {
-        yield bubble.instance;
+        if (bubble.classList.contains(styles.album)) {
+          for (
+            let realBubble = bubble.lastChild as Element<Bubble>;
+            realBubble !== null;
+            realBubble = realBubble.previousSibling as Element<Bubble>
+          ) {
+            yield realBubble.instance;
+          }
+        } else {
+          yield bubble.instance;
+        }
       }
     }
   }

@@ -22,7 +22,7 @@ export default class PhotoAttachment implements Component<Options> {
     const img = createElement("img", {
       class: "pointer blur",
       src: (media.$t === "TransientMedia" && media.thumbnail) || EMPTY_IMG,
-    }) as HTMLImageElement;
+    });
     this.img = img;
 
     const progress = createElement(Progress);
@@ -39,12 +39,22 @@ export default class PhotoAttachment implements Component<Options> {
     );
 
     if (media.$t === "MessageMediaPhoto") {
-      const sorted = sortPhotoSizes((media.photo as Photo).sizes);
+      const sorted = sortPhotoSizes((media.photo as Photo).sizes, [
+        "x",
+        "m",
+        "y",
+        "i",
+      ]);
       const size = sorted[0] as PhotoSize;
 
+      
       if (size) {
-        element.style.width = `${size.w}px`;
-        element.style.height = `${size.h}px`;
+        if (size.h > size.w) {
+          element.setAttribute('data-vertical', 'true');
+        }
+        const scale = Math.min(size.w, 300) / size.w;
+        img.width = Math.floor(size.w * scale);
+        element.style.height = Math.floor(size.h * scale) + 'px';
       }
 
       let downloaded = false;

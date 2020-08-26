@@ -4,6 +4,8 @@
 @import "../../styles.global.scss";
 
 $time-size: 0.75rem;
+$bubble-radius: 12px;
+$bubble-max-width: 25em;
 
 .root {
   display: flex;
@@ -137,99 +139,10 @@ $time-size: 0.75rem;
   }
 }
 
-.container {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  background-image: url("/assets/bg.jpg");
-  background-size: cover;
-  position: relative;
-  padding-right: 0;
-  overflow-x: hidden;
-
-  a {
-    &,
-    &:visited,
-    &:active {
-      color: $blue;
-      text-decoration: none;
-    }
-  }
-
-  .sentIndicator {
-    display: block;
-    margin-left: 0.2em;
-    height: 16px;
-    width: 22px;
-
-    @extend .ic-green;
-  }
-
-  .wrapper {
-    flex: 1;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    flex-shrink: 1;
-    padding: 0.5rem;
-    box-sizing: border-box;
-    overflow-y: scroll;
-    overflow-x: hidden;
-    mask-image: linear-gradient(bottom, transparent, #000 15px);
-    -webkit-mask-image: -webkit-linear-gradient(bottom, transparent, #000 15px);
-    @include hide-scrollbar;
-
-    .spinner {
-      position: absolute;
-      border-radius: 50%;
-      background-color: #0007;
-      top: calc(50% - 25px);
-      left: calc(50% - 25px);
-      width: 46px;
-      height: 46px;
-      align-items: center;
-      justify-content: center;
-      display: none;
-    }
-
-    &.initialLoading {
-      .spinner {
-        display: flex;
-      }
-    }
-
-    .chatContainer {
-      max-width: $chat-container-width;
-      width: 100%;
-      margin: 0 auto;
-
-      & > * {
-        display: flex;
-        padding: 5px 0;
-      }
-    }
-  }
-
-  .service {
-    justify-content: center;
-
-    .serviceMsg {
-      color: #fff;
-      background-color: rgba(#000, 0.22);
-      font-weight: 500;
-      padding: 0 8px;
-      line-height: 24px;
-      font-size: 15px;
-      border-radius: 12px;
-      user-select: none;
-    }
-  }
-
+:not(.album) > {
   .bubble {
-    max-width: 480px;
-    border-radius: 12px;
+    max-width: $bubble-max-width;
+    border-radius: $bubble-radius;
     box-shadow: 0 1px 2px 0 rgba(16, 35, 47, 0.15);
     position: relative;
     overflow: hidden;
@@ -275,7 +188,7 @@ $time-size: 0.75rem;
         position: relative;
 
         &,
-        img,
+        // img,
         video {
           width: 100%;
         }
@@ -354,10 +267,6 @@ $time-size: 0.75rem;
     }
   }
 
-  .bubble + .bubble {
-    margin-top: 5px;
-  }
-
   .bubble:last-child:not(.imageOnly):not(.sticker):not(.allEmoji) {
     overflow: visible;
     &:after {
@@ -371,198 +280,306 @@ $time-size: 0.75rem;
       content: "";
     }
   }
+}
 
-  .in,
-  .out {
-    position: relative;
+.in,
+.out {
+  position: relative;
 
-    > :last-child {
-      flex-direction: column;
-      display: flex;
-      width: 100%;
+  > :last-child {
+    flex-direction: column;
+    display: flex;
+    width: 100%;
+
+    > .bubble,
+    .album {
+      &:not(.first-child) {
+        margin-top: 5px;
+      }
     }
   }
+}
 
-  .in {
-    .bubble:last-child:after {
-      background: $white;
-      left: -9px;
+.in {
+  .bubble:last-child:after {
+    background: $white;
+    left: -9px;
+  }
+
+  > :last-child {
+    align-items: flex-start;
+
+    .box:hover {
+      background-color: $light;
     }
-
-    > :last-child {
-      align-items: flex-start;
-
-      .box:hover {
-        background-color: $light;
+    .quote {
+      border-left: 2px $blue-dark solid;
+      .name {
+        color: $blue-dark;
       }
-      .quote {
-        border-left: 2px $blue-dark solid;
+    }
+    .bubble {
+      background-color: #ffffff;
+      border-radius: 6px 12px 12px 6px;
+
+      &:not(.imageOnly) {
+        .time {
+          color: rgba($grey, 0.6);
+          width: 33px;
+          .inner {
+            padding: 6px 8px;
+          }
+        }
+      }
+
+      circle:global(.audioCircle) {
+        fill: $blue;
+      }
+
+      svg:global(.waveform .gradient) {
+        --color1: #{$blue};
+        --color2: #{$grey-light};
+      }
+
+      .webPageWrapper {
+        border-color: $blue;
         .name {
-          color: $blue-dark;
-        }
-      }
-      .bubble {
-        background-color: #ffffff;
-        border-radius: 6px 12px 12px 6px;
-
-        &:not(.imageOnly) {
-          .time {
-            color: rgba($grey, 0.6);
-            width: 33px;
-            .inner {
-              padding: 6px 8px;
-            }
-          }
-        }
-
-        circle:global(.audioCircle) {
-          fill: $blue;
-        }
-
-        svg:global(.waveform .gradient) {
-          --color1: #{$blue};
-          --color2: #{$grey-light};
-        }
-
-        .webPageWrapper {
-          border-color: $blue;
-          .name {
-            color: $blue;
-          }
-          .text {
-            color: $black !important;
-          }
-        }
-
-        .seekbar {
-          @include seekbar-variant($blue-dark, $blue-lighter);
-        }
-
-        .fromName {
           color: $blue;
         }
-
-        :global(.tooltip):after {
-          right: unset;
-          left: 0;
+        .text {
+          color: $black !important;
         }
       }
-      .bubble:first-child {
-        border-radius: 12px 12px 12px 6px;
+
+      .seekbar {
+        @include seekbar-variant($blue-dark, $blue-lighter);
       }
-      .bubble:last-child {
-        border-radius: 6px 12px 12px 0px;
+
+      .fromName {
+        color: $blue;
       }
-      .bubble:first-child:last-child {
-        border-radius: 12px 12px 12px 0px;
+
+      :global(.tooltip):after {
+        right: unset;
+        left: 0;
       }
+    }
+    .bubble:first-child {
+      border-radius: 12px 12px 12px 6px;
+    }
+    .bubble:last-child {
+      border-radius: 6px 12px 12px 0px;
+    }
+    .bubble:first-child:last-child {
+      border-radius: 12px 12px 12px 0px;
     }
   }
+}
 
-  .out {
-    .bubble:last-child:after {
-      background: $green-lighter;
-      transform: scaleX(-1);
-      right: -9px;
+.out {
+  .bubble:last-child:after {
+    background: $green-lighter;
+    transform: scaleX(-1);
+    right: -9px;
+  }
+
+  > :last-child {
+    align-items: flex-end;
+    .box:hover {
+      background-color: rgba($green, 0.12);
     }
-
-    > :last-child {
-      align-items: flex-end;
-      .box:hover {
-        background-color: rgba($green, 0.12);
+    .quote {
+      border-left: 2px $green-dark solid;
+      .name {
+        color: $green-dark;
       }
-      .quote {
-        border-left: 2px $green-dark solid;
+    }
+    .bubble {
+      background-color: $green-lighter;
+      border-radius: 12px 6px 6px 12px;
+
+      &:not(.imageOnly) {
+        .time {
+          color: $green-dark;
+          min-width: 48px;
+          display: inline-block;
+          margin-left: 1em;
+
+          .inner {
+            display: flex;
+            flex-direction: row;
+            padding: 6px 5px;
+          }
+        }
+      }
+
+      .documentContent {
+        color: $green-dark;
+      }
+
+      circle:global(.audioCircle) {
+        fill: $green-dark;
+      }
+
+      svg:global(.waveform .gradient) {
+        --color1: #{$green-dark};
+        --color2: #{$green-light};
+      }
+
+      .webPageWrapper {
+        border-color: $green-dark;
         .name {
           color: $green-dark;
         }
       }
-      .bubble {
-        background-color: $green-lighter;
-        border-radius: 12px 6px 6px 12px;
 
-        &:not(.imageOnly) {
-          .time {
-            color: $green-dark;
-            min-width: 48px;
-            display: inline-block;
-            margin-left: 1em;
+      .fromName {
+        color: $green-dark;
+      }
 
-            .inner {
-              display: flex;
-              flex-direction: row;
-              padding: 6px 5px;
-            }
-          }
+      .replyWrapper {
+        .replyBorder {
+          background: $green-dark;
         }
 
-        .documentContent {
+        .replyContentTitle {
           color: $green-dark;
         }
+      }
 
-        circle:global(.audioCircle) {
-          fill: $green-dark;
-        }
+      .seekbar {
+        @include seekbar-variant($green-dark, $green-light);
+      }
 
-        svg:global(.waveform .gradient) {
-          --color1: #{$green-dark};
-          --color2: #{$green-light};
-        }
-
-        .webPageWrapper {
-          border-color: $green-dark;
-          .name {
-            color: $green-dark;
-          }
+      &.isForward {
+        &::before {
+          color: $green-dark;
         }
 
         .fromName {
-          color: $green-dark;
-        }
-
-        .replyWrapper {
-          .replyBorder {
-            background: $green-dark;
-          }
-
-          .replyContentTitle {
-            color: $green-dark;
-          }
-        }
-
-        .seekbar {
-          @include seekbar-variant($green-dark, $green-light);
-        }
-
-        &.isForward {
-          &::before {
-            color: $green-dark;
-          }
-
-          .fromName {
-            &::after {
-              background-color: $green-dark;
-            }
+          &::after {
+            background-color: $green-dark;
           }
         }
       }
-      .bubble:first-child {
-        border-radius: 12px 12px 6px 12px;
+    }
+    .bubble:first-child {
+      border-radius: 12px 12px 6px 12px;
+    }
+    .bubble:last-child {
+      border-radius: 12px 6px 0px 12px;
+    }
+    .bubble:first-child:last-child {
+      border-radius: 12px 12px 0px 12px;
+    }
+  }
+
+  .allEmoji {
+    .message {
+      > span:first-child {
+        text-align: right;
       }
-      .bubble:last-child {
-        border-radius: 12px 6px 0px 12px;
-      }
-      .bubble:first-child:last-child {
-        border-radius: 12px 12px 0px 12px;
+    }
+  }
+}
+
+.container {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-image: url("/assets/bg.jpg");
+  background-size: cover;
+  position: relative;
+  padding-right: 0;
+  overflow-x: hidden;
+
+  a {
+    &,
+    &:visited,
+    &:active {
+      color: $blue;
+      text-decoration: none;
+    }
+  }
+
+  .sentIndicator {
+    display: block;
+    margin-left: 0.2em;
+    height: 16px;
+    width: 22px;
+
+    @extend .ic-green;
+  }
+
+  .wrapper {
+    flex: 1;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 1;
+    padding: 0.5rem;
+    box-sizing: border-box;
+    overflow-y: scroll;
+    overscroll-behavior-y: contain;
+    // scroll-snap-type: y proximity;
+    overflow-x: hidden;
+    mask-image: linear-gradient(bottom, transparent, #000 15px);
+    -webkit-mask-image: -webkit-linear-gradient(bottom, transparent, #000 15px);
+    @include hide-scrollbar;
+
+    .spinner {
+      position: absolute;
+      border-radius: 50%;
+      background-color: #0007;
+      top: calc(50% - 25px);
+      left: calc(50% - 25px);
+      width: 46px;
+      height: 46px;
+      align-items: center;
+      justify-content: center;
+      display: none;
+    }
+
+    &.initialLoading {
+      .spinner {
+        display: flex;
       }
     }
 
-    .allEmoji {
-      .message {
-        > span:first-child {
-          text-align: right;
-        }
+    .chatContainer {
+      max-width: $chat-container-width;
+      width: 100%;
+      margin: 0 auto;
+
+      & > * {
+        display: flex;
+        padding: 5px 0;
       }
+
+      // > div:last-child {
+      //   > :first-child {
+      //     > :last-child:not(.album), > :last-child.album > :last-child {
+      //       scroll-snap-align: end;
+      //     }
+      //   }
+      // }
+    }
+  }
+
+  .service {
+    justify-content: center;
+
+    .serviceMsg {
+      color: #fff;
+      background-color: rgba(#000, 0.22);
+      font-weight: 500;
+      padding: 0 8px;
+      line-height: 24px;
+      font-size: 15px;
+      border-radius: 12px;
+      user-select: none;
     }
   }
 
@@ -981,10 +998,6 @@ $min-width-for-sidebar-animation: $chat-container-width + $left-sidebar-width +
     margin-right: 0.5em;
   }
 
-  :global(.ic-muted) {
-    height: 1.6em;
-  }
-
   position: absolute;
   top: 0;
   left: 0;
@@ -994,4 +1007,128 @@ $min-width-for-sidebar-animation: $chat-container-width + $left-sidebar-width +
   padding: 0.4em 0.6em;
   border-radius: 1em;
   margin: 0.4em;
+}
+
+.album {
+  --album-media-gap: 0.125rem;
+  display: grid;
+  grid-gap: var(--album-media-gap);
+  overflow: hidden;
+  border-radius: $bubble-radius;
+  max-width: $bubble-max-width;
+
+  .attachmentWrapper,
+  .bubble,
+  .attachmentWrapper .attachment {
+    width: auto !important;
+    height: 100% !important;
+    min-height: 100%;
+  }
+
+  .bubble {
+    overflow: hidden;
+    border-radius: 0 !important;
+  }
+
+  > .bubble:not(:last-of-type) {
+    .message {
+      display: none !important;
+    }
+  }
+
+  .attachment {
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    > :not(:global(.downloadIndicator)) {
+      min-height: 100%;
+      min-width: 100%;
+      display: block;
+    }
+
+    > img {
+      object-fit: cover;
+    }
+  }
+
+  &.count-1 {
+    grid-template-columns: auto;
+  }
+
+  &.count-2 {
+    grid-template-columns: auto auto;
+    max-height: 20em;
+  }
+
+  // 3, 6, 9, ...
+  &.count-r0 {
+    grid-template-columns: repeat(6, auto);
+    grid-template-rows: 15rem 8rem;
+
+    > div {
+      grid-column: span 2;
+      grid-row: span 2;
+    }
+
+    > :first-child {
+      grid-column: span 6;
+
+      & ~ div:nth-of-type(2),
+      & ~ div:nth-of-type(3) {
+        grid-column: span 3;
+      }
+    }
+
+    &.vertical {
+      > :first-child {
+        grid-column: span 3;
+        grid-row: span 2;
+
+        & ~ div:nth-of-type(2),
+        & ~ div:nth-of-type(3) {
+          grid-column: span 3;
+          grid-row: span 1;
+        }
+      }
+    }
+  }
+
+  // 4, 7, 10, ...
+  &.count-r1 {
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: 15rem 8rem;
+
+    > :first-child {
+      grid-column: span 3;
+    }
+
+    &.vertical {
+      grid-template-rows: 10rem 10rem 10rem;
+      grid-template-rows: repeat(3, 10rem);
+
+      > :first-child {
+        grid-column: span 2;
+        grid-row: span 3;
+      }
+    }
+  }
+
+  // 5, 8, 11, ...
+  &.count-r2 {
+    grid-template-columns: auto auto;
+    grid-template-rows: 15rem 8rem;
+
+    > :first-child {
+      grid-column: span 2;
+    }
+
+    &.vertical {
+      > :first-child {
+        grid-column: span 2;
+        grid-row: span 2;
+      }
+    }
+  }
 }

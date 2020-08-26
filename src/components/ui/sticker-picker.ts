@@ -371,7 +371,7 @@ export default class StickerPicker implements Component<Options> {
     }
 
     const call = () => {
-      const callbacksToCall = callbacks.splice(0, 5);
+      const callbacksToCall = callbacks.splice(0, 15);
       if (callbacksToCall.length > 0) {
         callbacksToCall.forEach((cb) => cb());
         requestAnimationFrame(call);

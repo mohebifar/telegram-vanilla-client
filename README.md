@@ -1,3 +1,21 @@
+## Changelog (Round 4)
+
+- Significant speed improvement by fixing a bug in creating message containers
+- Concurrent file upload and downloads
+- Improved photo and video preview quality
+- Video streaming
+- Fix sign up flow
+- Add photo upload and cropper to sign up flow
+- Auto download GIFs
+- Fix issue with ESG panel getting closed after selecting GIF, Sticker or Emoji
+- Improved Lottie animation initialization time
+- Add indication for video vs. photo in share media tab
+- Add video's duration, file size and download button to top left corner of video
+- Add support for albums
+- Add folders feature
+- Fix a bug where uploading multiple files at once was failing at times
+- Highlight keywords in search
+
 ## Changelog (Round 3)
 
 - Upgraded API Layer to 114
