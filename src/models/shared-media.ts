@@ -11,6 +11,7 @@ import { getInputPeer } from "../core/tl/utils";
 interface ExtraMethods {
   setNext(next: ISharedMedia): void;
   setPrev(prev: ISharedMedia): void;
+  getPeer(): Promise<IPeer>;
   setPeer(peer: IPeer): void;
   getNext(): Promise<ISharedMedia>;
   getPrev(): Promise<ISharedMedia>;
