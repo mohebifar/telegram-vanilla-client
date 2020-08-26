@@ -218,7 +218,7 @@ export class LightBox implements Component<Options> {
           removeClass(this.nextButton, "hidden");
 
           this.nextButton.onclick = async () => {
-            this.setMedia(media, -1);
+            this.setMedia(media, 1);
           };
         }
       });
@@ -228,7 +228,7 @@ export class LightBox implements Component<Options> {
           removeClass(this.prevButton, "hidden");
 
           this.prevButton.onclick = async () => {
-            this.setMedia(media, 1);
+            this.setMedia(media, -1);
           };
         }
       });
