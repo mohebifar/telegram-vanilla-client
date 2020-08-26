@@ -5,6 +5,7 @@ import {
   scaleWaveform,
 } from "../../utils/audio-recorder";
 import Icon, { Icons } from "../ui/icon";
+import SoundMeter from "../../utils/sound-meter";
 
 interface Options {
   onClick?(): any;
@@ -16,10 +17,6 @@ interface Options {
 export default class RecordButton implements Component<Options> {
   public element: HTMLElement;
   private stream: MediaStream;
-  private audioContext: AudioContext;
-  private analyser: AnalyserNode;
-  private processor: ScriptProcessorNode;
-  private microphone: MediaStreamAudioSourceNode;
   private recorder: AudioRecorder;
   private onEnd: Options["onEnd"];
   private onStart: Options["onStart"];
@@ -28,6 +25,9 @@ export default class RecordButton implements Component<Options> {
   private state: "send" | "mic" = "mic";
   private waveform: number[] = [];
   private waitForRecord?: Promise<void>;
+  private soundMeter: SoundMeter;
+  private intervalBoxShadow = 0;
+  private intervalWaveform = 0;
 
   constructor({ onEnd, onStart, onClear }: Options) {
     this.onEnd = onEnd;
@@ -117,50 +117,44 @@ export default class RecordButton implements Component<Options> {
       video: false,
     });
 
-    const sampleRate = 64000;
-    this.audioContext = new AudioContext({
-      sampleRate,
-    });
-    this.analyser = this.audioContext.createAnalyser();
-    this.microphone = this.audioContext.createMediaStreamSource(this.stream);
-    this.processor = this.audioContext.createScriptProcessor(2048, 1, 1);
+    this.recorder = new AudioRecorder(this.stream);
+    const context = new AudioContext();
+    this.soundMeter = new SoundMeter(context);
+    this.soundMeter.connectToSource(this.stream, (e) => {
+      if (e) {
+        alert(e);
+        return;
+      }
 
-    this.analyser.smoothingTimeConstant = 0.8;
-    this.analyser.fftSize = 1024;
+      this.intervalBoxShadow = setInterval(() => {
+        this.element.style.boxShadow = this.getBoxShadow(
+          this.soundMeter.instant
+        );
+      }, 100);
 
-    this.microphone.connect(this.analyser);
-    this.analyser.connect(this.processor);
-    this.processor.connect(this.audioContext.destination);
-    this.processor.addEventListener("audioprocess", () => {
-      const array = new Uint8Array(this.analyser.frequencyBinCount);
-      this.analyser.getByteFrequencyData(array);
-
-      const maxDecible = Math.max(...array);
-      this.waveform.push(maxDecible);
-      this.element.style.boxShadow = this.getBoxShadow(maxDecible);
-    });
-
-    this.recorder = new AudioRecorder(this.stream, this.processor, {
-      sampleRate,
+      this.intervalWaveform = setInterval(() => {
+        this.waveform.push(Math.min(255, this.soundMeter.instant * 6000));
+      }, 50);
     });
 
     this.onStart();
   };
 
   private stop = async (skip = false) => {
-    console.log(this.waitForRecord);
     let canSend = false;
+    if (this.soundMeter) {
+      clearInterval(this.intervalBoxShadow);
+      clearInterval(this.intervalWaveform);
+      this.soundMeter.stop();
+    }
     try {
       if (this.waitForRecord) {
         await this.waitForRecord;
-        console.log("ended wait");
         if (this.stream) {
           this.stream.getTracks().forEach((track) => {
             track.stop();
           });
-          this.processor.disconnect();
-          this.analyser.disconnect();
-          this.microphone.disconnect();
+
           const result = await this.recorder.stop();
           if (result && !skip) {
             const [data, duration] = result;
@@ -189,6 +183,6 @@ export default class RecordButton implements Component<Options> {
   };
 
   private getBoxShadow(decible: number) {
-    return `0 0 0 ${Math.floor(decible / 4)}px rgba(0, 0, 0, 0.05)`;
+    return `0 0 0 ${Math.floor(decible * 400)}px rgba(0, 0, 0, 0.05)`;
   }
 }

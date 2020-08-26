@@ -63,12 +63,12 @@
     "dayjs": "^1.8.17",
     "dexie": "^2.0.4",
     "lottie-web": "^5.7.2",
-    "mitt": "^1.2.0",
+    "mitt": "^2.1.0",
+    "opus-media-recorder": "^0.8.0",
     "p-queue": "^6.6.1",
     "pako": "^1.0.10",
     "spu-md5": "0.0.4",
     "virtualized-list": "^2.2.0",
-    "vorbis-encoder-js": "^1.0.2",
     "webp-hero": "0.0.0-dev.24"
   }
 }

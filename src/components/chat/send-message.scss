@@ -128,6 +128,7 @@
     box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.08);
     padding-top: 0.25rem;
     cursor: pointer;
+    transition: box-shadow 100ms ease;
 
     &:hover {
       background-color: #fff !important;

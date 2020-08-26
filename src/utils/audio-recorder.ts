@@ -5,34 +5,23 @@ export const AudioContext: typeof window.AudioContext =
 
 export class AudioRecorder {
   private recorder: MediaRecorder;
-  private encoder: any;
   private startTime: number;
 
-  constructor(
-    stream: MediaStream,
-    processor: ScriptProcessorNode,
-    { sampleRate = 64000 }: { sampleRate: number }
-  ) {
-    if (this.supportsNativeRecorder()) {
-      this.recorder = new MediaRecorder(stream, {
-        mimeType: "audio/ogg",
-        bitsPerSecond: sampleRate,
-      });
+  constructor(stream: MediaStream) {
+    const options = { mimeType: "audio/ogg" };
+    
+    const native = this.supportsNativeRecorder();
+    if (native) {
+      this.recorder = new MediaRecorder(stream, options);
       this.recorder.start();
       this.startTime = Date.now();
     } else {
       // @ts-ignore
-      import(/* webpackChunkName: "vorbis" */ "vorbis-encoder-js").then(
-        ({ encoder: Encoder }) => {
-          this.encoder = new Encoder(sampleRate, 1, 0);
+      import(/* webpackChunkName: "opus" */ "./audio-recorder-polyfill").then(
+        ({ default: factory }) => {
+          this.recorder = factory(stream);
+          this.recorder.start();
           this.startTime = Date.now();
-          processor.addEventListener("audioprocess", (event) => {
-            try {
-              this.encoder.encode([event.inputBuffer.getChannelData(0)]);
-            } catch (err) {
-              console.error("Failed to encode an ogg chunk", err);
-            }
-          });
         }
       );
     }
@@ -45,20 +34,12 @@ export class AudioRecorder {
   public stop(): Promise<[Blob, number]> | undefined {
     const duration = Date.now() - this.startTime;
 
-    if (this.supportsNativeRecorder()) {
-      return new Promise((resolve) => {
-        this.recorder.ondataavailable = (event) => {
-          resolve([event.data, duration]);
-        };
-        this.recorder.stop();
-      });
-    }
-
-    if (this.encoder) {
-      return [this.encoder.finish(), duration] as any;
-    }
-
-    return undefined;
+    return new Promise((resolve) => {
+      this.recorder.ondataavailable = (event) => {
+        resolve([event.data, duration]);
+      };
+      this.recorder.stop();
+    });
   }
 }
 
