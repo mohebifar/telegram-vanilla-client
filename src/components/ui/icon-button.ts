@@ -20,7 +20,8 @@ enum EventMap {
 
 export default class IconButton implements Component<Options> {
   public readonly element: HTMLElement;
-  private icon: Element<Icon>;
+  private iconElement: Element<Icon>;
+  public icon: Icon;
 
   constructor({ icon, color, variant = "light", ...rest }: Options) {
     const props = {};
@@ -42,15 +43,16 @@ export default class IconButton implements Component<Options> {
       finalColor = finalColor || "white";
     }
 
-    this.icon = createElement(Icon, {
+    this.iconElement = createElement(Icon, {
       icon,
       color: finalColor || "grey"
     });
+    this.icon = this.iconElement.instance;
 
     this.element = createElement(
       "button",
       { class: styles.btn + ' ripple ' + extraClass + ' ' + rest['class'] || '', ...props },
-      this.icon
+      this.iconElement
     );
 
     Object.entries(EventMap).forEach(([attrName, eventName]) => {
@@ -61,6 +63,6 @@ export default class IconButton implements Component<Options> {
   }
 
   public setSprite(state: "start" | "end") {
-    this.icon.instance.setSprite(state);
+    this.iconElement.instance.setSprite(state);
   }
 }

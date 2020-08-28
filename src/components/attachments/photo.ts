@@ -52,7 +52,7 @@ export default class PhotoAttachment implements Component<Options> {
         if (size.h > size.w) {
           element.setAttribute('data-vertical', 'true');
         }
-        const scale = Math.min(size.w, 300) / size.w;
+        const scale = Math.min(size.w, 400) / size.w;
         img.width = Math.floor(size.w * scale);
         element.style.height = Math.floor(size.h * scale) + 'px';
       }

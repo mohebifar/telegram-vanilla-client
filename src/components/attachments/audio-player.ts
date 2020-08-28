@@ -15,16 +15,19 @@ import { Icons } from "../ui/icon";
 import { TransientMedia } from "../../utils/useful-types";
 import { readDataURL } from "../../utils/upload-file";
 import audioManager from "../../utils/audio-manager";
+import { IMessage } from "../../models/message";
+import { ISharedMedia } from "../../models/shared-media";
 
 export interface Options {
   media: MessageMediaDocument | TransientMedia;
+  message: IMessage | ISharedMedia;
   tg: TelegramClientProxy;
 }
 
 export default class AudioAttachment implements Component<Options> {
   public readonly element: HTMLElement;
 
-  constructor({ media, tg }: Options) {
+  constructor({ media, message, tg }: Options) {
     const audioAttribute = (media.$t === "TransientMedia"
       ? (media.inputMedia as InputMediaUploadedDocument)
       : (media.document as Document)
@@ -34,6 +37,8 @@ export default class AudioAttachment implements Component<Options> {
     // Just uploaded file
 
     const fileIcon = createElement(FileIcon, { extension: "ogg" });
+    fileIcon.instance.showAudio(Icons.Play);
+
     const iconWrapper = createElement(
       "div",
       { class: styles.documentType },
@@ -67,8 +72,7 @@ export default class AudioAttachment implements Component<Options> {
         return;
       }
 
-      if (audioManager.src !== source) {
-        clearPlayState();
+      if (!isSameMessage()) {
         return;
       }
 
@@ -89,7 +93,7 @@ export default class AudioAttachment implements Component<Options> {
     };
 
     const onSeek = (time: number) => {
-      if (source !== audioManager.src) {
+      if (!isSameMessage()) {
         return;
       }
 
@@ -101,40 +105,40 @@ export default class AudioAttachment implements Component<Options> {
       }
     };
 
-    const clearPauseState = () => {
+    const showPlayState = () => {
       off(iconWrapper, "click", play);
       on(iconWrapper, "click", pause);
       fileIcon.instance.showAudio(Icons.Pause);
     };
 
-    const clearPlayState = () => {
+    const showPauseState = () => {
       off(iconWrapper, "click", pause);
       on(iconWrapper, "click", play);
       fileIcon.instance.showAudio(Icons.Play);
     };
 
     const handleEnded = () => {
+      if (!isSameMessage()) {
+        return;
+      }
       pause();
+      showPauseState();
       audio.currentTime = currentTime = 0;
     };
 
     const play = () => {
       audio.pause();
-      audioManager.src = source;
+      audioManager.setSrc(message, source);
+      audioManager.events.on("src", handleSrcChange);
       audio.currentTime = currentTime;
 
       audio.play();
-      moveSeekbar();
-      clearPauseState();
-      on(audio, "ended", handleEnded, { once: true });
     };
 
     const pause = () => {
-      if (source === audio.src) {
+      if (isSameMessage()) {
         audio.pause();
       }
-      clearPlayState();
-      off(audio, "ended", handleEnded, { once: true });
     };
 
     const handleStopDownloadClick = () => {
@@ -161,21 +165,66 @@ export default class AudioAttachment implements Component<Options> {
         if (autoplay) {
           play();
         } else {
-          clearPlayState();
+          showPauseState();
         }
 
         off(iconWrapper, "click", handleStopDownloadClick);
         off(iconWrapper, "click", handleDownloadClick);
 
-        if (audio.src === source) {
+        if (isSameMessage() && !audio.paused) {
           moveSeekbar();
-          clearPauseState();
-          on(audio, "ended", handleEnded, { once: true });
+          showPlayState();
         }
       }
 
       duration.innerText = formatDuration(audioAttribute.duration);
       shouldContinue = true;
+    };
+
+    const removeEnded = on(audio, "ended", handleEnded);
+    const removePlay = on(audio, "play", () => {
+      if (isSameMessage()) {
+        moveSeekbar();
+        showPlayState();
+      } else {
+        showPauseState();
+      }
+    });
+    const removePause = on(audio, "pause", () => {
+      if (isSameMessage()) {
+        showPauseState();
+      }
+    });
+
+    const isSameMessage = (
+      currentMessage: IMessage | ISharedMedia = audioManager.message
+    ) => {
+      return (
+        currentMessage &&
+        message.id === currentMessage.id &&
+        message.channelId === currentMessage.channelId
+      );
+    };
+
+    const handleSrcChange = ({
+      message: currentMessage,
+    }: {
+      message: IMessage;
+    }) => {
+      if (!isSameMessage(currentMessage)) {
+        removeListeners();
+        showPauseState();
+        audioManager.events.off("src", handleSrcChange);
+      } else {
+        moveSeekbar();
+        showPlayState();
+      }
+    };
+    const removeListeners = () => {
+      console.log("rremoveListeners");
+      removeEnded();
+      removePlay();
+      removePause();
     };
 
     const handleDownloadClick = () => {

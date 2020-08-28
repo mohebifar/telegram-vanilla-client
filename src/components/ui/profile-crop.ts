@@ -13,7 +13,7 @@ export default class ProfileCrop implements Component<Options> {
   private imageElement: HTMLImageElement;
   private cropper: HTMLElement;
   private image: HTMLImageElement;
-  public unmount: Function;
+  private removeMouseUpListener: Function;
   public getBlob: () => Promise<Blob>;
 
   constructor({ image }: Options) {
@@ -82,15 +82,11 @@ export default class ProfileCrop implements Component<Options> {
       isMouseDown = true;
     });
 
-    const cleanUp = on(document, "mouseup", () => {
+    this.removeMouseUpListener = on(document, "mouseup", () => {
       if (!isMouseDown) return;
       isMouseDown = false;
       updateCoords();
     });
-
-    this.unmount = () => {
-      cleanUp();
-    };
 
     on(element, "mousemove", (event) => {
       if (!isMouseDown) return;
@@ -110,6 +106,10 @@ export default class ProfileCrop implements Component<Options> {
         element.style.top = newY + "px";
       }
     });
+  }
+
+  public unmount() {
+    this.removeMouseUpListener();
   }
 
   private generateBlob(ratio: number, sourceX: number, sourceY: number) {

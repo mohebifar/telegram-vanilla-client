@@ -1,20 +1,27 @@
 ## Changelog (Round 4)
 
+### Major updates
 - Significant speed improvement by fixing a bug in creating message containers
-- Concurrent file upload and downloads
-- Improved photo and video preview quality
-- Video streaming
+- Add video streaming support
 - Fix sign up flow
 - Add photo upload and cropper to sign up flow
-- Auto download GIFs
-- Fix issue with ESG panel getting closed after selecting GIF, Sticker or Emoji
-- Improved Lottie animation initialization time
-- Add indication for video vs. photo in share media tab
-- Add video's duration, file size and download button to top left corner of video
 - Add support for albums
+- Concurrent file upload and downloads
 - Add folders feature
-- Fix a bug where uploading multiple files at once was failing at times
+- Fix voice recorder issue on iOS Safari
 - Highlight keywords in search
+- Added audio player controls ont the top of the chat view
+
+# Minor updates
+
+- Improved photo and video preview quality
+- Add video's duration, file size and download button to top left corner of video
+- Fix issue with ESG panel getting closed after selecting GIF, Sticker or Emoji
+- Add indication for video vs. photo in share media tab
+- Auto download GIFs
+- Improved Lottie animation initialization time
+- Fix a bug where uploading multiple files at once was failing at times
+- Fix direction of navigation buttons in media lightbox
 
 ## Changelog (Round 3)
 

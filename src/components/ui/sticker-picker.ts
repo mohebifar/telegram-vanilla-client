@@ -135,7 +135,7 @@ export default class StickerPicker implements Component<Options> {
         {
           name: "search",
           render: () => {
-            return this.getSearchView();
+            return this.getSearchView() as any;
           },
         },
       ],

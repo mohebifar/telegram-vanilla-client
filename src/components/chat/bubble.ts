@@ -496,7 +496,7 @@ export default class Bubble implements Component<Options> {
     media: MessageMediaDocument | TransientMedia
   ): [Element<AudioAttachment>, "audio"] {
     return [
-      createElement(AudioAttachment, { media, tg: this.message.tg }),
+      createElement(AudioAttachment, { media, message: this.message, tg: this.message.tg }),
       "audio",
     ];
   }

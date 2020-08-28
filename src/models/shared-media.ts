@@ -1,18 +1,20 @@
 import {
   Message,
   messages_MessagesSlice,
-  messages_SearchRequest
+  messages_SearchRequest,
 } from "../core/tl/TLObjects";
 import { TelegramDatabase } from "../utils/db";
 import { Model, ModelDecorator, ModelKey, ModelWithProxy } from "./model";
 import { IPeer, Peer } from "./peer";
 import { getInputPeer } from "../core/tl/utils";
+import { getMessageSender } from "../utils/chat";
 
 interface ExtraMethods {
   setNext(next: ISharedMedia): void;
   setPrev(prev: ISharedMedia): void;
   getPeer(): Promise<IPeer>;
   setPeer(peer: IPeer): void;
+  getSender(): Promise<IPeer>;
   getNext(): Promise<ISharedMedia>;
   getPrev(): Promise<ISharedMedia>;
 }
@@ -21,7 +23,7 @@ export type ISharedMedia = ModelWithProxy<"sharedMedia"> & ExtraMethods;
 
 @ModelDecorator({
   tableName: "sharedMedia",
-  primaryKey: ["id", "peerType", "peerId"]
+  primaryKey: ["id", "peerType", "peerId"],
 })
 export class SharedMedia extends Model<"sharedMedia"> implements ExtraMethods {
   static get: (
@@ -48,7 +50,7 @@ export class SharedMedia extends Model<"sharedMedia"> implements ExtraMethods {
       limit = 20,
       maxId = 0,
       minId = 0,
-      type = "InputMessagesFilterPhotoVideo"
+      type = "InputMessagesFilterPhotoVideo",
     }: {
       offsetId: number;
       addOffset?: number;
@@ -62,7 +64,7 @@ export class SharedMedia extends Model<"sharedMedia"> implements ExtraMethods {
       $t: "messages_SearchRequest",
       addOffset,
       filter: {
-        $t: type
+        $t: type,
       },
       peer: getInputPeer(peer),
       maxId,
@@ -72,7 +74,7 @@ export class SharedMedia extends Model<"sharedMedia"> implements ExtraMethods {
       minDate: 0,
       offsetId,
       limit,
-      q: ""
+      q: "",
     })) as messages_MessagesSlice;
 
     for (const peer of [...response.users, ...response.chats]) {
@@ -89,7 +91,7 @@ export class SharedMedia extends Model<"sharedMedia"> implements ExtraMethods {
       const model = SharedMedia.fromObject({
         ...message,
         peerType: peer.type,
-        peerId: peer.id
+        peerId: peer.id,
       });
       model.setPeer(peer);
       model.save();
@@ -112,7 +114,7 @@ export class SharedMedia extends Model<"sharedMedia"> implements ExtraMethods {
     const result = await SharedMedia.fetch(this.peer, {
       offsetId: this._proxy.id,
       minId: this._proxy.id,
-      addOffset: -20
+      addOffset: -20,
     });
     const next = result[result.length - 1];
     if (next) {
@@ -129,7 +131,7 @@ export class SharedMedia extends Model<"sharedMedia"> implements ExtraMethods {
     const result = await SharedMedia.fetch(this.peer, {
       offsetId: this._proxy.id,
       maxId: this._proxy.id,
-      addOffset: 0
+      addOffset: 0,
     });
     const prev = result[0];
     if (prev) {
@@ -153,5 +155,9 @@ export class SharedMedia extends Model<"sharedMedia"> implements ExtraMethods {
 
   public setPrev(prev: ISharedMedia) {
     this.prev = prev;
+  }
+
+  public getSender() {
+    return getMessageSender(this._proxy);
   }
 }

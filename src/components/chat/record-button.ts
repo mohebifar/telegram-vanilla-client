@@ -133,7 +133,7 @@ export default class RecordButton implements Component<Options> {
       }, 100);
 
       this.intervalWaveform = setInterval(() => {
-        this.waveform.push(Math.min(255, this.soundMeter.instant * 6000));
+        this.waveform.push(Math.min(255, this.soundMeter.instant * 10000));
       }, 50);
     });
 

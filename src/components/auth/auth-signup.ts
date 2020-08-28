@@ -50,7 +50,7 @@ export default class AuthSignUp implements Component<Options> {
               blob
             )})`;
             this.profilePhotoPicker.classList.add("selected");
-            this.profileFile = await blob.arrayBuffer();
+            this.profileFile = await (blob as any).arrayBuffer();
             await sleep(300);
             cropper.instance.unmount();
           },

@@ -1,6 +1,8 @@
 @import "../../variables.scss";
 @import "../../mixins.scss";
 
+$pinned-padding-base: 0.5em;
+
 .container {
   display: flex;
   background-color: #fff;
@@ -64,9 +66,28 @@
   }
 }
 
-.pinned:not(:empty) {
-  $pinned-padding-base: 0.5em;
+.extras {
+  display: flex;
+  @include breakpoint(xs) {
+    position: absolute;
+    flex-direction: column;
+    top: 60px;
+    background: white;
+    z-index: 99999;
+    height: unset;
+    left: 0;
+    right: 0;
 
+    > div {
+      margin: $pinned-padding-base;
+      margin-left: $pinned-padding-base * 2;
+      // box-shadow: 0 2px 3px rgba(0, 0, 0, 0.2),
+      //   inset 0 2px 3px rgba(0, 0, 0, 0.2);
+    }
+  }
+}
+
+.pinned:not(:empty) {
   border-left: 2px solid $blue;
   padding-left: $pinned-padding-base;
   height: 2.75em;
@@ -99,18 +120,5 @@
     @include breakpoint(sm) {
       max-width: 11em;
     }
-  }
-
-  @include breakpoint(xs) {
-    position: absolute;
-    top: 60px;
-    background: white;
-    z-index: 99999;
-    padding: $pinned-padding-base;
-    padding-left: $pinned-padding-base * 2;
-    height: unset;
-    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.2), inset 0 2px 3px rgba(0, 0, 0, 0.2);
-    left: 0;
-    right: 0;
   }
 }

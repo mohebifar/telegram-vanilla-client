@@ -69,6 +69,26 @@ export default class Chat implements Component<Options> {
       )
     );
     this.topBarContainer = createElement("div");
+
+    this.topBar = createElement(TopBar, {
+      onProfileClick: () => {
+        this.rightSidebar.instance.setPeer(this.peer);
+        this.rightSidebar.instance.show();
+      },
+      onSearchClick: () => {
+        this.rightSidebar.instance.search(this.peer);
+        this.rightSidebar.instance.show();
+      },
+      onBackClick: () => {
+        this.setRoute(Route.DialogList);
+      },
+      onMessageSelect: (messageId: number, dialog = this.dialog) => {
+        this.setActiveDialog(dialog, messageId);
+      },
+    });
+
+    this.topBarContainer.append(this.topBar);
+
     this.sendMessageForm = createElement(SendMessageForm, {
       callback: this.handleSendMessage,
       startTyping: this.startTyping,
@@ -129,26 +149,7 @@ export default class Chat implements Component<Options> {
       this.lockLoad = true;
       this.peer = await dialog.getPeer();
       if (dialog !== this.dialog) {
-        this.topBar = createElement(TopBar, {
-          dialog,
-          peer: this.peer,
-          onProfileClick: () => {
-            this.rightSidebar.instance.setPeer(this.peer);
-            this.rightSidebar.instance.show();
-          },
-          onSearchClick: () => {
-            this.rightSidebar.instance.search(this.peer);
-            this.rightSidebar.instance.show();
-          },
-          onBackClick: () => {
-            this.setRoute(Route.DialogList);
-          },
-          onMessageSelect: (message) => {
-            this.handleReplyClick(message.id);
-          },
-        });
-        removeChildren(this.topBarContainer);
-        this.topBarContainer.append(this.topBar);
+        this.topBar.instance.setPeer(this.peer);
       }
 
       this.idToElementMap.clear();

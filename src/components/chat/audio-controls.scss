@@ -1,0 +1,44 @@
+@import "../../mixins.scss";
+@import "../../variables.scss";
+
+.container {
+  display: flex;
+  cursor: pointer;
+  align-items: center;
+
+  > button {
+    background: none;
+    border: none;
+  }
+
+  > .info {
+    @include breakpoint(xs) {
+      flex: 1;
+    }
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    &,
+    &:hover {
+      transition: background-color 0.1s ease;
+    }
+
+    > span:first-of-type {
+      font-weight: 500;
+    }
+
+    > span:empty {
+      display: none;
+    }
+
+    line-height: 1;
+    margin: 0 0.5em;
+    justify-content: center;
+    display: flex;
+    flex-direction: column;
+    padding: 0.4em 0.8em;
+    border-radius: 0.5em;
+  }
+}

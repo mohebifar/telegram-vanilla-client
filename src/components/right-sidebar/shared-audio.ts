@@ -43,7 +43,7 @@ export default class SharedAudio implements Component<Options> {
       offsetId: (this.last && this.last.id) || 0,
       addOffset: 0,
       limit: 15,
-      type: "InputMessagesFilterMusic"
+      type: "InputMessagesFilterMusic",
     });
     addClass(this.element, styles.loaded);
 
@@ -62,8 +62,9 @@ export default class SharedAudio implements Component<Options> {
       return;
     }
     const element = createElement(AudioAttachment, {
+      message: media,
       media: media.media,
-      tg: this.peer.tg
+      tg: this.peer.tg,
     });
 
     this.element.append(element);

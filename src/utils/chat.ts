@@ -445,3 +445,30 @@ export function getChatSubdueText(peer: IPeer) {
       return "Channel";
   }
 }
+
+export function getMessageSender(message: Message) {
+  if (message.$t === "Message") {
+    if (message.fromId) {
+      return Peer.get({
+        id: message.fromId,
+        type: "User",
+      });
+    } else if (message.toId.$t === "PeerChannel") {
+      return Peer.get({
+        id: message.toId.channelId,
+        type: "Channel",
+      });
+    } else if (!message.fwdFrom) {
+      const fwdType = message.fwdFrom.fromId ? "User" : "Channel";
+      return Peer.get({
+        id:
+          fwdType === "User"
+            ? message.fwdFrom.fromId
+            : message.fwdFrom.channelId,
+        type: fwdType,
+      });
+    }
+  }
+
+  return undefined;
+}

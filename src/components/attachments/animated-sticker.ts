@@ -1,12 +1,7 @@
-import {
-  Document,
-  MessageMediaDocument,
-  PhotoCachedSize,
-} from "../../core/tl/TLObjects";
+import { Document, MessageMediaDocument } from "../../core/tl/TLObjects";
 import { TelegramClientProxy } from "../../telegram-worker-proxy";
 import { Component, createElement } from "../../utils/dom";
 import { EMPTY_IMG } from "../../utils/images";
-import { sleep } from "../../utils/utils";
 import Lottie from "../ui/lottie";
 
 import * as styles from "../chat/chat.scss";

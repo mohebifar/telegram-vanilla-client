@@ -13,6 +13,7 @@ import { DBMessage, TelegramDatabase } from "../utils/db";
 import { DialogMessageTypes, InputMessageIdTypes } from "../utils/useful-types";
 import { Model, ModelDecorator, ModelKey, ModelWithProxy } from "./model";
 import { IPeer, Peer } from "./peer";
+import { getMessageSender } from "../utils/chat";
 
 interface ExtraMethods {
   date: dayjs.Dayjs;
@@ -217,30 +218,7 @@ export class Message extends Model<"messages"> {
   }
 
   public getSender() {
-    if (this._proxy.$t === "Message") {
-      if (this._proxy.fromId) {
-        return Peer.get({
-          id: this._proxy.fromId,
-          type: "User",
-        });
-      } else if (this._proxy.toId.$t === "PeerChannel") {
-        return Peer.get({
-          id: this._proxy.toId.channelId,
-          type: "Channel",
-        });
-      } else if (!this._proxy.fwdFrom) {
-        const fwdType = this._proxy.fwdFrom.fromId ? "User" : "Channel";
-        return Peer.get({
-          id:
-            fwdType === "User"
-              ? this._proxy.fwdFrom.fromId
-              : this._proxy.fwdFrom.channelId,
-          type: fwdType,
-        });
-      }
-    }
-
-    return undefined;
+    return getMessageSender(this._proxy);
   }
 
   public async getPeerForwardedFrom() {

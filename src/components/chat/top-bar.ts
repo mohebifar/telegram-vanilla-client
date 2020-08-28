@@ -8,31 +8,34 @@ import IconButton from "../ui/icon-button";
 import { Icons } from "../ui/icon";
 import { makeContextMenu } from "../ui/context-menu";
 import { replaceEmoji } from "../../utils/emojis";
-import { Message, IMessage } from "../../models/message";
+import { Message } from "../../models/message";
 import { Message as OriginalMessage } from "../../core/tl/TLObjects";
+import AudioControls from "./audio-controls";
 
 interface Options {
-  dialog: IDialog;
-  peer: IPeer;
   onProfileClick: () => any;
   onSearchClick: () => any;
   onBackClick: () => any;
-  onMessageSelect: (message: IMessage) => any;
+  onMessageSelect: (messageId: number, dialog?: IDialog) => any;
 }
 
 export default class TopBar implements Component<Options> {
   public readonly element: HTMLElement;
   private displayNameContainer: HTMLElement;
   private subdueText: HTMLElement;
+  private extras: HTMLElement;
+  private avatarHolder: HTMLElement;
   private pinnedMessage: HTMLElement;
   private currentPinnedMessage: number;
-  private onMessageSelect: Options['onMessageSelect'];
-  // private dialog: IDialog;
+  private onMessageSelect: Options["onMessageSelect"];
   private peer: IPeer;
 
-  constructor({ peer, onProfileClick, onSearchClick, onMessageSelect, onBackClick }: Options) {
-    // this.dialog = dialog;
-    this.peer = peer;
+  constructor({
+    onProfileClick,
+    onSearchClick,
+    onMessageSelect,
+    onBackClick,
+  }: Options) {
     this.onMessageSelect = onMessageSelect;
 
     this.displayNameContainer = createElement("div", { class: styles.title });
@@ -40,23 +43,32 @@ export default class TopBar implements Component<Options> {
     this.subdueText = createElement("div", { class: styles.subdue });
 
     this.pinnedMessage = createElement("div", { class: styles.pinned });
+    const audioControls = createElement(AudioControls, { onMessageSelect });
+
+    this.extras = createElement(
+      "div",
+      { class: styles.extras },
+      audioControls,
+      this.pinnedMessage
+    );
 
     const backButton = createElement(IconButton, {
       icon: Icons.Back,
       onClick: onBackClick,
     });
+    this.avatarHolder = createElement("div");
 
     const profile = createElement(
       "div",
       { class: "pointer " + styles.profileHolder },
-      createElement(Avatar, { peer, size: "sm", isDialog: true }),
+      this.avatarHolder,
       createElement(
         "div",
         { class: styles.meta },
         this.displayNameContainer,
         this.subdueText
       ),
-      this.pinnedMessage
+      this.extras
     );
 
     const buttonsHolder = createElement(
@@ -90,23 +102,30 @@ export default class TopBar implements Component<Options> {
 
     this.element = createElement(
       "div",
-      { class: styles.container },
+      { class: styles.container + " hidden" },
       backButton,
       profile,
       buttonsHolder
     );
-
-    this.peer.loadFull().then(() => {
-      this.update();
-    });
-
-    this.update();
 
     Peer.events.on("saved", async ({ object }: { object: any }) => {
       if (object === this.peer) {
         this.update();
       }
     });
+  }
+
+  public setPeer(peer: IPeer) {
+    this.peer = peer;
+    this.peer.loadFull().then(() => {
+      this.update();
+    });
+    removeChildren(this.avatarHolder);
+    this.avatarHolder.append(
+      createElement(Avatar, { peer, size: "sm", isDialog: true })
+    );
+
+    this.update();
   }
 
   public update() {
@@ -121,9 +140,9 @@ export default class TopBar implements Component<Options> {
     const pinnedMessageId = this.peer.full && this.peer.full.pinnedMsgId;
 
     if (!pinnedMessageId) {
+      this.pinnedMessage.classList.add("hidden");
       this.pinnedMessage.innerHTML = "";
     } else if (this.currentPinnedMessage !== pinnedMessageId) {
-      this.currentPinnedMessage = pinnedMessageId;
       removeChildren(this.pinnedMessage);
 
       Message.bulkFetch([pinnedMessageId], this.peer).then(([message]) => {
@@ -134,14 +153,19 @@ export default class TopBar implements Component<Options> {
               .replace(/[\r\n]/g, " ")
           );
           const element = createElement("div", text);
-          on(element, 'click', (event) => {
+          on(element, "click", (event) => {
             event.stopPropagation();
-            this.onMessageSelect(message);
-          })
+            this.onMessageSelect(message.id);
+          });
+
+          this.pinnedMessage.classList.remove("hidden");
           this.pinnedMessage.append(element);
         }
       });
     }
+    this.currentPinnedMessage = pinnedMessageId;
+
+    this.element.classList.remove("hidden");
     this.subdueText.innerHTML = subdue;
   }
 }
