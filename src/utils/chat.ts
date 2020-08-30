@@ -143,6 +143,8 @@ export async function getServiceMessage(message: MessageService) {
       return `${peer.displayName} joined Telegram!`;
     case "MessageActionPhoneCall":
       return "Phone call";
+    case "MessageActionChatEditPhoto":
+      return `Channel photo updated`;
     case "MessageActionChatJoinedByLink":
       return `${peer.displayName} joined by link`;
   }
