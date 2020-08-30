@@ -642,10 +642,13 @@ export default class Chat implements Component<Options> {
 
       // We don't want to consolidate serivce messages
       if (isGroupChat && lastBubbleType === "in") {
-        lastBubblePeer = (getNthChild(
+        const possibleLastBubble = getNthChild(
           getNthChild(lastBubbleWrapper, "last"),
           "first"
-        ) as Element<Bubble>).instance.peer;
+        );
+        lastBubblePeer = ((possibleLastBubble.classList.contains(styles.album)
+          ? possibleLastBubble.firstChild
+          : possibleLastBubble) as Element<Bubble>).instance.peer;
       }
     }
 
