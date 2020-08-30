@@ -37,6 +37,8 @@ import ContactAttachment from "../attachments/contact";
 import { isAllEmoji } from "../../utils/emojis";
 import PollAttachment from "../attachments/poll";
 import Spinner from "../ui/spinner";
+import { makeModal } from "../ui/modal";
+import Button from "../ui/button";
 
 type AttachmentElement = Element<
   | AnimatedStickerAttachment
@@ -157,6 +159,55 @@ export default class Bubble implements Component<Options> {
             icon: Icons.Delete,
             title: "Delete",
             variant: "red",
+            onClick: (close) => {
+              close();
+
+              this.dialog.getPeer().then((peer) => {
+                if (peer.isChannel()) {
+                  return this.message.delete();
+                }
+
+                const content = createElement(
+                  "div",
+                  { style: { marginTop: "-20px" } },
+                  createElement(
+                    "p",
+                    "Are you sure you want to delete message?"
+                  ),
+                  createElement(
+                    "div",
+                    { class: styles.deleteButtonsWrapper },
+                    createElement(Button, {
+                      caption:
+                        "DELETE FOR " +
+                        (peer.isGroupChat()
+                          ? "ALL PARTICIPANTS"
+                          : "ME AND " + peer.displayName.toUpperCase()),
+                      variant: "danger",
+                      onClick: () => {
+                        this.message.delete(true);
+                        modal.close();
+                      },
+                    }),
+                    createElement(Button, {
+                      caption: "DELETE JUST FOR ME",
+                      variant: "danger",
+                      onClick: () => {
+                        this.message.delete();
+                        modal.close();
+                      },
+                    }),
+                    createElement(Button, {
+                      caption: "CANCEL",
+                      onClick: () => {
+                        modal.close();
+                      },
+                    })
+                  )
+                );
+                const modal = makeModal("Delete Message?", content);
+              });
+            },
           },
         ],
         {

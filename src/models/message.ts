@@ -7,6 +7,7 @@ import {
   messages_MessagesSlice,
   UpdateShortChatMessage,
   UpdateShortMessage,
+  InputChannel,
 } from "../core/tl/TLObjects";
 import { extractIdFromPeer, getInputPeer } from "../core/tl/utils";
 import { DBMessage, TelegramDatabase } from "../utils/db";
@@ -23,6 +24,7 @@ interface ExtraMethods {
   markAsRead(numberOfRead?: number): Promise<boolean>;
   getSender(): Promise<IPeer | undefined>;
   getPeerForwardedFrom(): Promise<string | undefined>;
+  delete(revoke?: boolean): void;
 }
 
 export type IMessage = ModelWithProxy<"messages"> & ExtraMethods;
@@ -120,11 +122,7 @@ export class Message extends Model<"messages"> {
     const input = peer.isChannel()
       ? {
           $t: "channels_ReadHistoryRequest",
-          channel: {
-            $t: "InputChannel",
-            channelId: peer.id,
-            accessHash: (peer as Channel).accessHash,
-          },
+          channel: Message.getInputChannel(peer),
           maxId: this._proxy.id,
         }
       : {
@@ -238,5 +236,40 @@ export class Message extends Model<"messages"> {
     }
 
     return undefined;
+  }
+
+  public static async delete(messages: IMessage[], revoke = false) {
+    messages.forEach((message) => {
+      message.destroy();
+    });
+
+    const peer = await messages[0].getPeer();
+    const id = messages.map(({ id }) => id);
+
+    return this.tg.invoke(
+      peer.isChannel()
+        ? {
+            $t: "channels_DeleteMessagesRequest",
+            channel: this.getInputChannel(peer),
+            id,
+          }
+        : {
+            $t: "messages_DeleteMessagesRequest",
+            id,
+            revoke,
+          }
+    );
+  }
+
+  public async delete(revoke = false) {
+    return Message.delete([this._proxy], revoke);
+  }
+
+  static getInputChannel(peer: IPeer): InputChannel {
+    return {
+      $t: "InputChannel",
+      channelId: peer.id,
+      accessHash: (peer as Channel).accessHash,
+    };
   }
 }

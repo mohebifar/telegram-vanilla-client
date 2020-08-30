@@ -223,6 +223,7 @@ $bubble-max-width: 25em;
     .message {
       padding: $message-spacing;
       word-break: break-word;
+      z-index: 999999;
     }
 
     &:not(.imageOnly) {
@@ -1160,5 +1161,15 @@ $min-width-for-sidebar-animation: $chat-container-width + $left-sidebar-width +
         grid-row: span 2;
       }
     }
+  }
+}
+
+.deleteButtonsWrapper {
+  text-align: right;
+
+  > button {
+    display: block;
+    margin-left: auto;
+    width: auto;
   }
 }

@@ -436,6 +436,9 @@ export default class Chat implements Component<Options> {
         const element = this.idToElementMap.get(message.id);
 
         if (element) {
+          if (element.parentElement.childNodes.length === 1) {
+            element.parentElement.parentElement.remove();
+          }
           element.remove();
           this.idToElementMap.delete(message.id);
         }

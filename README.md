@@ -11,6 +11,7 @@
 - Fix voice recorder issue on iOS Safari
 - Highlight keywords in search
 - Added audio player controls ont the top of the chat view
+- Full support for deleting messages in chat (delete for all and delete for me)
 
 # Minor updates
 

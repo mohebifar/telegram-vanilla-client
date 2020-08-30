@@ -2,28 +2,55 @@
 
 .btn {
   position: relative;
-  background-color: $blue;
   padding: $input-padding-v $input-padding-h;
   border-radius: $input-radius;
   border: none;
   outline: none;
-  color: white;
   width: 100%;
   text-align: center;
   font-size: 1rem;
   font-weight: 400;
+  cursor: pointer;
+
+  &.normal {
+    background-color: $blue;
+    color: white;
+
+    &:not(:disabled) {
+      cursor: pointer;
+
+      &:hover {
+        background-color: lighten($blue, 2%);
+      }
+    }
+
+    &.outline {
+      color: $blue;
+      background-color: transparent;
+
+      &:hover {
+        background-color: lighten($blue, 30%);
+      }
+    }
+  }
+
+  &.danger {
+    background-color: $red;
+    color: white;
+
+    &.outline {
+      color: $red;
+      background-color: transparent;
+
+      &:hover {
+        background-color: lighten($red, 38%);
+      }
+    }
+  }
 
   &.s {
     font-size: 0.8rem;
-    padding: $input-padding-v*0.75 $input-padding-h;
-  }
-
-  &:not(:disabled) {
-    cursor: pointer;
-
-    &:hover {
-      background-color: lighten($blue, 2%);
-    }
+    padding: $input-padding-v * 0.75 $input-padding-h;
   }
 
   :disabled {
