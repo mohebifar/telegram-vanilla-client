@@ -140,6 +140,7 @@ async function connect(apiId: number, apiHash: string) {
             ? { message: error.message, code }
             : String(error);
         hasError = true;
+        console.error(error);
       }
 
       callbackIds.forEach((id) => callbacks.delete(id));
