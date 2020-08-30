@@ -129,6 +129,9 @@ export default class TopBar implements Component<Options> {
   }
 
   public update() {
+    if (!this.peer) {
+      return;
+    }
     this.displayNameContainer.innerHTML = replaceEmoji(
       escapeHTML(this.peer.displayPeerName)
     );
@@ -145,7 +148,10 @@ export default class TopBar implements Component<Options> {
     } else if (this.currentPinnedMessage !== pinnedMessageId) {
       removeChildren(this.pinnedMessage);
 
-      Message.bulkFetch([pinnedMessageId], this.peer).then(([message]) => {
+      Message.bulkFetch(
+        [pinnedMessageId],
+        this.peer.$t === "Channel" ? this.peer : undefined
+      ).then(([message]) => {
         if (message) {
           const text = escapeHTML(
             (message as OriginalMessage).message
