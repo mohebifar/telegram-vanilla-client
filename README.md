@@ -13,7 +13,7 @@
 - Added audio player controls ont the top of the chat view
 - Full support for deleting messages in chat (delete for all and delete for me)
 
-# Minor updates
+### Minor updates
 
 - Improved photo and video preview quality
 - Add video's duration, file size and download button to top left corner of video
@@ -23,6 +23,8 @@
 - Improved Lottie animation initialization time
 - Fix a bug where uploading multiple files at once was failing at times
 - Fix direction of navigation buttons in media lightbox
+- Improved the performance of sticker picker by preventing unnecessary re-renders
+- Fixed a bug where newly added sticker packs were placed before recent stickers and were not deletable
 
 ## Changelog (Round 3)
 
@@ -85,27 +87,27 @@ Handling updates:
 
 Message media:
 * Lightbox:
-- Full implementation of media lightbox
-- Playing video in lightbox
-- Lightbox animation when media is opened from a chat
-- Lightbox animation when navigating through media
-- Lightbox animation for sender profile details
-- Download media in lightbox
-- Download progress indicator
+  - Full implementation of media lightbox
+  - Playing video in lightbox
+  - Lightbox animation when media is opened from a chat
+  - Lightbox animation when navigating through media
+  - Lightbox animation for sender profile details
+  - Download media in lightbox
+  - Download progress indicator
 * Audio
-- Supports audio and voice playback
-- Renders waveform for audio messages
-- Download progress indicator
+  - Supports audio and voice playback
+  - Renders waveform for audio messages
+  - Download progress indicator
 * Video
-- Video playback in chat (muted)
-- GIF playback
-- Download progress indicator
+  - Video playback in chat (muted)
+  - GIF playback
+  - Download progress indicator
 * Files
-- Download files with progress indicator
-- Show file size
+  - Download files with progress indicator
+  - Show file size
 * Photo
-- Displays photo in chat (m)
-- Downloads higher rsolution in lightbox
+  - Displays photo in chat (m)
+  - Downloads higher rsolution in lightbox
 
 Send message:
 - Emoji picker
