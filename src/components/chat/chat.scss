@@ -1017,13 +1017,6 @@ $min-width-for-sidebar-animation: $chat-container-width + $left-sidebar-width +
 }
 
 .attachmentMeta {
-  &:empty {
-    display: none;
-  }
-  > div:not(:last-child) {
-    margin-right: 0.5em;
-  }
-
   position: absolute;
   top: 0;
   left: 0;
@@ -1033,6 +1026,14 @@ $min-width-for-sidebar-animation: $chat-container-width + $left-sidebar-width +
   padding: 0.4em 0.6em;
   border-radius: 1em;
   margin: 0.4em;
+  z-index: 999999999;
+
+  &:empty {
+    display: none;
+  }
+  > div:not(:last-child) {
+    margin-right: 0.5em;
+  }
 }
 
 .album {
