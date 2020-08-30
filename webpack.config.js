@@ -30,6 +30,9 @@ module.exports = ({ NODE_ENV }) => {
       filename: "js/[name].js",
       chunkFilename: "js/[name].bundle.js",
     },
+    node: {
+      fs: 'empty'
+    },
     optimization: {
       minimizer: [
         new TerserPlugin({
