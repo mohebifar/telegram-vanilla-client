@@ -414,7 +414,7 @@ export default class Bubble implements Component<Options> {
           initialPhoto: element.instance.getSrc(),
           peer,
           message: this.message,
-          source: element,
+          source: element.querySelector('img.ogmedia'),
           tg: this.message.tg,
         });
       });

@@ -20,10 +20,15 @@ export default class PhotoAttachment implements Component<Options> {
 
   constructor({ media, onClick, tg }: Options) {
     const img = createElement("img", {
-      class: "pointer blur",
+      class: "pointer blur ogmedia",
       src: (media.$t === "TransientMedia" && media.thumbnail) || EMPTY_IMG,
     });
     this.img = img;
+
+    const blurredImage = createElement("img", {
+      class: "blur " + styles.blurredPreview,
+      src: (media.$t === "TransientMedia" && media.thumbnail) || EMPTY_IMG,
+    });
 
     const progress = createElement(Progress);
     const downloadIndicator = createElement(
@@ -34,6 +39,7 @@ export default class PhotoAttachment implements Component<Options> {
     const element = createElement(
       "div",
       { class: styles.attachment },
+      blurredImage,
       img,
       downloadIndicator
     );
@@ -47,19 +53,23 @@ export default class PhotoAttachment implements Component<Options> {
       ]);
       const size = sorted[0] as PhotoSize;
 
-      
       if (size) {
+        let scale: number;
         if (size.h > size.w) {
-          element.setAttribute('data-vertical', 'true');
+          element.setAttribute("data-vertical", "true");
+          scale = Math.min(size.h, 500) / size.h;
+        } else {
+          scale = Math.min(size.w, 400) / size.w;
         }
-        const scale = Math.min(size.w, 400) / size.w;
+
         img.width = Math.floor(size.w * scale);
-        element.style.height = Math.floor(size.h * scale) + 'px';
+        element.style.height = Math.floor(size.h * scale) + "px";
       }
 
       let downloaded = false;
 
       tg.fileStorage.downloadMedia(media, 0).then((url) => {
+        blurredImage.src = url;
         if (!downloaded) {
           img.setAttribute("src", url);
         }
