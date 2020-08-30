@@ -229,7 +229,7 @@ export default class Bubble implements Component<Options> {
       if (attachmentType === "video-round") {
         bubbleClassName += " " + styles.roundBubble;
       }
-    } else if (isAllEmoji(text)) {
+    } else if (isAllEmoji(text) && !attachment) {
       bubbleClassName = styles.allEmoji;
     }
 
@@ -409,12 +409,16 @@ export default class Bubble implements Component<Options> {
     media: MessageMediaPhoto | TransientMedia
   ): [Element<PhotoAttachment>, "photo"] {
     const onClick = () => {
+      const source = (this.message as any).groupedId
+        ? element
+        : (element.querySelector("img.ogmedia") as any);
+
       this.dialog.getPeer().then((peer) => {
         mediaLightBox({
           initialPhoto: element.instance.getSrc(),
           peer,
           message: this.message,
-          source: element.querySelector('img.ogmedia'),
+          source,
           tg: this.message.tg,
         });
       });
@@ -496,7 +500,11 @@ export default class Bubble implements Component<Options> {
     media: MessageMediaDocument | TransientMedia
   ): [Element<AudioAttachment>, "audio"] {
     return [
-      createElement(AudioAttachment, { media, message: this.message, tg: this.message.tg }),
+      createElement(AudioAttachment, {
+        media,
+        message: this.message,
+        tg: this.message.tg,
+      }),
       "audio",
     ];
   }

@@ -189,6 +189,7 @@ $bubble-max-width: 25em;
         text-align: center;
         overflow: hidden;
         border-radius: 6px 6px 0 0;
+        display: flex;
 
         > .blurredPreview {
           width: 100%;
@@ -204,10 +205,11 @@ $bubble-max-width: 25em;
         > img:not(.blurredPreview) {
           max-width: 100%;
           max-height: 100%;
-          object-position: 50% 50%;
           object-fit: contain;
           z-index: 99999;
           position: relative;
+          align-self: center;
+          justify-self: center;
         }
 
         &,
