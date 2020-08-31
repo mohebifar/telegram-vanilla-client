@@ -17,10 +17,12 @@ export function fillStickerPreview(
     const callback = () => {
       tg.fileStorage
         .downloadDocument(document, undefined, document.dcId)
-        .then((url) => {
+        .then((url) => fetch(url))
+        .then((resp) => resp.json())
+        .then((animationData) => {
           const lottie = createElement(Lottie, {
             config: {
-              path: url,
+              animationData,
               loop: true,
               autoplay: false,
             },

@@ -1,11 +1,13 @@
 import { isMobile } from "./mobile";
 
-export interface Element<T> extends HTMLElement {
+export interface Element<T extends Component<any> | HTMLElement>
+  extends HTMLElement {
   instance?: T;
 }
 
 export interface Component<P = {}> {
   element: Element<Component<P>>;
+  unmount?(): void;
 }
 
 interface Attributes {
@@ -147,8 +149,18 @@ export function removeChildren<T extends HTMLElement | Element<any>>(
   parent: T
 ) {
   while (parent.firstChild) {
-    parent.firstChild.remove();
+    remove(parent.firstChild);
   }
+}
+
+export function remove<T extends HTMLElement | ChildNode>(element: T): void;
+
+export function remove<T extends Element<Component<any>>>(element: T) {
+  if (element.instance && element.instance.unmount) {
+    element.instance.unmount();
+  }
+
+  element.remove();
 }
 
 export function addClass<T extends HTMLElement | Element<any>>(
@@ -258,6 +270,7 @@ export function off<K extends AllEventNames, T extends EventTarget>(
       off(element, "contextmenu", preventDefault, options);
     }
 
+    longPressMap.delete(listener);
     off(element, "contextmenu", listener as any, options);
     return;
   }

@@ -12,6 +12,7 @@
 - Highlight keywords in search
 - Added audio player controls ont the top of the chat view
 - Full support for deleting messages in chat (delete for all and delete for me)
+- Significantly improved performance of the app by fixing a memory leak issue causing the app getting slower over time after opening more chats or loading too many animated stickers
 
 ### Minor updates
 

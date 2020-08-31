@@ -12,6 +12,7 @@ import {
   on,
   removeClass,
   scrollTo,
+  remove,
 } from "../../utils/dom";
 import { debounce, throttle } from "../../utils/utils";
 import RightSidebar from "../right-sidebar/right-sidebar";
@@ -152,6 +153,7 @@ export default class Chat implements Component<Options> {
         this.topBar.instance.setPeer(this.peer);
       }
 
+      this.idToElementMap.forEach(item => remove(item));
       this.idToElementMap.clear();
       addClass(this.scrollView, styles.initialLoading);
       removeChildren(this.chatContainer);
@@ -439,7 +441,7 @@ export default class Chat implements Component<Options> {
           if (element.parentElement.childNodes.length === 1) {
             element.parentElement.parentElement.remove();
           }
-          element.remove();
+          remove(element);
           this.idToElementMap.delete(message.id);
         }
       }

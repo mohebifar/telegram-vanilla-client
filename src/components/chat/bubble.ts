@@ -75,6 +75,7 @@ export default class Bubble implements Component<Options> {
   public dialog: IDialog;
   public peer: IPeer;
   private isForwarded: boolean;
+  private removeLongPress: Function;
 
   constructor({ message, dialog, onReply, peer, onReplyClick }: Options) {
     this.message = message;
@@ -108,115 +109,17 @@ export default class Bubble implements Component<Options> {
       messageWrapper
     );
 
-    on(this.element, "longpress", (e: TouchEvent | MouseEvent) => {
-      e.preventDefault();
-      const clientInfo = "touches" in e ? e.touches[0] : e;
-      const { clientX, clientY } = clientInfo;
+    this.removeLongPress = on(
+      this.element,
+      "longpress",
+      (e: TouchEvent | MouseEvent) => {
+        e.preventDefault();
+        const clientInfo = "touches" in e ? e.touches[0] : e;
+        const { clientX, clientY } = clientInfo;
 
-      if (window.getSelection) {
-        window.getSelection().removeAllRanges();
+        this.handleContextMenu(clientX, clientY);
       }
-      addClass(this.element, styles.active);
-
-      makeContextMenu(
-        { x: clientX, y: clientY },
-        [
-          ...(this.peer.canSendMessage()
-            ? [
-                {
-                  icon: Icons.Reply,
-                  title: "Reply",
-                  onClick: (close) => {
-                    close();
-                    this.onReply(this.message);
-                  },
-                },
-              ]
-            : []),
-          ...(this.isSticker()
-            ? []
-            : [
-                {
-                  icon: Icons.Copy,
-                  title: "Copy",
-                  onClick: (close) => {
-                    close();
-                    if (this.message.$t === "Message") {
-                      navigator.clipboard.writeText(this.message.message);
-                    }
-                  },
-                },
-              ]),
-          {
-            icon: Icons.Forward,
-            title: "Forward",
-          },
-          {
-            icon: Icons.Pin,
-            title: "Pin",
-          },
-          {
-            icon: Icons.Delete,
-            title: "Delete",
-            variant: "red",
-            onClick: (close) => {
-              close();
-
-              this.dialog.getPeer().then((peer) => {
-                if (peer.isChannel()) {
-                  return this.message.delete();
-                }
-
-                const content = createElement(
-                  "div",
-                  { style: { marginTop: "-20px" } },
-                  createElement(
-                    "p",
-                    "Are you sure you want to delete message?"
-                  ),
-                  createElement(
-                    "div",
-                    { class: styles.deleteButtonsWrapper },
-                    createElement(Button, {
-                      caption:
-                        "DELETE FOR " +
-                        (peer.isGroupChat()
-                          ? "ALL PARTICIPANTS"
-                          : "ME AND " + peer.displayName.toUpperCase()),
-                      variant: "danger",
-                      onClick: () => {
-                        this.message.delete(true);
-                        modal.close();
-                      },
-                    }),
-                    createElement(Button, {
-                      caption: "DELETE JUST FOR ME",
-                      variant: "danger",
-                      onClick: () => {
-                        this.message.delete();
-                        modal.close();
-                      },
-                    }),
-                    createElement(Button, {
-                      caption: "CANCEL",
-                      onClick: () => {
-                        modal.close();
-                      },
-                    })
-                  )
-                );
-                const modal = makeModal("Delete Message?", content);
-              });
-            },
-          },
-        ],
-        {
-          onClose: () => {
-            removeClass(this.element, styles.active);
-          },
-        }
-      );
-    });
+    );
 
     if (message.$t === "Message" && message.replyToMsgId) {
       this.element.prepend(this.getReplyElement(message.replyToMsgId));
@@ -227,16 +130,13 @@ export default class Bubble implements Component<Options> {
     );
 
     if (this.isForwarded) {
-      const originalSender = this.message.getPeerForwardedFrom();
-      if (originalSender) {
-        originalSender.then((displayName) => {
-          if (displayName) {
-            this.element.prepend(
-              createElement("div", { class: styles.fromName }, displayName)
-            );
-          }
-        });
-      }
+      this.message.getPeerForwardedFrom().then((displayName) => {
+        if (displayName) {
+          this.element.prepend(
+            createElement("div", { class: styles.fromName }, displayName)
+          );
+        }
+      });
     }
 
     if (message.justSent) {
@@ -251,6 +151,16 @@ export default class Bubble implements Component<Options> {
     }
 
     this.update();
+  }
+
+  public unmount() {
+    if (this.removeLongPress) {
+      console.log("removing listener longpress");
+      this.removeLongPress();
+    }
+
+    delete this.onReplyClick;
+    delete this.onReply;
   }
 
   public update() {
@@ -606,6 +516,117 @@ export default class Bubble implements Component<Options> {
           text: "",
           time: "",
         };
+    }
+  }
+
+  private handleContextMenu(x: number, y: number) {
+    if (window.getSelection) {
+      window.getSelection().removeAllRanges();
+    }
+
+    addClass(this.element, styles.active);
+
+    makeContextMenu(
+      { x, y },
+      [
+        ...(this.peer.canSendMessage()
+          ? [
+              {
+                icon: Icons.Reply,
+                title: "Reply",
+                onClick: (close) => {
+                  close();
+                  this.onReply(this.message);
+                },
+              },
+            ]
+          : []),
+        ...(this.isSticker()
+          ? []
+          : [
+              {
+                icon: Icons.Copy,
+                title: "Copy",
+                onClick: (close) => {
+                  close();
+                  this.copyToClipboard();
+                },
+              },
+            ]),
+        {
+          icon: Icons.Forward,
+          title: "Forward",
+        },
+        {
+          icon: Icons.Pin,
+          title: "Pin",
+        },
+        {
+          icon: Icons.Delete,
+          title: "Delete",
+          variant: "red",
+          onClick: (close) => {
+            close();
+            this.handleDelete();
+          },
+        },
+      ],
+      {
+        onClose: () => {
+          removeClass(this.element, styles.active);
+        },
+      }
+    );
+  }
+
+  private handleDelete() {
+    this.dialog.getPeer().then((peer) => {
+      if (peer.isChannel()) {
+        return this.message.delete();
+      }
+
+      const content = createElement(
+        "div",
+        { style: { marginTop: "-20px" } },
+        createElement("p", "Are you sure you want to delete message?"),
+        createElement(
+          "div",
+          { class: styles.deleteButtonsWrapper },
+          createElement(Button, {
+            caption:
+              "DELETE FOR " +
+              (peer.isGroupChat()
+                ? "ALL PARTICIPANTS"
+                : "ME AND " + peer.displayName.toUpperCase()),
+            variant: "danger",
+            onClick: () => {
+              this.message.delete(true);
+              modal.close();
+            },
+          }),
+          createElement(Button, {
+            caption: "DELETE JUST FOR ME",
+            variant: "danger",
+            onClick: () => {
+              this.message.delete();
+              modal.close();
+            },
+          }),
+          createElement(Button, {
+            caption: "CANCEL",
+            onClick: () => {
+              modal.close();
+            },
+          })
+        )
+      );
+      const modal = makeModal("Delete Message?", content);
+    });
+  }
+
+  private copyToClipboard() {
+    if (this.message.$t === "Message") {
+      navigator.clipboard.writeText(this.message.message);
     }
   }
 }

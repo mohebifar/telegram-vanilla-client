@@ -38,12 +38,16 @@ export default class AnimatedSticker implements Component<Options> {
       });
     }
 
-    tg.fileStorage.downloadMedia(media).then((url) => {
-      sticker.instance.updateConfig({
-        path: url,
-        loop: true,
-        autoplay: true,
+    tg.fileStorage
+      .downloadMedia(media)
+      .then((url) => fetch(url))
+      .then((resp) => resp.json())
+      .then((animationData) => {
+        sticker.instance.updateConfig({
+          animationData,
+          loop: true,
+          autoplay: true,
+        });
       });
-    });
   }
 }

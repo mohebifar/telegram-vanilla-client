@@ -1,10 +1,11 @@
 import {
   AnimationConfigWithPath,
   AnimationItem,
+  AnimationConfigWithData,
 } from "lottie-web/build/player/lottie_light";
 import { Component, createElement, Element } from "../../utils/dom";
 
-type AnimationConfig = Omit<AnimationConfigWithPath, "container">;
+type AnimationConfig = Omit<AnimationConfigWithPath & AnimationConfigWithData, "container">;
 
 interface Options {
   [s: string]: any;
