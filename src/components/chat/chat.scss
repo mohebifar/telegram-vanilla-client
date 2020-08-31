@@ -342,6 +342,10 @@ $bubble-max-width: 25em;
     .bubble {
       background-color: #ffffff;
       border-radius: 6px 12px 12px 6px;
+      
+      .album {
+        border-top-left-radius: 6px;
+      }
 
       &:not(.imageOnly) {
         .time {
@@ -418,6 +422,10 @@ $bubble-max-width: 25em;
     .bubble {
       background-color: $green-lighter;
       border-radius: 12px 6px 6px 12px;
+
+      .album {
+        border-top-right-radius: 6px;
+      }
 
       &:not(.imageOnly) {
         .time {
@@ -1052,7 +1060,7 @@ $min-width-for-sidebar-animation: $chat-container-width + $left-sidebar-width +
     display: grid;
     grid-gap: var(--album-media-gap);
     overflow: hidden;
-    border-radius: $bubble-radius;
+    border-radius: $bubble-radius $bubble-radius 0 0;
     width: $bubble-max-width;
 
     .attachmentWrapper {
@@ -1066,13 +1074,10 @@ $min-width-for-sidebar-animation: $chat-container-width + $left-sidebar-width +
 
       .attachment {
         overflow: hidden;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        position: relative;
+        display: block;
         border-radius: 0 !important;
 
-        > :not(:global(.downloadIndicator)) {
+        > :not(:global(.downloadIndicator)):not(.attachmentMeta) {
           width: 100%;
           height: 100%;
           display: block;
@@ -1162,6 +1167,12 @@ $min-width-for-sidebar-animation: $chat-container-width + $left-sidebar-width +
           grid-row: span 2;
         }
       }
+    }
+  }
+
+  &.emptyText {
+    .album {
+      border-radius: $bubble-radius;
     }
   }
 }

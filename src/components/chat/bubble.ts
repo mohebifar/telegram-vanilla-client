@@ -220,7 +220,7 @@ export default class Bubble implements Component<Options> {
     if (this.messageText) {
       this.messageText.innerHTML = text;
     } else if (this.parentBubble && text) {
-      removeClass(this.parentBubble.element, styles.imageOnly);
+      removeClass(this.parentBubble.element, styles.imageOnly, styles.emptyText);
       this.parentBubble.messageText.innerHTML = text;
     }
 
