@@ -28,6 +28,7 @@ This is a [Telegram](https://telegram.org/) client written in Vanilla JS/TS with
 - Fix direction of navigation buttons in media lightbox
 - Improved the performance of sticker picker by preventing unnecessary re-renders
 - Fixed a bug where newly added sticker packs were placed before recent stickers and were not deletable
+- Add context menu for dialogs (non-functional)
 
 ## Changelog (Round 3)
 

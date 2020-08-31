@@ -13,6 +13,7 @@ import Icon, { Icons } from "./icon";
 import { replaceEmoji } from "../../utils/emojis";
 
 import * as styles from "./dialog-item.scss";
+import { makeContextMenu } from "./context-menu";
 
 interface Options {
   scope?: "search";
@@ -38,6 +39,7 @@ export default class DialogItem implements Component<Options> {
   private onClick: Options["onClick"];
   private scope?: Options["scope"];
   private highlightText?: Options["highlightText"];
+  private removeLongPress: Function;
 
   constructor(options: Options) {
     const wrapper = createElement("div", {
@@ -95,7 +97,23 @@ export default class DialogItem implements Component<Options> {
     this.element.appendChild(textWrapper);
     this.element.appendChild(meta);
 
+    this.removeLongPress = on(
+      this.element,
+      "longpress",
+      (e: TouchEvent | MouseEvent) => {
+        e.preventDefault();
+        const clientInfo = "touches" in e ? e.touches[0] : e;
+        const { clientX, clientY } = clientInfo;
+
+        this.handleContextMenu(clientX, clientY);
+      }
+    );
+
     return this.update();
+  }
+
+  public unmount() {
+    this.removeLongPress();
   }
 
   public async update() {
@@ -202,5 +220,44 @@ export default class DialogItem implements Component<Options> {
         silent: false,
       };
     }
+  }
+
+
+  private handleContextMenu(x: number, y: number) {
+    if (window.getSelection) {
+      window.getSelection().removeAllRanges();
+    }
+
+    makeContextMenu(
+      { x, y },
+      [
+        {
+          icon: Icons.Unread,
+          title: "Mark as unread",
+        },
+        {
+          icon: Icons.Pin,
+          title: "Pin",
+        },
+        {
+          icon: Icons.Mute,
+          title: "Mute",
+        },
+        {
+          icon: Icons.Archive,
+          title: "Archive",
+        },
+        {
+          icon: Icons.Delete,
+          title: "Delete",
+          variant: "red",
+        },
+      ],
+      {
+        onClose: () => {
+          
+        },
+      }
+    );
   }
 }

@@ -53,6 +53,10 @@ export enum Icons {
   Tip = "tip",
   CloudDownload = "clouddownload",
   Muted = "muted",
+  Mute = "mute",
+  Unmite = "unmute",
+  Unarchive = "unarchive",
+  Unread = "unread",
 }
 
 export enum IconSprite {
