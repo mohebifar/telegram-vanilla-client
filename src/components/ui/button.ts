@@ -36,7 +36,7 @@ export default class Button implements Component<Options> {
           " ripple " +
           styles[size] +
           " " +
-          (outline ? "" : styles.outline) +
+          (outline ? styles.outline : "") +
           " " +
           styles[variant],
       },

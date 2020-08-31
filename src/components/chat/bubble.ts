@@ -599,6 +599,7 @@ export default class Bubble implements Component<Options> {
                 ? "ALL PARTICIPANTS"
                 : "ME AND " + peer.displayName.toUpperCase()),
             variant: "danger",
+            outline: true,
             onClick: () => {
               this.message.delete(true);
               modal.close();
@@ -607,6 +608,7 @@ export default class Bubble implements Component<Options> {
           createElement(Button, {
             caption: "DELETE JUST FOR ME",
             variant: "danger",
+            outline: true,
             onClick: () => {
               this.message.delete();
               modal.close();
@@ -614,6 +616,7 @@ export default class Bubble implements Component<Options> {
           }),
           createElement(Button, {
             caption: "CANCEL",
+            outline: true,
             onClick: () => {
               modal.close();
             },
