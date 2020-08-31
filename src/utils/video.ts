@@ -14,8 +14,8 @@ const checkSupport = (() => {
     }
 
     return fetch("/check/support")
-      .then(() => supports = true)
-      .catch(() => supports = false);
+      .then(({ status }) => (supports = status < 300))
+      .catch(() => (supports = false));
   };
 })();
 

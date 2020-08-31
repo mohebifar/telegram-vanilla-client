@@ -10,13 +10,18 @@ export async function handleServiceWorkerMessage(event: MessageEvent) {
       // @ts-ignore
       const tg: TelegramClientProxy = window.tgProxy;
 
+      const newLimit =
+        [64 * 1024, 128 * 1024, 256 * 1024, 512 * 1024].filter(
+          (a) => a <= limit
+        )[0] || 64 * 1024;
+
       try {
         const get = async (limit: number) => {
           try {
             return await tg.invoke(
               {
                 $t: "upload_GetFileRequest",
-                limit,
+                limit: newLimit,
                 offset,
                 location: {
                   $t: "InputDocumentFileLocation",

@@ -1,6 +1,6 @@
 import { isMobile } from "./mobile";
 
-export interface Element<T extends Component<any> | HTMLElement>
+export interface Element<T extends ComponentType<any> | HTMLElement>
   extends HTMLElement {
   instance?: T;
 }
