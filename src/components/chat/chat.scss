@@ -139,172 +139,170 @@ $bubble-max-width: 25em;
   }
 }
 
-:not(.album) > {
-  .bubble {
-    max-width: $bubble-max-width;
-    border-radius: $bubble-radius;
-    box-shadow: 0 1px 2px 0 rgba(16, 35, 47, 0.15);
-    position: relative;
-    overflow: hidden;
-    overflow-wrap: break-word;
-    cursor: default;
+.bubble {
+  max-width: $bubble-max-width;
+  border-radius: $bubble-radius;
+  box-shadow: 0 1px 2px 0 rgba(16, 35, 47, 0.15);
+  position: relative;
+  overflow: hidden;
+  overflow-wrap: break-word;
+  cursor: default;
 
-    &.noOverflow {
-      overflow: unset;
-    }
+  &.noOverflow {
+    overflow: unset;
+  }
 
-    pre {
-      white-space: break-spaces;
-    }
+  pre {
+    white-space: break-spaces;
+  }
 
-    &.roundBubble {
-      overflow: visible;
+  &.roundBubble {
+    overflow: visible;
 
-      &,
-      .attachmentWrapper {
-        border-radius: 50% !important;
-      }
-
-      .attachmentWrapper {
-        overflow: hidden;
-      }
-    }
-
-    &.active {
-      box-shadow: 0 0 0 4000px rgba(0, 0, 0, 0.15);
-      z-index: 99999;
-    }
-
-    .reply + :not(.message):not(:empty) {
-      margin-top: 0.4em;
-    }
-
-    p {
-      margin: 0;
+    &,
+    .attachmentWrapper {
+      border-radius: 50% !important;
     }
 
     .attachmentWrapper {
-      .attachment {
+      overflow: hidden;
+    }
+  }
+
+  &.active {
+    box-shadow: 0 0 0 4000px rgba(0, 0, 0, 0.15);
+    z-index: 99999;
+  }
+
+  .reply + :not(.message):not(:empty) {
+    margin-top: 0.4em;
+  }
+
+  p {
+    margin: 0;
+  }
+
+  .attachmentWrapper {
+    .attachment {
+      position: relative;
+      text-align: center;
+      overflow: hidden;
+      border-radius: 6px 6px 0 0;
+      display: flex;
+
+      > .blurredPreview {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transform: scale(1.1);
+        position: absolute;
+        z-index: 1;
+        top: 0;
+        left: 0;
+      }
+
+      > img:not(.blurredPreview) {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        z-index: 99999;
         position: relative;
-        text-align: center;
-        overflow: hidden;
-        border-radius: 6px 6px 0 0;
-        display: flex;
+        align-self: center;
+        justify-self: center;
+      }
 
-        > .blurredPreview {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          transform: scale(1.1);
-          position: absolute;
-          z-index: 1;
-          top: 0;
-          left: 0;
-        }
-
-        > img:not(.blurredPreview) {
-          max-width: 100%;
-          max-height: 100%;
-          object-fit: contain;
-          z-index: 99999;
-          position: relative;
-          align-self: center;
-          justify-self: center;
-        }
-
-        &,
+      &,
         // img,
         video {
-          width: 100%;
-        }
-      }
-    }
-
-    .message {
-      padding: $message-spacing;
-      word-break: break-word;
-      z-index: 999999;
-    }
-
-    &:not(.imageOnly) {
-      .time {
-        float: right;
-        display: block;
-        font-size: $time-size;
-        user-select: none;
-        height: 20px;
-
-        .inner {
-          position: absolute;
-          bottom: 0;
-          right: 0;
-        }
-      }
-    }
-
-    &.isForward {
-      position: relative;
-      min-width: 11em;
-
-      &::before {
-        content: "Forwarded message";
-        display: block;
-        color: $blue;
-        font-weight: 500;
-        margin: $message-spacing $message-spacing $message-spacing / 3;
-      }
-
-      .fromName {
-        text-align: left;
-        margin: ($message-spacing / 2) ($message-spacing * 2);
-        font-weight: 500;
-
-        &::after {
-          content: "";
-          display: block;
-          background-color: $blue;
-          width: 2px;
-          top: 35px;
-          position: absolute;
-          bottom: $message-spacing;
-          left: $message-spacing;
-        }
-      }
-
-      .attachmentWrapper,
-      .message {
-        margin-left: $message-spacing;
-        padding-top: 0;
-      }
-
-      .attachmentWrapper:not(:empty) {
-        padding: 0 $message-spacing $message-spacing;
-
-        .documentWrapper {
-          margin: 0;
-        }
-      }
-    }
-
-    &.emptyText {
-      .documentWrapper {
-        margin-bottom: -1.3em !important;
+        width: 100%;
       }
     }
   }
 
-  .bubble:last-child:not(.imageOnly):not(.sticker):not(.allEmoji) {
-    overflow: visible;
-    &:after {
-      position: absolute;
-      -webkit-mask: url(/assets/bubble-tail-left.svg);
-      mask: url(/assets/bubble-tail-left.svg);
+  .message {
+    padding: $message-spacing;
+    word-break: break-word;
+    z-index: 999999;
+  }
+
+  &:not(.imageOnly) {
+    .time {
+      float: right;
       display: block;
-      width: 11px;
+      font-size: $time-size;
+      user-select: none;
       height: 20px;
-      bottom: -1px;
-      content: "";
+
+      .inner {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+      }
     }
+  }
+
+  &.isForward {
+    position: relative;
+    min-width: 11em;
+
+    &::before {
+      content: "Forwarded message";
+      display: block;
+      color: $blue;
+      font-weight: 500;
+      margin: $message-spacing $message-spacing $message-spacing / 3;
+    }
+
+    .fromName {
+      text-align: left;
+      margin: ($message-spacing / 2) ($message-spacing * 2);
+      font-weight: 500;
+
+      &::after {
+        content: "";
+        display: block;
+        background-color: $blue;
+        width: 2px;
+        top: 35px;
+        position: absolute;
+        bottom: $message-spacing;
+        left: $message-spacing;
+      }
+    }
+
+    .attachmentWrapper,
+    .message {
+      margin-left: $message-spacing;
+      padding-top: 0;
+    }
+
+    .attachmentWrapper:not(:empty) {
+      padding: 0 $message-spacing $message-spacing;
+
+      .documentWrapper {
+        margin: 0;
+      }
+    }
+  }
+
+  &.emptyText {
+    .documentWrapper {
+      margin-bottom: -1.3em !important;
+    }
+  }
+}
+
+.bubble:last-child:not(.imageOnly):not(.sticker):not(.allEmoji) {
+  overflow: visible;
+  &:after {
+    position: absolute;
+    -webkit-mask: url(/assets/bubble-tail-left.svg);
+    mask: url(/assets/bubble-tail-left.svg);
+    display: block;
+    width: 11px;
+    height: 20px;
+    bottom: -1px;
+    content: "";
   }
 }
 
@@ -317,11 +315,8 @@ $bubble-max-width: 25em;
     display: flex;
     width: 100%;
 
-    > .bubble,
-    .album {
-      &:not(.first-child) {
-        margin-top: 5px;
-      }
+    > .bubble:not(:first-child) {
+      margin-top: 5px;
     }
   }
 }
@@ -1035,133 +1030,10 @@ $min-width-for-sidebar-animation: $chat-container-width + $left-sidebar-width +
   }
 }
 
-.album {
-  --album-media-gap: 0.125rem;
-  display: grid;
-  grid-gap: var(--album-media-gap);
+[data-group] {
   overflow: hidden;
-  border-radius: $bubble-radius;
-  max-width: $bubble-max-width;
-
-  .attachmentWrapper,
-  .bubble,
-  .attachmentWrapper .attachment {
-    width: auto !important;
-    height: 100% !important;
-    min-height: 100%;
-  }
-
-  .bubble {
-    overflow: hidden;
-    border-radius: 0 !important;
-  }
-
-  > .bubble:not(:last-of-type) {
-    .message {
-      display: none !important;
-    }
-  }
-
-  .attachment {
-    overflow: hidden;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-
-    > :not(:global(.downloadIndicator)) {
-      min-height: 100%;
-      min-width: 100%;
-      display: block;
-    }
-
-    > img {
-      object-fit: cover;
-    }
-
-    > .blurredPreview {
-      display: none;
-    }
-  }
-
-  &.count-1 {
-    grid-template-columns: auto;
-  }
-
-  &.count-2 {
-    grid-template-columns: auto auto;
-    max-height: 20em;
-  }
-
-  // 3, 6, 9, ...
-  &.count-r0 {
-    grid-template-columns: repeat(6, auto);
-    grid-template-rows: 15rem 8rem;
-
-    > div {
-      grid-column: span 2;
-      grid-row: span 2;
-    }
-
-    > :first-child {
-      grid-column: span 6;
-
-      & ~ div:nth-of-type(2),
-      & ~ div:nth-of-type(3) {
-        grid-column: span 3;
-      }
-    }
-
-    &.vertical {
-      > :first-child {
-        grid-column: span 3;
-        grid-row: span 2;
-
-        & ~ div:nth-of-type(2),
-        & ~ div:nth-of-type(3) {
-          grid-column: span 3;
-          grid-row: span 1;
-        }
-      }
-    }
-  }
-
-  // 4, 7, 10, ...
-  &.count-r1 {
-    grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: 15rem 8rem;
-
-    > :first-child {
-      grid-column: span 3;
-    }
-
-    &.vertical {
-      grid-template-rows: 10rem 10rem 10rem;
-      grid-template-rows: repeat(3, 10rem);
-
-      > :first-child {
-        grid-column: span 2;
-        grid-row: span 3;
-      }
-    }
-  }
-
-  // 5, 8, 11, ...
-  &.count-r2 {
-    grid-template-columns: auto auto;
-    grid-template-rows: 15rem 8rem;
-
-    > :first-child {
-      grid-column: span 2;
-    }
-
-    &.vertical {
-      > :first-child {
-        grid-column: span 2;
-        grid-row: span 2;
-      }
-    }
-  }
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
 }
 
 .deleteButtonsWrapper {
@@ -1171,5 +1043,125 @@ $min-width-for-sidebar-animation: $chat-container-width + $left-sidebar-width +
     display: block;
     margin-left: auto;
     width: auto;
+  }
+}
+
+.bubble {
+  .album {
+    --album-media-gap: 0.125rem;
+    display: grid;
+    grid-gap: var(--album-media-gap);
+    overflow: hidden;
+    border-radius: $bubble-radius;
+    width: $bubble-max-width;
+
+    .attachmentWrapper {
+      &,
+      & .attachment {
+        width: auto !important;
+        height: 100% !important;
+        min-height: 100%;
+        display: block;
+      }
+
+      .attachment {
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+        border-radius: 0 !important;
+
+        > :not(:global(.downloadIndicator)) {
+          width: 100%;
+          height: 100%;
+          display: block;
+          object-fit: cover !important;
+        }
+
+        > .blurredPreview {
+          display: none;
+        }
+      }
+    }
+
+    &.count-1 {
+      grid-template-columns: auto;
+    }
+
+    &.count-2 {
+      grid-template-columns: auto auto;
+      max-height: 20em;
+    }
+
+    // 3, 6, 9, ...
+    &.count-r0 {
+      grid-template-columns: repeat(6, auto);
+      grid-template-rows: 15rem 8rem;
+
+      > div {
+        grid-column: span 2;
+        grid-row: span 2;
+      }
+
+      > :first-child {
+        grid-column: span 6;
+
+        & ~ div:nth-of-type(2),
+        & ~ div:nth-of-type(3) {
+          grid-column: span 3;
+        }
+      }
+
+      &.vertical {
+        > :first-child {
+          grid-column: span 3;
+          grid-row: span 2;
+
+          & ~ div:nth-of-type(2),
+          & ~ div:nth-of-type(3) {
+            grid-column: span 3;
+            grid-row: span 1;
+          }
+        }
+      }
+    }
+
+    // 4, 7, 10, ...
+    &.count-r1 {
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: 15rem 8rem;
+
+      > :first-child {
+        grid-column: span 3;
+      }
+
+      &.vertical {
+        grid-template-rows: 10rem 10rem 10rem;
+        grid-template-rows: repeat(3, 10rem);
+
+        > :first-child {
+          grid-column: span 2;
+          grid-row: span 3;
+        }
+      }
+    }
+
+    // 5, 8, 11, ...
+    &.count-r2 {
+      grid-template-columns: auto auto;
+      grid-template-rows: 15rem 8rem;
+
+      > :first-child {
+        grid-column: span 2;
+      }
+
+      &.vertical {
+        > :first-child {
+          grid-column: span 2;
+          grid-row: span 2;
+        }
+      }
+    }
   }
 }

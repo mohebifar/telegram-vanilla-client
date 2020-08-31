@@ -153,7 +153,7 @@ export default class Chat implements Component<Options> {
         this.topBar.instance.setPeer(this.peer);
       }
 
-      this.idToElementMap.forEach(item => remove(item));
+      this.idToElementMap.forEach((item) => remove(item));
       this.idToElementMap.clear();
       addClass(this.scrollView, styles.initialLoading);
       removeChildren(this.chatContainer);
@@ -233,8 +233,9 @@ export default class Chat implements Component<Options> {
       childPosToLookAt
     );
 
-    if (possibleBubble.classList.contains(styles.album)) {
-      return getNthChild(possibleBubble, childPosToLookAt) as Element<Bubble>;
+    const album = possibleBubble.querySelector('.' + styles.album)
+    if (album) {
+      return getNthChild(album, childPosToLookAt) as Element<Bubble>;
     }
 
     return possibleBubble as Element<Bubble>;
@@ -687,37 +688,46 @@ export default class Chat implements Component<Options> {
     }
 
     try {
+      let parentBubble: Bubble | undefined;
+      if (message.$t === "Message" && message.groupedId) {
+        let albumWrapper = document.querySelector(
+          `[data-group="${message.groupedId}"]`
+        ) as Element<Bubble>;
+
+        if (albumWrapper) {
+          parentBubble = albumWrapper.instance;
+        }
+      }
+
       const messageElement = createElement(Bubble, {
         onReplyClick: this.handleReplyClick,
         onReply: this.handleReply,
         message,
         peer,
         dialog: this.dialog,
+        parentBubble,
       });
       this.idToElementMap.set(message.id, messageElement);
-      if (message.$t === "Message" && message.groupedId) {
-        const id = `album-${message.groupedId}`;
-        let albumWrapper = document.getElementById(
-          `album-${message.groupedId}`
-        );
-        if (!albumWrapper) {
-          // .album
-          albumWrapper = createElement("div", { id });
-        }
-        albumWrapper[insertFn](messageElement);
-        lastBubbleHolder[insertFn](albumWrapper);
-        this.updateAlbum(message.groupedId);
+
+      if (parentBubble) {
+        parentBubble.albumWrapper[insertFn](messageElement);
+        this.updateAlbum((message as any).groupedId, parentBubble.albumWrapper);
       } else {
         lastBubbleHolder[insertFn](messageElement);
       }
+
       return messageElement;
     } catch (err) {
       console.log("failed to show a message", message, err);
     }
   }
 
-  private updateAlbum(groupId: string) {
-    const element = document.getElementById(`album-${groupId}`);
+  private updateAlbum(
+    groupId: string,
+    element: HTMLElement = document.querySelector(
+      `[data-group="${groupId}"] ${styles.album}`
+    )
+  ) {
     const childCount = element.childNodes.length;
     const countClassKey =
       "count-" + (childCount > 2 ? "r" + (childCount % 3) : childCount);
@@ -763,13 +773,14 @@ export default class Chat implements Component<Options> {
         bubble !== null;
         bubble = bubble.previousSibling as Element<Bubble>
       ) {
-        if (bubble.classList.contains(styles.album)) {
+        const album = bubble.querySelector('.' + styles.album)
+        if (album) {
           for (
-            let realBubble = bubble.lastChild as Element<Bubble>;
-            realBubble !== null;
-            realBubble = realBubble.previousSibling as Element<Bubble>
+            let albumItem = album.lastChild as Element<Bubble>;
+            albumItem !== null;
+            albumItem = albumItem.previousSibling as Element<Bubble>
           ) {
-            yield realBubble.instance;
+            yield albumItem.instance;
           }
         } else {
           yield bubble.instance;

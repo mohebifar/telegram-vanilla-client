@@ -303,3 +303,13 @@ export function isDescendentOf(from: HTMLElement, to: HTMLElement) {
 
   return false;
 }
+
+export function* iterateChildNodes(container: HTMLElement) {
+  for (
+    let child = container.firstChild;
+    child !== null;
+    child = child.nextSibling
+  ) {
+    yield child as HTMLElement;
+  }
+}

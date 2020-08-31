@@ -18,6 +18,8 @@ import {
   on,
   addClass,
   removeClass,
+  iterateChildNodes,
+  remove,
 } from "../../utils/dom";
 import { EMPTY_IMG } from "../../utils/images";
 import { TransientMedia } from "../../utils/useful-types";
@@ -59,14 +61,16 @@ interface Options {
   onReplyClick(messageId?: number): void;
   onReply(replyMessage?: IMessage): void;
   isTransient?: boolean;
+  parentBubble?: Bubble;
 }
 
 export default class Bubble implements Component<Options> {
   public readonly element: HTMLElement;
   private inner: HTMLElement;
   private attachmentWrapper: HTMLElement;
+  public albumWrapper?: HTMLElement;
   private attachemnt: [AttachmentElement, string];
-  private messageText: HTMLElement;
+  public messageText: HTMLElement;
   private time: HTMLElement;
   private sentIndicator?: Element<Icon>;
   private onReplyClick: Options["onReplyClick"];
@@ -74,40 +78,83 @@ export default class Bubble implements Component<Options> {
   public message: IMessage;
   public dialog: IDialog;
   public peer: IPeer;
+  private parentBubble?: Bubble;
   private isForwarded: boolean;
+  private groupId?: string;
   private removeLongPress: Function;
 
-  constructor({ message, dialog, onReply, peer, onReplyClick }: Options) {
+  constructor({
+    message,
+    dialog,
+    onReply,
+    peer,
+    onReplyClick,
+    parentBubble,
+  }: Options) {
     this.message = message;
     this.dialog = dialog;
     this.peer = peer;
     this.onReplyClick = onReplyClick;
     this.onReply = onReply;
+    this.parentBubble = parentBubble;
 
     if (message.$t === "MessageService") {
       this.element = createElement(ServiceBubble, { message });
       return;
     }
 
-    this.messageText = createElement("span", { dir: "auto" });
+    this.groupId = message.$t === "Message" && message.groupedId;
+    this.isForwarded = Boolean(
+      this.message.$t === "Message" && this.message.fwdFrom
+    );
+    const replyToId = message.$t === "Message" && message.replyToMsgId;
+
     this.inner = createElement("div", { class: styles.inner }, this.time);
     this.attachmentWrapper = createElement("div", {
       class: styles.attachmentWrapper,
     });
 
-    const messageWrapper = createElement(
-      "div",
-      { class: styles.message },
-      this.messageText,
-      createElement("span", { class: styles.time, dir: "auto" }, this.inner)
-    );
+    if (!parentBubble) {
+      this.messageText = createElement("span", { dir: "auto" });
+      (this.attachmentWrapper as any).instance = this;
+      const messageWrapper = createElement(
+        "div",
+        { class: styles.message },
+        this.messageText,
+        createElement("span", { class: styles.time, dir: "auto" }, this.inner)
+      );
 
-    this.element = createElement(
-      "div",
-      { "data-id": message.id, "data-date": message.date.format("YY-M-D") },
-      this.attachmentWrapper,
-      messageWrapper
-    );
+      const attachmentWrapperOrAlbum = this.groupId
+        ? (this.albumWrapper = createElement(
+            "div",
+            { class: styles.album },
+            this.attachmentWrapper
+          ))
+        : this.attachmentWrapper;
+
+      this.element = createElement(
+        "div",
+        { "data-id": message.id, "data-date": message.date.format("YY-M-D") },
+        attachmentWrapperOrAlbum,
+        messageWrapper
+      );
+
+      if (replyToId) {
+        this.element.prepend(this.getReplyElement(replyToId));
+      }
+
+      if (this.isForwarded) {
+        this.message.getPeerForwardedFrom().then((displayName) => {
+          if (displayName) {
+            this.element.prepend(
+              createElement("div", { class: styles.fromName }, displayName)
+            );
+          }
+        });
+      }
+    } else {
+      this.element = this.attachmentWrapper;
+    }
 
     this.removeLongPress = on(
       this.element,
@@ -120,24 +167,6 @@ export default class Bubble implements Component<Options> {
         this.handleContextMenu(clientX, clientY);
       }
     );
-
-    if (message.$t === "Message" && message.replyToMsgId) {
-      this.element.prepend(this.getReplyElement(message.replyToMsgId));
-    }
-
-    this.isForwarded = Boolean(
-      this.message.$t === "Message" && this.message.fwdFrom
-    );
-
-    if (this.isForwarded) {
-      this.message.getPeerForwardedFrom().then((displayName) => {
-        if (displayName) {
-          this.element.prepend(
-            createElement("div", { class: styles.fromName }, displayName)
-          );
-        }
-      });
-    }
 
     if (message.justSent) {
       const listener = ({ message }) => {
@@ -155,12 +184,27 @@ export default class Bubble implements Component<Options> {
 
   public unmount() {
     if (this.removeLongPress) {
-      console.log("removing listener longpress");
       this.removeLongPress();
+    }
+
+    if (this.groupId && this.albumWrapper) {
+      const childrenToRemove: HTMLElement[] = [];
+
+      for (const child of iterateChildNodes(this.albumWrapper)) {
+        if (child !== this.attachmentWrapper) {
+          childrenToRemove.push(child);
+        }
+      }
+
+      childrenToRemove.forEach(remove);
     }
 
     delete this.onReplyClick;
     delete this.onReply;
+    delete this.parentBubble;
+    delete this.attachmentWrapper;
+    delete this.attachemnt;
+    delete this.albumWrapper;
   }
 
   public update() {
@@ -172,11 +216,43 @@ export default class Bubble implements Component<Options> {
     this.attachemnt = attachmentArray;
     const [attachment, attachmentType] = attachmentArray;
     const { text, time } = this.getInfo();
-    this.messageText.innerHTML = text;
+
+    if (this.messageText) {
+      this.messageText.innerHTML = text;
+    } else if (this.parentBubble && text) {
+      removeClass(this.parentBubble.element, styles.imageOnly);
+      this.parentBubble.messageText.innerHTML = text;
+    }
 
     const isAnimatedSticker = attachmentType == "animated-sticker";
     const isSticker = attachmentType === "sticker" || isAnimatedSticker;
     let bubbleClassName = styles.bubble;
+
+    if (attachment) {
+      if (!hasChanged) {
+        console.log("Attachment type is the same");
+      } else {
+        removeChildren(this.attachmentWrapper);
+        this.attachmentWrapper.append(attachment);
+      }
+
+      if (attachmentType === "web") {
+        this.element.append(this.attachmentWrapper);
+      }
+
+      // If forwarded, because of the extra line on the left, there is no need to fix the width
+      if (attachment.style.width && !this.isForwarded) {
+        this.element.style.width = attachment.style.width;
+      }
+    }
+
+    if (this.parentBubble) {
+      return;
+    }
+
+    if (this.groupId) {
+      this.element.setAttribute("data-group", this.groupId);
+    }
 
     if (isSticker) {
       bubbleClassName = styles.sticker;
@@ -213,24 +289,6 @@ export default class Bubble implements Component<Options> {
     this.element.className = bubbleClassName;
 
     this.updateInner(time);
-
-    if (attachment) {
-      if (!hasChanged) {
-        console.log("Attachment type is the same");
-      } else {
-        removeChildren(this.attachmentWrapper);
-        this.attachmentWrapper.append(attachment);
-      }
-
-      if (attachmentType === "web") {
-        this.element.append(this.attachmentWrapper);
-      }
-
-      // If forwarded, because of the extra line on the left, there is no need to fix the width
-      if (attachment.style.width && !this.isForwarded) {
-        this.element.style.width = attachment.style.width;
-      }
-    }
   }
 
   public async updateInner(time?: string) {

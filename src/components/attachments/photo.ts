@@ -82,7 +82,7 @@ export default class PhotoAttachment implements Component<Options> {
         .then((url) => {
           downloaded = true;
           removeClass(img, "blur");
-          img.setAttribute("src", url);
+          img.src = url;
           downloadIndicator.remove();
           on(element, "click", onClick);
         });
