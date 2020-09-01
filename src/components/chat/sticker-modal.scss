@@ -1,0 +1,28 @@
+@import "../../mixins.scss";
+
+.stickerModal {
+  max-width: 23em;
+
+  .stickersGrid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    max-height: 20em;
+    grid-gap: 3px;
+    overflow-y: auto;
+    @include nice-scroll;
+
+    > div {
+      height: 4.7em;
+
+      img {
+        width: 100%;
+      }
+    }
+  }
+
+  .buttonWrapper {
+    padding: 1rem;
+    margin: 0 -1rem -1rem;
+    border-top: 1px solid $grey-light;
+  }
+}

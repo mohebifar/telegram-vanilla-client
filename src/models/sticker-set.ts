@@ -8,6 +8,7 @@ import {
   Document,
   messages_RecentStickersNotModified,
   messages_RecentStickers,
+  InputStickerSetID,
 } from "../core/tl/TLObjects";
 import db, { TelegramDatabase } from "../utils/db";
 import { Model, ModelDecorator, ModelKey, ModelWithProxy } from "./model";
@@ -47,11 +48,6 @@ export class StickerSet extends Model<"stickerSet"> implements ExtraMethods {
     const hashRecord = await db.configs.get(STICKER_HASH_CONFIG_KEY);
     const hash = (hashRecord && hashRecord.value) || 0;
 
-    const response = (await this.tg.invoke({
-      $t: "messages_GetAllStickersRequest",
-      hash,
-    })) as messages_AllStickers | messages_AllStickersNotModified;
-
     const recentStickerDocuments = await this.getRecentStickers();
 
     const recentSet = StickerSet.fromObject({
@@ -63,38 +59,47 @@ export class StickerSet extends Model<"stickerSet"> implements ExtraMethods {
       documents: recentStickerDocuments,
     });
 
-    if (response.$t === "messages_AllStickersNotModified") {
-      return [recentSet, ...(await this.getAll())];
-    }
-
     try {
-      await this.table.clear();
-    } catch {}
+      const response = (await this.tg.invoke({
+        $t: "messages_GetAllStickersRequest",
+        hash,
+      })) as messages_AllStickers | messages_AllStickersNotModified;
 
-    const result: IStickerSet[] = [];
-
-    const setsSorted = response.sets.sort(
-      (a, b) => b.installedDate - a.installedDate
-    );
-
-    let i = 0;
-
-    for (const set of setsSorted) {
-      const model = StickerSet.fromObject({ set }, true);
-      if (i++ < 8) {
-        await model.loadPack();
+      if (response.$t === "messages_AllStickersNotModified") {
+        throw new Error("SKIP");
       }
 
-      model.save();
-      result.push(model);
+      try {
+        await this.table.clear();
+      } catch {}
+
+      const result: IStickerSet[] = [];
+
+      const setsSorted = response.sets.sort(
+        (a, b) => b.installedDate - a.installedDate
+      );
+
+      let i = 0;
+
+      for (const set of setsSorted) {
+        const model = StickerSet.fromObject({ set }, true);
+        if (i++ < 8) {
+          await model.loadPack();
+        }
+
+        model.save();
+        result.push(model);
+      }
+
+      db.configs.put({
+        value: response.hash,
+        key: STICKER_HASH_CONFIG_KEY,
+      });
+
+      return [recentSet, ...result];
+    } catch {
+      return [recentSet, ...(await this.getAll())];
     }
-
-    db.configs.put({
-      value: response.hash,
-      key: STICKER_HASH_CONFIG_KEY,
-    });
-
-    return [recentSet, ...result];
   }
 
   static async getAll() {
@@ -115,6 +120,28 @@ export class StickerSet extends Model<"stickerSet"> implements ExtraMethods {
     StickerSet.all = result;
 
     return result;
+  }
+
+  static async fetch(input: InputStickerSetID): Promise<IStickerSet> {
+    const inMemoryResult = this.getFromMemory({
+      set: {
+        id: input.id,
+      } as any,
+    });
+
+    if (inMemoryResult) {
+      return inMemoryResult as IStickerSet;
+    }
+
+    const result = (await this.tg.invoke({
+      $t: "messages_GetStickerSetRequest",
+      stickerset: input,
+    })) as messages_StickerSet;
+
+    const object = StickerSet.fromObject(result);
+    object.saveInMemory();
+
+    return object;
   }
 
   static async search(q?: string) {
@@ -169,20 +196,25 @@ export class StickerSet extends Model<"stickerSet"> implements ExtraMethods {
     const hashRecord = await db.configs.get(RECENT_STICKERS_HASH_CONFIG_KEY);
     const hash = (hashRecord && hashRecord.value) || 0;
 
-    const response = (await this.tg.invoke({
-      $t: "messages_GetRecentStickersRequest",
-      hash,
-    })) as messages_RecentStickersNotModified | messages_RecentStickers;
+    try {
+      const response = (await this.tg.invoke({
+        $t: "messages_GetRecentStickersRequest",
+        hash,
+      })) as messages_RecentStickersNotModified | messages_RecentStickers;
 
-    if (response.$t === "messages_RecentStickersNotModified") {
+      if (response.$t === "messages_RecentStickersNotModified") {
+        throw new Error("SKIP");
+      } else {
+        return (this.recentCache = response.stickers.slice(
+          0,
+          20
+        ) as Document[]);
+      }
+    } catch {
       const recentStickers = await db.configs.get(RECENT_STICKERS_KEY);
       if (recentStickers && recentStickers.value) {
         return (this.recentCache = recentStickers.value);
       }
-    }
-
-    if (response.$t === "messages_RecentStickers") {
-      return (this.recentCache = response.stickers.slice(0, 20) as Document[]);
     }
 
     const stickers = await this.search();

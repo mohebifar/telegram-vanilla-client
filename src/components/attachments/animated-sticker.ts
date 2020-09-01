@@ -1,10 +1,15 @@
-import { Document, MessageMediaDocument } from "../../core/tl/TLObjects";
+import {
+  Document,
+  MessageMediaDocument,
+  DocumentAttributeSticker,
+} from "../../core/tl/TLObjects";
 import { TelegramClientProxy } from "../../telegram-worker-proxy";
-import { Component, createElement } from "../../utils/dom";
+import { Component, createElement, on } from "../../utils/dom";
 import { EMPTY_IMG } from "../../utils/images";
 import Lottie from "../ui/lottie";
 
 import * as styles from "../chat/chat.scss";
+import { openStickerModal } from "../chat/open-sticker-modal";
 
 export interface Options {
   media: MessageMediaDocument;
@@ -23,7 +28,22 @@ export default class AnimatedSticker implements Component<Options> {
       src: EMPTY_IMG,
     }) as HTMLImageElement;
 
-    const element = createElement("div", sticker, fallbackImage);
+    const attribute = (media.document as Document).attributes.find(
+      ({ $t }) => $t == "DocumentAttributeSticker"
+    ) as DocumentAttributeSticker;
+
+    const element = createElement(
+      "div",
+      { class: "pointer" },
+      sticker,
+      fallbackImage
+    );
+
+    if (attribute.stickerset.$t === "InputStickerSetID") {
+      on(element, "click", () => {
+        openStickerModal(attribute.stickerset as any);
+      });
+    }
 
     this.element = element;
 

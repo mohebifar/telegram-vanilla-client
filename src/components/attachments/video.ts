@@ -246,7 +246,6 @@ export default class VideoAttachment implements Component<Options> {
           if (autoPlayable) {
             removeClass(element, "pointer");
           } else {
-            console.log("add event", element);
             removeClickListener = on(element, "click", openMedia);
           }
         });

@@ -5,6 +5,8 @@ import {
   MessageMediaContact,
   DocumentAttributeVideo,
   MessageMediaPoll,
+  DocumentAttributeSticker,
+  Document,
 } from "../../core/tl/TLObjects";
 import { IDialog } from "../../models/dialog";
 import { IMessage, Message } from "../../models/message";
@@ -41,6 +43,7 @@ import PollAttachment from "../attachments/poll";
 import Spinner from "../ui/spinner";
 import { makeModal } from "../ui/modal";
 import Button from "../ui/button";
+import { openStickerModal } from "./open-sticker-modal";
 
 type AttachmentElement = Element<
   | AnimatedStickerAttachment
@@ -414,9 +417,19 @@ export default class Bubble implements Component<Options> {
     media: MessageMediaDocument
   ): [Element<HTMLImageElement>, "sticker"] {
     const sticker = createElement("img", {
-      class: styles.attachment,
+      class: styles.attachment + ' pointer',
       src: EMPTY_IMG,
     });
+
+    const attribute = (media.document as Document).attributes.find(
+      ({ $t }) => $t == "DocumentAttributeSticker"
+    ) as DocumentAttributeSticker;
+
+    if (attribute.stickerset.$t === "InputStickerSetID") {
+      on(sticker, "click", () => {
+        openStickerModal(attribute.stickerset as any);
+      });
+    }
 
     this.message.tg.fileStorage.downloadMedia(media).then((url) => {
       sticker.setAttribute("src", url);

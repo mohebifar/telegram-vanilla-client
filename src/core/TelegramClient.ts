@@ -246,6 +246,7 @@ export class TelegramClient {
             // TODO: must resend the request to the new dc
             return this.invoke(request, dcId);
           } else if (FLOOD_WAIT_PATTERN.test(e.message)) {
+            console.warn('FLOOD WAIT FOR', request);
             const matches = e.message.match(FLOOD_WAIT_PATTERN);
             const seconds = Number(matches[2]);
             if (seconds > 5) {

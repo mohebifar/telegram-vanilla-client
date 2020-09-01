@@ -60,7 +60,7 @@ function setupSignInForm(
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker
-      .register("/sw.js", { scope: '/' })
+      .register("/sw.js", { scope: "/" })
       .then((registration) => {
         console.log("SW registered: ", registration);
       })
@@ -75,8 +75,10 @@ if ("serviceWorker" in navigator) {
   );
 }
 
-try {
-  start();
-} catch (err) {
-  console.error(err);
-}
+window.addEventListener("load", () => {
+  try {
+    start();
+  } catch (err) {
+    console.error(err);
+  }
+});

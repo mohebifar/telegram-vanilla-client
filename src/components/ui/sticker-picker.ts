@@ -264,7 +264,7 @@ export default class StickerPicker implements Component<Options> {
       }
 
       const holder = this.wrapper.querySelector(
-        '[data-index="' + index + '"]'
+        '[data-set-id="' + sticker.set.id + '"]'
       ) as HTMLElement;
       const scrollToPosition = holder.offsetTop - 34;
 
@@ -341,7 +341,7 @@ export default class StickerPicker implements Component<Options> {
     );
     const stickerHolder = createElement("div", {
       class: styles.holder,
-      "data-index": this.stickerSets.indexOf(sticker),
+      "data-set-id": sticker.set.id,
     });
     const stickerElement = createElement("div", titleElement, stickerHolder);
     (stickerHolder as any).sticker = sticker;

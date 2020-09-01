@@ -145,10 +145,15 @@ export class Model<
       return "_" + String(object).replace(/^_/, "");
     }
 
-    return this.primaryKey.reduce(
-      (key, property) => key + "_" + object[property],
-      ""
-    );
+    const key =
+      this.name +
+      this.primaryKey.reduce(
+        (key, property) =>
+          key + "_" + property.split(".").reduce((o, i) => o[i], object),
+        ""
+      );
+
+    return key;
   }
 
   static isInMemory(id: PrimaryKey) {

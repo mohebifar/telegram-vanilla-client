@@ -756,7 +756,7 @@ export default class SendMessageForm implements Component<Options> {
     );
   }
 
-  private handleSendSticker(document: Document) {
+  public handleSendSticker(document: Document) {
     StickerSet.use(document);
     this.handleSendDocument(document);
   }

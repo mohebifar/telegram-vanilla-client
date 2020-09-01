@@ -95,6 +95,9 @@ export default class Chat implements Component<Options> {
       startTyping: this.startTyping,
     });
 
+    // @ts-ignore
+    window.sendForm = this.sendMessageForm.instance;
+
     const chatSection = createElement(
       "div",
       { class: styles.container },
