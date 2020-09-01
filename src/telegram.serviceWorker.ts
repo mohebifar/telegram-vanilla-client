@@ -168,4 +168,9 @@ self.addEventListener("message", async (e) => {
   }
 });
 
+self.addEventListener("activate", (event) => {
+  console.info("Event: Activate");
+  event.waitUntil(self.clients.claim());
+});
+
 export default null;
