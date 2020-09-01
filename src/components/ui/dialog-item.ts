@@ -154,15 +154,15 @@ export default class DialogItem implements Component<Options> {
       "status" in this.peer && this.peer.status.$t === "UserStatusOnline";
     this.avatar.classList[isOnline ? "add" : "remove"]("online");
 
-    const classList = [];
-    if (!unread) {
-      classList.push("invisible");
+    const unreadClassList = [];
+    if (!unread && !this.dialog.unreadMark) {
+      unreadClassList.push("invisible");
     }
     if (silent) {
-      classList.push(styles.silent);
+      unreadClassList.push(styles.silent);
     }
     if (typeof unread !== "string") {
-      classList.push(styles.unreadIcon);
+      unreadClassList.push(styles.unreadIcon);
     }
     removeChildren(this.dateWrapper);
     if (
@@ -188,7 +188,7 @@ export default class DialogItem implements Component<Options> {
         );
       }
     }
-    this.unreadCount.className = classList.join(" ");
+    this.unreadCount.className = unreadClassList.join(" ");
   }
 
   private async getInfo() {
@@ -196,6 +196,10 @@ export default class DialogItem implements Component<Options> {
       this.scope !== "search"
         ? this.peer.displayPeerName
         : this.peer.displayName;
+
+        if (this.dialog.unreadMark) {
+          console.log(this.dialog);
+        }
 
     if (this.dialog) {
       const isTypings = this.dialog.getIsTyping();
@@ -241,6 +245,11 @@ export default class DialogItem implements Component<Options> {
         {
           icon: Icons.Unread,
           title: "Mark as unread",
+          hidden: this.dialog.unreadCount > 0 || this.dialog.unreadMark,
+          onClick: async (close) => {
+            close();
+            this.dialog.markAsUnread();
+          },
         },
         {
           icon: this.dialog.pinned ? Icons.Unpin : Icons.Pin,

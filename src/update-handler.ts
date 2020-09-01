@@ -16,6 +16,7 @@ import {
   UpdateMessagePoll,
   UpdateDialogPinned,
   UpdateDraftMessage,
+  UpdateDialogUnreadMark,
 } from "./core/tl/TLObjects";
 import { extractIdFromPeer } from "./core/tl/utils";
 import { IMessage, Message } from "./models/message";
@@ -82,8 +83,20 @@ export function handleUpdate(update: AllUpdateTypes, extras: Extras = {}) {
     case "UpdateDraftMessage":
       handleUpdateDraftMessage(update);
       break;
+    case "UpdateDialogUnreadMark":
+      handleUpdateDialogUnreadMark(update);
+      break;
     default:
       console.debug("Unsupported update", update);
+  }
+}
+
+async function handleUpdateDialogUnreadMark(update: UpdateDialogUnreadMark) {
+  if (update.peer && update.peer.$t === 'DialogPeer') {
+    const peer = await Peer.get(extractIdFromPeer(update.peer.peer));
+    const dialog = await peer.getDialog();
+    dialog._proxy.unreadMark = update.unread;
+    dialog.save();
   }
 }
 

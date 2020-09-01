@@ -155,6 +155,7 @@ export default class Chat implements Component<Options> {
       if (dialog !== this.dialog) {
         this.sendMessageForm.instance.setDraft(dialog, this.dialog);
         this.topBar.instance.setPeer(this.peer);
+        dialog.markAsUnread(false);
       }
 
       this.idToElementMap.forEach((item) => remove(item));

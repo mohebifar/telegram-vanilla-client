@@ -131,7 +131,7 @@ export default class VideoAttachment implements Component<Options> {
     const img = createElement("img", { src: EMPTY_IMG }) as HTMLImageElement;
     const element = createElement(
       "div",
-      { class: styles.attachment + " pointer" },
+      { class: styles.attachment + " pointer " + styles.video },
       img,
       downloadIndicator,
       metaWrapper

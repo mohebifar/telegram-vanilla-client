@@ -22,6 +22,7 @@ This is a [Telegram](https://telegram.org/) client written in Vanilla JS/TS with
 - Pin/Unpin dialogs
 - Handle Pin/Unpin updates properly
 - Hide archived chats in root folder
+- Ability to mark a dialog as unread and change to read when chat is open
 
 ### Minor updates
 

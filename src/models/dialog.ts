@@ -30,6 +30,7 @@ interface ExtraMethods {
   equals(dialog: IDialog): boolean;
   togglePin(pinned?: boolean): Promise<void>;
   setDraft(message?: string, replyToMsgId?: number): Promise<void>;
+  markAsUnread(unread?: boolean): Promise<void>;
   slient: boolean;
 }
 
@@ -384,6 +385,19 @@ export class Dialog extends Model<"dialogs"> implements ExtraMethods {
         peer: getInputPeer(await this.getPeer()),
       });
     }
+  }
+
+  public async markAsUnread(unread = true) {
+    this._proxy.unreadMark = unread;
+    this.save();
+    await this.tg.invoke({
+      $t: "messages_MarkDialogUnreadRequest",
+      peer: {
+        $t: "InputDialogPeer",
+        peer: getInputPeer(await this.getPeer()),
+      },
+      unread,
+    });
   }
 }
 

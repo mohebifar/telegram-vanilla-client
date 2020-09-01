@@ -8,6 +8,7 @@ export type MenuItem = {
   onClick?(close: () => void): void;
   variant?: "red" | "grey";
   tag?: "button" | "label";
+  hidden?: boolean;
   [k: string]: any;
 };
 
@@ -27,7 +28,7 @@ export class ContextMenu implements Component<Options> {
 
   constructor({ items, clickActivator = true, onClose, ...rest }: Options) {
     this.onClose = onClose;
-    const itemElements = items.map(
+    const itemElements = items.filter(item => !item.hidden).map(
       ({ tag = "button", icon, title, onClick, variant = "grey", ...rest }) => {
         const element = createElement(
           tag,
