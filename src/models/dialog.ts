@@ -28,6 +28,7 @@ interface ExtraMethods {
   getIsTyping(): TypingState[];
   clearTypingTimeout(userId: number): void;
   equals(dialog: IDialog): boolean;
+  togglePin(pinned?: boolean): Promise<void>;
   slient: boolean;
 }
 
@@ -262,7 +263,7 @@ export class Dialog extends Model<"dialogs"> implements ExtraMethods {
       return "";
     }
 
-    return getMessageSummary(message);
+    return getMessageSummary(message as any);
   }
 
   public async getDisplayDate() {
@@ -326,6 +327,20 @@ export class Dialog extends Model<"dialogs"> implements ExtraMethods {
       this._proxy.peerId === dialog.peerId &&
       this._proxy.peerType === dialog.peerType
     );
+  }
+
+  public async togglePin(pinned = false) {
+    await this.tg.invoke({
+      $t: "messages_ToggleDialogPinRequest",
+      pinned,
+      peer: {
+        $t: "InputDialogPeer",
+        peer: getInputPeer(await this.getPeer()),
+      },
+    });
+
+    this._proxy.pinned = pinned;
+    Dialog.events.emit("pin", { dialog: this._proxy, pinned });
   }
 
   get slient() {

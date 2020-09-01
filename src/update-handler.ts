@@ -14,6 +14,7 @@ import {
   UpdateReadChannelOutbox,
   UpdateReadHistoryOutbox,
   UpdateMessagePoll,
+  UpdateDialogPinned,
 } from "./core/tl/TLObjects";
 import { extractIdFromPeer } from "./core/tl/utils";
 import { IMessage, Message } from "./models/message";
@@ -74,8 +75,22 @@ export function handleUpdate(update: AllUpdateTypes, extras: Extras = {}) {
     case "UpdateMessagePoll":
       handleUpdateMessagePoll(update);
       break;
+    case "UpdateDialogPinned":
+      handleDialogPinned(update);
+      break;
     default:
       console.debug("Unsupported update", update);
+  }
+}
+
+async function handleDialogPinned(update: UpdateDialogPinned) {
+  if (update.peer.$t === "DialogPeer") {
+    const id = extractIdFromPeer(update.peer.peer);
+    const dialog = await Dialog.get({
+      peerId: id.id,
+      peerType: id.type,
+    });
+    Dialog.events.emit("pin", { dialog, pinned: update.pinned });
   }
 }
 

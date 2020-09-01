@@ -235,6 +235,12 @@ export class FileStorage {
                 return request();
               }
 
+              console.error({
+                limit: partSize,
+                offset,
+                location,
+              });
+    
               console.error(error);
               throw Error("Max retries for file download");
             }

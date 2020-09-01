@@ -3,6 +3,7 @@ This is a [Telegram](https://telegram.org/) client written in Vanilla JS/TS with
 ## Changelog (Round 4)
 
 ### Major updates
+
 - Significant speed improvement by fixing a bug in creating message containers
 - Add video streaming support
 - Fix sign up flow
@@ -15,6 +16,9 @@ This is a [Telegram](https://telegram.org/) client written in Vanilla JS/TS with
 - Added audio player controls ont the top of the chat view
 - Full support for deleting messages in chat (delete for all and delete for me)
 - Significantly improved performance of the app by fixing a memory leak issue causing the app getting slower over time after opening more chats or loading too many animated stickers
+- Sticker set preview modal when clicking on an sticker in chat
+- Pin/Unpin dialogs
+- Handle Pin/Unpin updates properly
 
 ### Minor updates
 
@@ -71,6 +75,7 @@ The MTProto client is completely written from scratch in TypeScript and supports
 Total transferred size (JS, CSS, Icons, etc.): 142KB (gzipped)
 
 Improvements in MTProto client since round 1:
+
 - Faster factorizer algorithm
 - Switched to Biginteger.js (instead of native BigInt) for better browser support
 - Faster file downloads with better DC switch and caching auth keys for all DCs
@@ -78,10 +83,12 @@ Improvements in MTProto client since round 1:
 - Babel plugin to mangle schema definition
 
 Other improvements:
+
 - Fully cache all messages, peers, dialogs, sticker set, and configs on IndexedDB (It currently defaults on using network, and this cache is used occasionally, but it can be later used to make the app offline compatible)
 - Cache all downloaded files
 
 Handling updates:
+
 - Updates dialogs in the left sidebar with new messages
 - Rearranges dialogs in the sidebar when new message is received
 - Updates unread count when message is seen on another device
@@ -90,7 +97,8 @@ Handling updates:
 - Shows is typing status
 
 Message media:
-* Lightbox:
+
+- Lightbox:
   - Full implementation of media lightbox
   - Playing video in lightbox
   - Lightbox animation when media is opened from a chat
@@ -98,22 +106,23 @@ Message media:
   - Lightbox animation for sender profile details
   - Download media in lightbox
   - Download progress indicator
-* Audio
+- Audio
   - Supports audio and voice playback
   - Renders waveform for audio messages
   - Download progress indicator
-* Video
+- Video
   - Video playback in chat (muted)
   - GIF playback
   - Download progress indicator
-* Files
+- Files
   - Download files with progress indicator
   - Show file size
-* Photo
+- Photo
   - Displays photo in chat (m)
   - Downloads higher rsolution in lightbox
 
 Send message:
+
 - Emoji picker
 - Sticker picker and sending stickers from installed stickers
 - Lazy loading sticker sets with infinite scroll
@@ -123,6 +132,7 @@ Send message:
 - Send continous "is typing" signal every 4500ms until finishing typing
 
 Upload media and documents:
+
 - Upload documents
 - Upload media
 - Upload modal for media and media preview
@@ -132,17 +142,20 @@ Upload media and documents:
 - Upload progress indicator
 
 Cosmetic improvements:
+
 - Left sidebar navigation button animation (From menu to back button)
 - Message bubble tail
 - Showing spinners when loading chats and dialog lists
 - Styles are fully compatible with RTL languages (Farsi, Arabic, Hebrew)
 
 Left sidebar:
+
 - Shows top peers before starting search
 - Global search for messages and contacts
 - Animated menu button
 
 Right sidebar:
+
 - Show profile details (about/bio, phone number, username, profile photo)
 - Shared media (photos and videos) with infinite scroll
 - Open light box from shared media with animation
@@ -151,6 +164,7 @@ Right sidebar:
 - Shared audio with infinite scroll (downloadable and playable from the same panel)
 
 Chat:
+
 - Supports showing replied message
 - Clicking on a replied message scrolls to the original message
 - Supports showing forwarded messages
@@ -160,5 +174,6 @@ Chat:
 - Full message entity parsing support
 - Partial support for translating all message service actions to text
 - Context menu on bubble right click
+
 * Copying a message
 * Reply to a message

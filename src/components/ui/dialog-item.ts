@@ -123,18 +123,20 @@ export default class DialogItem implements Component<Options> {
     if (this.highlightText) {
       const lowerCaseContent = textContent.toLowerCase();
       let offset = 0;
-      textContent = escapeHTML(this.highlightText).split(" ").reduce((str, word) => {
-        const index = lowerCaseContent.indexOf(word.toLowerCase());
-        if (index === -1) {
-          return str;
-        }
-        const originalWord = str.substr(offset + index, word.length);
-        const replacement = `<span class="${styles.highlight}">${originalWord}</span>`;
+      textContent = escapeHTML(this.highlightText)
+        .split(" ")
+        .reduce((str, word) => {
+          const index = lowerCaseContent.indexOf(word.toLowerCase());
+          if (index === -1) {
+            return str;
+          }
+          const originalWord = str.substr(offset + index, word.length);
+          const replacement = `<span class="${styles.highlight}">${originalWord}</span>`;
 
-        offset += replacement.length - originalWord.length;
+          offset += replacement.length - originalWord.length;
 
-        return str.replace(originalWord, replacement);
-      }, textContent);
+          return str.replace(originalWord, replacement);
+        }, textContent);
     }
     textContent = replaceEmoji(textContent);
 
@@ -222,7 +224,6 @@ export default class DialogItem implements Component<Options> {
     }
   }
 
-
   private handleContextMenu(x: number, y: number) {
     if (window.getSelection) {
       window.getSelection().removeAllRanges();
@@ -236,8 +237,14 @@ export default class DialogItem implements Component<Options> {
           title: "Mark as unread",
         },
         {
-          icon: Icons.Pin,
-          title: "Pin",
+          icon: this.dialog.pinned ? Icons.Unpin : Icons.Pin,
+          title: this.dialog.pinned ? "Unpin" : "Pin",
+          onClick: (close) => {
+            close();
+            this.dialog.togglePin(!this.dialog.pinned).then(() => {
+              this.update();
+            });
+          },
         },
         {
           icon: Icons.Mute,
@@ -254,9 +261,7 @@ export default class DialogItem implements Component<Options> {
         },
       ],
       {
-        onClose: () => {
-          
-        },
+        onClose: () => {},
       }
     );
   }

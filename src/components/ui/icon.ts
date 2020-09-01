@@ -37,6 +37,7 @@ export enum Icons {
   Reply = "reply",
   Copy = "copy",
   Pin = "pin",
+  Unpin = "unpin",
   Recent = "recent",
   NewGroup = "newgroup",
   NewPrivate = "newprivate",

@@ -9,6 +9,7 @@ import {
   removeClass,
   addClass,
   on,
+  iterateChildNodes,
 } from "../../utils/dom";
 import DialogItem from "../ui/dialog-item";
 import * as dialogItemStyles from "../ui/dialog-item.scss";
@@ -106,6 +107,50 @@ export default class DialogList extends FadeTransition
       }
     });
 
+    if (!this.folderId) {
+      Dialog.events.on(
+        "pin",
+        async ({ dialog, pinned }: { dialog: IDialog; pinned: boolean }) => {
+          const elementHere = this.dialogsToElement.get(dialog);
+
+          if (!elementHere) {
+            if (pinned) {
+              this.addDialog(dialog, await dialog.getPeer());
+            }
+
+            return;
+          }
+
+          if (pinned) {
+            this.pinnedDialogsContainer.prepend(elementHere);
+          } else {
+            this.pinnedDialogsContainer.removeChild(elementHere);
+            const lastElement = getNthChild(this.dialogsContainer, "last");
+            const iterator = iterateChildNodes(this.dialogsContainer);
+
+            let dialogItemElement: Element<DialogItem>;
+
+            for (dialogItemElement of iterator) {
+              const { instance: dialogItem } = dialogItemElement;
+
+              if (dialogItem.dialog.lastMessageDate < dialog.lastMessageDate) {
+                break;
+              }
+            }
+
+            iterator.return();
+
+            if (dialogItemElement !== lastElement) {
+              this.dialogsContainer.insertBefore(
+                elementHere,
+                dialogItemElement
+              );
+            }
+          }
+        }
+      );
+    }
+
     on(this.element, "scroll", () => {
       const isAtBottom =
         this.element.scrollTop + this.element.clientHeight >=
@@ -181,6 +226,7 @@ export default class DialogList extends FadeTransition
     if (updatedDialog.pinned) {
       return;
     }
+
     if (
       this.folderId &&
       !this.dialogs.some((dialog) => dialog.equals(updatedDialog))
