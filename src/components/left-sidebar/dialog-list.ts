@@ -13,17 +13,19 @@ import {
 } from "../../utils/dom";
 import DialogItem from "../ui/dialog-item";
 import * as dialogItemStyles from "../ui/dialog-item.scss";
-import { FadeTransition } from "../ui/router";
+import { SlideTransition } from "../ui/router";
 import * as styles from "./left-sidebar.scss";
 import Spinner from "../ui/spinner";
+import { messages_GetDialogsRequest } from "../../core/tl/TLObjects";
 
 interface Options {
   onChatSelect(dialog: IDialog, message: IMessage): any;
   dialogs?: IDialog[];
+  dialogOptions?: Partial<messages_GetDialogsRequest>;
   folderId?: number;
 }
 
-export default class DialogList extends FadeTransition
+export default class DialogList extends SlideTransition
   implements Component<Options> {
   public readonly element: HTMLElement;
 
@@ -37,12 +39,14 @@ export default class DialogList extends FadeTransition
   private onChatSelect: Options["onChatSelect"];
   private dialogs: Options["dialogs"];
   private folderId: Options["folderId"];
+  private dialogOptions: Options["dialogOptions"];
 
-  constructor({ onChatSelect, dialogs, folderId }: Options) {
+  constructor({ onChatSelect, dialogs, folderId, dialogOptions }: Options) {
     super();
     this.onChatSelect = onChatSelect;
     this.dialogs = dialogs;
     this.folderId = folderId;
+    this.dialogOptions = dialogOptions;
     this.dialogsContainer = createElement("div", { class: styles.dialogsList });
     this.pinnedDialogsContainer = createElement("div", {
       class: `${styles.dialogsList} ${styles.pinned}`,
@@ -76,7 +80,8 @@ export default class DialogList extends FadeTransition
   }
 
   private async register() {
-    const dialogs = this.dialogs || (await Dialog.fetch(undefined));
+    const dialogs =
+      this.dialogs || (await Dialog.fetch(undefined, this.dialogOptions));
     await this.addDialogs(dialogs);
     removeClass(this.element, styles.loading);
 
@@ -159,7 +164,7 @@ export default class DialogList extends FadeTransition
       if (!this.paginating && isAtBottom && !this.folderId) {
         this.paginating = true;
 
-        Dialog.fetch(this.getLastDialog())
+        Dialog.fetch(this.getLastDialog(), this.dialogOptions)
           .then((dialogs) => this.addDialogs(dialogs))
           .then(() => {
             this.paginating = false;
@@ -180,8 +185,13 @@ export default class DialogList extends FadeTransition
     );
 
     const zipped: [IDialog, IPeer][] = dialogs.map((v, i) => [v, peers[i]]);
+    const folderId = this.getFolderId();
 
     for (const [dialog, peer] of zipped) {
+      if (dialog.folderId && dialog.folderId !== folderId) {
+        continue;
+      }
+
       await this.addDialog(dialog, peer);
     }
   }
@@ -236,6 +246,9 @@ export default class DialogList extends FadeTransition
     let updatedElement: Element<DialogItem>;
 
     if (!this.dialogsToElement.has(updatedDialog)) {
+      if (updatedDialog.folderId !== this.getFolderId()) {
+        return;
+      }
       const peer = await updatedDialog.getPeer();
       await this.addDialog(updatedDialog, peer);
     }
@@ -253,5 +266,9 @@ export default class DialogList extends FadeTransition
     if (element) {
       this.dialogsContainer.insertBefore(updatedElement, element);
     }
+  }
+
+  private getFolderId() {
+    return (this.dialogOptions && this.dialogOptions.folderId) || 0;
   }
 }

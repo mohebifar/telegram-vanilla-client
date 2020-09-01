@@ -137,32 +137,35 @@ export class Dialog extends Model<"dialogs"> implements ExtraMethods {
       $t: "messages_GetDialogFiltersRequest",
     })) as never) as DialogFilter[];
 
-    const dialogsLists: IDialog[][] = [];
+    const dialogsLists = await Promise.all(
+      response.map(async (folder) => {
+        const ids = folder.includePeers.map((inputPeer) => {
+          const id = extractIdFromPeer(getPeer(inputPeer));
+          return {
+            peerId: id.id,
+            peerType: id.type,
+          } as ModelKey<"dialogs">;
+        });
 
-    for (const folder of response) {
-      const ids = folder.includePeers.map((inputPeer) => {
-        const id = extractIdFromPeer(getPeer(inputPeer));
-        return {
-          peerId: id.id,
-          peerType: id.type,
-        } as ModelKey<"dialogs">;
-      });
-      const dialogsResult = await Dialog.bulkGet(
-        ids,
-        true,
-        folder.includePeers
-      );
-      dialogsLists.push(
-        dialogsResult.sort((a, b) =>
+        const dialogsResult = await Dialog.bulkGet(
+          ids,
+          true,
+          folder.includePeers
+        );
+
+        return dialogsResult.sort((a, b) =>
           a.lastMessageDate > b.lastMessageDate ? -1 : 1
-        )
-      );
-    }
+        );
+      })
+    );
 
     return [response, dialogsLists];
   }
 
-  static async fetch(offsetDialog?: IDialog): Promise<IDialog[]> {
+  static async fetch(
+    offsetDialog?: IDialog,
+    partialOptions: Partial<messages_GetDialogsRequest> = {},
+  ): Promise<IDialog[]> {
     let offsetDate = 0;
     let offsetId = 0;
     let offsetPeer: messages_GetDialogsRequest["offsetPeer"] = {
@@ -187,6 +190,7 @@ export class Dialog extends Model<"dialogs"> implements ExtraMethods {
       offsetPeer,
       hash: 0,
       limit: Math.ceil(window.innerHeight / 76) + 3,
+      ...partialOptions,
     })) as messages_DialogsSlice;
 
     for (const chat of response.chats) {
