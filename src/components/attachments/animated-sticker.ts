@@ -9,7 +9,7 @@ import { EMPTY_IMG } from "../../utils/images";
 import Lottie from "../ui/lottie";
 
 import * as styles from "../chat/chat.scss";
-import { openStickerModal } from "../chat/open-sticker-modal";
+import { openStickerModal } from "../chat/sticker-modal";
 
 export interface Options {
   media: MessageMediaDocument;

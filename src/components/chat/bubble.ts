@@ -43,7 +43,7 @@ import PollAttachment from "../attachments/poll";
 import Spinner from "../ui/spinner";
 import { makeModal } from "../ui/modal";
 import Button from "../ui/button";
-import { openStickerModal } from "./open-sticker-modal";
+import { openStickerModal } from "./sticker-modal";
 
 type AttachmentElement = Element<
   | AnimatedStickerAttachment

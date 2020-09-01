@@ -53,6 +53,8 @@ export function openStickerModal(input: InputStickerSetID) {
         if (window.sendForm) {
           // @ts-ignore
           (window.sendForm as SendMessageForm).handleSendSticker(document);
+          StickerSet.use(document);
+          modal.close();
         }
       });
     }
@@ -67,7 +69,7 @@ export function openStickerModal(input: InputStickerSetID) {
 
     requestAnimationFrame(call);
 
-    makeModal(
+    const modal = makeModal(
       result.set.shortName,
       createElement(
         "div",
