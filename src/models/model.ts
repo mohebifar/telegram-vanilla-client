@@ -142,7 +142,7 @@ export class Model<
 
   static getMemoryCacheKey(object: Model<any> | PrimaryKey) {
     if (typeof object === "string" || typeof object === "number") {
-      return "_" + String(object).replace(/^_/, "");
+      return this.name + "_" + String(object).replace(/^_/, "");
     }
 
     const key =
@@ -212,7 +212,7 @@ export class Model<
 
   public save() {
     const gid = this.getGid();
-    const isInMemory = this.constructor.isInMemory(gid);
+    const isInMemory = this.constructor.memoryCache.has(gid);
     this.saveInMemory();
 
     const object = this.constructor.getFromMemory(this._proxy);

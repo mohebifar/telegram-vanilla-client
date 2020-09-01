@@ -14,11 +14,14 @@ This is a [Telegram](https://telegram.org/) client written in Vanilla JS/TS with
 - Fix voice recorder issue on iOS Safari
 - Highlight keywords in search
 - Added audio player controls ont the top of the chat view
+- Add archived chats tab
 - Full support for deleting messages in chat (delete for all and delete for me)
 - Significantly improved performance of the app by fixing a memory leak issue causing the app getting slower over time after opening more chats or loading too many animated stickers
 - Sticker set preview modal when clicking on an sticker in chat
+- Auto-fill chat input with draft messages and save input state as draft when switching
 - Pin/Unpin dialogs
 - Handle Pin/Unpin updates properly
+- Hide archived chats in root folder
 
 ### Minor updates
 

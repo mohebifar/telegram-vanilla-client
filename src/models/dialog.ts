@@ -29,6 +29,7 @@ interface ExtraMethods {
   clearTypingTimeout(userId: number): void;
   equals(dialog: IDialog): boolean;
   togglePin(pinned?: boolean): Promise<void>;
+  setDraft(message?: string, replyToMsgId?: number): Promise<void>;
   slient: boolean;
 }
 
@@ -164,7 +165,7 @@ export class Dialog extends Model<"dialogs"> implements ExtraMethods {
 
   static async fetch(
     offsetDialog?: IDialog,
-    partialOptions: Partial<messages_GetDialogsRequest> = {},
+    partialOptions: Partial<messages_GetDialogsRequest> = {}
   ): Promise<IDialog[]> {
     let offsetDate = 0;
     let offsetId = 0;
@@ -173,10 +174,7 @@ export class Dialog extends Model<"dialogs"> implements ExtraMethods {
     };
 
     if (offsetDialog) {
-      const peer = await Peer.get({
-        id: offsetDialog.peerId,
-        type: offsetDialog.peerType,
-      });
+      const peer = await offsetDialog.getPeer();
       const message = await offsetDialog.loadMessage();
       offsetPeer = getInputPeer(peer);
       offsetId = message.id;
@@ -361,6 +359,31 @@ export class Dialog extends Model<"dialogs"> implements ExtraMethods {
     Dialog.events.emit("typing", {
       dialog: this._proxy,
     });
+  }
+
+  public async setDraft(message = "", replyToMsgId?: number) {
+    if (
+      (this._proxy.draft &&
+        this._proxy.draft.$t === "DraftMessage" &&
+        this._proxy.draft.message !== message) ||
+      message
+    ) {
+      this.fields.draft = message
+        ? {
+            $t: "DraftMessage",
+            date: dayjs().unix(),
+            message,
+            replyToMsgId,
+          }
+        : { $t: "DraftMessageEmpty" };
+      this.save();
+      return this.tg.invoke({
+        $t: "messages_SaveDraftRequest",
+        message,
+        ...(replyToMsgId ? { replyToMsgId } : {}),
+        peer: getInputPeer(await this.getPeer()),
+      });
+    }
   }
 }
 

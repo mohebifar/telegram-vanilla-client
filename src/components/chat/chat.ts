@@ -153,6 +153,7 @@ export default class Chat implements Component<Options> {
       this.lockLoad = true;
       this.peer = await dialog.getPeer();
       if (dialog !== this.dialog) {
+        this.sendMessageForm.instance.setDraft(dialog, this.dialog);
         this.topBar.instance.setPeer(this.peer);
       }
 
@@ -236,7 +237,7 @@ export default class Chat implements Component<Options> {
       childPosToLookAt
     );
 
-    const album = possibleBubble.querySelector('.' + styles.album)
+    const album = possibleBubble.querySelector("." + styles.album);
     if (album) {
       return getNthChild(album, childPosToLookAt) as Element<Bubble>;
     }
@@ -310,6 +311,15 @@ export default class Chat implements Component<Options> {
         this.scrollToEnd(false);
       }
     }, 500);
+
+    Dialog.events.on(
+      "saved",
+      ({ object }: { object: IDialog; gid: string }) => {
+        if (object === this.dialog) {
+          this.sendMessageForm.instance.setDraft(object);
+        }
+      }
+    );
 
     Dialog.events.on(
       "seen",
@@ -592,6 +602,7 @@ export default class Chat implements Component<Options> {
 
   private handleSendMessage = (message: SimplifiedMessageRequest) => {
     const [model, promise, shouldCreateBubble] = this.peer.sendMessage(message);
+    this.dialog.setDraft();
 
     if (shouldCreateBubble) {
       this.handleNewMessage(model);
@@ -776,7 +787,7 @@ export default class Chat implements Component<Options> {
         bubble !== null;
         bubble = bubble.previousSibling as Element<Bubble>
       ) {
-        const album = bubble.querySelector('.' + styles.album)
+        const album = bubble.querySelector("." + styles.album);
         if (album) {
           for (
             let albumItem = album.lastChild as Element<Bubble>;

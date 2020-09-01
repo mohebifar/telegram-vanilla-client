@@ -72,7 +72,7 @@ export default class Bubble implements Component<Options> {
   private inner: HTMLElement;
   private attachmentWrapper: HTMLElement;
   public albumWrapper?: HTMLElement;
-  private attachemnt: [AttachmentElement, string];
+  private attachment: [AttachmentElement, string];
   public messageText: HTMLElement;
   private time: HTMLElement;
   private sentIndicator?: Element<Icon>;
@@ -206,17 +206,17 @@ export default class Bubble implements Component<Options> {
     delete this.onReply;
     delete this.parentBubble;
     delete this.attachmentWrapper;
-    delete this.attachemnt;
+    delete this.attachment;
     delete this.albumWrapper;
   }
 
   public update() {
     const attachmentArray =
-      this.attachemnt && this.attachemnt[1] !== "poll"
-        ? this.attachemnt
+      this.attachment && this.attachment[1] !== "poll" && this.attachment[1] !== "loading"
+        ? this.attachment
         : this.getAttachments();
-    const hasChanged = this.attachemnt !== attachmentArray;
-    this.attachemnt = attachmentArray;
+    const hasChanged = this.attachment !== attachmentArray;
+    this.attachment = attachmentArray;
     const [attachment, attachmentType] = attachmentArray;
     const { text, time } = this.getInfo();
 

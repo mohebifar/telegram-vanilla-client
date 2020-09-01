@@ -4,7 +4,7 @@ import {
   Document,
   PollAnswer,
 } from "../../core/tl/TLObjects";
-import { IMessage } from "../../models/message";
+import { IMessage, Message } from "../../models/message";
 import { Peer, SimplifiedMessageRequest, IPeer } from "../../models/peer";
 import {
   Component,
@@ -40,6 +40,7 @@ import { extractEmojis } from "../../utils/emojis";
 import EmojiPicker from "../ui/emoji-picker";
 import { StickerSet } from "../../models/sticker-set";
 import Checkbox from "../ui/checkbox";
+import { IDialog } from "../../models/dialog";
 
 interface Options {
   callback(message: SimplifiedMessageRequest): Promise<IMessage>;
@@ -200,12 +201,7 @@ export default class SendMessageForm implements Component<Options> {
     );
 
     on(this.inputNode, "input", () => {
-      if (this.inputNode.value !== "") {
-        startTyping();
-        this.recordButton.instance.setState("send");
-      } else {
-        this.recordButton.instance.setState("mic");
-      }
+      this.handleInputUpdate(startTyping);
     });
 
     on(this.inputNode, "keypress", (e) => {
@@ -216,6 +212,17 @@ export default class SendMessageForm implements Component<Options> {
     });
 
     on(this.element, "submit", this.handleSubmit);
+  }
+
+  private handleInputUpdate(startTyping?: Options["startTyping"]) {
+    if (this.inputNode.value !== "") {
+      if (startTyping) {
+        startTyping();
+      }
+      this.recordButton.instance.setState("send");
+    } else {
+      this.recordButton.instance.setState("mic");
+    }
   }
 
   public setPeer(peer: IPeer) {
@@ -248,6 +255,31 @@ export default class SendMessageForm implements Component<Options> {
       })
     );
     this.focus();
+  }
+
+  public async setDraft({ draft, getPeer }: IDialog, oldDialog?: IDialog) {
+    if (oldDialog) {
+      oldDialog.setDraft(
+        this.inputNode.value,
+        this.replyMessage && this.replyMessage.id
+      );
+    }
+
+    if (!draft || draft.$t === "DraftMessageEmpty") {
+      this.inputNode.value = "";
+    } else {
+      this.inputNode.value = draft.message;
+      this.handleInputUpdate();
+      if (draft.replyToMsgId) {
+        const peer = await getPeer();
+        const message = await Message.get({
+          channelId: peer.isChannel() ? peer.id : 0,
+          id: draft.replyToMsgId,
+        });
+
+        this.setReply(message);
+      }
+    }
   }
 
   private async clearReply() {
@@ -590,7 +622,12 @@ export default class SendMessageForm implements Component<Options> {
     }
 
     const answersWrapper = createElement("div", {
-      style: { overflowX: "auto", maxHeight: "30vh", paddingTop: '1.5em', marginTop: '-1.5em' },
+      style: {
+        overflowX: "auto",
+        maxHeight: "30vh",
+        paddingTop: "1.5em",
+        marginTop: "-1.5em",
+      },
     });
 
     const question = createElement(Input, {

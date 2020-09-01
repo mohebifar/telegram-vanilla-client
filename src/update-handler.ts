@@ -15,6 +15,7 @@ import {
   UpdateReadHistoryOutbox,
   UpdateMessagePoll,
   UpdateDialogPinned,
+  UpdateDraftMessage,
 } from "./core/tl/TLObjects";
 import { extractIdFromPeer } from "./core/tl/utils";
 import { IMessage, Message } from "./models/message";
@@ -78,8 +79,20 @@ export function handleUpdate(update: AllUpdateTypes, extras: Extras = {}) {
     case "UpdateDialogPinned":
       handleDialogPinned(update);
       break;
+    case "UpdateDraftMessage":
+      handleUpdateDraftMessage(update);
+      break;
     default:
       console.debug("Unsupported update", update);
+  }
+}
+
+async function handleUpdateDraftMessage(update: UpdateDraftMessage) {
+  if (update.peer) {
+    const peer = await Peer.get(extractIdFromPeer(update.peer));
+    const dialog = await peer.getDialog();
+    dialog._proxy.draft = update.draft;
+    dialog.save();
   }
 }
 

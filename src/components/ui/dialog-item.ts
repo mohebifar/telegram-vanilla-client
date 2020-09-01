@@ -117,7 +117,7 @@ export default class DialogItem implements Component<Options> {
   }
 
   public async update() {
-    const { text, title, date, unread, silent } = await this.getInfo();
+    const { text, title, date, unread, silent, draft } = await this.getInfo();
 
     let textContent = escapeHTML(text);
     if (this.highlightText) {
@@ -137,7 +137,12 @@ export default class DialogItem implements Component<Options> {
 
           return str.replace(originalWord, replacement);
         }, textContent);
+    } else if (draft && draft.$t === "DraftMessage") {
+      textContent = `<span class="red">Draft: </span>${escapeHTML(
+        draft.message
+      )}`;
     }
+
     textContent = replaceEmoji(textContent);
 
     this.text.innerHTML = textContent;
@@ -210,6 +215,7 @@ export default class DialogItem implements Component<Options> {
         date,
         text: (text && text.slice(0, 50)) || "",
         silent: this.dialog.slient,
+        draft: this.dialog.draft,
       };
     } else {
       const text: string = (this.message as any).message || "";
