@@ -1,3 +1,5 @@
+This is a [Telegram](https://telegram.org/) client written in Vanilla JS/TS without using any frameworks. In Nov 2019, I participated in Telegram's JS Content which lasted for almost a year and I eventually finished in the 3rd place in the last round. I'm open sourcing my submission now that the contest has ended.
+
 ## Changelog (Round 4)
 
 ### Major updates
