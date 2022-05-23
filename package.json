@@ -61,7 +61,7 @@
     "autosize": "^4.0.2",
     "big-integer": "^1.6.48",
     "dayjs": "^1.8.17",
-    "dexie": "^2.0.4",
+    "dexie": "^3.2.2",
     "lottie-web": "^5.7.2",
     "mitt": "^2.1.0",
     "opus-media-recorder": "^0.8.0",
